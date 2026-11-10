@@ -4,16 +4,23 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 import java.util.Set;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -24,22 +31,21 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.config.GodsConfiguration;
+import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 
 public class QuestManager
 {
+	// Every constant may be stored in quests.yml, so keep them all even if no longer generated
 	static enum QUESTTYPE {
 		NONE, FIREWORKPARTY, HUMANSACRIFICE, MOBSACRIFICE, ITEMSACRIFICE, GIVEROSE, KILLBOSS, HARVEST, CONVERT, GETHOLYARTIFACT, DELIVERITEM, SLAY, BUILDALTARS, BUILDTOWER, HOLYFEAST, COLLECTBIBLES, BURNBIBLES, GIVEITEMS, PILGRIMAGE, HOLYWAR, CLAIMHOLYLAND, PVPREVENGE, SPREADLOVE, SHOWHOLYARTIFACT, CRAFTITEMS, SLAYDRAGON, CRUSADE;
 
@@ -53,13 +59,71 @@ public class QuestManager
 		}
 	}
 
-	private static QuestManager instance;
+	private static enum Phase {
+		STARTED, PROGRESS, STATUS, COMPLETED, FAILED
+	}
+
+	// What each god says about a quest, indexed by Phase. Types without speech have no entry.
+	private static final Map<QUESTTYPE, LANGUAGESTRING[]>	QUEST_SPEECH			= new EnumMap<QUESTTYPE, LANGUAGESTRING[]>(QUESTTYPE.class);
+
+	static
+	{
+		speech(QUESTTYPE.SLAY, LANGUAGESTRING.GodToBelieversSlayQuestStarted, LANGUAGESTRING.GodToBelieversSlayQuestProgress, LANGUAGESTRING.GodToBelieversSlayQuestStatus, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, LANGUAGESTRING.GodToBelieversSlayQuestFailed);
+		speech(QUESTTYPE.SLAYDRAGON, LANGUAGESTRING.GodToBelieversSlayDragonQuestStarted, LANGUAGESTRING.GodToBelieversSlayDragonQuestProgress, LANGUAGESTRING.GodToBelieversSlayDragonQuestStatus, LANGUAGESTRING.GodToBelieversSlayDragonQuestCompleted, LANGUAGESTRING.GodToBelieversSlayDragonQuestFailed);
+		speech(QUESTTYPE.CONVERT, LANGUAGESTRING.GodToBelieversConvertQuestStarted, LANGUAGESTRING.GodToBelieversConvertQuestProgress, LANGUAGESTRING.GodToBelieversConvertQuestStatus, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, LANGUAGESTRING.GodToBelieversConvertQuestFailed);
+		speech(QUESTTYPE.BUILDALTARS, LANGUAGESTRING.GodToBelieversBuildAltarsQuestStarted, LANGUAGESTRING.GodToBelieversBuildAltarsQuestProgress, LANGUAGESTRING.GodToBelieversBuildAltarsQuestStatus, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, LANGUAGESTRING.GodToBelieversBuildAltarsQuestFailed);
+		speech(QUESTTYPE.BUILDTOWER, LANGUAGESTRING.GodToBelieversBuildTowerQuestStarted, LANGUAGESTRING.GodToBelieversBuildTowerQuestProgress, LANGUAGESTRING.GodToBelieversBuildTowerQuestStatus, LANGUAGESTRING.GodToBelieversBuildTowerQuestCompleted, LANGUAGESTRING.GodToBelieversBuildTowerQuestFailed);
+		speech(QUESTTYPE.ITEMSACRIFICE, LANGUAGESTRING.GodToBelieversSacrificeQuestStarted, LANGUAGESTRING.GodToBelieversSacrificeQuestProgress, LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, LANGUAGESTRING.GodToBelieversSacrificeQuestCompleted, LANGUAGESTRING.GodToBelieversSacrificeQuestFailed);
+		speech(QUESTTYPE.HOLYFEAST, LANGUAGESTRING.GodToBelieversHolyFeastQuestStarted, LANGUAGESTRING.GodToBelieversHolyFeastQuestProgress, LANGUAGESTRING.GodToBelieversHolyFeastQuestStatus, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, LANGUAGESTRING.GodToBelieversHolyFeastQuestFailed);
+		speech(QUESTTYPE.GIVEITEMS, LANGUAGESTRING.GodToBelieversGiveItemsQuestStarted, LANGUAGESTRING.GodToBelieversGiveBiblesQuestProgress, LANGUAGESTRING.GodToBelieversGiveItemsQuestStatus, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, LANGUAGESTRING.GodToBelieversGiveItemsQuestFailed);
+		speech(QUESTTYPE.BURNBIBLES, LANGUAGESTRING.GodToBelieversBurnBiblesQuestStarted, LANGUAGESTRING.GodToBelieversBurnBiblesQuestProgress, LANGUAGESTRING.GodToBelieversBurnBiblesQuestStatus, LANGUAGESTRING.GodToBelieversBurnBiblesQuestCompleted, LANGUAGESTRING.GodToBelieversBurnBiblesQuestFailed);
+		speech(QUESTTYPE.CRUSADE, LANGUAGESTRING.GodToBelieversCrusadeQuestStarted, LANGUAGESTRING.GodToBelieversCrusadeQuestProgress, LANGUAGESTRING.GodToBelieversCrusadeQuestStatus, LANGUAGESTRING.GodToBelieversCrusadeQuestCompleted, LANGUAGESTRING.GodToBelieversCrusadeQuestFailed);
+		speech(QUESTTYPE.PVPREVENGE, LANGUAGESTRING.GodToBelieversPVPRevengeQuestStarted, LANGUAGESTRING.GodToBelieversPVPRevengeQuestProgress, LANGUAGESTRING.GodToBelieversPVPRevengeQuestStatus, LANGUAGESTRING.GodToBelieversPVPRevengeQuestCompleted, LANGUAGESTRING.GodToBelieversPVPRevengeQuestFailed);
+		speech(QUESTTYPE.PILGRIMAGE, LANGUAGESTRING.GodToBelieversPilgrimageQuestStarted, LANGUAGESTRING.GodToBelieversPilgrimageQuestProgress, LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, LANGUAGESTRING.GodToBelieversPilgrimageQuestFailed);
+		speech(QUESTTYPE.CLAIMHOLYLAND, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStarted, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestProgress, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStatus, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestCompleted, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestFailed);
+		speech(QUESTTYPE.GETHOLYARTIFACT, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStarted, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestProgress, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStatus, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestCompleted, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestFailed);
+		speech(QUESTTYPE.HOLYWAR, LANGUAGESTRING.GodToBelieversHolywarQuestStarted, LANGUAGESTRING.GodToBelieversHolywarQuestProgress, LANGUAGESTRING.GodToBelieversHolywarQuestStatus, LANGUAGESTRING.GodToBelieversHolywarQuestCompleted, LANGUAGESTRING.GodToBelieversHolywarQuestFailed);
+	}
+
+	private static void speech(QUESTTYPE type, LANGUAGESTRING started, LANGUAGESTRING progress, LANGUAGESTRING status, LANGUAGESTRING completed, LANGUAGESTRING failed)
+	{
+		QUEST_SPEECH.put(type, new LANGUAGESTRING[] { started, progress, status, completed, failed });
+	}
+
+	private static LANGUAGESTRING questSpeech(QUESTTYPE type, Phase phase)
+	{
+		LANGUAGESTRING[] strings = QUEST_SPEECH.get(type);
+		return (strings == null) ? null : strings[phase.ordinal()];
+	}
+
+	// Location searches run on the main thread, so they try few spots and load few chunks
+	private static final int								MAX_LOCATION_ATTEMPTS	= 32;
+	private static final int								MAX_CHUNK_LOADS			= 6;
+	private static final int								MAX_REWARD_ROLLS		= 100;
+
+	private static final Set<Material>						PILGRIMAGE_GROUND		= EnumSet.of(Material.GRASS_BLOCK, Material.PODZOL, Material.MYCELIUM, Material.SNOW_BLOCK, Material.SAND, Material.RED_SAND, Material.MOSS_BLOCK);
+
+	private static final Set<Biome>							PILGRIMAGE_BIOMES		= new HashSet<Biome>();
+
+	static
+	{
+		// Biomes are registry entries, so skip any this server doesn't know
+		for (Biome biome : new Biome[] { Biome.FLOWER_FOREST, Biome.ICE_SPIKES, Biome.DESERT, Biome.MUSHROOM_FIELDS, Biome.JUNGLE, Biome.TAIGA, Biome.OLD_GROWTH_SPRUCE_TAIGA, Biome.OLD_GROWTH_PINE_TAIGA, Biome.PLAINS, Biome.SUNFLOWER_PLAINS, Biome.MEADOW, Biome.CHERRY_GROVE, Biome.FOREST, Biome.BIRCH_FOREST, Biome.SAVANNA, Biome.SNOWY_PLAINS, Biome.SNOWY_TAIGA, Biome.GROVE, Biome.SNOWY_SLOPES })
+		{
+			if (biome != null)
+			{
+				PILGRIMAGE_BIOMES.add(biome);
+			}
+		}
+	}
+
+	private static QuestManager								instance;
 
 	public static QuestManager instance()
 	{
 		if (instance == null)
 			instance = new QuestManager();
-		
+
 		return instance;
 	}
 
@@ -124,119 +188,44 @@ public class QuestManager
 		this.save();
 	}
 
-	Location generateAncientCaveTemple(ItemStack item, String godName, String worldName, int minDist, int maxDist, Location center)
+	/**
+	 * Quest: make non-believers read the god's holy book. Completed in {@link #handleReadBible}.
+	 */
+	private boolean generateGiveItemsQuest(String godName)
 	{
-		int run = 0;
-
-		Block target = null;
-		Inventory contents = null;
-
-		List<Material> defaultspawnblocks = new ArrayList<Material>();
-
-		defaultspawnblocks.add(Material.STONE);
-		defaultspawnblocks.add(Material.SMOOTH_STONE);
-		defaultspawnblocks.add(Material.MOSSY_COBBLESTONE);
-		defaultspawnblocks.add(Material.OBSIDIAN);
-
-		World world = Gods.instance().getServer().getWorld(worldName);
-		int maxLevel;
-		int x;
-		int z;
-		int y;
-		do
+		String bibleTitle = HolyBookManager.instance().getBibleTitle(godName);
+		if (bibleTitle == null)
 		{
-			run++;
-
-			int minLevel = 4;
-			maxLevel = 50;
-			int maxLight = 4;
-			int minLight = 0;
-			do
-			{
-				x = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockX();
-				z = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockZ();
-			}
-			while ((Math.abs(x - center.getBlockX()) < minDist) || (Math.abs(z - center.getBlockZ()) < minDist));
-			do
-			{
-				y = this.random.nextInt(maxLevel);
-			}
-			while (
-
-			y < minLevel);
-			target = world.getBlockAt(x, y, z);
-			if ((target.getType() == Material.AIR) && (world.getBlockAt(x, y + 1, z).getType() == Material.AIR) && (target.getLightLevel() <= maxLight) && (target.getLightLevel() >= minLight))
-			{
-				target = world.getBlockAt(x, y - 1, z);
-				if ((defaultspawnblocks.contains(target.getType())) && (world.getHighestBlockAt(target.getLocation()).getType() != Material.WATER))
-				{
-					target.setType(Material.GLOWSTONE);
-
-					target = world.getBlockAt(x, y, z);
-					target.setType(Material.CHEST);
-
-					Chest tb = (Chest) target.getState();
-					contents = tb.getInventory();
-				}
-			}
-		}
-		while ((contents == null) && (run < 100));
-
-		if (run >= 100)
-		{
-			Gods.instance().log("Ancient cave holy artifact chest generation FAILED in " + worldName);
-			return null;
+			return false;
 		}
 
-		contents.addItem(new ItemStack[] { item });
-
-		for (ItemStack rewardItem : getRewardsForQuestCompletion(200 + this.random.nextInt(200)))
+		int nonBelievers = 0;
+		for (Player player : Gods.instance().getServer().getOnlinePlayers())
 		{
-			contents.addItem(new ItemStack[] { rewardItem });
-		}
-
-		for (int oy = y - 7; oy < y + 7; oy++)
-		{
-			for (int ox = x - 20; ox < x + 20; ox++)
+			if (BelieverManager.instance().getGodForBeliever(player.getUniqueId()) == null)
 			{
-				for (int oz = z - 20; oz < z + 20; oz++)
-				{
-					Block stoneTarget = world.getBlockAt(ox, oy, oz);
-					if ((this.random.nextInt(4) == 0) && (stoneTarget.getType() == Material.AIR) && (world.getBlockAt(ox, oy - 1, oz).getType() == Material.STONE))
-					{
-						stoneTarget.setType(Material.CHEST);
-						world.getBlockAt(ox, oy - 1, oz).setType(Material.GLOWSTONE);
-					}
-					else if ((stoneTarget.getType() == Material.STONE) && (this.random.nextInt(4) == 0))
-					{
-						stoneTarget.setType(Material.STONE_SLAB);
-					}
-				}
+				nonBelievers++;
 			}
 		}
-		Gods.instance().logDebug("Ancient cave holy artifact chest generated in " + run + " runs");
+		if (nonBelievers == 0)
+		{
+			return false;
+		}
 
-		return target.getLocation();
-	}
-
-	private boolean generateGiveItemsQuest(String godName, Material material)
-	{
-		String questTargetType = material.name();
-		int questAmount = 0;
-		int questMaxDuration = 0;
 		Date thisDate = new Date();
 		String pattern = "HH:mm dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		QUESTTYPE questType = QUESTTYPE.GIVEITEMS;
-		questAmount = 1 + (Gods.instance().getServer().getOnlinePlayers().size() - BelieverManager.instance().getOnlineBelieversForGod(godName).size()) / (2 + this.random.nextInt(3));
-		questMaxDuration = (1 + this.random.nextInt(5)) * questAmount;
+		int questAmount = 1 + nonBelievers / (2 + this.random.nextInt(3));
+		int questMaxDuration = (1 + this.random.nextInt(5)) * questAmount;
 
 		this.questsConfig.set(godName + ".Type", questType.toString());
 		this.questsConfig.set(godName + ".Amount", Integer.valueOf(questAmount));
-		this.questsConfig.set(godName + ".TargetType", questTargetType);
+		this.questsConfig.set(godName + ".TargetType", bibleTitle);
 		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
 		this.questsConfig.set(godName + ".Progress", null);
+		this.questsConfig.set(godName + ".Players", null);
 		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
 
 		save();
@@ -253,231 +242,63 @@ public class QuestManager
 
 	private String generateHolyName()
 	{
+		final String[] consonants = { "b", "f", "g", "h", "j", "k", "l", "ll", "v", "r", "rr", "kk", "p", "t", "s", "x", "d", "n", "m", "nn" };
+		final String[] vowels = { "a", "o", "i", "u", "y", "e" };
+
 		int length = 2 + this.random.nextInt(6);
-		String templeName = "";
+		StringBuilder name = new StringBuilder();
 
-		int l = 0;
-		boolean wasVocal = false;
-		while (l < length)
+		boolean wasVowel = false;
+		for (int l = 0; l < length; l++)
 		{
-			if (wasVocal)
-			{
-				switch (this.random.nextInt(20))
-				{
-				case 0:
-					templeName = templeName + "b";
-					wasVocal = false;
-					break;
-				case 1:
-					templeName = templeName + "f";
-					wasVocal = false;
-					break;
-				case 2:
-					templeName = templeName + "g";
-					wasVocal = false;
-					break;
-				case 3:
-					templeName = templeName + "h";
-					wasVocal = false;
-					break;
-				case 4:
-					templeName = templeName + "j";
-					wasVocal = false;
-					break;
-				case 5:
-					templeName = templeName + "k";
-					wasVocal = false;
-					break;
-				case 6:
-					templeName = templeName + "l";
-					wasVocal = false;
-					break;
-				case 7:
-					templeName = templeName + "ll";
-					wasVocal = false;
-					break;
-				case 8:
-					templeName = templeName + "v";
-					wasVocal = false;
-					break;
-				case 9:
-					templeName = templeName + "r";
-					wasVocal = false;
-					break;
-				case 10:
-					templeName = templeName + "rr";
-					wasVocal = false;
-					break;
-				case 11:
-					templeName = templeName + "kk";
-					wasVocal = false;
-					break;
-				case 12:
-					templeName = templeName + "p";
-					wasVocal = false;
-					break;
-				case 13:
-					templeName = templeName + "t";
-					wasVocal = false;
-					break;
-				case 14:
-					templeName = templeName + "s";
-					wasVocal = false;
-					break;
-				case 15:
-					templeName = templeName + "x";
-					wasVocal = false;
-					break;
-				case 16:
-					templeName = templeName + "d";
-					wasVocal = false;
-					break;
-				case 17:
-					templeName = templeName + "n";
-					wasVocal = false;
-					break;
-				case 18:
-					templeName = templeName + "m";
-					wasVocal = false;
-					break;
-				case 19:
-					templeName = templeName + "nn";
-					wasVocal = false;
-				}
-			}
-			else
-			{
-				switch (this.random.nextInt(6))
-				{
-				case 0:
-					templeName = templeName + "a";
-					wasVocal = true;
-					break;
-				case 1:
-					templeName = templeName + "o";
-					wasVocal = true;
-					break;
-				case 2:
-					templeName = templeName + "i";
-					wasVocal = true;
-					break;
-				case 3:
-					templeName = templeName + "u";
-					wasVocal = true;
-					break;
-				case 4:
-					templeName = templeName + "y";
-					wasVocal = true;
-					break;
-				case 5:
-					templeName = templeName + "e";
-					wasVocal = true;
-				}
-			}
-			l++;
+			String[] letters = wasVowel ? consonants : vowels;
+			name.append(letters[this.random.nextInt(letters.length)]);
+			wasVowel = !wasVowel;
 		}
-		return templeName.substring(0, 1).toUpperCase() + templeName.substring(1).toLowerCase();
-	}
-
-	private boolean generateHolyWarQuest(String godName)
-	{
-		String questTargetType = "NONE";
-		int questAmount = 0;
-		int questMaxDuration = 0;
-		Date thisDate = new Date();
-		String pattern = "HH:mm dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-
-		Set<UUID> thisGodOnlineBelievers = BelieverManager.instance().getOnlineBelieversForGod(godName);
-
-		QUESTTYPE questType = QUESTTYPE.HOLYWAR;
-		questAmount = 3;
-		questMaxDuration = (5 + this.random.nextInt(5)) * questAmount;
-
-		List<String> enemyGods = GodManager.instance().getEnemyGodsForGod(godName);
-		if (enemyGods.size() == 0)
-		{
-			return false;
-		}
-		String otherGodName = enemyGods.get(this.random.nextInt(enemyGods.size()));
-
-		Set<UUID> otherGodOnlineBelievers = BelieverManager.instance().getOnlineBelieversForGod(otherGodName);
-		if ((thisGodOnlineBelievers.size() < questAmount) || (otherGodOnlineBelievers.size() < questAmount))
-		{
-			return false;
-		}
-		Location believerPosition = Gods.instance().getServer().getPlayer((UUID) thisGodOnlineBelievers.toArray()[this.random.nextInt(thisGodOnlineBelievers.size())]).getLocation();
-
-		Location targetLocation = getLocationForHolywarQuest(believerPosition.getWorld().getName(), 500, 3000, believerPosition);
-		if (targetLocation == null)
-		{
-			return false;
-		}
-		this.questsConfig.set(godName + ".Type", questType.toString());
-		this.questsConfig.set(godName + ".Location.World", targetLocation.getWorld().getName());
-		this.questsConfig.set(godName + ".Location.X", Integer.valueOf(targetLocation.getBlockX()));
-		this.questsConfig.set(godName + ".Location.Y", Integer.valueOf(targetLocation.getBlockY()));
-		this.questsConfig.set(godName + ".Location.Z", Integer.valueOf(targetLocation.getBlockZ()));
-		this.questsConfig.set(godName + ".Amount", Integer.valueOf(questAmount));
-		this.questsConfig.set(godName + ".TargetType", otherGodName);
-		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(godName + ".Progress", null);
-		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
-
-		this.questsConfig.set(otherGodName + ".Type", questType.toString());
-		this.questsConfig.set(otherGodName + ".Location.World", targetLocation.getWorld().getName());
-		this.questsConfig.set(otherGodName + ".Location.X", Integer.valueOf(targetLocation.getBlockX()));
-		this.questsConfig.set(otherGodName + ".Location.Y", Integer.valueOf(targetLocation.getBlockY()));
-		this.questsConfig.set(otherGodName + ".Location.Z", Integer.valueOf(targetLocation.getBlockZ()));
-		this.questsConfig.set(otherGodName + ".Amount", godName);
-		this.questsConfig.set(otherGodName + ".TargetType", questTargetType);
-		this.questsConfig.set(otherGodName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(otherGodName + ".Progress", null);
-		this.questsConfig.set(otherGodName + ".CreatedTime", formatter.format(thisDate));
-
-		save();
-
-		Gods.instance().log(godName + " issued a quest: Kill " + questAmount + " non-believers!");
-
-		return true;
+		return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 	}
 
 	private boolean generatePilgrimageQuest(String godName)
 	{
 		String questTargetType = generateHolyMountainName();
-		int questAmount = 0;
-		int questMaxDuration = 0;
 		Date thisDate = new Date();
 		String pattern = "HH:mm dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		QUESTTYPE questType = QUESTTYPE.PILGRIMAGE;
-		questAmount = 1;
-		questMaxDuration = 15 + this.random.nextInt(10);
+		int questMaxDuration = 15 + this.random.nextInt(10);
 
 		Set<UUID> thisGodOnlineBelievers = BelieverManager.instance().getOnlineBelieversForGod(godName);
-		if (thisGodOnlineBelievers.size() < questAmount)
+		if (thisGodOnlineBelievers.isEmpty())
 		{
-			Gods.instance().logDebug("thisGodOnlineBelievers.size() < questAmount");
+			Gods.instance().logDebug("No online believers for a pilgrimage quest for " + godName);
 			return false;
 		}
 
 		UUID randomId = (UUID) thisGodOnlineBelievers.toArray()[this.random.nextInt(thisGodOnlineBelievers.size())];
-
-		Location believerPosition = Gods.instance().getServer().getPlayer(randomId).getLocation();
-
-		Location targetLocation = getLocationForPilgrimageQuest(believerPosition.getWorld().getName(), 500, 2000, believerPosition);
-
-		if (targetLocation == null)
+		Player believer = Gods.instance().getServer().getPlayer(randomId);
+		if (believer == null)
 		{
-			Gods.instance().logDebug("targetLocation == nul");
 			return false;
 		}
 
-		this.setQuestTarget(godName, targetLocation);
+		Block chestBlock = findPilgrimageChestBlock(believer.getWorld(), 500, 2000, believer.getLocation());
+		if (chestBlock == null)
+		{
+			return false;
+		}
 
-		// Setup the chest
-		setupPilgrimageQuest(targetLocation, godName, GodManager.instance().getDivineForceForGod(godName));
+		List<ItemStack> rewards = getRewardsForQuestCompletion(200 + this.random.nextInt(150));
+		Material groundType = chestBlock.getRelative(BlockFace.DOWN).getType();
+
+		if (!placePilgrimageChest(chestBlock, rewards))
+		{
+			return false;
+		}
+
+		Location targetLocation = chestBlock.getLocation();
+
+		this.setQuestTarget(godName, targetLocation);
 
 		this.questsConfig.set(godName + ".Type", questType.toString());
 		this.questsConfig.set(godName + ".TargetType", questTargetType);
@@ -485,6 +306,7 @@ public class QuestManager
 		this.questsConfig.set(godName + ".Location.X", Integer.valueOf(targetLocation.getBlockX()));
 		this.questsConfig.set(godName + ".Location.Y", Integer.valueOf(targetLocation.getBlockY()));
 		this.questsConfig.set(godName + ".Location.Z", Integer.valueOf(targetLocation.getBlockZ()));
+		this.questsConfig.set(godName + ".Location.Ground", groundType.name());
 		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
 		this.questsConfig.set(godName + ".Progress", null);
 		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
@@ -496,83 +318,66 @@ public class QuestManager
 		return true;
 	}
 
+	/**
+	 * Tries to give the god a new quest. Only quest types that can be completed are generated. Every attempt counts as the god's last quest time, so a failed
+	 * attempt waits as long as a successful one before the next try.
+	 */
 	public boolean generateQuest(String godName)
 	{
-		boolean newQuest = false;
-		int t = 0;
-
 		if (hasQuest(godName))
 		{
 			return false;
 		}
 
-		do
+		List<QUESTTYPE> questTypes = new ArrayList<QUESTTYPE>();
+
+		if (GodsConfiguration.instance().isPilgrimageQuestsEnabled())
 		{
-			switch (this.random.nextInt(6))
+			questTypes.add(QUESTTYPE.PILGRIMAGE);
+		}
+		if (GodsConfiguration.instance().isSlayQuestsEnabled())
+		{
+			questTypes.add(QUESTTYPE.SLAY);
+		}
+		if (GodsConfiguration.instance().isSacrificeQuestsEnabled() && GodsConfiguration.instance().isSacrificesEnabled())
+		{
+			questTypes.add(QUESTTYPE.ITEMSACRIFICE);
+		}
+		if (GodsConfiguration.instance().isGiveItemsQuestsEnabled() && GodsConfiguration.instance().isBiblesEnabled())
+		{
+			questTypes.add(QUESTTYPE.GIVEITEMS);
+		}
+
+		Collections.shuffle(questTypes, this.random);
+
+		boolean newQuest = false;
+
+		for (QUESTTYPE questType : questTypes)
+		{
+			newQuest = switch (questType)
 			{
-			case 0:
-				if (GodsConfiguration.instance().isPilgrimageQuestsEnabled())
-				{
-					newQuest = generatePilgrimageQuest(godName);
-				}
-				break;
-			case 1:
-				if (GodsConfiguration.instance().isSlayQuestsEnabled())
-				{
-					newQuest = generateSlayQuest(godName);
-				}
-				break;
-			case 2:
-				if ((GodsConfiguration.instance().isSacrificeQuestsEnabled()) && (GodsConfiguration.instance().isSacrificesEnabled()))
-				{
-					newQuest = generateSacrificeQuest(godName);
-				}
-				break;
-			case 3:
-				if (GodsConfiguration.instance().isHolywarQuestsEnabled())
-				{
-					newQuest = generateHolyWarQuest(godName);
-				}
-				break;
-			case 4:
-				if (GodsConfiguration.instance().isGiveItemsQuestsEnabled())
-				{
-					GodManager.GodType godType = GodManager.instance().getDivineForceForGod(godName);
-					switch (godType)
-					{
-					case EVIL:
-						newQuest = generateGiveItemsQuest(godName, Material.POPPY);
-						break;
-					case SUN:
-						newQuest = generateGiveItemsQuest(godName, Material.STONE_AXE);
-						break;
-					case SEA:
-						newQuest = generateGiveItemsQuest(godName, Material.CAKE);
-					default:
-						break;
-					}
-				}
-				break;
-			case 5:
-				if (GodsConfiguration.instance().isSlayDragonQuestsEnabled())
-				{
-					newQuest = generateSlayDragonQuest(godName);
-				}
+			case PILGRIMAGE -> generatePilgrimageQuest(godName);
+			case SLAY -> generateSlayQuest(godName);
+			case ITEMSACRIFICE -> generateSacrificeQuest(godName);
+			case GIVEITEMS -> generateGiveItemsQuest(godName);
+			default -> false;
+			};
+
+			if (newQuest)
+			{
 				break;
 			}
-
-			t++;
 		}
-		while ((!newQuest) && (t < 10));
+
+		GodManager.instance().setTimeSinceLastQuest(godName);
 
 		if (newQuest)
 		{
 			godSayNewQuest(godName);
-			GodManager.instance().setTimeSinceLastQuest(godName);
 		}
 		else
 		{
-			Gods.instance().logDebug("Could not generate any quest");
+			Gods.instance().logDebug("Could not generate any quest for " + godName);
 		}
 
 		return newQuest;
@@ -581,15 +386,13 @@ public class QuestManager
 	private boolean generateSacrificeQuest(String godName)
 	{
 		String questTargetType = "NONE";
-		int questAmount = 0;
-		int questMaxDuration = 0;
 		Date thisDate = new Date();
 		String pattern = "HH:mm dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		QUESTTYPE questType = QUESTTYPE.ITEMSACRIFICE;
-		questAmount = 1 + this.random.nextInt(1 + BelieverManager.instance().getOnlineBelieversForGod(godName).size());
-		questMaxDuration = (1 + this.random.nextInt(5)) * questAmount;
+		int questAmount = 1 + this.random.nextInt(1 + BelieverManager.instance().getOnlineBelieversForGod(godName).size());
+		int questMaxDuration = (1 + this.random.nextInt(5)) * questAmount;
 
 		switch (this.random.nextInt(10))
 		{
@@ -619,8 +422,10 @@ public class QuestManager
 			break;
 		case 8:
 			questTargetType = Material.BOW.name();
-		case 9:
+			break;
+		default:
 			questTargetType = Material.APPLE.name();
+			break;
 		}
 
 		this.questsConfig.set(godName + ".Type", questType.toString());
@@ -637,66 +442,18 @@ public class QuestManager
 		return true;
 	}
 
-	private boolean generateSlayDragonQuest(String godName)
-	{
-		String questTargetType = generateHolyMountainName();
-		int questAmount = 0;
-		int questMaxDuration = 0;
-		Date thisDate = new Date();
-		String pattern = "HH:mm dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-
-		QUESTTYPE questType = QUESTTYPE.SLAYDRAGON;
-		questAmount = 1;
-		questMaxDuration = 15 + this.random.nextInt(10);
-
-		Set<UUID> thisGodOnlineBelievers = BelieverManager.instance().getOnlineBelieversForGod(godName);
-		if (thisGodOnlineBelievers.size() < questAmount)
-		{
-			return false;
-		}
-		Location believerPosition = Gods.instance().getServer().getPlayer((UUID) thisGodOnlineBelievers.toArray()[this.random.nextInt(thisGodOnlineBelievers.size())]).getLocation();
-
-		Location targetLocation = getLocationForSlayDragonQuest(believerPosition.getWorld().getName(), 500, 2000, believerPosition);
-		if (targetLocation == null)
-		{
-			return false;
-		}
-		hashVector(targetLocation);
-
-		this.setQuestTarget(godName, targetLocation);
-
-		this.questsConfig.set(godName + ".Type", questType.toString());
-		this.questsConfig.set(godName + ".TargetType", questTargetType);
-		this.questsConfig.set(godName + ".Location.World", targetLocation.getWorld().getName());
-		this.questsConfig.set(godName + ".Location.X", Integer.valueOf(targetLocation.getBlockX()));
-		this.questsConfig.set(godName + ".Location.Y", Integer.valueOf(targetLocation.getBlockY()));
-		this.questsConfig.set(godName + ".Location.Z", Integer.valueOf(targetLocation.getBlockZ()));
-		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(godName + ".Progress", null);
-		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
-
-		save();
-
-		Gods.instance().log(godName + " issued a quest: Slay dragon quest to somewhere!");
-
-		return true;
-	}
-
 	private boolean generateSlayQuest(String godName)
 	{
-		int questAmount = 0;
-		int questMaxDuration = 0;
 		Date thisDate = new Date();
 		String pattern = "HH:mm dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		QUESTTYPE questType = QUESTTYPE.SLAY;
-		questAmount = 1 + this.random.nextInt(3) + BelieverManager.instance().getOnlineBelieversForGod(godName).size();
-		questMaxDuration = (5 + this.random.nextInt(5)) * questAmount;
+		int questAmount = 1 + this.random.nextInt(3) + BelieverManager.instance().getOnlineBelieversForGod(godName).size();
+		int questMaxDuration = (5 + this.random.nextInt(5)) * questAmount;
 
 		EntityType holyCreature = GodManager.instance().getHolyMobTypeForGod(godName);
-		EntityType targetType = EntityType.UNKNOWN;
+		EntityType targetType = null;
 		do
 		{
 			switch (this.random.nextInt(10))
@@ -716,15 +473,12 @@ public class QuestManager
 			case 4:
 				targetType = EntityType.PIG;
 				break;
-			case 5:
-			case 6:
-			case 7:
-			case 8:
-			case 9:
+			default:
 				targetType = GodManager.instance().getUnholyMobTypeForGod(godName);
+				break;
 			}
 		}
-		while (targetType == holyCreature);
+		while (targetType == null || targetType == holyCreature);
 
 		this.questsConfig.set(godName + ".Type", questType.toString());
 		this.questsConfig.set(godName + ".Amount", Integer.valueOf(questAmount));
@@ -740,445 +494,127 @@ public class QuestManager
 		return true;
 	}
 
-	public Date getGlobalQuestCreatedTime()
-	{
-		String pattern = "HH:mm dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-		String startTime = this.questsConfig.getString("Global.CreatedTime");
-		Date startTimeDate = null;
-		try
-		{
-			startTimeDate = formatter.parse(startTime);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().log("Invalid global quest created date. Reset.");
-			startTimeDate = new Date();
-			startTimeDate.setTime(0L);
-		}
-		return startTimeDate;
-	}
-
-	public Location getGlobalQuestLocation()
-	{
-		int x = 0;
-		int y;
-		int z;
-		String worldName;
-
-		try
-		{
-			x = this.questsConfig.getInt("Global.Location.X");
-			y = this.questsConfig.getInt("Global.Location.Y");
-			z = this.questsConfig.getInt("Global.Location.Z");
-			worldName = this.questsConfig.getString("Global.Location.World");
-		}
-		catch (Exception ex)
-		{
-			return null;
-		}
-
-		return new Location(Gods.instance().getServer().getWorld(worldName), x, y, z);
-	}
-
-	public long getGlobalQuestLockedTime()
-	{
-		String pattern = "HH:mm:ss dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-		Date lockedTimeDate = null;
-		long time = new Date().getTime();
-		try
-		{
-			String lockedTime = this.questsConfig.getString("Global.LockedTime");
-			lockedTimeDate = formatter.parse(lockedTime);
-		}
-		catch (Exception ex)
-		{
-			return -1L;
-		}
-		return time - lockedTimeDate.getTime();
-	}
-
-	public int getGlobalQuestMaxDuration()
-	{
-		int value = this.questsConfig.getInt("Global.MaxDuration");
-
-		return value;
-	}
-
-	public Material getGlobalQuestTargetItemType()
-	{
-		Material type = null;
-		try
-		{
-			type = Material.getMaterial(this.questsConfig.getString("Global.ItemType").toUpperCase());
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().logDebug("Could not recognize quest type '" + this.questsConfig.getString("Global.ItemType") + "': " + ex.getMessage());
-			type = Material.AIR;
-		}
-		return type;
-	}
-
-	public String getGlobalQuestTargetType()
-	{
-		String value = this.questsConfig.getString("Global.TargetType");
-
-		return value;
-	}
-
-	public QUESTTYPE getGlobalQuestType()
-	{
-		QUESTTYPE type = null;
-		try
-		{
-			type = QUESTTYPE.valueOf(this.questsConfig.getString("Global.Type").toUpperCase());
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().logDebug("Could not recognize quest type '" + this.questsConfig.getString("Global.Type") + "': " + ex.getMessage());
-			type = QUESTTYPE.NONE;
-		}
-		return type;
-	}
-
-	Location getLocationForHolywarQuest(String worldName, int minDist, int maxDist, Location center)
-	{
-		int run = 0;
-		boolean placed = false;
-		Block target = null;
-
-		List<Material> defaultspawnblocks = new ArrayList<Material>();
-		defaultspawnblocks.add(Material.GRASS_BLOCK);
-
-		minDist = 1;
-		maxDist = 2000;
-		do
-		{
-			run++;
-
-			int minLevel = 60;
-			int maxLevel = 80;
-			int x;
-			int z;
-			do
-			{
-				x = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockX();
-				z = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockZ();
-			}
-			while ((Math.abs(x - center.getBlockX()) < minDist) || (Math.abs(z - center.getBlockZ()) < minDist));
-			int y;
-			do
-			{
-				y = this.random.nextInt(maxLevel);
-			}
-			while (
-
-			y < minLevel);
-			World world = Gods.instance().getServer().getWorld(worldName);
-			target = world.getBlockAt(x, y, z);
-			if ((target.getType() == Material.AIR) && (target.getRelative(BlockFace.NORTH).getType() == Material.AIR) && (target.getRelative(BlockFace.SOUTH).getType() == Material.AIR) && (target.getRelative(BlockFace.WEST).getType() == Material.AIR)
-					&& (target.getRelative(BlockFace.EAST).getType() == Material.AIR))
-			{
-				target = world.getBlockAt(x, y - 1, z);
-				if (defaultspawnblocks.contains(target.getType()))
-				{
-					target.setType(Material.CACTUS);
-
-					target = world.getBlockAt(x, y, z);
-
-					placed = true;
-				}
-			}
-		}
-		while ((!placed) && (run < 100));
-		if (run >= 100)
-		{
-			Gods.instance().log("Holy battle ground generation FAILED");
-			return null;
-		}
-		return target.getLocation();
-	}
-
-	Location getLocationForLostHolyLand(String worldName, int minDist, int maxDist, Location center)
-	{
-		int run = 0;
-		boolean placed = false;
-		Block target = null;
-
-		List<Material> defaultspawnblocks = new ArrayList<Material>();
-		defaultspawnblocks.add(Material.GRASS_BLOCK);
-
-		minDist = 1;
-		maxDist = 2000;
-		do
-		{
-			run++;
-
-			int minLevel = 60;
-			int maxLevel = 80;
-			int x;
-			int z;
-			do
-			{
-				x = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockX();
-				z = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockZ();
-			}
-			while ((Math.abs(x - center.getBlockX()) < minDist) || (Math.abs(z - center.getBlockZ()) < minDist));
-			int y;
-			do
-			{
-				y = this.random.nextInt(maxLevel);
-			}
-			while (
-
-			y < minLevel);
-			World world = Gods.instance().getServer().getWorld(worldName);
-			target = world.getBlockAt(x, y, z);
-			if ((target.getType() == Material.AIR) && (target.getRelative(BlockFace.NORTH).getType() == Material.AIR) && (target.getRelative(BlockFace.SOUTH).getType() == Material.AIR) && (target.getRelative(BlockFace.WEST).getType() == Material.AIR)
-					&& (target.getRelative(BlockFace.EAST).getType() == Material.AIR))
-			{
-				target = world.getBlockAt(x, y - 1, z);
-				if (defaultspawnblocks.contains(target.getType()))
-				{
-					//setDominationColor(target.getRelative(BlockFace.DOWN), ChatColor.WHITE);
-
-					target = world.getBlockAt(x, y, z);
-
-					placed = true;
-				}
-			}
-		}
-		while ((!placed) && (run < 100));
-
-		if (run >= 100)
-		{
-			Gods.instance().log("Lost Holy Land claim generation FAILED");
-			return null;
-		}
-
-		return target.getLocation();
-	}
-
+	/**
+	 * Finds a spot for a pilgrimage chest between minDist and maxDist blocks from center, or returns null. Returns the location where the chest goes.
+	 */
 	public Location getLocationForPilgrimageQuest(String worldName, int minDist, int maxDist, Location center)
 	{
-		int run = 0;
+		Block chestBlock = findPilgrimageChestBlock(Gods.instance().getServer().getWorld(worldName), minDist, maxDist, center);
 
-		Block target = null;
-		boolean canBuild = true;
-
-		List<Material> defaultspawnblocks = new ArrayList<Material>();
-		defaultspawnblocks.add(Material.GRASS_BLOCK);
-
-		List<Biome> biomeTypes = new ArrayList<Biome>();
-		biomeTypes.add(Biome.FLOWER_FOREST);
-		biomeTypes.add(Biome.ICE_SPIKES);
-		biomeTypes.add(Biome.DESERT);
-		biomeTypes.add(Biome.MUSHROOM_FIELDS);
-		biomeTypes.add(Biome.JUNGLE);
-		biomeTypes.add(Biome.TAIGA);
-		biomeTypes.add(Biome.OLD_GROWTH_SPRUCE_TAIGA);
-
-		World world = Gods.instance().getServer().getWorld(worldName);
-
-		do
-		{
-			run++;
-
-			int minLevel = 80;
-			int x;
-			int z;
-			int y;
-			do
-			{
-				x = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockX();
-				z = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockZ();
-				y = world.getHighestBlockYAt(x, z) - 1;
-
-				if (getWorldGuard() != null)
-				{
-					BlockVector3 location = BlockVector3.at(x, y, z);
-								
-					RegionContainer regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
-					RegionManager regionManager = regionContainer.get(BukkitAdapter.adapt(world));
-					
-					canBuild = regionManager.getApplicableRegions(location).size() == 0;
-				}
-			}
-			while ((Math.abs(x - center.getBlockX()) < minDist) || (Math.abs(z - center.getBlockZ()) < minDist) || (y < minLevel) || !canBuild);
-
-			target = world.getBlockAt(x, y, z);
-
-			if ((biomeTypes.contains(target.getBiome())) && (world.getBlockAt(x, y + 1, z).getType() == Material.AIR))
-			{
-				// target = world.getBlockAt(x, y - 1, z);
-
-				if ((target.getBiome() == Biome.ICE_SPIKES) && (defaultspawnblocks.contains(target.getType())))
-				{
-					int flatBlocks = 0;
-					if ((defaultspawnblocks.contains(target.getRelative(BlockFace.NORTH).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-					{
-						flatBlocks++;
-					}
-					if ((defaultspawnblocks.contains(target.getRelative(BlockFace.SOUTH).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-					{
-						flatBlocks++;
-					}
-					if ((defaultspawnblocks.contains(target.getRelative(BlockFace.EAST).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-					{
-						flatBlocks++;
-					}
-					if ((defaultspawnblocks.contains(target.getRelative(BlockFace.SOUTH).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-					{
-						flatBlocks++;
-					}
-
-					if (flatBlocks < 4)
-					{
-						target = null;
-					}
-				}
-			}
-		}
-		while (target == null && run < 1000);
-
-		if (run >= 1000)
-		{
-			Gods.instance().log("Pilgrimage Holy mountain generation FAILED in " + worldName);
-			return null;
-		}
-
-		Gods.instance().logDebug("Pilgrimage to Holy mountain in " + run + " runs: " + target.getLocation().getBlockX() + "," + target.getLocation().getBlockY() + "," + target.getLocation().getBlockZ());
-
-		return target.getRelative(BlockFace.UP).getLocation();
+		return (chestBlock == null) ? null : chestBlock.getLocation();
 	}
 
-	public Location getLocationForSlayDragonQuest(String worldName, int minDist, int maxDist, Location center)
+	/**
+	 * Looks for flat, open, unprotected ground in a fitting biome of an overworld. Tries at most MAX_LOCATION_ATTEMPTS spots and loads at most
+	 * MAX_CHUNK_LOADS chunks that weren't loaded already. Returns the block where the chest goes, or null.
+	 */
+	private Block findPilgrimageChestBlock(World world, int minDist, int maxDist, Location center)
 	{
-		int run = 0;
-
-		Block target = null;
-
-		List<Material> defaultspawnblocks = new ArrayList<Material>();
-		defaultspawnblocks.add(Material.GRASS_BLOCK);
-
-		List<Biome> biomeTypes = new ArrayList<Biome>();
-		biomeTypes.add(Biome.FLOWER_FOREST);
-		biomeTypes.add(Biome.ICE_SPIKES);
-		biomeTypes.add(Biome.DESERT);
-		biomeTypes.add(Biome.MUSHROOM_FIELDS);
-		biomeTypes.add(Biome.JUNGLE);
-		biomeTypes.add(Biome.TAIGA);
-		biomeTypes.add(Biome.OLD_GROWTH_SPRUCE_TAIGA);
-
-		World world = Gods.instance().getServer().getWorld(worldName);
-		do
+		if (world == null || world.getEnvironment() != World.Environment.NORMAL || !Gods.instance().isEnabledInWorld(world))
 		{
-			run++;
-
-			int minLevel = 80;
-			int x;
-			int z;
-			int y;
-			do
-			{
-				x = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockX();
-				z = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockZ();
-				y = world.getHighestBlockYAt(x, z);
-
-				if (getWorldGuard() == null)
-				{
-					// getWorldGuard().getRegionManager(world).getApplicableRegions(new
-					// Location(world, x, y, z)).size();
-				}
-			}
-			while ((Math.abs(x - center.getBlockX()) < minDist) || (Math.abs(z - center.getBlockZ()) < minDist) || (y < minLevel));
-			target = world.getBlockAt(x, y, z);
-			if ((biomeTypes.contains(target.getBiome())) && (world.getBlockAt(x, y + 1, z).getType() == Material.AIR))
-			{
-				int flatBlocks = 0;
-				if ((defaultspawnblocks.contains(target.getRelative(BlockFace.NORTH).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-				{
-					flatBlocks++;
-				}
-				if ((defaultspawnblocks.contains(target.getRelative(BlockFace.SOUTH).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-				{
-					flatBlocks++;
-				}
-				if ((defaultspawnblocks.contains(target.getRelative(BlockFace.EAST).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-				{
-					flatBlocks++;
-				}
-				if ((defaultspawnblocks.contains(target.getRelative(BlockFace.SOUTH).getType())) && (target.getRelative(BlockFace.NORTH).getRelative(BlockFace.UP).getType() == Material.AIR))
-				{
-					flatBlocks++;
-				}
-				if (flatBlocks < 4)
-				{
-					target = null;
-				}
-			}
-		}
-		while ((target == null) && (run < 1000));
-		if (run >= 1000)
-		{
-			Gods.instance().log("Pilgrimage Holy mountain generation FAILED in " + worldName);
 			return null;
 		}
-		Gods.instance().logDebug("Pilgrimage to Holy mountain in " + run + " runs: " + target.getLocation().getBlockX() + "," + target.getLocation().getBlockY() + "," + target.getLocation().getBlockZ());
 
-		return target.getRelative(BlockFace.UP).getLocation();
+		int chunkLoads = 0;
+
+		for (int run = 1; run <= MAX_LOCATION_ATTEMPTS; run++)
+		{
+			double angle = this.random.nextDouble() * 2.0D * Math.PI;
+			double distance = minDist + this.random.nextDouble() * (maxDist - minDist);
+
+			int x = center.getBlockX() + (int) (Math.cos(angle) * distance);
+			int z = center.getBlockZ() + (int) (Math.sin(angle) * distance);
+
+			// Keep the spot and its four neighbours inside one chunk
+			x = (x & ~15) | (1 + this.random.nextInt(14));
+			z = (z & ~15) | (1 + this.random.nextInt(14));
+
+			if (!world.isChunkLoaded(x >> 4, z >> 4))
+			{
+				if (chunkLoads >= MAX_CHUNK_LOADS)
+				{
+					continue;
+				}
+				chunkLoads++;
+			}
+
+			Block ground = world.getHighestBlockAt(x, z, HeightMap.MOTION_BLOCKING_NO_LEAVES);
+
+			// Step down through snow layers and plants that count as the top block
+			for (int i = 0; i < 2 && isOpenSpace(ground) && ground.getY() > world.getMinHeight(); i++)
+			{
+				ground = ground.getRelative(BlockFace.DOWN);
+			}
+
+			if (ground.getY() <= world.getSeaLevel() || ground.getY() >= world.getMaxHeight() - 2)
+			{
+				continue;
+			}
+
+			if (!PILGRIMAGE_BIOMES.contains(ground.getBiome()) || !isFlatGround(ground))
+			{
+				continue;
+			}
+
+			Block chestBlock = ground.getRelative(BlockFace.UP);
+
+			if (isProtectedByWorldGuard(world, chestBlock))
+			{
+				continue;
+			}
+
+			Gods.instance().logDebug("Pilgrimage Holy mountain found in " + run + " runs (" + chunkLoads + " chunk loads): " + chestBlock.getX() + "," + chestBlock.getY() + "," + chestBlock.getZ());
+
+			return chestBlock;
+		}
+
+		Gods.instance().log("Pilgrimage Holy mountain generation FAILED in " + world.getName());
+
+		return null;
 	}
 
-	Location getPositionForAncientTemple(String worldName, int minDist, int maxDist, Location center)
+	// Ground in the list with open space above it, and the same for its four neighbours
+	private static boolean isFlatGround(Block ground)
 	{
-		int run = 0;
-		Block target = null;
-		List<Material> defaultspawnblocks = new ArrayList<Material>();
-		defaultspawnblocks.add(Material.END_PORTAL_FRAME);
-		do
+		if (!PILGRIMAGE_GROUND.contains(ground.getType()) || !isOpenSpace(ground.getRelative(BlockFace.UP)))
 		{
-			run++;
+			return false;
+		}
 
-			int minLevel = 4;
-			int maxLevel = 50;
-			int x;
-			int z;
-			do
+		for (BlockFace face : new BlockFace[] { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST })
+		{
+			Block neighbour = ground.getRelative(face);
+			if (!PILGRIMAGE_GROUND.contains(neighbour.getType()) || !isOpenSpace(neighbour.getRelative(BlockFace.UP)))
 			{
-				x = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockX();
-				z = this.random.nextInt(maxDist * 2) - maxDist + center.getBlockZ();
-			}
-			while ((Math.abs(x - center.getBlockX()) < minDist) || (Math.abs(z - center.getBlockZ()) < minDist));
-			int y;
-			do
-			{
-				y = this.random.nextInt(maxLevel);
-			}
-			while (
-
-			y < minLevel);
-			World world = Gods.instance().getServer().getWorld(worldName);
-			target = world.getBlockAt(x, y, z);
-			if (target.getType() == Material.AIR)
-			{
-				target = world.getBlockAt(x, y - 1, z);
-				if (defaultspawnblocks.contains(target.getType()))
-				{
-					target = world.getBlockAt(x, y, z);
-				}
+				return false;
 			}
 		}
-		while ((target != null) && (run < 1000));
-		if (run >= 1000)
-		{
-			Gods.instance().log("Ancient temple chest generation FAILED");
-			return null;
-		}
-		Gods.instance().logDebug("Ancient temple chest generated in " + run + " runs");
 
-		return target.getLocation();
+		return true;
+	}
+
+	// Air, or something like grass or a snow layer that a chest may replace (but not water or lava)
+	private static boolean isOpenSpace(Block block)
+	{
+		Material type = block.getType();
+
+		return type.isAir() || (Tag.REPLACEABLE.isTagged(type) && !block.isLiquid() && type != Material.WATER && type != Material.LAVA);
+	}
+
+	private boolean isProtectedByWorldGuard(World world, Block block)
+	{
+		if (getWorldGuard() == null)
+		{
+			return false;
+		}
+
+		RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+		if (regionManager == null)
+		{
+			return false;
+		}
+
+		return regionManager.getApplicableRegions(BlockVector3.at(block.getX(), block.getY(), block.getZ())).size() > 0;
 	}
 
 	public int getQuestAmountForGod(String godName)
@@ -1207,30 +643,34 @@ public class QuestManager
 		return startTimeDate;
 	}
 
+	/**
+	 * The quest target of the god, or null if it has none or its world isn't loaded.
+	 */
 	public Location getQuestLocation(String godName)
 	{
-		int x = 0;
-		int y = 0;
-		int z = 0;
-		String worldName;
+		Location location = getStoredQuestLocation(godName);
 
-		try
-		{
-			worldName = this.questsConfig.getString(godName + ".Location.World");
-
-			if (worldName == null)
-			{
-				return null;
-			}
-
-			x = this.questsConfig.getInt(godName + ".Location.X");
-			y = this.questsConfig.getInt(godName + ".Location.Y");
-			z = this.questsConfig.getInt(godName + ".Location.Z");
-		}
-		catch (Exception ex)
+		if (location == null || location.getWorld() == null)
 		{
 			return null;
 		}
+
+		return location;
+	}
+
+	// The stored quest target; its world is null if that world isn't loaded
+	private Location getStoredQuestLocation(String godName)
+	{
+		String worldName = this.questsConfig.getString(godName + ".Location.World");
+
+		if (worldName == null)
+		{
+			return null;
+		}
+
+		int x = this.questsConfig.getInt(godName + ".Location.X");
+		int y = this.questsConfig.getInt(godName + ".Location.Y");
+		int z = this.questsConfig.getInt(godName + ".Location.Z");
 
 		return new Location(Gods.instance().getServer().getWorld(worldName), x, y, z);
 	}
@@ -1251,35 +691,7 @@ public class QuestManager
 
 	String getQuestTargetGod(Location location)
 	{
-		int hash = hashVector(location);
-		String godName;
-
-		try
-		{
-			godName = this.questsConfig.getString("QuestTargets." + hash + ".God");
-		}
-		catch (Exception ex)
-		{
-			return null;
-		}
-
-		return godName;
-	}
-
-	String getQuestTargetLockedGodName(Location location)
-	{
-		String playerName = null;
-
-		int hash = hashVector(location);
-		try
-		{
-			playerName = this.questsConfig.getString("QuestTargets." + hash + ".LockedBy");
-		}
-		catch (Exception ex)
-		{
-			return null;
-		}
-		return playerName;
+		return this.questsConfig.getString("QuestTargets." + hashVector(location) + ".God");
 	}
 
 	public String getQuestTargetTypeForGod(String godName)
@@ -1289,78 +701,104 @@ public class QuestManager
 		return value;
 	}
 
-	public QUESTTYPE getQuestTypeForGod(String godName)
+	// The quest target as the gods should say it: mob and item names from the language file, the holy book title, ...
+	private String getQuestTargetDisplayName(String godName, QUESTTYPE questType)
 	{
-		QUESTTYPE type = null;
+		String targetType = getQuestTargetTypeForGod(godName);
+
 		try
 		{
-			type = QUESTTYPE.valueOf(this.questsConfig.getString(godName + ".Type").toUpperCase());
+			switch (questType)
+			{
+			case SLAY:
+				return LanguageManager.instance().getMobTypeName(EntityType.valueOf(targetType.toUpperCase()));
+			case ITEMSACRIFICE:
+			case BURNBIBLES:
+				Material material = Material.matchMaterial(targetType);
+				String itemName = (material == null) ? null : LanguageManager.instance().getItemTypeName(material);
+				return (itemName == null) ? targetType : itemName;
+			case GIVEITEMS:
+				String bibleTitle = HolyBookManager.instance().getBibleTitle(godName);
+				return (bibleTitle == null) ? targetType : bibleTitle;
+			default:
+				return targetType;
+			}
 		}
-		catch (Exception ex)
+		catch (RuntimeException ex)
 		{
-			Gods.instance().logDebug("Could not recognize quest type '" + this.questsConfig.getString(new StringBuilder().append(godName).append(".Type").toString()) + "' for " + godName + ": " + ex.getMessage());
-			type = QUESTTYPE.NONE;
+			return targetType;
 		}
-		return type;
 	}
 
-	public Set<Material> getRewardItems()
+	public QUESTTYPE getQuestTypeForGod(String godName)
 	{
-		return this.rewardValues.keySet();
+		String typeName = this.questsConfig.getString(godName + ".Type");
+		if (typeName == null)
+		{
+			return QUESTTYPE.NONE;
+		}
+
+		try
+		{
+			return QUESTTYPE.valueOf(typeName.toUpperCase());
+		}
+		catch (IllegalArgumentException ex)
+		{
+			Gods.instance().logDebug("Could not recognize quest type '" + typeName + "' for " + godName + ": " + ex.getMessage());
+			return QUESTTYPE.NONE;
+		}
 	}
 
+	/**
+	 * Random reward items worth about power in total.
+	 */
 	public List<ItemStack> getRewardsForQuestCompletion(int power)
 	{
 		List<ItemStack> rewards = new ArrayList<ItemStack>();
-		while (power > 0)
-		{
-			int r = this.random.nextInt(this.rewardValues.size());
 
-			int value = ((Integer) this.rewardValues.values().toArray()[r]).intValue();
-			if ((value > 0) && (value <= power))
+		if (this.rewardValues.isEmpty())
+		{
+			resetItemRewardValues();
+		}
+
+		List<Map.Entry<Material, Integer>> rewardItems = new ArrayList<Map.Entry<Material, Integer>>();
+		for (Map.Entry<Material, Integer> entry : this.rewardValues.entrySet())
+		{
+			if (entry.getKey() != null && entry.getKey().isItem() && entry.getValue() != null && entry.getValue() > 0)
 			{
-				ItemStack items = new ItemStack((Material) this.rewardValues.keySet().toArray()[r], 1);
-				rewards.add(items);
-				power -= value;
+				rewardItems.add(entry);
 			}
 		}
+
+		if (rewardItems.isEmpty())
+		{
+			return rewards;
+		}
+
+		for (int t = 0; power > 0 && t < MAX_REWARD_ROLLS; t++)
+		{
+			Map.Entry<Material, Integer> rewardItem = rewardItems.get(this.random.nextInt(rewardItems.size()));
+
+			if (rewardItem.getValue() <= power)
+			{
+				rewards.add(new ItemStack(rewardItem.getKey(), 1));
+				power -= rewardItem.getValue();
+			}
+		}
+
 		return rewards;
 	}
 
 	public List<ItemStack> getRewardsForQuestCompletion(String godName)
 	{
-		List<ItemStack> rewards = new ArrayList<ItemStack>();
-
-		int power = (int) GodManager.instance().getGodPower(godName);
-		int t = 0;
-
-		while (power > 0 && t++ < 100)
-		{
-			int r = this.random.nextInt(this.rewardValues.size());
-
-			int value = (Integer) this.rewardValues.values().toArray()[r];
-
-			if ((value > 0) && (value <= power))
-			{
-				ItemStack items = new ItemStack((Material) this.rewardValues.keySet().toArray()[r], 1);
-				rewards.add(items);
-				power -= value;
-			}
-		}
-
-		return rewards;
-	}
-
-	public int getRewardValue(Material rewardItem)
-	{
-		return this.rewardValues.get(rewardItem).intValue();
+		return getRewardsForQuestCompletion((int) GodManager.instance().getGodPower(godName));
 	}
 
 	public WorldGuardPlugin getWorldGuard()
 	{
 		Plugin worldGuardPlugin = Gods.instance().getServer().getPluginManager().getPlugin("WorldGuard");
 
-		if (Gods.instance() == null || !(worldGuardPlugin instanceof WorldGuardPlugin))
+		if (!(worldGuardPlugin instanceof WorldGuardPlugin))
 		{
 			return null;
 		}
@@ -1368,766 +806,188 @@ public class QuestManager
 		return (WorldGuardPlugin) worldGuardPlugin;
 	}
 
-	public void godSayFailed(String godName)
+	// Sets $Amount and $Type for a quest message. LanguageManager is shared, so call it right before speaking.
+	private void setQuestSpeechValues(String godName, QUESTTYPE questType, int amount)
 	{
-		int amount = getQuestAmountForGod(godName);
-		int progress = getQuestProgressForGod(godName);
-		String targetType = getQuestTargetTypeForGod(godName);
+		LanguageManager.instance().setAmount(amount);
 
-		LanguageManager.instance().setAmount(amount - progress);
+		String targetName = getQuestTargetDisplayName(godName, questType);
 		try
 		{
-			LanguageManager.instance().setType(targetType);
+			LanguageManager.instance().setType((targetName == null) ? "" : targetName);
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
-		}
-
-		QUESTTYPE questType = getQuestTypeForGod(godName);
-
-		switch (questType)
-		{
-		case ITEMSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestFailed, 2 + this.random.nextInt(10));
-			break;
-		case SPREADLOVE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCrusadeQuestFailed, 2 + this.random.nextInt(10));
-			break;
-		case CRUSADE:
-		case DELIVERITEM:
-		case GIVEITEMS:
-		case HOLYWAR:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolyFeastQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case KILLBOSS:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveItemsQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case GIVEROSE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case NONE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimHolyLandQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case CLAIMHOLYLAND:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case BUILDALTARS:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case FIREWORKPARTY:
-		case HUMANSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case GETHOLYARTIFACT:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case MOBSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolywarQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case PILGRIMAGE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case SLAY:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		case SLAYDRAGON:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayDragonQuestFailed, 2 + this.random.nextInt(100));
-			break;
-		default:
-			break;
+			Gods.instance().logDebug(ex.getMessage());
 		}
 	}
 
-	public void GodSayNewGlobalQuest()
+	public void godSayFailed(String godName)
 	{
-		String questTargetType = getGlobalQuestTargetType();
+		QUESTTYPE questType = getQuestTypeForGod(godName);
+		LANGUAGESTRING message = questSpeech(questType, Phase.FAILED);
 
-		QUESTTYPE questType = getGlobalQuestType();
-		for (String godName : GodManager.instance().getOnlineGods())
+		if (message == null)
 		{
-			try
-			{
-				switch (questType)
-				{
-				case PILGRIMAGE:
-					LanguageManager.instance().setType(questTargetType);
-
-					LanguageManager.instance().setPlayerName(questTargetType);
-
-					GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestStarted, 2 + this.random.nextInt(100));
-
-					break;
-				case GETHOLYARTIFACT:
-					LanguageManager.instance().setType(questTargetType);
-
-					LanguageManager.instance().setPlayerName(questTargetType);
-
-					GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStarted, 2 + this.random.nextInt(100));
-
-					break;
-				case NONE:
-					LanguageManager.instance().setType(questTargetType);
-
-					GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStarted, 2 + this.random.nextInt(100));
-
-					break;
-				case MOBSACRIFICE:
-					LanguageManager.instance().setType(questTargetType);
-					GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolywarQuestStarted, 2 + this.random.nextInt(100));
-					break;
-				default:
-					break;
-				}
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().logDebug(ex.getStackTrace().toString());
-			}
+			return;
 		}
+
+		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName) - getQuestProgressForGod(godName));
+		GodManager.instance().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
 	}
 
 	private void godSayNewQuest(String godName)
 	{
-		int amount = getQuestAmountForGod(godName);
-		String questTargetType = getQuestTargetTypeForGod(godName);
-
 		QUESTTYPE questType = getQuestTypeForGod(godName);
+		LANGUAGESTRING message = questSpeech(questType, Phase.STARTED);
 
-		LanguageManager.instance().setAmount(amount);
-		try
+		if (message == null)
 		{
-			switch (questType)
-			{
-			case SPREADLOVE:
-				LanguageManager.instance().setType(LanguageManager.instance().getMobTypeName(EntityType.valueOf(questTargetType.toUpperCase())));
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCrusadeQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case GIVEITEMS:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBuildAltarsQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case GETHOLYARTIFACT:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case DELIVERITEM:
-			case NONE:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case KILLBOSS:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveItemsQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case CRUSADE:
-				LanguageManager.instance().setType(questTargetType);
-
-				break;
-			case HOLYWAR:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolyFeastQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case GIVEROSE:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case FIREWORKPARTY:
-			case HUMANSACRIFICE:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case MOBSACRIFICE:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolywarQuestStarted, 2 + this.random.nextInt(100));
-
-				GodManager.instance().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
-				break;
-			case BUILDALTARS:
-			case PILGRIMAGE:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestStarted, 2 + this.random.nextInt(100));
-
-				GodManager.instance().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
-				break;
-			case ITEMSACRIFICE:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case SLAY:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestStarted, 2 + this.random.nextInt(100));
-				break;
-			case SLAYDRAGON:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayDragonQuestStarted, 2 + this.random.nextInt(100));
-
-				GodManager.instance().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
-				break;
-			case CLAIMHOLYLAND:
-				LanguageManager.instance().setType(questTargetType);
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStarted, 2 + this.random.nextInt(100));
-
-				GodManager.instance().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.SacrificeHelp, ChatColor.AQUA, 150);
-				break;
-			default:
-				break;
-			}
+			return;
 		}
-		catch (Exception ex)
+
+		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName));
+		GodManager.instance().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
+
+		switch (questType)
 		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
+		case PILGRIMAGE:
+			GodManager.instance().sendInfoToBelievers(godName, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
+			break;
+		case ITEMSACRIFICE:
+			GodManager.instance().sendInfoToBelievers(godName, LANGUAGESTRING.SacrificeHelp, ChatColor.AQUA, 150);
+			break;
+		default:
+			break;
 		}
 	}
 
 	public void godSayProgress(String godName)
 	{
-		int amount = getQuestAmountForGod(godName);
-		int progress = getQuestProgressForGod(godName);
-		String targetType = getQuestTargetTypeForGod(godName);
-
-		LanguageManager.instance().setAmount(amount - progress);
-		try
-		{
-			LanguageManager.instance().setType(targetType);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
-		}
-
 		QUESTTYPE questType = getQuestTypeForGod(godName);
+		LANGUAGESTRING message = questSpeech(questType, Phase.PROGRESS);
 
-		switch (questType)
+		if (message == null)
 		{
-		case ITEMSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestProgress, 2 + this.random.nextInt(10));
-			break;
-		case CRUSADE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCrusadeQuestProgress, 2 + this.random.nextInt(10));
-			break;
-		case SPREADLOVE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCrusadeQuestProgress, 2 + this.random.nextInt(10));
-			break;
-		case DELIVERITEM:
-		case GIVEITEMS:
-		case HOLYWAR:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolyFeastQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case KILLBOSS:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveBiblesQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case GIVEROSE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case NONE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimHolyLandQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case CLAIMHOLYLAND:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case BUILDALTARS:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case FIREWORKPARTY:
-		case HUMANSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case GETHOLYARTIFACT:
-			break;
-		case MOBSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolywarQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case PILGRIMAGE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case SLAYDRAGON:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayDragonQuestProgress, 2 + this.random.nextInt(100));
-			break;
-		case SLAY:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestProgress, 2 + this.random.nextInt(100));
-		default:
-			break;
+			return;
 		}
+
+		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName) - getQuestProgressForGod(godName));
+		GodManager.instance().godSayToBelievers(godName, message, 2 + this.random.nextInt(10));
 	}
 
 	public void godSayStatus(String godName)
 	{
-		int amount = getQuestAmountForGod(godName);
-		int progress = getQuestProgressForGod(godName);
-		String targetType = getQuestTargetTypeForGod(godName);
-
-		LanguageManager.instance().setAmount(amount - progress);
-		try
-		{
-			LanguageManager.instance().setType(targetType);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
-		}
-
 		QUESTTYPE questType = getQuestTypeForGod(godName);
+		LANGUAGESTRING message = questSpeech(questType, Phase.STATUS);
+
+		if (message == null)
+		{
+			return;
+		}
+
+		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName) - getQuestProgressForGod(godName));
 
 		switch (questType)
 		{
-		case NONE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case ITEMSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case SPREADLOVE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case GIVEITEMS:
-			break;
-		case DELIVERITEM:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case CRUSADE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveItemsQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case HOLYWAR:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolyFeastQuestStatus, 2 + this.random.nextInt(100));
-			break;
-
-		case KILLBOSS:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveItemsQuestStatus, 2 + this.random.nextInt(100));
-			break;
-
-		case GIVEROSE:
-			if (this.random.nextInt(20) > 0)
-			{
-				return;
-			}
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestStatus, 2 + this.random.nextInt(100));
-			break;
-
-		/*
-		 * case PILGRIMAGE: { int delay = 2 + this.random.nextInt(100); if
-		 * (this.random.nextInt(6) == 0) { try {
-		 * LanguageManager.instance().setType(targetType); } catch (Exception ex) {
-		 * Gods.instance().logDebug(ex.getStackTrace().toString()); }
-		 * GodManager.instance().godSayToBelievers(godName,
-		 * LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus,
-		 * delay); }
-		 * 
-		 * for (UUID believerId :
-		 * BelieverManager.instance().getBelieversForGod(godName)) { if
-		 * (!BelieverManager.instance().isHunting(believerId)) { if
-		 * (this.random.nextInt(10) == 0) { Gods.instance().sendInfo(believerId,
-		 * LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0,
-		 * "", 20); } } else { Location pilgrimageLocation =
-		 * getQuestLocation(godName);
-		 * 
-		 * Player player = Gods.instance().getServer().getPlayer(believerId);
-		 * 
-		 * if(player == null || player.isFlying()) { continue; }
-		 * 
-		 * if (pilgrimageLocation == null) { Gods.instance().logDebug(
-		 * "Quest target location is null for " + godName); return; }
-		 * 
-		 * if
-		 * (!pilgrimageLocation.getWorld().getName().equals(player.getWorld().
-		 * getName()) ) { Gods.instance().logDebug("PilgrimageQuest for '" +
-		 * player.getDisplayName() + "' is wrong world"); return; }
-		 * 
-		 * Vector vector =
-		 * pilgrimageLocation.toVector().subtract(player.getLocation().toVector(
-		 * ));
-		 * 
-		 * LanguageManager.instance().setAmount((int) vector.length());
-		 * Gods.instance().sendInfo(believerId,
-		 * LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA,
-		 * (int) vector.length(), "", 20); } } } break;
-		 */
-
-		case SLAYDRAGON: {
-			int delay = 2 + this.random.nextInt(100);
-
+		case PILGRIMAGE:
+		case SLAYDRAGON:
+			// Quests with a place to find: remind now and then, and tell hunting believers how far they are
 			if (this.random.nextInt(6) == 0)
 			{
-				try
-				{
-					LanguageManager.instance().setType(targetType);
-				}
-				catch (Exception ex)
-				{
-					Gods.instance().logDebug(ex.getStackTrace().toString());
-				}
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayDragonQuestStatus, delay);
+				GodManager.instance().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
 			}
-
-			for (UUID believerId : BelieverManager.instance().getBelieversForGod(godName))
-			{
-				if (!BelieverManager.instance().isHunting(believerId))
-				{
-					if (this.random.nextInt(10) == 0)
-					{
-						Gods.instance().sendInfo(believerId, LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0, "", 20);
-					}
-				}
-				else
-				{
-					Location dragonLocation = getQuestLocation(godName);
-					Player player = Gods.instance().getServer().getPlayer(believerId);
-
-					if (dragonLocation == null)
-					{
-						Gods.instance().logDebug("Quest target location is null for " + godName);
-						return;
-					}
-					if (player == null)
-					{
-						Gods.instance().logDebug("DragonQuest player is null");
-						return;
-					}
-					if (!dragonLocation.getWorld().getName().equals(player.getWorld().getName()))
-					{
-						Gods.instance().logDebug("DragonQuest for '" + player.getDisplayName() + "' is wrong world");
-						return;
-					}
-					Vector vector = dragonLocation.toVector().subtract(player.getLocation().toVector());
-
-					LanguageManager.instance().setAmount((int) vector.length());
-					Gods.instance().sendInfo(believerId, LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, 0, "", 0);
-				}
-			}
-		}
-			break;
-
-		case CLAIMHOLYLAND:
-			if (this.random.nextInt(20) > 0)
-			{
-				return;
-			}
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case BUILDALTARS:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case FIREWORKPARTY:
-		case HUMANSACRIFICE:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case GETHOLYARTIFACT:
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStatus, 2 + this.random.nextInt(100));
-			break;
-		case MOBSACRIFICE:
-			if (this.random.nextInt(20) > 0)
-			{
-				return;
-			}
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolywarQuestStatus, 2 + this.random.nextInt(100));
+			sendQuestTargetHints(godName);
 			break;
 		default:
+			GodManager.instance().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
 			break;
 		}
 	}
 
-	public void godsSayStatus()
+	private void sendQuestTargetHints(String godName)
 	{
-		String targetType = getGlobalQuestTargetType();
+		Location targetLocation = getQuestLocation(godName);
 
-		try
+		if (targetLocation == null)
 		{
-			LanguageManager.instance().setType(targetType);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
+			return;
 		}
 
-		QUESTTYPE questType = getGlobalQuestType();
-
-		for (String godName : GodManager.instance().getOnlineGods())
+		for (UUID believerId : BelieverManager.instance().getBelieversForGod(godName))
 		{
-			switch (questType)
+			Player player = Gods.instance().getServer().getPlayer(believerId);
+
+			if (player == null)
 			{
-			case ITEMSACRIFICE:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case SPREADLOVE:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCrusadeQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case GIVEITEMS:
-				break;
-			case DELIVERITEM:
-				break;
-			case CRUSADE:
-				break;
-			case HOLYWAR:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolyFeastQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case KILLBOSS:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveItemsQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case GIVEROSE:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case NONE:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStatus, 2 + this.random.nextInt(100));
-				break;
-
-			case PILGRIMAGE: {
-				int delay = 2 + this.random.nextInt(100);
-
-				try
-				{
-					LanguageManager.instance().setType(targetType);
-				}
-				catch (Exception ex)
-				{
-					Gods.instance().logDebug(ex.getStackTrace().toString());
-				}
-
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus, delay);
-				for (UUID believerId : BelieverManager.instance().getBelieversForGod(godName))
-				{
-					if (!BelieverManager.instance().isHunting(believerId))
-					{
-						if (this.random.nextInt(6) == 0)
-						{
-							Gods.instance().sendInfo(believerId, LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0, "", 20);
-						}
-					}
-					else
-					{
-						Location pilgrimageLocation = getQuestLocation(godName);
-						Player player = Gods.instance().getServer().getPlayer(believerId);
-						if (pilgrimageLocation == null)
-						{
-							Gods.instance().logDebug("Quest target location is null for " + godName);
-							return;
-						}
-
-						if (player == null)
-						{
-							Gods.instance().logDebug("PilgrimageQuest player is null");
-							return;
-						}
-
-						if (pilgrimageLocation.getWorld().getName().equals(player.getWorld().getName()))
-						{
-							Gods.instance().logDebug("PilgrimageQuest for '" + player.getDisplayName() + "' is wrong world");
-							return;
-						}
-
-						Vector vector = pilgrimageLocation.toVector().subtract(player.getLocation().toVector());
-
-						Gods.instance().sendInfo(believerId, LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, (int) vector.length(), "", 20);
-					}
-				}
+				continue;
 			}
-				break;
 
-			// case SLAYDRAGON:
-			// int delay = 2 + this.random.nextInt(100);
-			// try
-			// {
-			// LanguageManager.instance().setType(targetType);
-			// }
-			// catch (Exception ex)
-			// {
-			// Gods.instance().logDebug(ex.getStackTrace());
-			// }
-			// GodManager.instance().godSayToBelievers(godName,
-			// LanguageManager.LANGUAGESTRING.GodToBelieversSlayDragonQuestStatus,
-			// delay);
-			// for (String believerName :
-			// BelieverManager.instance().getBelieversForGod(godName))
-			// {
-			// if (!BelieverManager.instance().isHunting(believerName))
-			// {
-			// if (this.random.nextInt(6) == 0)
-			// {
-			// Gods.instance().sendInfo(believerName,
-			// LanguageManager.LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA,
-			// 0, "", 20);
-			// }
-			// }
-			// else
-			// {
-			// Location dragonLocation = getQuestLocation(godName);
-			// Player player = Gods.instance().getServer().getPlayer(believerName);
-			// if (dragonLocation == null)
-			// {
-			// Gods.instance().logDebug("Quest target location is null for " +
-			// godName);
-			// return;
-			// }
-			// if (player == null)
-			// {
-			// Gods.instance().logDebug("DragonQuest player '" + believerName + "' is
-			// null");
-			// return;
-			// }
-			// if
-			// (dragonLocation.getWorld().getName().equals(player.getWorld().getName()))
-			// {
-			// Gods.instance().logDebug("DragonQuest for '" + believerName + "' is
-			// wrong
-			// world");
-			// return;
-			// }
-			// Vector vector =
-			// dragonLocation.toVector().subtract(player.getLocation().toVector());
-			//
-			// Gods.instance().sendInfo(believerName,
-			// LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA,
-			// (int)
-			// vector.length(), "", 1);
-			// }
-			// }
-			// break;
-			case CLAIMHOLYLAND:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case BUILDALTARS:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case FIREWORKPARTY:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case MOBSACRIFICE:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolywarQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case SLAY:
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestStatus, 2 + this.random.nextInt(100));
-				break;
-			case GETHOLYARTIFACT:
-				int delay = 2 + this.random.nextInt(100);
-				try
+			if (!BelieverManager.instance().isHunting(believerId))
+			{
+				if (this.random.nextInt(10) == 0)
 				{
-					LanguageManager.instance().setType(targetType);
+					Gods.instance().sendInfo(believerId, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0, "", 20);
 				}
-				catch (Exception ex)
-				{
-					Gods.instance().logDebug(ex.getStackTrace().toString());
-				}
-
-				GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStatus, delay);
-
-				for (UUID believerId : BelieverManager.instance().getBelieversForGod(godName))
-				{
-					if (!BelieverManager.instance().isHunting(believerId))
-					{
-						if (this.random.nextInt(6) == 0)
-						{
-							GodManager.instance().godSayToBeliever(godName, believerId, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestHelp, delay + 20 + this.random.nextInt(100));
-						}
-					}
-					else
-					{
-						Location artifactLocation = getGlobalQuestLocation();
-						Player player = Gods.instance().getServer().getPlayer(believerId);
-						if (artifactLocation == null)
-						{
-							Gods.instance().logDebug("GlobalArtifactQuest ArtifactLocation is null");
-							return;
-						}
-						if (player == null)
-						{
-							Gods.instance().logDebug("GlobalArtifactQuest player is null");
-							return;
-						}
-						if (artifactLocation.getWorld().getName().equals(player.getWorld().getName()))
-						{
-							Gods.instance().logDebug("GlobalArtifactQuest for '" + player.getDisplayName() + "' is wrong world");
-							return;
-						}
-						Vector vector = artifactLocation.toVector().subtract(player.getLocation().toVector());
-
-						LanguageManager.instance().setAmount((int) vector.length());
-						GodManager.instance().godSayToBeliever(godName, believerId, LanguageManager.LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestRange, delay + 20 + this.random.nextInt(100));
-					}
-				}
-			default:
-				break;
+				continue;
 			}
+
+			if (!targetLocation.getWorld().equals(player.getWorld()))
+			{
+				continue;
+			}
+
+			int distance = (int) targetLocation.toVector().distance(player.getLocation().toVector());
+
+			Gods.instance().sendInfo(believerId, LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, distance, "", 20);
 		}
 	}
 
+	/**
+	 * Hitting someone with a holy book does nothing for quests anymore (it only served the removed global quests).
+	 */
 	public void handleBibleMelee(String godName, UUID playerId)
 	{
-		if (!hasGlobalQuestType(QUESTTYPE.GETHOLYARTIFACT))
-		{
-			return;
-		}
-		Location pilgrimageLocation = getGlobalQuestLocation();
-
-		String playerGod = BelieverManager.instance().getGodForBeliever(playerId);
-		if ((playerGod == null) || (pilgrimageLocation == null))
-		{
-			return;
-		}
-		GodManager.instance().spawnGuidingMobs(godName, playerId, pilgrimageLocation);
 	}
 
 	public void handleBuiltPrayingAltar(String godName)
 	{
-		if (!hasQuest(godName))
-		{
-			return;
-		}
-		QUESTTYPE questType = getQuestTypeForGod(godName);
-
-		boolean complete = false;
-		if ((questType == null) || (questType != QUESTTYPE.BUILDALTARS))
+		if (!hasQuest(godName) || getQuestTypeForGod(godName) != QUESTTYPE.BUILDALTARS)
 		{
 			return;
 		}
 
-		complete = addQuestProgressForGod(godName);
-
-		if (complete)
+		if (addQuestProgressForGod(godName))
 		{
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, 2 + this.random.nextInt(10));
+			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, 2 + this.random.nextInt(10));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
 		}
 		else
 		{
-			int amount = getQuestAmountForGod(godName);
-			int progress = getQuestProgressForGod(godName);
-
-			LanguageManager.instance().setAmount(amount - progress);
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBuildAltarsQuestProgress, 2 + this.random.nextInt(10));
+			godSayProgress(godName);
 		}
 	}
 
 	public void handleEat(String playerName, String godName, String entityType)
 	{
-		if (!hasQuest(godName))
+		if (!hasQuest(godName) || getQuestTypeForGod(godName) != QUESTTYPE.HOLYFEAST)
 		{
 			return;
 		}
-		QUESTTYPE questType = getQuestTypeForGod(godName);
+
 		String questTargetType = getQuestTargetTypeForGod(godName);
-		boolean complete = false;
-		if (questType == null)
-		{
-			Gods.instance().logDebug("handleEat(): null quest");
-			return;
-		}
 		if ((questTargetType == null) || (!questTargetType.equalsIgnoreCase(entityType)))
 		{
-			Gods.instance().logDebug("handleEat(): null questType");
 			return;
 		}
-		if (questType != QUESTTYPE.HOLYFEAST)
-		{
-			Gods.instance().logDebug("handleEat(): quest is not feast");
-			return;
-		}
+
 		Gods.instance().logDebug("handling quest eating for " + godName);
 
-		complete = addQuestProgressForGod(godName);
-		if (complete)
+		if (addQuestProgressForGod(godName))
 		{
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, 2 + this.random.nextInt(10));
+			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, 2 + this.random.nextInt(10));
 
 			GodManager.instance().addMoodForGod(godName, 2.0F * GodManager.instance().getPleasedModifierForGod(godName));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
@@ -2148,25 +1008,20 @@ public class QuestManager
 		}
 
 		QUESTTYPE questType = getQuestTypeForGod(godName);
-		getQuestTargetTypeForGod(godName);
 
-		boolean complete = false;
-
-		if ((questType == null) || (questType != QUESTTYPE.CONVERT))
+		if (questType != QUESTTYPE.CONVERT)
 		{
 			return false;
 		}
 
-		complete = addQuestProgressForGod(godName);
-
-		if (complete)
+		if (addQuestProgressForGod(godName))
 		{
 			if (GodsConfiguration.instance().isBiblesEnabled())
 			{
 				HolyBookManager.instance().handleQuestCompleted(godName, questType, playerName);
 			}
 			LanguageManager.instance().setPlayerName(playerName);
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
+			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
 			GodManager.instance().addMoodForGod(godName, 1.0F * GodManager.instance().getPleasedModifierForGod(godName));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
@@ -2182,29 +1037,20 @@ public class QuestManager
 
 	public void handleKilledMob(String godName, String mobType)
 	{
-		if (!hasQuest(godName))
+		if (!hasQuest(godName) || getQuestTypeForGod(godName) != QUESTTYPE.SLAY)
 		{
 			return;
 		}
-		QUESTTYPE questType = getQuestTypeForGod(godName);
+
 		String questTargetType = getQuestTargetTypeForGod(godName);
-		boolean complete = false;
-		if ((questType == null) || (questType != QUESTTYPE.SLAY))
+		if (questTargetType == null || !questTargetType.equalsIgnoreCase(mobType))
 		{
 			return;
 		}
-		if (questTargetType == null)
+
+		if (addQuestProgressForGod(godName))
 		{
-			return;
-		}
-		if (!questTargetType.equalsIgnoreCase(mobType))
-		{
-			return;
-		}
-		complete = addQuestProgressForGod(godName);
-		if (complete)
-		{
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayQuestCompleted, 2 + this.random.nextInt(10));
+			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, 2 + this.random.nextInt(10));
 
 			GodManager.instance().addMoodForGod(godName, 2.0F * GodManager.instance().getPleasedModifierForGod(godName));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
@@ -2217,74 +1063,67 @@ public class QuestManager
 		}
 	}
 
+	/**
+	 * No current quest counts player kills.
+	 */
 	public void handleKilledPlayer(UUID playerId, String playerGod)
 	{
-		QUESTTYPE questType = getQuestTypeForGod(playerGod);
-		if (questType == QUESTTYPE.PVPREVENGE)
-		{
-			hasQuest(playerGod);
-
-			return;
-		}
-		if (!hasQuest(playerGod))
-		{
-		}
 	}
 
 	public boolean handleOpenChest(UUID playerId, Location blockLocation)
 	{
-		if (isQuestTarget(blockLocation))
+		if (!isQuestTarget(blockLocation))
 		{
-			String questGod = getQuestTargetGod(blockLocation);
-			String godName = BelieverManager.instance().getGodForBeliever(playerId);
-
-			if (godName == null || !questGod.equals(godName))
-			{
-				return true;
-			}
-
-			try
-			{
-				LanguageManager.instance().setType(getQuestTargetTypeForGod(questGod));
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().logDebug(ex.getStackTrace().toString());
-			}
-
-			GodManager.instance().godSayToBelievers(questGod, LanguageManager.LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, 2);
-
-			GodManager.instance().addMoodForGod(godName, 2.0F * GodManager.instance().getPleasedModifierForGod(godName));
-			GodManager.instance().addBeliefAndRewardBelievers(godName);
-			BelieverManager.instance().increasePrayerPower(playerId, 1);
-
-			Gods.instance().getServer().broadcastMessage(ChatColor.GOLD + Gods.instance().getServer().getPlayer(playerId).getDisplayName() + ChatColor.AQUA + " completed a pilgrimage to " + ChatColor.GOLD + getQuestTargetTypeForGod(questGod));
-
-			BelieverManager.instance().setHunting(playerId, false);
-
-			removeSuccessQuestForGod(godName);
-
 			return false;
 		}
+
+		String questGod = getQuestTargetGod(blockLocation);
+		String godName = BelieverManager.instance().getGodForBeliever(playerId);
+
+		// Only believers of the god who set the pilgrimage may open its chest
+		if (questGod == null || godName == null || !questGod.equals(godName))
+		{
+			return true;
+		}
+
+		try
+		{
+			LanguageManager.instance().setType(getQuestTargetTypeForGod(questGod));
+		}
+		catch (Exception ex)
+		{
+			Gods.instance().logDebug(ex.getMessage());
+		}
+
+		GodManager.instance().godSayToBelievers(questGod, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, 2);
+
+		GodManager.instance().addMoodForGod(godName, 2.0F * GodManager.instance().getPleasedModifierForGod(godName));
+		GodManager.instance().addBeliefAndRewardBelievers(godName);
+		BelieverManager.instance().increasePrayerPower(playerId, 1);
+
+		Player player = Gods.instance().getServer().getPlayer(playerId);
+		if (player != null)
+		{
+			Gods.instance().getServer().broadcastMessage(ChatColor.GOLD + player.getDisplayName() + ChatColor.AQUA + " completed a pilgrimage to " + ChatColor.GOLD + getQuestTargetTypeForGod(questGod));
+		}
+
+		BelieverManager.instance().setHunting(playerId, false);
+
+		removeSuccessQuestForGod(godName);
+
 		return false;
 	}
 
+	/**
+	 * No current quest is about picking up items.
+	 */
 	public void handlePickupItem(String playerName, Item item, Location location)
 	{
 	}
 
 	public void handlePrayer(String godName, UUID playerId)
 	{
-		if (!hasQuest(godName))
-		{
-			return;
-		}
-
-		QUESTTYPE questType = getQuestTypeForGod(godName);
-
-		boolean complete = false;
-
-		if (questType == null || questType != QUESTTYPE.CONVERT)
+		if (!hasQuest(godName) || getQuestTypeForGod(godName) != QUESTTYPE.CONVERT)
 		{
 			return;
 		}
@@ -2296,21 +1135,12 @@ public class QuestManager
 			return;
 		}
 
-		complete = addQuestPlayerProgressForGod(godName, playerId);
+		Player player = Gods.instance().getServer().getPlayer(playerId);
 
-		if (complete)
+		if (addQuestPlayerProgressForGod(godName, playerId))
 		{
-			try
-			{
-				LanguageManager.instance().setType(HolyBookManager.instance().getBibleTitle(godName));
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().logDebug(ex.getStackTrace().toString());
-			}
-
-			LanguageManager.instance().setPlayerName(Gods.instance().getServer().getPlayer(playerId).getDisplayName());
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
+			LanguageManager.instance().setPlayerName((player != null) ? player.getDisplayName() : "");
+			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
 			GodManager.instance().addMoodForGod(godName, 1.0F * GodManager.instance().getPleasedModifierForGod(godName));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
@@ -2323,67 +1153,29 @@ public class QuestManager
 		}
 	}
 
-	/*
-	public boolean handlePressurePlate(UUID playerId, Block block)
-	{
-		if (block == null)
-		{
-			return false;
-		}
-
-		if (hasGlobalQuestType(QUESTTYPE.CLAIMHOLYLAND))
-		{
-			if (isQuestTarget(block.getLocation()))
-			{
-				String godName = BelieverManager.instance().getGodForBeliever(playerId);
-				if (godName != null)
-				{
-					setDominationColor(block, GodManager.instance().getColorForGod(godName));
-				}
-			}
-		}
-		return false;
-	}
-	*/
-
 	public void handleReadBible(String godName, UUID playerId)
 	{
-		if (!hasQuest(godName))
+		if (!hasQuest(godName) || getQuestTypeForGod(godName) != QUESTTYPE.GIVEITEMS)
 		{
 			return;
 		}
 
-		QUESTTYPE questType = getQuestTypeForGod(godName);
-
-		boolean complete = false;
-
-		if ((questType == null) || (questType != QUESTTYPE.GIVEITEMS))
+		// Only non-believers count
+		if (BelieverManager.instance().getGodForBeliever(playerId) != null)
 		{
 			return;
 		}
 
-		String playerGod = BelieverManager.instance().getGodForBeliever(playerId);
+		Player player = Gods.instance().getServer().getPlayer(playerId);
 
-		if (playerGod != null)
-		{
-			return;
-		}
+		boolean complete = addQuestPlayerProgressForGod(godName, playerId);
 
-		complete = addQuestPlayerProgressForGod(godName, playerId);
+		LanguageManager.instance().setPlayerName((player != null) ? player.getDisplayName() : "");
 
 		if (complete)
 		{
-			try
-			{
-				LanguageManager.instance().setType(HolyBookManager.instance().getBibleTitle(godName));
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().logDebug(ex.getStackTrace().toString());
-			}
-
-			LanguageManager.instance().setPlayerName(Gods.instance().getServer().getPlayer(playerId).getDisplayName());
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, 2 + this.random.nextInt(10));
+			setQuestSpeechValues(godName, QUESTTYPE.GIVEITEMS, 0);
+			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, 2 + this.random.nextInt(10));
 
 			GodManager.instance().addMoodForGod(godName, 2.0F * GodManager.instance().getPleasedModifierForGod(godName));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
@@ -2402,47 +1194,28 @@ public class QuestManager
 		{
 			return false;
 		}
+
 		QUESTTYPE questType = getQuestTypeForGod(godName);
-		String questTargetType = getQuestTargetTypeForGod(godName);
 
-		boolean complete = false;
-
-		if ((questType == null) || ((questType != QUESTTYPE.ITEMSACRIFICE) && (questType != QUESTTYPE.BURNBIBLES)))
+		if ((questType != QUESTTYPE.ITEMSACRIFICE) && (questType != QUESTTYPE.BURNBIBLES))
 		{
 			return false;
 		}
 
+		String questTargetType = getQuestTargetTypeForGod(godName);
 		if ((questTargetType == null) || (!questTargetType.equalsIgnoreCase(entityType)))
 		{
 			return false;
 		}
 
-		complete = addQuestProgressForGod(godName);
+		boolean complete = addQuestProgressForGod(godName);
 		BelieverManager.instance().increasePrayerPower(player.getUniqueId(), 1);
 
 		if (complete)
 		{
-			try
-			{
-				switch (questType)
-				{
-				case CLAIMHOLYLAND:
-					LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(Material.getMaterial(questTargetType)));
-					GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestCompleted, 2 + this.random.nextInt(10));
-					break;
-				case ITEMSACRIFICE:
-					LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(Material.getMaterial(questTargetType)));
-					LanguageManager.instance().setPlayerName(player.getDisplayName());
-					GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeQuestCompleted, 2 + this.random.nextInt(10));
-					break;
-				default:
-					break;
-				}
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().logDebug(ex.getStackTrace().toString());
-			}
+			setQuestSpeechValues(godName, questType, 0);
+			LanguageManager.instance().setPlayerName(player.getDisplayName());
+			GodManager.instance().godSayToBelievers(godName, questSpeech(questType, Phase.COMPLETED), 2 + this.random.nextInt(10));
 
 			GodManager.instance().addMoodForGod(godName, 2.0F * GodManager.instance().getPleasedModifierForGod(godName));
 			GodManager.instance().addBeliefAndRewardBelievers(godName);
@@ -2457,18 +1230,6 @@ public class QuestManager
 		return true;
 	}
 
-	boolean hasExpiredGlobalQuest()
-	{
-		Date thisDate = new Date();
-		Date questStartTime = getGlobalQuestCreatedTime();
-		int questMaxDuration = getGlobalQuestMaxDuration();
-
-		long diff = thisDate.getTime() - questStartTime.getTime();
-		long diffMinutes = diff / 60000L;
-
-		return diffMinutes > questMaxDuration;
-	}
-
 	boolean hasExpiredQuest(String godName)
 	{
 		Date thisDate = new Date();
@@ -2479,33 +1240,6 @@ public class QuestManager
 		long diffMinutes = diff / 60000L;
 
 		return diffMinutes > questMaxDuration;
-	}
-
-	boolean hasGlobalQuest()
-	{
-		String quest = this.questsConfig.getString("Global.Type");
-
-		return quest != null;
-	}
-
-	boolean hasGlobalQuestType(QUESTTYPE type)
-	{
-		QUESTTYPE currentType;
-		try
-		{
-			String currentTypeString = this.questsConfig.getString("Global.Type");
-			if (currentTypeString == null)
-			{
-				return false;
-			}
-			currentType = QUESTTYPE.valueOf(currentTypeString.toUpperCase());
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().logDebug("Could not recognize global quest type '" + this.questsConfig.getString("Global.Type") + "': " + ex.getMessage());
-			currentType = QUESTTYPE.NONE;
-		}
-		return currentType == type;
 	}
 
 	private int hashVector(Location location)
@@ -2523,45 +1257,19 @@ public class QuestManager
 	boolean isQuestTarget(Location location)
 	{
 		int hash = hashVector(location);
-		try
-		{
-			String questTargetLocationWorld = this.questsConfig.getString("QuestTargets." + hash + ".Location.World");
 
-			if (questTargetLocationWorld == null)
-			{
-				return false;
-			}
+		String questTargetLocationWorld = this.questsConfig.getString("QuestTargets." + hash + ".Location.World");
 
-			int questTargetLocationX = this.questsConfig.getInt("QuestTargets." + hash + ".Location.X");
-			int questTargetLocationY = this.questsConfig.getInt("QuestTargets." + hash + ".Location.Y");
-			int questTargetLocationZ = this.questsConfig.getInt("QuestTargets." + hash + ".Location.Z");
-
-			if (location.getBlockX() != questTargetLocationX)
-			{
-				return false;
-			}
-
-			if (location.getBlockZ() != questTargetLocationZ)
-			{
-				return false;
-			}
-
-			if (location.getBlockY() != questTargetLocationY)
-			{
-				return false;
-			}
-
-			if (!location.getWorld().getName().equals(questTargetLocationWorld))
-			{
-				return false;
-			}
-
-			return true;
-		}
-		catch (Exception ex)
+		if (questTargetLocationWorld == null || location.getWorld() == null)
 		{
 			return false;
 		}
+
+		int questTargetLocationX = this.questsConfig.getInt("QuestTargets." + hash + ".Location.X");
+		int questTargetLocationY = this.questsConfig.getInt("QuestTargets." + hash + ".Location.Y");
+		int questTargetLocationZ = this.questsConfig.getInt("QuestTargets." + hash + ".Location.Z");
+
+		return location.getBlockX() == questTargetLocationX && location.getBlockY() == questTargetLocationY && location.getBlockZ() == questTargetLocationZ && location.getWorld().getName().equals(questTargetLocationWorld);
 	}
 
 	public void load()
@@ -2575,50 +1283,62 @@ public class QuestManager
 		Gods.instance().log("Loaded " + this.questsConfig.getKeys(false).size() + " quests.");
 	}
 
+	/**
+	 * Removes a failed quest: takes away its pilgrimage chest, then always clears the quest, even if the chest can't be removed.
+	 */
 	public void removeFailedQuestForGod(String godName)
 	{
-		Location questLocation = getQuestLocation(godName);
-
-		if (questLocation != null)
+		try
 		{
-			clearQuestTarget(questLocation);
+			if (getQuestTypeForGod(godName) == QUESTTYPE.PILGRIMAGE)
+			{
+				removePilgrimageChest(godName);
+			}
 		}
-
-		switch (this.getQuestTypeForGod(godName))
+		catch (RuntimeException ex)
 		{
-		case PILGRIMAGE: {
-			Location location = this.getQuestLocation(godName);
-			Block targetBlock = location.getWorld().getBlockAt(location);
-
-			Block underBlock = targetBlock.getRelative(BlockFace.DOWN);
-			underBlock.setType(Material.GRASS_BLOCK);
-
-			Chest tb = (Chest) targetBlock.getState();
-			Inventory contents = tb.getInventory();
-			contents.clear();
-
-			location.getWorld().getBlockAt(location).setType(Material.AIR);
+			Gods.instance().log("Could not remove the pilgrimage chest of " + godName + ": " + ex.getMessage());
 		}
-			break;
-		default:
-			break;
+		finally
+		{
+			removeQuest(godName);
 		}
-
-		this.questsConfig.set(godName, null);
-
-		save();
 	}
 
-	public void removeGlobalQuest()
+	private void removePilgrimageChest(String godName)
 	{
-		this.questsConfig.set("Global", null);
+		Location location = getQuestLocation(godName);
 
-		save();
+		if (location == null)
+		{
+			return;
+		}
+
+		Block chestBlock = location.getBlock();
+
+		if (chestBlock.getState() instanceof Chest chest)
+		{
+			chest.getBlockInventory().clear();
+			chestBlock.setType(Material.AIR);
+		}
+
+		Block underBlock = chestBlock.getRelative(BlockFace.DOWN);
+		if (underBlock.getType() == Material.GLOWSTONE)
+		{
+			String groundName = this.questsConfig.getString(godName + ".Location.Ground");
+			Material ground = (groundName == null) ? null : Material.matchMaterial(groundName);
+			underBlock.setType((ground != null && ground.isBlock()) ? ground : Material.GRASS_BLOCK);
+		}
 	}
 
 	public void removeSuccessQuestForGod(String godName)
 	{
-		Location questLocation = getQuestLocation(godName);
+		removeQuest(godName);
+	}
+
+	private void removeQuest(String godName)
+	{
+		Location questLocation = getStoredQuestLocation(godName);
 
 		if (questLocation != null)
 		{
@@ -2669,37 +1389,9 @@ public class QuestManager
 		}
 	}
 
-	/*
-	public void setDominationColor(Block block, ChatColor color)
-	{
-		block.setType(Material.WOOL);
-		block.getRelative(BlockFace.UP).setType(Material.STONE_PLATE);
-		block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST).setType(Material.WOOL);
-		block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST).setType(Material.WOOL);
-		block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST).setType(Material.WOOL);
-		block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST).setType(Material.WOOL);
-		block.getRelative(BlockFace.NORTH).setType(Material.REDSTONE_LAMP_OFF);
-		block.getRelative(BlockFace.EAST).setType(Material.REDSTONE_LAMP_OFF);
-		block.getRelative(BlockFace.WEST).setType(Material.REDSTONE_LAMP_OFF);
-		block.getRelative(BlockFace.SOUTH).setType(Material.REDSTONE_LAMP_OFF);
-	}*/
-
 	public void setItemRewardValue(Material item, int value)
 	{
 		this.rewardValues.put(item, Integer.valueOf(value));
-	}
-
-	void setQuestCompletedBy(Location location, String godName)
-	{
-		String pattern = "HH:mm:ss dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-
-		int hash = hashVector(location);
-
-		this.questsConfig.set("QuestTargets." + hash + ".LockedBy", godName);
-		this.questsConfig.set("QuestTargets." + hash + ".LockedTime", formatter.format(new Date()));
-
-		save();
 	}
 
 	void setQuestTarget(String godName, Location location)
@@ -2711,48 +1403,30 @@ public class QuestManager
 		this.questsConfig.set("QuestTargets." + hash + ".Location.Y", location.getBlockY());
 		this.questsConfig.set("QuestTargets." + hash + ".Location.Z", location.getBlockZ());
 		this.questsConfig.set("QuestTargets." + hash + ".Location.World", location.getWorld().getName());
-		// this.questsConfig.set("QuestTargets." + hash + ".CreatedTime",
-		// formatter.format(thisDate));
 
 		this.save();
 	}
 
-	public void setQuestTargetTypeForGod(String godName, String targetType)
+	/**
+	 * Places the chest with the rewards on a glowstone marker. Undoes it and returns false if the chest can't be filled.
+	 */
+	private boolean placePilgrimageChest(Block chestBlock, List<ItemStack> rewards)
 	{
-		this.questsConfig.set(godName + ".TargetType", targetType);
+		Block underBlock = chestBlock.getRelative(BlockFace.DOWN);
+		Material groundType = underBlock.getType();
 
-		save();
-	}
-
-	public void setQuestTypeForGod(String godName, int questType)
-	{
-		this.questsConfig.set(godName + ".Type", Integer.valueOf(questType));
-
-		save();
-	}
-
-	private void setupPilgrimageQuest(Location targetLocation, String godName, GodManager.GodType godType)
-	{
-		Block targetBlock = Gods.instance().getServer().getWorld(targetLocation.getWorld().getName()).getBlockAt(targetLocation);
-
-		targetBlock.setType(Material.CHEST);
-
-		Block underBlock = targetBlock.getRelative(BlockFace.DOWN);
+		chestBlock.setType(Material.CHEST);
 		underBlock.setType(Material.GLOWSTONE);
 
-		Inventory contents = null;
-		Chest tb = (Chest) targetBlock.getState();
-		contents = tb.getInventory();
-
-		for (ItemStack rewardItem : getRewardsForQuestCompletion(200 + this.random.nextInt(150)))
+		if (!(chestBlock.getState() instanceof Chest chest))
 		{
-			contents.addItem(new ItemStack[] { rewardItem });
+			chestBlock.setType(Material.AIR);
+			underBlock.setType(groundType);
+			return false;
 		}
 
-		// Item artifactItem =
-		// Gods.instance().getHolyArtifactManager().createHolyArtifact(godType,
-		// godName,
-		// targetLocation);
-		// contents.addItem(new ItemStack[] { artifactItem.getItemStack() });
+		chest.getBlockInventory().addItem(rewards.toArray(new ItemStack[0]));
+
+		return true;
 	}
 }
