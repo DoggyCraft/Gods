@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,16 +17,19 @@ import java.util.logging.Logger;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.util.AtomicFiles;
 
 /**
- * One YAML data file (gods.yml, believers.yml, ...), held in memory. The manager that owns it reads and changes
- * {@link #yaml()} on the main thread and calls {@link #markDirty()} (written by the next autosave) or {@link #save()}
+ * One YAML data file (gods.yml, believers.yml, ...). Either a manager reads and changes {@link #yaml()} directly on the
+ * main thread, or a {@link Repository} reads it into models on load and hands back a fresh YAML snapshot on every
+ * flush ({@link #bind}). Changes are marked with {@link #markDirty()} (written by the next autosave) or {@link #save()}
  * (written now). Writing never blocks the main thread: {@link #flush()} turns the data into YAML text on the main
  * thread and hands the text to the storage's writer thread, which writes a temp file and moves it over the old one.
  * <p>
  * A file that can't be read is copied to {@code <name>.broken-<timestamp>} and is never written over until it loads
- * again (after it is fixed and Gods is reloaded or restarted).
+ * again (after it is fixed and Gods is reloaded or restarted). A file with a data version ({@link VersionedYaml}) is
+ * upgraded on load, after a {@code <name>.v<n>.bak} backup, and written back right away by its repository.
  */
 public final class DataFile
 {
@@ -34,22 +38,32 @@ public final class DataFile
 	{
 	}
 
-	private final Path				file;
-	private final Logger			logger;
-	private final Executor			writer;
-	private final Repair			repair;
+	private final Path							file;
+	private final Logger						logger;
+	private final Executor						writer;
+	private final Repair						repair;
+	private final VersionedYaml					format;
 
-	private YamlConfiguration		yaml		= new YamlConfiguration();
-	private volatile boolean		dirty;
-	private volatile boolean		readOnly;
-	private boolean					loaded;
+	private YamlConfiguration					yaml		= new YamlConfiguration();
+	// Set by a repository: the data to write, built from its models
+	private Supplier<YamlConfiguration>			snapshot;
+	private volatile boolean					dirty;
+	private volatile boolean					readOnly;
+	private boolean								loaded;
 
 	DataFile(Path file, Logger logger, Executor writer, Repair repair)
+	{
+		this(file, logger, writer, repair, null);
+	}
+
+	/** @param format the data version and its migrations, or null for a file without a version */
+	DataFile(Path file, Logger logger, Executor writer, Repair repair, VersionedYaml format)
 	{
 		this.file = file;
 		this.logger = logger;
 		this.writer = writer;
 		this.repair = repair;
+		this.format = format;
 	}
 
 	/** The file name, e.g. "gods.yml" */
@@ -63,17 +77,29 @@ public final class DataFile
 		return this.file;
 	}
 
+	/** The data version and migrations of this file, or null */
+	VersionedYaml format()
+	{
+		return this.format;
+	}
+
+	/** From now on, flushes write what {@code snapshot} returns (called on the main thread) instead of {@link #yaml()} */
+	void bind(Supplier<YamlConfiguration> snapshot)
+	{
+		this.snapshot = snapshot;
+	}
+
 	/**
-	 * The data. Main thread only. Replaced by {@link #load()}, so fetch it every time instead of keeping it. Empty
-	 * before the file is loaded.
+	 * The data as read by the last {@link #load()}. Main thread only. Replaced by {@link #load()}, so fetch it every
+	 * time instead of keeping it. Empty before the file is loaded. For a file with a repository, only the repository
+	 * reads it.
 	 */
 	public YamlConfiguration yaml()
 	{
 		return this.yaml;
 	}
 
-	/** Whether {@link #load()} has been called (successfully or not) */
-	/** True while the file on disk could not be read: it is then never written over */
+	/** True while the file on disk could not be read (or upgraded): it is then never written over */
 	public boolean isReadOnly()
 	{
 		return this.readOnly;
@@ -87,7 +113,7 @@ public final class DataFile
 	/**
 	 * Reads the file into memory. A missing file is empty. If it can't be read, a copy is kept as
 	 * {@code <name>.broken-<timestamp>} and the file is not saved until a later load works; the first load then starts
-	 * empty, a reload keeps the data that was already in memory. Returns whether the file was read.
+	 * empty, a reload keeps the data that was already in memory. Returns whether the file was read (and upgraded).
 	 */
 	public boolean load()
 	{
@@ -139,6 +165,26 @@ public final class DataFile
 			return false;
 		}
 
+		if (this.format != null)
+		{
+			try
+			{
+				VersionedYaml.Upgraded upgraded = this.format.upgrade(loadedYaml, this.file, this.logger);
+				loadedYaml = upgraded.yaml();
+				repaired |= upgraded.changed();
+			}
+			catch (VersionedYaml.LoadException ex)
+			{
+				// Use what is there, but never write over the file that could not be upgraded
+				this.logger.severe(ex.getMessage() + (ex.getCause() != null ? ": " + ex.getCause().getMessage() : ""));
+				this.logger.severe(name() + " is used as it is, but it will NOT be saved until it can be upgraded, so nothing in it is overwritten. Fix the problem and restart the server or run /g reload.");
+				this.yaml = loadedYaml;
+				this.readOnly = true;
+				this.dirty = false;
+				return false;
+			}
+		}
+
 		this.yaml = loadedYaml;
 		this.readOnly = false;
 		this.dirty = repaired;
@@ -184,7 +230,7 @@ public final class DataFile
 			return;
 		}
 
-		String text = this.yaml.saveToString();
+		String text = (this.snapshot != null ? this.snapshot.get() : this.yaml).saveToString();
 		this.dirty = false;
 
 		try

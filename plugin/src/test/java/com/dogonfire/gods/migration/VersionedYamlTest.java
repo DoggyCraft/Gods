@@ -116,4 +116,20 @@ class VersionedYamlTest
 		assertEquals("a: [unclosed\n", Files.readString(file.toPath()));
 		assertTrue(Files.notExists(this.dir.resolve("test.yml.v1.bak")));
 	}
+
+	@Test
+	void neverOverwritesAnOlderBackup() throws Exception
+	{
+		Files.writeString(this.dir.resolve("test.yml.v1.bak"), "older: true\n");
+		File file = write("a: 42\n");
+		new VersionedYaml("version", 3, 1, MIGRATIONS).load(file, LOG);
+
+		assertEquals("older: true\n", Files.readString(this.dir.resolve("test.yml.v1.bak")));
+		try (var files = Files.list(this.dir))
+		{
+			List<String> backups = files.map(path -> path.getFileName().toString()).filter(name -> name.startsWith("test.yml.v1.") && !name.equals("test.yml.v1.bak")).toList();
+			assertEquals(1, backups.size());
+			assertEquals("a: 42\n", Files.readString(this.dir.resolve(backups.get(0))));
+		}
+	}
 }
