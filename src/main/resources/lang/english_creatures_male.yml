@@ -260,20 +260,20 @@ GodToBelieversConvertQuestCompleted:
 - Well done my children! You have shown your faith and gathered believers into our religion. Here is your reward!
 GodToBelieversConvertQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
-GodToBelieversGiveBiblesQuestStarted:
+GodToBelieversGiveItemsQuestStarted:
 - My children, hear this! You must now go and let $Amount heathens read our Holy Book!
 - My children, you must show $Amount non-believers the true path by letting them read our Holy Book!
-GodToBelieversGiveBiblesQuestStatus:
+GodToBelieversGiveItemsQuestStatus:
 - My children, you must still let $Amount more non-believers read our Holy Book!
 - Remember, you must still let $Amount more non-believers read our Holy Book!
 GodToBelieversGiveBiblesQuestProgress:
 - Well done, my children! $Amount heathens left to be converted to our side!
 - Very good, another believer sees our light! Only $Amount more non-believers must read our Holy Book!
 - Very good, $PlayerName has read $Type! Only $Amount more non-beleivers must read our Holy Book!
-GodToBelieversGiveBiblesQuestCompleted:
+GodToBelieversGiveItemsQuestCompleted:
 - Well done my children! You have shown your faith shown non-believers the light of our religion. Here is your reward!
 - I am proud of you, my children! You have shown our words of truth to the non-believers! Here is your reward!
-GodToBelieversGiveBiblesQuestFailed:
+GodToBelieversGiveItemsQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
 GodToBelieversBurnBiblesQuestStarted:
 - My children, you must BURN $Amount $Type in my honor!
@@ -527,3 +527,19 @@ GodToBelieversProphecyFulfilled:
 - $PlayerName fullfilled a prophecy of $Type!
 GodToBelieversAllPropheciesFulfilled:
 - Rejoice! All the prophecies in $PlayerName has been fulfilled!
+GodToBelieverPrayerRecentItemBlessing:
+- 'I have already given you a gift. Take good care of it before you ask for more!'
+GodToBelieverPrayerTooSoon:
+- 'Patience, little one! Even the beasts wait for their feeding time. Pray to me again later.'
+GodToBelieversAttackHolyLandFailed:
+- 'Our attack has failed... Lick your wounds, my children, and grow stronger.'
+GodToBelieversAttackHolyLandSuccess:
+- 'The Holy Land is ours now! The herd roams free on new pastures!'
+GodToBelieversAttackStarted:
+- 'My children, we attack the Holy Land of $PlayerName! Fight like the wild beasts!'
+GodToBelieversDefendHolyLandFailed:
+- 'Our Holy Land has been taken from us... The herd has failed me.'
+GodToBelieversDefendHolyLandSuccess:
+- 'Our den is safe! You have defended our Holy Land like a mother bear, my children!'
+GodToBelieversNewPlayerAccepted:
+- 'A new creature joins our herd! Make them feel welcome, my children!'

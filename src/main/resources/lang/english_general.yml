@@ -11,6 +11,7 @@ Info:
   EnterHolyLandInfoOtherGod: Holy Land of $PlayerName - $Type
   EnterWildernessInfo: Wilderness
   EnterNeutralLandInfo: Neutral Land - $Type
+  EnterContestedLandInfo: Contested Holy Land of $PlayerName - $Amount min left
   PrivateGodNoAccess: You do not have access to that religion
   YouLeftReligion: You left the religion of $PlayerName
   GodsHelp: Use $PlayerName for a list of commands
@@ -19,10 +20,14 @@ Info:
   InviteHelp: Use /g invite to invite a player to your religion!
   FollowersHelp: Use /g followers to keep track of your followers!
   DescriptionHelp: Use /g desc to set a description for your religion!
+  AttackHelp: Stand in the Holy Land of an enemy religion and use $PlayerName to attack it!
+  AttackingHolyLandsHelp: Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
+  ContestedLandKillsStatus: The attackers need $Type kills and the defenders need $Amount kills to win this Holy Land
+  ContestedLandDesecrationStatus: This Holy Land has been desecrated $Amount times
   PrayAlterHelp: Right click the sign on the altar to pray to your god.
   PrayToBlacklistedGodNotAllowed: You cannot pray to a God with such a name
   TeleportIntoHolylandNotAllowed: You cannot teleport into the Holy Land of $PlayerName
-  AltarPrayingNowAllowed: You do not have permission to pray at altars
+  AltarPrayingNotAllowed: You do not have permission to pray at altars
   PvPLostPower: $PlayerName lost $Amount power because of your death!
   YouEarnedPowerBySlayingHeathen: You earned $Amount power by slaying a non-believer in the name of $PlayerName!
   YouEarnedPowerBySlayingEnemy: You earned $Amount power by slaying an enemy of $PlayerName!
@@ -32,7 +37,7 @@ Info:
   InfoHelp: Use $PlayerName to see information about a God
   YouHealedBeings: You healed $Amount beings
   DivorcedYou: $PlayerName just $Type you!
-  MarrigeLove: You $Type $PlayerName!
+  MarrigeYouLove: You $Type $PlayerName!
   MarrigeLovesYou: $PlayerName $Type you!
   RejectedJoinOffer: You rejected the offer to join $PlayerName!
   InvalidGodName: That is not a proper name for a God!

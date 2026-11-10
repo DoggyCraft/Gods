@@ -259,20 +259,20 @@ GodToBelieversConvertQuestCompleted:
 - Well done my children! You have shown your faith and gathered believers into our religion. Here is your reward!
 GodToBelieversConvertQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
-GodToBelieversGiveBiblesQuestStarted:
+GodToBelieversGiveItemsQuestStarted:
 - My children, hear this! You must now go and let $Amount heathens read our Holy Book!
 - My children, you must show $Amount non-believers the true path by letting them read our Holy Book!
-GodToBelieversGiveBiblesQuestStatus:
+GodToBelieversGiveItemsQuestStatus:
 - My children, you must still let $Amount more non-believers read our Holy Book!
 - Remember, you must still let $Amount more non-believers read our Holy Book!
 GodToBelieversGiveBiblesQuestProgress:
 - Well done, my children! $Amount heathens left to be converted to our side!
 - Very good, another believer sees our light! Only $Amount more non-believers must read our Holy Book!
 - Very good, $PlayerName has read $Type! Only $Amount more non-beleivers must read our Holy Book!
-GodToBelieversGiveBiblesQuestCompleted:
+GodToBelieversGiveItemsQuestCompleted:
 - Well done my children! You have shown your faith shown non-believers the light of our religion. Here is your reward!
 - I am proud of you, my children! You have shown our words of truth to the non-believers! Here is your reward!
-GodToBelieversGiveBiblesQuestFailed:
+GodToBelieversGiveItemsQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
 GodToBelieversBurnBiblesQuestStarted:
 - My children, you must BURN $Amount $Type in my honor!
@@ -344,18 +344,10 @@ GodToBelieversPilgrimageQuestCompleted:
 GodToBelieversPilgrimageQuestFailed:
 - My Children, I am displeased in you. You have not shown respect for our faith...
 - My Children, I am displeased in you. You have failed to complete this simple task for me...
-GodToBelieversPilgrimageQuestHelp:
-- You must find your way to the holy mountain before any other! Type /g hunt
-GodToBelieversPilgrimageQuestRange:
-- You are only $Amount blocks away from mount $Type!
-- You must Hurry! You are $Amount blocks away from the holy mountain!
-GodToBelieversGetHolyArtifactThisQuestStarted:
+GodToBelieversGetHolyArtifactQuestStarted:
 - My children, I have just remembered that I left a $Type while visiting my believers 500 years ago! Retrieve it before it fall into the wrong hands!
 - OH NO!, I have just remembered that I left a $Type while visiting my believers 500 years ago! Retrieve it before it fall into the wrong hands!
-GodToBelieversGetHolyArtifactOtherQuestStarted:
-- My children, $PlayerName has carelessly left a $Type in an ancient temple! We MUST go and get it for our own purposes!
-- I have just learned that $PlayerName has carelessly left a $Type in an ancient temple! We MUST get it for ourselves!
-GodToBelieversGetHolyArtifactThisQuestStatus:
+GodToBelieversGetHolyArtifactQuestStatus:
 - My children, please hurry! Find my lost $Type before it is too late!
 - Our holy book will guide you to my lost $Type! Go now!
 - My children, you must follow our Holy Creature to my $Type before it is too late!
@@ -365,28 +357,11 @@ GodToBelieversGetHolyArtifactThisQuestStatus:
 - Use our Holy Book and let our Holy Creature show you the way to the lost temple!
 - Our Holy Book will show guide you to my $Type!
 - Please, do not let my $Type get into the hand of the false Gods!
-GodToBelieversGetHolyArtifactOtherQuestStatus:
-- My children, please hurry! Find the lost $Type of $PlayerName before they get to it!
-- The Holy Creature will guide you to the lost temple of $PlayerName! Go now!
-- My children, follow our Holy Creature to the lost $Type of $PlayerName before it is too late!
-- Hurry! We must get that $Type before anyone else!
-- $PlayerName is such a FOOL to leave that $Type lying around in a temple...
-- Show those foolish followers of $PlayerName who has the true power in this world!
-- The foolish $PlayerName will see our power when we take their precious $Type right before their eyes!
-- Remember, we must still get to the $Type before anyone else!
-- Use our Holy Book and let our Holy Creature show you the way to the lost $Type!
-- Do not let that $Type get into the hand of the foolish followers of $PlayerName!
 GodToBelieversGetHolyArtifactQuestProgress:
 - Well done, my children! Only $Amount non-believers left to kill in my honor!
-GodToBelieversGetHolyArtifactThisQuestCompleted:
-- WELL DONE! You have saved my $Type from falling into the wrong hands of other Gods. Here is your reward!
-- I am proud of you! You have prevented my $Type from falling into the wrong hands of other Gods. Here is your reward!
-GodToBelieversGetHolyArtifactThisQuestFailed:
+GodToBelieversGetHolyArtifactQuestFailed:
 - Oh no... My $Type have fallen into the hand of another faith... You have failed me...
 - Oh no... My $Type is lost to the false Gods... We have failed...
-GodToBelieversGetHolyArtifactOtherQuestCompleted:
-- WELL DONE! We succesfully claimed the $Type of $PlayerName for ourselves! I can almost hear $PlayerName crying now! Here is your reward!
-- HAHA! We succesfully took $PlayerName's $Type away right infront of their eyes! $PlayerName is such a fool! Here is your reward!
 GodToBelieversGetHolyArtifactOtherQuestFailed:
 - 'NOO... The $Type of was retrieved by the followers of $PlayerName . Such a shame... '
 GodToBelieversClaimHolyLandQuestStarted:
@@ -543,3 +518,24 @@ GodToBelieversProphecyFulfilled:
 - $PlayerName fullfilled a prophecy of $Type!
 GodToBelieversAllPropheciesFulfilled:
 - Rejoice! All the prophecies in $PlayerName has been fulfilled!
+GodToBelieverPrayerRecentItemBlessing:
+- 'You already received my gift! Do not test my patience!'
+GodToBelieverPrayerTooSoon:
+- 'Silence! The thunder does not answer every whimper. Pray to me later!'
+GodToBelieversAttackHolyLandFailed:
+- 'Our attack has failed! The storm has passed for now...'
+GodToBelieversAttackHolyLandSuccess:
+- 'Victory! Their Holy Land is ours now! Let the thunder roar!'
+GodToBelieversAttackStarted:
+- 'My children, we attack the Holy Land of $PlayerName! Strike like lightning!'
+GodToBelieversDefendHolyLandFailed:
+- 'Our Holy Land is lost! My thunder roars in anger at your failure!'
+GodToBelieversDefendHolyLandSuccess:
+- 'Our Holy Land stands unbroken by the storm! Well done, my children!'
+GodToBelieversNewPlayerAccepted:
+- 'A new believer heeds the call of thunder! Welcome them, my children!'
+GodToBelieversGetHolyArtifactQuestHelp:
+- 'My children, you must find the Holy artifact of $Type! Use /gods hunt to join the search!'
+GodToBelieversGetHolyArtifactQuestRange:
+- 'You are only $Amount blocks away from the Holy artifact!'
+- 'Hurry! You are $Amount blocks away from the Holy artifact!'

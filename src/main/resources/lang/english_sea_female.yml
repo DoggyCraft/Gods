@@ -259,20 +259,20 @@ GodToBelieversConvertQuestCompleted:
 - Well done my children! You have shown your faith and gathered believers into our religion. Here is your reward!
 GodToBelieversConvertQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
-GodToBelieversGiveBiblesQuestStarted:
+GodToBelieversGiveItemsQuestStarted:
 - My children, hear this! You must now go and let $Amount heathens read our Holy Book!
 - My children, you must show $Amount non-believers the true path by letting them read our Holy Book!
-GodToBelieversGiveBiblesQuestStatus:
+GodToBelieversGiveItemsQuestStatus:
 - My children, you must still let $Amount more non-believers read our Holy Book!
 - Remember, you must still let $Amount more non-believers read our Holy Book!
 GodToBelieversGiveBiblesQuestProgress:
 - Well done, my children! $Amount heathens left to be converted to our side!
 - Very good, another believer sees our light! Only $Amount more non-believers must read our Holy Book!
 - Very good, $PlayerName has read $Type! Only $Amount more non-beleivers must read our Holy Book!
-GodToBelieversGiveBiblesQuestCompleted:
+GodToBelieversGiveItemsQuestCompleted:
 - Well done my children! You have shown your faith shown non-believers the light of our religion. Here is your reward!
 - I am proud of you, my children! You have shown our words of truth to the non-believers! Here is your reward!
-GodToBelieversGiveBiblesQuestFailed:
+GodToBelieversGiveItemsQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
 GodToBelieversBurnBiblesQuestStarted:
 - My children, you must BURN $Amount $Type in my honor!
@@ -526,3 +526,19 @@ GodToBelieversProphecyFulfilled:
 - $PlayerName fullfilled a prophecy of $Type!
 GodToBelieversAllPropheciesFulfilled:
 - Rejoice! All the prophecies in $PlayerName has been fulfilled!
+GodToBelieverPrayerRecentItemBlessing:
+- 'I have already given you a gift from the deep. Do not be greedy, my child.'
+GodToBelieverPrayerTooSoon:
+- 'Patience, my child. The tide must turn before you pray to me again.'
+GodToBelieversAttackHolyLandFailed:
+- 'Our attack has broken like a wave on the rocks... The enemy kept their Holy Land.'
+GodToBelieversAttackHolyLandSuccess:
+- 'Victory! The tide has washed over their Holy Land, and it is ours now!'
+GodToBelieversAttackStarted:
+- 'My children, we attack the Holy Land of $PlayerName! Flood them like the rising tide!'
+GodToBelieversDefendHolyLandFailed:
+- 'Our Holy Land has sunk into enemy hands... You have failed me.'
+GodToBelieversDefendHolyLandSuccess:
+- 'Our Holy Land stands like a rock in the storm! Well done, my children!'
+GodToBelieversNewPlayerAccepted:
+- 'A new sailor has joined our crew! Welcome them aboard, my children!'

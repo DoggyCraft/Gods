@@ -259,20 +259,20 @@ GodToBelieversConvertQuestCompleted:
 - Well done my children! You have shown your faith and gathered believers into our religion. Here is your reward!
 GodToBelieversConvertQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
-GodToBelieversGiveBiblesQuestStarted:
+GodToBelieversGiveItemsQuestStarted:
 - My children, hear this! You must now go and let $Amount heathens read our Holy Book!
 - My children, you must show $Amount non-believers the true path by letting them read our Holy Book!
-GodToBelieversGiveBiblesQuestStatus:
+GodToBelieversGiveItemsQuestStatus:
 - My children, you must still let $Amount more non-believers read our Holy Book!
 - Remember, you must still let $Amount more non-believers read our Holy Book!
 GodToBelieversGiveBiblesQuestProgress:
 - Well done, my children! $Amount heathens left to be converted to our side!
 - Very good, another believer sees our light! Only $Amount more non-believers must read our Holy Book!
 - Very good, $PlayerName has read $Type! Only $Amount more non-beleivers must read our Holy Book!
-GodToBelieversGiveBiblesQuestCompleted:
+GodToBelieversGiveItemsQuestCompleted:
 - Well done my children! You have shown your faith shown non-believers the light of our religion. Here is your reward!
 - I am proud of you, my children! You have shown our words of truth to the non-believers! Here is your reward!
-GodToBelieversGiveBiblesQuestFailed:
+GodToBelieversGiveItemsQuestFailed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
 GodToBelieversBurnBiblesQuestStarted:
 - My children, you must BURN $Amount $Type in my honor!
@@ -382,11 +382,6 @@ GodToBelieversClaimHolyLandQuestCompleted:
 - I am proud of you my children! You travelled far and completed your goal. Here is your reward!
 GodToBelieversClaimHolyLandQuestFailed:
 - My Children, I am displeased in you. You have not shown respect for our faith...
-GodToBelieversClaimHolyLandQuestHelp:
-- My Children, you must find the Holy artifact of $Type! Use /gods hunt to join the search! 
-GodToBelieversClaimHolyLandQuestRange:
-- You are only $Amount blocks away from mount $Type!
-- $PlayerName, you must Hurry! You are $Amount blocks away from the holy mountain!
 GodToBelieverGoodSacrifice:
 - $PlayerName, you are a TRUE believer!
 - Thank you, $PlayerName!
@@ -531,3 +526,19 @@ GodToBelieversProphecyFulfilled:
 - $PlayerName fullfilled a prophecy of $Type!
 GodToBelieversAllPropheciesFulfilled:
 - Rejoice! All the prophecies in $PlayerName has been fulfilled!
+GodToBelieverPrayerRecentItemBlessing:
+- 'My dear, I just gave you a gift! Cherish it before you ask for another.'
+GodToBelieverPrayerTooSoon:
+- 'Oh my sweet child, I have just blessed you! Let my love rest for a while.'
+GodToBelieversAttackHolyLandFailed:
+- 'Our attack has failed... Do not lose heart, my children.'
+GodToBelieversAttackHolyLandSuccess:
+- 'The Holy Land is ours now! Spread our love there, my children!'
+GodToBelieversAttackStarted:
+- 'My children, we must take the Holy Land of $PlayerName! Fight for those you love!'
+GodToBelieversDefendHolyLandFailed:
+- 'Our Holy Land is lost... My heart is broken, my children.'
+GodToBelieversDefendHolyLandSuccess:
+- 'Our love has protected our Holy Land! I am so proud of you, my children!'
+GodToBelieversNewPlayerAccepted:
+- 'A new heart has joined our family! Show them our love, my children!'
