@@ -5,13 +5,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
 
 /**
  * Chat formatting, and a thread-safe snapshot of the religion data that the
- * (asynchronous) chat handler needs. The managers keep their data in YAML
+ * (asynchronous) chat handler and PlaceholderAPI need. The managers keep their data in YAML
  * configurations that must only be touched on the main thread, so the chat
  * thread reads this cache instead. It is filled on the main thread: on join,
  * when a believer's god or chat mode changes in BelieverManager, and
@@ -34,16 +35,20 @@ public class ChatManager
 		public final String		godName;
 		public final boolean	religionChat;
 		public final boolean	priest;
+		public final ChatColor	godColor;
+		public final int		prayerPower;
 
-		ChatInfo(String godName, boolean religionChat, boolean priest)
+		ChatInfo(String godName, boolean religionChat, boolean priest, ChatColor godColor, int prayerPower)
 		{
 			this.godName = godName;
 			this.religionChat = religionChat;
 			this.priest = priest;
+			this.godColor = godColor;
+			this.prayerPower = prayerPower;
 		}
 	}
 
-	private static final ChatInfo		NO_GOD		= new ChatInfo(null, false, false);
+	private static final ChatInfo		NO_GOD		= new ChatInfo(null, false, false, ChatColor.WHITE, 0);
 
 	private final String				chatTag		= "[GOD]";
 	private final Map<UUID, ChatInfo>	chatInfos	= new ConcurrentHashMap<UUID, ChatInfo>();
@@ -87,7 +92,7 @@ public class ChatManager
 
 		if (godName == null)
 		{
-			this.chatInfos.put(playerId, NO_GOD);
+			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, BelieverManager.instance().getPrayerPower(playerId)));
 			return;
 		}
 
@@ -95,7 +100,7 @@ public class ChatManager
 		List<UUID> priests = GodManager.instance().getPriestsForGod(godName);
 		boolean priest = priests != null && priests.contains(playerId);
 
-		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest));
+		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, GodManager.instance().getColorForGod(godName), BelieverManager.instance().getPrayerPower(playerId)));
 	}
 
 	/** Main thread only: refreshes everyone online. */

@@ -1,11 +1,13 @@
 package com.dogonfire.gods;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.managers.BelieverManager;
+import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.GodManager;
 
 /**
@@ -109,57 +111,34 @@ class GodsPlaceholderExpansion extends PlaceholderExpansion {
             return "";
         }
 
-        // %gods_name_space%
-        if("name_space".equals(identifier)){
-        	String god = "";
-        	
-        	god = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-        	
-        	if (god == null) {
-        		god = "";
-        	}
-        	else {
-        		god = god + " ";
-        	}
-        	
-            return god;
+        // Chat plugins resolve placeholders on the async chat thread, where the YAML data must not be
+        // read; ChatManager keeps a snapshot for that
+        String god;
+        int prayerPower;
+        ChatColor godColor;
+        if (Bukkit.isPrimaryThread()) {
+            god = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+            prayerPower = BelieverManager.instance().getPrayerPower(player.getUniqueId());
+            godColor = (god != null) ? GodManager.instance().getColorForGod(god) : ChatColor.WHITE;
         }
-        
-     // %gods_name%
-        if("name".equals(identifier)){
-        	String god = "";
-        	
-        	god = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-        	
-        	if (god == null) {
-        		god = "";
-        	}
-        	
-            return god;
+        else {
+            ChatManager.ChatInfo info = ChatManager.instance().getChatInfo(player.getUniqueId());
+            god = info.godName;
+            prayerPower = info.prayerPower;
+            godColor = info.godColor;
         }
 
-        // %gods_prayerpower%
-        if("prayerpower".equals(identifier)){
-            return String.valueOf(BelieverManager.instance().getPrayerPower(player.getUniqueId()));
-        }
-        
-        // %gods_color%
-        if("color".equals(identifier)){
-        	String god = "";
-        	
-        	god = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-        	
-        	if (god == null) {
-        		return "&" + ChatColor.WHITE.getChar();
-        	}
-
-        	ChatColor godColor = GodManager.instance().getColorForGod(god);
-        	
-            return "&" + String.valueOf(godColor.getChar());
-        }
- 
-        // We return null if an invalid placeholder (f.e. %gods_cakenomnom%) 
-        // was provided
-        return null;
+        return switch (identifier) {
+            // %gods_name_space%
+            case "name_space" -> (god == null) ? "" : god + " ";
+            // %gods_name%
+            case "name" -> (god == null) ? "" : god;
+            // %gods_prayerpower%
+            case "prayerpower" -> String.valueOf(prayerPower);
+            // %gods_color%
+            case "color" -> "&" + ((godColor != null) ? godColor : ChatColor.WHITE).getChar();
+            // An invalid placeholder (f.e. %gods_cakenomnom%)
+            default -> null;
+        };
     }
 }

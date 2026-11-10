@@ -55,7 +55,7 @@ public class TaskGiveItem extends Task {
 				try {
 					LanguageManager.instance().setType(this.itemType.name());
 				} catch (Exception ex) {
-					getPlugin().logDebug(ex.getStackTrace().toString());
+					getPlugin().logDebug(ex.getMessage());
 				}
 				GodManager.instance().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverItemBlessing, 2 + random.nextInt(10));
 			}

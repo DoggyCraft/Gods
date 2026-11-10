@@ -69,7 +69,6 @@ public class QuestManager
 	static
 	{
 		speech(QUESTTYPE.SLAY, LANGUAGESTRING.GodToBelieversSlayQuestStarted, LANGUAGESTRING.GodToBelieversSlayQuestProgress, LANGUAGESTRING.GodToBelieversSlayQuestStatus, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, LANGUAGESTRING.GodToBelieversSlayQuestFailed);
-		speech(QUESTTYPE.SLAYDRAGON, LANGUAGESTRING.GodToBelieversSlayDragonQuestStarted, LANGUAGESTRING.GodToBelieversSlayDragonQuestProgress, LANGUAGESTRING.GodToBelieversSlayDragonQuestStatus, LANGUAGESTRING.GodToBelieversSlayDragonQuestCompleted, LANGUAGESTRING.GodToBelieversSlayDragonQuestFailed);
 		speech(QUESTTYPE.CONVERT, LANGUAGESTRING.GodToBelieversConvertQuestStarted, LANGUAGESTRING.GodToBelieversConvertQuestProgress, LANGUAGESTRING.GodToBelieversConvertQuestStatus, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, LANGUAGESTRING.GodToBelieversConvertQuestFailed);
 		speech(QUESTTYPE.BUILDALTARS, LANGUAGESTRING.GodToBelieversBuildAltarsQuestStarted, LANGUAGESTRING.GodToBelieversBuildAltarsQuestProgress, LANGUAGESTRING.GodToBelieversBuildAltarsQuestStatus, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, LANGUAGESTRING.GodToBelieversBuildAltarsQuestFailed);
 		speech(QUESTTYPE.BUILDTOWER, LANGUAGESTRING.GodToBelieversBuildTowerQuestStarted, LANGUAGESTRING.GodToBelieversBuildTowerQuestProgress, LANGUAGESTRING.GodToBelieversBuildTowerQuestStatus, LANGUAGESTRING.GodToBelieversBuildTowerQuestCompleted, LANGUAGESTRING.GodToBelieversBuildTowerQuestFailed);
@@ -78,11 +77,8 @@ public class QuestManager
 		speech(QUESTTYPE.GIVEITEMS, LANGUAGESTRING.GodToBelieversGiveItemsQuestStarted, LANGUAGESTRING.GodToBelieversGiveBiblesQuestProgress, LANGUAGESTRING.GodToBelieversGiveItemsQuestStatus, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, LANGUAGESTRING.GodToBelieversGiveItemsQuestFailed);
 		speech(QUESTTYPE.BURNBIBLES, LANGUAGESTRING.GodToBelieversBurnBiblesQuestStarted, LANGUAGESTRING.GodToBelieversBurnBiblesQuestProgress, LANGUAGESTRING.GodToBelieversBurnBiblesQuestStatus, LANGUAGESTRING.GodToBelieversBurnBiblesQuestCompleted, LANGUAGESTRING.GodToBelieversBurnBiblesQuestFailed);
 		speech(QUESTTYPE.CRUSADE, LANGUAGESTRING.GodToBelieversCrusadeQuestStarted, LANGUAGESTRING.GodToBelieversCrusadeQuestProgress, LANGUAGESTRING.GodToBelieversCrusadeQuestStatus, LANGUAGESTRING.GodToBelieversCrusadeQuestCompleted, LANGUAGESTRING.GodToBelieversCrusadeQuestFailed);
-		speech(QUESTTYPE.PVPREVENGE, LANGUAGESTRING.GodToBelieversPVPRevengeQuestStarted, LANGUAGESTRING.GodToBelieversPVPRevengeQuestProgress, LANGUAGESTRING.GodToBelieversPVPRevengeQuestStatus, LANGUAGESTRING.GodToBelieversPVPRevengeQuestCompleted, LANGUAGESTRING.GodToBelieversPVPRevengeQuestFailed);
 		speech(QUESTTYPE.PILGRIMAGE, LANGUAGESTRING.GodToBelieversPilgrimageQuestStarted, LANGUAGESTRING.GodToBelieversPilgrimageQuestProgress, LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, LANGUAGESTRING.GodToBelieversPilgrimageQuestFailed);
 		speech(QUESTTYPE.CLAIMHOLYLAND, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStarted, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestProgress, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStatus, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestCompleted, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestFailed);
-		speech(QUESTTYPE.GETHOLYARTIFACT, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStarted, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestProgress, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestStatus, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestCompleted, LANGUAGESTRING.GodToBelieversGetHolyArtifactQuestFailed);
-		speech(QUESTTYPE.HOLYWAR, LANGUAGESTRING.GodToBelieversHolywarQuestStarted, LANGUAGESTRING.GodToBelieversHolywarQuestProgress, LANGUAGESTRING.GodToBelieversHolywarQuestStatus, LANGUAGESTRING.GodToBelieversHolywarQuestCompleted, LANGUAGESTRING.GodToBelieversHolywarQuestFailed);
 	}
 
 	private static void speech(QUESTTYPE type, LANGUAGESTRING started, LANGUAGESTRING progress, LANGUAGESTRING status, LANGUAGESTRING completed, LANGUAGESTRING failed)
@@ -1254,8 +1250,44 @@ public class QuestManager
 			this.questsConfigFile = new File(Gods.instance().getDataFolder(), "quests.yml");
 		}
 		this.questsConfig = YamlConfiguration.loadConfiguration(this.questsConfigFile);
+		removeObsoleteQuests();
 
 		Gods.instance().log("Loaded " + this.questsConfig.getKeys(false).size() + " quests.");
+	}
+
+	/**
+	 * Gods 0.9.x could leave quests of types that are no longer generated (and can't be completed or talked
+	 * about), and the data of the removed global quests. Those are dropped on load.
+	 */
+	private void removeObsoleteQuests()
+	{
+		boolean changed = this.questsConfig.contains("Global");
+		this.questsConfig.set("Global", null);
+
+		for (String godName : this.questsConfig.getKeys(false))
+		{
+			if (godName.equals("QuestTargets"))
+			{
+				continue;
+			}
+			QUESTTYPE type = getQuestTypeForGod(godName);
+			if (type == QUESTTYPE.HOLYWAR || type == QUESTTYPE.SLAYDRAGON || type == QUESTTYPE.GETHOLYARTIFACT || type == QUESTTYPE.PVPREVENGE)
+			{
+				Gods.instance().log("Removing the " + type.name() + " quest of " + godName + ": that quest type no longer exists");
+				Location questLocation = getStoredQuestLocation(godName);
+				if (questLocation != null)
+				{
+					clearQuestTarget(questLocation);
+				}
+				this.questsConfig.set(godName, null);
+				changed = true;
+			}
+		}
+
+		if (changed)
+		{
+			save();
+		}
 	}
 
 	/**

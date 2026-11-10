@@ -242,7 +242,7 @@ public class HolyBookManager
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
+			Gods.instance().logDebug(ex.getMessage());
 		}
 
 		save();

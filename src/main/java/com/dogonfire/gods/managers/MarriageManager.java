@@ -276,13 +276,22 @@ public class MarriageManager
 		Player player1 = Gods.instance().getServer().getPlayer(playerId1);
 		Player player2 = Gods.instance().getServer().getPlayer(playerId2);
 
+		// The proposal can be accepted after the other player logged off
+		this.marriagesConfig.set(playerId1 + ".MarriageProposal", null);
+		this.marriagesConfig.set(playerId2 + ".MarriageProposal", null);
+		if (player1 == null || player2 == null)
+		{
+			save();
+			return;
+		}
+
 		try
 		{
 			LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(this.marriageTokenType));
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug(ex.getStackTrace().toString());
+			Gods.instance().logDebug(ex.getMessage());
 		}
 
 		LanguageManager.instance().setPlayerName(player2.getDisplayName());
@@ -362,7 +371,7 @@ public class MarriageManager
 				}
 				catch (Exception ex)
 				{
-					Gods.instance().logDebug(ex.getStackTrace().toString());
+					Gods.instance().logDebug(ex.getMessage());
 				}
 				LanguageManager.instance().setPlayerName(partner.getDisplayName());
 				GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageTokenPickup, 10);
