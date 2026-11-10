@@ -1,24 +1,24 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents working with code in this repository.
 
 ## Project
 
-Gods is a Bukkit/Spigot plugin. Players build altars, pray to gods they name themselves, and gain powers, quests, holy lands (land protection), marriages, holy books and so on. It targets Spigot API 1.14.4 (`api-version: 1.13` in `plugin.yml`) and Java 8. WorldGuard, Vault, PlaceholderAPI and the permission plugins are optional (softdepend).
+Gods is a Bukkit/Spigot plugin. Players build altars, pray to gods they name themselves, and gain powers, quests, holy lands (land protection), marriages, holy books and so on. It runs on Spigot and Paper 26.1+ with Java 25 (`api-version: '1.21'` in `plugin.yml`). It compiles against `paper-api` 26.3 but **must keep running on Spigot**: use only Bukkit/Spigot API, and reach Paper-only API behind a runtime check. WorldGuard, Vault, PlaceholderAPI and the permission plugins are optional (softdepend).
 
 ## Build & test
 
 ```bash
-mvn clean package                 # builds target/Gods-<version>.jar (what CI runs)
-mvn                               # default goal: clean package cobertura:cobertura
-mvn test                          # JUnit 5 tests (src/test/java)
-mvn -Dtest=GodsTest#testTrue test # run a single test
-mvn cobertura:cobertura           # coverage report in target/site/cobertura/
+nix develop                           # devshell with JDK 25 + Maven (flake.nix); or prefix commands with `nix develop -c`
+mvn clean package                     # default goal; tests and builds target/Gods-<version>.jar
+mvn test -Dtest=GodsTest              # one test class (append #method for one test)
+mvn -Pspigot clean compile            # compile against spigot-api instead: fails on any Paper-only API (CI runs this too)
 ```
 
-- The Maven `sourceDirectory` and resource directory are both `src/` (not `src/main/java`). Resources are **filtered**, so `${project.version}` in `src/plugin.yml` is replaced at build time.
-- Several Maven repos in `pom.xml` use plain `http://` URLs. Newer Maven versions block these, so dependency resolution may fail.
-- The test suite (`src/test/java/GodsTest.java`, package `test.java`) is close to a stub. Most behavior can only be checked by running the jar on a Spigot server.
+- Standard Maven layout: `src/main/java`, `src/main/resources`, `src/test/java`. Only `plugin.yml` is Maven-filtered (for `${project.version}`).
+- Java 25 (`maven.compiler.release`). CI (`.github/workflows/build.yml`) builds on JDK 25 for every push and PR. Pushing a tag `v<pom version>` (e.g. `v1.0.0`) publishes a GitHub release with the jar.
+- The test suite is close to a stub. Most behavior can only be checked by running the jar on a server.
+- `Biome`, `Sound` and other former enums are registry interfaces now: compare with `==`, never `switch` on them or call `valueOf`.
 
 ## Architecture
 
@@ -39,6 +39,6 @@ mvn cobertura:cobertura           # coverage report in target/site/cobertura/
 
 At runtime, missing language files are **downloaded from `raw.githubusercontent.com/DogOnFire/Gods/master/lang/`**, not bundled in the jar. A new key needs the enum entry, plus the string in every relevant `lang/` file on master.
 
-**Tasks (`tasks/`):** short delayed `Runnable`s scheduled through the Bukkit scheduler (divine effects, messages, mob spawns). The directory has duplicate pairs such as `TaskHealPlayer` / `HealPlayerTask`. Only the `Task*`-prefixed classes are used. The `*Task` versions are legacy. The same applies to `com.dogonfire.gods.ChatManager`; the live one is `managers.ChatManager`.
+**Tasks (`tasks/`):** short delayed `Runnable`s scheduled through the Bukkit scheduler (divine effects, messages, mob spawns).
 
-**Other:** `GodsPlaceholderExpansion` (PlaceholderAPI hook, registered only if that plugin is present), `listeners/` (block/chat events; `HolyLandManager` is also a listener), `Metrics` (bStats), `src/changelog.txt` (release notes, newest first).
+**Other:** `GodsPlaceholderExpansion` (PlaceholderAPI hook, registered only if that plugin is present), `listeners/` (block/chat events; `HolyLandManager` is also a listener), `changelog.txt` (release notes, newest first).
