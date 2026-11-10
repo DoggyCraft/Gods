@@ -8,11 +8,11 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class TaskInfo extends Task {
-	private UUID playerId = null;
-	private String name1 = null;
-	private String name2 = null;
-	private LanguageManager.LANGUAGESTRING message = null;
-	private int amount = 0;
+	private UUID playerId;
+	private String name1;
+	private String name2;
+	private LanguageManager.LANGUAGESTRING message;
+	private int amount;
 	private ChatColor color;
 
 	public TaskInfo(ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, int amount, String name1) {
@@ -23,8 +23,12 @@ public class TaskInfo extends Task {
 		this.color = color;
 	}
 
+	/**
+	 * $PlayerName is name, $Type is amount1 and $Amount is amount2.
+	 */
 	public TaskInfo(ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name, int amount1, int amount2) {
 		this.playerId = playerId;
+		this.name1 = name;
 		this.name2 = String.valueOf(amount1);
 		this.message = m;
 		this.amount = amount2;
@@ -47,20 +51,18 @@ public class TaskInfo extends Task {
 			return;
 		}
 
-		LanguageManager.instance().setPlayerName(this.name1);
+		LanguageManager.instance().setPlayerName((this.name1 != null) ? this.name1 : "");
 
-		try {
-			LanguageManager.instance().setType(this.name2);
-		} catch (Exception ex) {
-			getPlugin().logDebug(ex.getStackTrace().toString());
+		if (this.name2 != null) {
+			try {
+				LanguageManager.instance().setType(this.name2);
+			} catch (Exception ex) {
+				getPlugin().logDebug(ex.getMessage());
+			}
 		}
 
 		LanguageManager.instance().setAmount(this.amount);
 
-		String questionMessage = LanguageManager.instance().getInfoString(this.message, this.color);
-
-		player.sendMessage(
-
-				this.color + questionMessage);
+		player.sendMessage(this.color + LanguageManager.instance().getInfoString(this.message, this.color));
 	}
 }
