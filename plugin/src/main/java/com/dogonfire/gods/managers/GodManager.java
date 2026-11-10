@@ -35,6 +35,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.model.MarriedCouple;
 import com.dogonfire.gods.storage.DataFile;
 import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
 import com.dogonfire.gods.tasks.TaskGiveItem;
@@ -247,7 +248,7 @@ public class GodManager
 		{
 			if (ctx.settings().marriage().enabled())
 			{
-				ctx.marriageManager().divorce(player.getUniqueId());
+				ctx.marriageService().divorce(player.getUniqueId());
 			}
 			
 			ctx.questManager().handleJoinReligion(player.getName(), godName);
@@ -385,13 +386,13 @@ public class GodManager
 		ctx.languageManager().setPlayerName(player.getName());
 		if (ctx.settings().marriage().enabled())
 		{
-			UUID pendingMarriagePartner = ctx.marriageManager().getProposal(believerId);
+			UUID pendingMarriagePartner = ctx.marriageService().getProposal(believerId);
 
 			if (pendingMarriagePartner != null)
 			{
 				ctx.plugin().log(player.getName() + " accepted the proposal to marry " + pendingMarriagePartner);
 
-				ctx.marriageManager().handleAcceptProposal(believerId, pendingMarriagePartner, godName);
+				ctx.marriageService().handleAcceptProposal(believerId, pendingMarriagePartner, godName);
 
 				return;
 			}
@@ -477,7 +478,7 @@ public class GodManager
 
 		if (ctx.settings().marriage().enabled())
 		{
-			ctx.marriageManager().divorce(believerId);
+			ctx.marriageService().divorce(believerId);
 		}
 
 		ctx.believerService().clearPrayerPower(believerId);
@@ -2695,12 +2696,12 @@ public class GodManager
 
 		if (ctx.settings().marriage().enabled() && this.random.nextInt(501) == 0)
 		{
-			List<MarriageManager.MarriedCouple> marriedCouples = ctx.marriageManager().getMarriedCouples();
+			List<MarriedCouple> marriedCouples = ctx.marriageService().getMarriedCouples();
 			if (marriedCouples.size() > 0)
 			{
-				MarriageManager.MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
+				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
-				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id).getName());
+				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
 				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
@@ -2739,12 +2740,12 @@ public class GodManager
 		}
 		if ((ctx.settings().marriage().enabled()) && (this.random.nextInt(501) == 0))
 		{
-			List<MarriageManager.MarriedCouple> marriedCouples = ctx.marriageManager().getMarriedCouples();
+			List<MarriedCouple> marriedCouples = ctx.marriageService().getMarriedCouples();
 			if (marriedCouples.size() > 0)
 			{
-				MarriageManager.MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
+				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
-				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id).getName());
+				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
 				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
@@ -2824,13 +2825,13 @@ public class GodManager
 
 		if ((ctx.settings().marriage().enabled()) && (this.random.nextInt(501) == 0))
 		{
-			List<MarriageManager.MarriedCouple> marriedCouples = ctx.marriageManager().getMarriedCouples();
+			List<MarriedCouple> marriedCouples = ctx.marriageService().getMarriedCouples();
 
 			if (marriedCouples.size() > 0)
 			{
-				MarriageManager.MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
+				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
-				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id).getName());
+				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
 				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}

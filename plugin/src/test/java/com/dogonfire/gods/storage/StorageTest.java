@@ -175,16 +175,16 @@ class StorageTest
 	void awaitWritesWaitsForQueuedWrites()
 	{
 		Storage storage = storage();
-		storage.marriages().load();
+		storage.bibles().load();
 		for (int i = 0; i < 50; i++)
 		{
-			storage.marriages().yaml().set("couple" + i + ".Married.Partner", "p" + i);
-			storage.marriages().save();
+			storage.bibles().yaml().set("book" + i + ".Title", "p" + i);
+			storage.bibles().save();
 		}
 		assertTrue(storage.awaitWrites(10, TimeUnit.SECONDS));
 
-		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("marriages.yml").toFile());
-		assertEquals("p49", written.getString("couple49.Married.Partner"));
+		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("bibles.yml").toFile());
+		assertEquals("p49", written.getString("book49.Title"));
 		storage.close();
 	}
 

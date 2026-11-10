@@ -28,6 +28,7 @@ import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
 import com.dogonfire.gods.listener.HolyLandListener;
+import com.dogonfire.gods.listener.MarriageListener;
 import com.dogonfire.gods.listeners.BlockListener;
 import com.dogonfire.gods.listeners.ChatListener;
 import com.dogonfire.gods.managers.ChatManager;
@@ -198,7 +199,7 @@ public class Gods extends JavaPlugin
 		}
 		if (this.settings.marriage().enabled())
 		{
-			this.ctx.marriageManager().load();
+			this.ctx.marriageService().load();
 		}
 		if (this.settings.holyLand().enabled())
 		{
@@ -218,6 +219,10 @@ public class Gods extends JavaPlugin
 		if (this.settings.holyLand().enabled())
 		{
 			registerFeature(new HolyLandListener(this.ctx));
+		}
+		if (this.settings.marriage().enabled())
+		{
+			registerFeature(new MarriageListener(this.ctx));
 		}
 	}
 

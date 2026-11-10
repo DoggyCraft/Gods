@@ -42,7 +42,7 @@ public class CommandDivorce extends GodsCommand
 			return;
 		}
 
-		String partnerName = ctx.marriageManager().getPartnerName(player.getUniqueId());
+		String partnerName = ctx.marriageService().getPartnerName(player.getUniqueId());
 
 		if (partnerName == null)
 		{
@@ -50,7 +50,7 @@ public class CommandDivorce extends GodsCommand
 			return;
 		}
 
-		ctx.marriageManager().divorce(player.getUniqueId());
+		ctx.marriageService().divorce(player.getUniqueId());
 
 		player.sendMessage(ChatColor.AQUA + "You divorced " + ChatColor.WHITE + partnerName + "!");
 	}

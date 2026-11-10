@@ -12,12 +12,12 @@ import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.MarriageManager;
 import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.managers.WhitelistManager;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.HolyLandService;
+import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.storage.Storage;
 
 /**
@@ -42,7 +42,7 @@ public final class GodsContext
 	private final AltarManager				altarManager;
 	private final HolyLandService			holyLandService;
 	private final HolyBookManager			holyBookManager;
-	private final MarriageManager			marriageManager;
+	private final MarriageService			marriageService;
 	private final HolyArtifactManager		holyArtifactManager;
 	private final HolyPowerManager			holyPowerManager;
 	private final WhitelistManager			whitelistManager;
@@ -64,7 +64,7 @@ public final class GodsContext
 		this.altarManager = new AltarManager(this);
 		this.holyLandService = new HolyLandService(this, storage.holyLands());
 		this.holyBookManager = new HolyBookManager(this);
-		this.marriageManager = new MarriageManager(this);
+		this.marriageService = new MarriageService(this, storage.marriages());
 		this.holyArtifactManager = new HolyArtifactManager(this);
 		this.holyPowerManager = new HolyPowerManager(this);
 		this.whitelistManager = new WhitelistManager(this);
@@ -137,10 +137,10 @@ public final class GodsContext
 		return this.holyBookManager;
 	}
 
-	/** Its data is only loaded while marriage is enabled */
-	public MarriageManager marriageManager()
+	/** Its data is only loaded, and its listener (MarriageListener) only registered, while marriage is enabled */
+	public MarriageService marriageService()
 	{
-		return this.marriageManager;
+		return this.marriageService;
 	}
 
 	public HolyArtifactManager holyArtifactManager()

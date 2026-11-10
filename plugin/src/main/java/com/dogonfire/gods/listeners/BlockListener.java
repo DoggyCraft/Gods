@@ -526,12 +526,6 @@ public class BlockListener implements Listener
 				}
 			}
 		}
-
-		if (ctx.settings().marriage().enabled())
-		{
-			ctx.marriageManager().handlePickupItem(player, event.getItem(), event.getItem().getLocation());
-		}
-
 	}
 
 	@EventHandler

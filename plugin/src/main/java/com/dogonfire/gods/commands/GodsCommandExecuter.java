@@ -113,7 +113,7 @@ public class GodsCommandExecuter implements CommandExecutor
 			}
 			if (ctx.settings().marriage().enabled())
 			{
-				String partnerName = ctx.marriageManager().getPartnerName(player.getUniqueId());
+				String partnerName = ctx.marriageService().getPartnerName(player.getUniqueId());
 				if (partnerName != null)
 				{
 					sender.sendMessage(ChatColor.WHITE + "You are married to " + ChatColor.GOLD + partnerName);

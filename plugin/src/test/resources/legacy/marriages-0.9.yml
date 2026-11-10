@@ -1,0 +1,30 @@
+8667ba71-b85a-4004-af54-457a9734eed7:
+  Married:
+    Time: 20:00:00 01-03-2019
+    Partner: 0b8d4f7e-3c1a-4bfa-9a3e-6f0f1c2d3e4f
+    LastLove: 21:15:03 14-03-2019
+0b8d4f7e-3c1a-4bfa-9a3e-6f0f1c2d3e4f:
+  Married:
+    Time: 20:00:00 01-03-2019
+    Partner: 8667ba71-b85a-4004-af54-457a9734eed7
+    LastLove: 21:15:03 14-03-2019
+5d0e2f3a-1b2c-4d5e-8f90-a1b2c3d4e5f6:
+  GettingMarried:
+    Time: 10:00:00 02-02-2020
+    Partner: 1a2b3c4d-1b2c-4d5e-8f90-a1b2c3d4e5f6
+    HasPickupWeddingToken: true
+  Nickname: Sweetie
+1a2b3c4d-1b2c-4d5e-8f90-a1b2c3d4e5f6:
+  GettingMarried:
+    Time: 10:00:00 02-02-2020
+    Partner: 5d0e2f3a-1b2c-4d5e-8f90-a1b2c3d4e5f6
+  MarriageProposal:
+    Time: 09:59:00 02-02-2020
+    Partner: 5d0e2f3a-1b2c-4d5e-8f90-a1b2c3d4e5f6
+ffffffff-1b2c-4d5e-8f90-a1b2c3d4e5f6:
+  Married:
+    Time: 20:00:00 01-03-2015
+    Partner: Notch
+Notch:
+  Married:
+    Partner: ffffffff-1b2c-4d5e-8f90-a1b2c3d4e5f6
