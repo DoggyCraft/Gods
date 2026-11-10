@@ -36,9 +36,9 @@ import com.dogonfire.gods.listener.GodListener;
 import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
 import com.dogonfire.gods.listener.QuestAndHolyItemListener;
-import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
+import com.dogonfire.gods.service.ChatService;
 import com.dogonfire.gods.storage.Storage;
 import com.dogonfire.gods.task.GodUpdateTask;
 import com.dogonfire.gods.util.AtomicFiles;
@@ -130,7 +130,7 @@ public class Gods extends JavaPlugin
 		// Writes the data files that changed (and on /g reload and disable)
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.storage.flush(), Storage.AUTOSAVE_TICKS, Storage.AUTOSAVE_TICKS));
 		// Priest status and the like change in places that don't notify the chat cache, so refresh it now and then
-		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.chatManager().refreshAll(), 1L, ChatManager.REFRESH_TICKS));
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.chatService().refreshAll(), 1L, ChatService.REFRESH_TICKS));
 
 		startFeatures();
 	}

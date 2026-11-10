@@ -189,7 +189,7 @@ public class AltarService
 	{
 		Player player = event.getPlayer();
 
-		if (!player.isOp() && !ctx.permissionsManager().hasPermission(player, "gods.altar.build"))
+		if (!player.isOp() && !ctx.permissions().hasPermission(player, "gods.altar.build"))
 		{
 			return false;
 		}
@@ -206,7 +206,7 @@ public class AltarService
 	public boolean handleNewCursingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.build")))
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.build")))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
 			return false;
@@ -224,7 +224,7 @@ public class AltarService
 	public boolean handleNewPrayingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.build")))
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.build")))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
 			return false;
@@ -280,7 +280,7 @@ public class AltarService
 		
 		if (ctx.prayerService().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
 		{
-			if ((ctx.settings().holyLand().enabled()) && (ctx.permissionsManager().hasPermission(player, "gods.holyland")))
+			if ((ctx.settings().holyLand().enabled()) && (ctx.permissions().hasPermission(player, "gods.holyland")))
 			{
 				ctx.holyLandService().addAltar(player, godName, altarBlock.getLocation());
 			}

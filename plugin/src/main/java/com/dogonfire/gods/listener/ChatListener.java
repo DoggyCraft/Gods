@@ -10,7 +10,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.ChatManager;
+import com.dogonfire.gods.service.ChatService;
 
 public class ChatListener implements Listener
 {
@@ -24,27 +24,27 @@ public class ChatListener implements Listener
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		ctx.chatManager().refresh(event.getPlayer().getUniqueId());
+		ctx.chatService().refresh(event.getPlayer().getUniqueId());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event)
 	{
-		ctx.chatManager().remove(event.getPlayer().getUniqueId());
+		ctx.chatService().remove(event.getPlayer().getUniqueId());
 	}
 
-	// Runs on the chat thread: only read the ChatManager cache here
+	// Runs on the chat thread: only read the ChatService cache here
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerChat(AsyncPlayerChatEvent event)
 	{
 		Player player = event.getPlayer();
 
-		ChatManager.ChatInfo info = ctx.chatManager().getChatInfo(player.getUniqueId());
+		ChatService.ChatInfo info = ctx.chatService().getChatInfo(player.getUniqueId());
 		String godName = info.godName;
 
 		if (ctx.settings().chat().formatting())
 		{
-			event.setFormat(ctx.chatManager().formatChat(player, godName, event.getFormat()));
+			event.setFormat(ctx.chatService().formatChat(player, godName, event.getFormat()));
 		}
 
 		if (godName == null || !info.religionChat)
@@ -66,7 +66,7 @@ public class ChatListener implements Listener
 
 		for (Player otherPlayer : ctx.plugin().getServer().getOnlinePlayers())
 		{
-			if (godName.equals(ctx.chatManager().getChatInfo(otherPlayer.getUniqueId()).godName))
+			if (godName.equals(ctx.chatService().getChatInfo(otherPlayer.getUniqueId()).godName))
 			{
 				otherPlayer.sendMessage(message);
 			}

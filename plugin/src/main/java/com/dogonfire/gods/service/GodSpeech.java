@@ -53,7 +53,7 @@ public class GodSpeech
 
 		ctx.plugin().logDebug(godName + " to " + player.getName() + ": " + ctx.languageManager().getLanguageString(godName, message));
 
-		if (!ctx.permissionsManager().hasPermission(player, "gods.listen"))
+		if (!ctx.permissions().hasPermission(player, "gods.listen"))
 		{
 			return;
 		}
@@ -78,7 +78,7 @@ public class GodSpeech
 			return;
 		}
 		ctx.plugin().logDebug(godName + " to " + player.getName() + ": " + ctx.languageManager().getLanguageString(godName, message));
-		if (!ctx.permissionsManager().hasPermission(player, "gods.listen"))
+		if (!ctx.permissions().hasPermission(player, "gods.listen"))
 		{
 			return;
 		}

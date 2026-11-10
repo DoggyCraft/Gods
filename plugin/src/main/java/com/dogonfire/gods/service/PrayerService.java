@@ -164,7 +164,7 @@ public class PrayerService
 	{
 		if (!ctx.godService().godExist(godName))
 		{
-			if (!player.isOp() && (!ctx.permissionsManager().hasPermission(player, "gods.god.create")))
+			if (!player.isOp() && (!ctx.permissions().hasPermission(player, "gods.god.create")))
 			{
 				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CreateGodNotAllowed, ChatColor.RED, 0, "", 20);
 				return false;
@@ -386,7 +386,7 @@ public class PrayerService
 
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));
 
-			if ((ctx.settings().holyLand().enabled()) && (ctx.permissionsManager().hasPermission(player, "gods.holyland")))
+			if ((ctx.settings().holyLand().enabled()) && (ctx.permissions().hasPermission(player, "gods.holyland")))
 			{
 				ctx.holyLandService().addPrayer(player, godName, altarBlock.getLocation());
 			}

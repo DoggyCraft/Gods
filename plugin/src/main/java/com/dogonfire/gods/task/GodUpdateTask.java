@@ -125,7 +125,7 @@ public final class GodUpdateTask implements Runnable
 			return false;
 		}
 
-		if ((believer.getGameMode() != GameMode.CREATIVE) && ctx.permissionsManager().hasPermission(believer, "gods.itemblessings"))
+		if ((believer.getGameMode() != GameMode.CREATIVE) && ctx.permissions().hasPermission(believer, "gods.itemblessings"))
 		{
 			if (!ctx.believerService().hasRecentItemBlessing(believer.getUniqueId()))
 			{
@@ -289,7 +289,7 @@ public final class GodUpdateTask implements Runnable
 			return false;
 		}
 
-		if (believer.getGameMode() != GameMode.CREATIVE && ctx.permissionsManager().hasPermission(believer, "gods.itemblessings"))
+		if (believer.getGameMode() != GameMode.CREATIVE && ctx.permissions().hasPermission(believer, "gods.itemblessings"))
 		{
 			if (!ctx.believerService().hasRecentItemBlessing(believer.getUniqueId()))
 			{

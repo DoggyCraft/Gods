@@ -94,7 +94,7 @@ public class PriestService
 				dispatchPriestCommand(ctx.settings().priests().assignCommand(), playerId);
 			}
 
-			ctx.chatManager().refresh(playerId);
+			ctx.chatService().refresh(playerId);
 
 			god.setPendingPriest(null);
 			god.setPendingPriestTime(null);
@@ -128,7 +128,7 @@ public class PriestService
 		{
 			Player player = ctx.plugin().getServer().getPlayer(candidate);
 			if (player != null && PriestRules.isCandidate(isPriest(candidate), candidate.equals(pendingPriest), ctx.believerService().hasRecentPriestOffer(candidate),
-					ctx.permissionsManager().hasPermission(player, "gods.priest")))
+					ctx.permissions().hasPermission(player, "gods.priest")))
 			{
 				candidates.put(candidate, ctx.believerService().getBelieverPower(candidate));
 			}
@@ -333,7 +333,7 @@ public class PriestService
 			dispatchPriestCommand(ctx.settings().priests().removeCommand(), playerId);
 		}
 
-		ctx.chatManager().refresh(playerId);
+		ctx.chatService().refresh(playerId);
 
 		this.repository.markDirty();
 

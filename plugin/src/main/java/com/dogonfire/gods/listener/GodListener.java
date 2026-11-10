@@ -51,7 +51,7 @@ public class GodListener implements Listener
 			return;
 		}
 
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.commandments")))
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.commandments")))
 		{
 			return;
 		}
@@ -76,7 +76,7 @@ public class GodListener implements Listener
 		{
 			if ((ctx.settings().commandments().enabled()) && (player.getHealth() != player.getAttribute(Attribute.MAX_HEALTH).getValue()))
 			{
-				if ((player.isOp()) || (ctx.permissionsManager().hasPermission(player, "gods.commandments")))
+				if ((player.isOp()) || (ctx.permissions().hasPermission(player, "gods.commandments")))
 				{
 					ctx.commandmentService().handleEat(player, godName, type.name());
 				}

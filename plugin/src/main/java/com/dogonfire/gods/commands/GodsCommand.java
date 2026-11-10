@@ -52,7 +52,7 @@ public abstract class GodsCommand
 		if (permission == null)
 			return false;
 		if (sender instanceof Player)
-			return ctx.permissionsManager().hasPermission((Player) sender, permission);
+			return ctx.permissions().hasPermission((Player) sender, permission);
 		return sender.hasPermission(permission);
 	}
 

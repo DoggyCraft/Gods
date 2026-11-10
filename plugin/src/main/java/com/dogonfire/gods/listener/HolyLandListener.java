@@ -32,7 +32,6 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.TitleManager;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.service.HolyLandContest;
@@ -83,7 +82,7 @@ public class HolyLandListener implements Listener
 			return;
 		}
 
-		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
+		if (!ctx.permissions().hasPermission(player, "gods.holyland"))
 		{
 			ctx.plugin().logDebug(event.getPlayer().getName() + " does not have holyland permission");
 			return;
@@ -127,7 +126,7 @@ public class HolyLandListener implements Listener
 		{
 			return;
 		}
-		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
+		if (!ctx.permissions().hasPermission(player, "gods.holyland"))
 		{
 			ctx.plugin().logDebug(player.getName() + " does not have holyland permission");
 			return;
@@ -172,7 +171,7 @@ public class HolyLandListener implements Listener
 			return;
 		}
 
-		if (!ctx.permissionsManager().hasPermission(event.getPlayer(), "gods.holyland"))
+		if (!ctx.permissions().hasPermission(event.getPlayer(), "gods.holyland"))
 		{
 			ctx.plugin().logDebug(event.getPlayer().getName() + " does not have holyland permission");
 			return;
@@ -403,7 +402,7 @@ public class HolyLandListener implements Listener
 			return;
 		}
 
-		if (player.isOp() || !ctx.permissionsManager().hasPermission(player, "gods.holyland"))
+		if (player.isOp() || !ctx.permissions().hasPermission(player, "gods.holyland"))
 		{
 			return;
 		}
@@ -483,7 +482,7 @@ public class HolyLandListener implements Listener
 			return;
 		}
 
-		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
+		if (!ctx.permissions().hasPermission(player, "gods.holyland"))
 		{
 			return;
 		}
@@ -496,7 +495,7 @@ public class HolyLandListener implements Listener
 
 			if (!HolyLandService.NEUTRAL_LAND_MARKER.equals(godFrom))
 			{
-				TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
+				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
 			}
 			return;
 		}
@@ -518,7 +517,7 @@ public class HolyLandListener implements Listener
 				int defenderKillsNeeded = HolyLandContest.defenderKillsNeeded(contest);
 				int desecration = contest.desecration();
 
-				TitleManager.sendTitle(player, 1 * 20, 4 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
+				ctx.titles().send(player, 1 * 20, 4 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
 
 				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandKillsStatus, ChatColor.AQUA, String.valueOf(minutesLeft), attackerKillsNeeded, defenderKillsNeeded, 20);
 				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandDesecrationStatus, ChatColor.AQUA, godTo, 0, desecration, 20);
@@ -536,16 +535,16 @@ public class HolyLandListener implements Listener
 			String playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 			if ((playerGod != null) && (playerGod.equals(godTo)))
 			{
-				TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.WHITE + nullToEmpty(lands().getHolyLandName(to)));
+				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.WHITE + nullToEmpty(lands().getHolyLandName(to)));
 			}
 			else
 			{
-				TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(ctx.godService().getGodDescription(godTo)));
+				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(ctx.godService().getGodDescription(godTo)));
 			}
 		}
 		else if ((godFrom != null) && (godTo == null))
 		{
-			TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.DARK_GREEN + "Wilderness", "");
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.DARK_GREEN + "Wilderness", "");
 		}
 	}
 
@@ -555,7 +554,7 @@ public class HolyLandListener implements Listener
 		Player player = event.getPlayer();
 		Location location = player.getLocation();
 
-		if (!isActiveIn(location.getWorld()) || !ctx.permissionsManager().hasPermission(player, "gods.holyland"))
+		if (!isActiveIn(location.getWorld()) || !ctx.permissions().hasPermission(player, "gods.holyland"))
 		{
 			return;
 		}
@@ -563,7 +562,7 @@ public class HolyLandListener implements Listener
 		if (lands().isNeutralLandLocation(location))
 		{
 			lands().setNeutralLandLocationFrom(player.getUniqueId());
-			TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
 			return;
 		}
 
@@ -571,11 +570,11 @@ public class HolyLandListener implements Listener
 
 		if (godName != null)
 		{
-			TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(ctx.godService().getGodDescription(godName)));
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(ctx.godService().getGodDescription(godName)));
 		}
 		else
 		{
-			TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.DARK_GREEN + "Wilderness", "");
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.DARK_GREEN + "Wilderness", "");
 		}
 	}
 

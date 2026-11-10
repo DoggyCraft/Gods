@@ -5,16 +5,15 @@ import org.bukkit.plugin.PluginManager;
 
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
-import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.BlessingService;
+import com.dogonfire.gods.service.ChatService;
 import com.dogonfire.gods.service.CommandmentService;
 import com.dogonfire.gods.service.GodListService;
 import com.dogonfire.gods.service.GodService;
@@ -22,9 +21,11 @@ import com.dogonfire.gods.service.GodSpeech;
 import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.service.MoodService;
+import com.dogonfire.gods.service.Permissions;
 import com.dogonfire.gods.service.PrayerService;
 import com.dogonfire.gods.service.PriestService;
 import com.dogonfire.gods.service.RelationService;
+import com.dogonfire.gods.service.Titles;
 import com.dogonfire.gods.storage.Storage;
 
 /**
@@ -43,7 +44,7 @@ public final class GodsContext
 	private final Storage					storage;
 
 	private final LanguageManager			languageManager;
-	private final PermissionsManager		permissionsManager;
+	private final Permissions				permissions;
 	private final GodService				godService;
 	private final MoodService				moodService;
 	private final RelationService			relationService;
@@ -60,7 +61,8 @@ public final class GodsContext
 	private final HolyArtifactManager		holyArtifactManager;
 	private final HolyPowerManager			holyPowerManager;
 	private final GodListService			godListService;
-	private final ChatManager				chatManager;
+	private final ChatService				chatService;
+	private final Titles					titles;
 	private final GodSpeech					godSpeech;
 
 	// Null when WorldGuard isn't installed; its classes must not be touched then
@@ -72,7 +74,7 @@ public final class GodsContext
 		this.storage = storage;
 
 		this.languageManager = new LanguageManager(this);
-		this.permissionsManager = new PermissionsManager();
+		this.permissions = new Permissions();
 		this.godService = new GodService(this, storage.gods());
 		this.moodService = new MoodService(this, storage.gods());
 		this.relationService = new RelationService(this, storage.gods());
@@ -89,7 +91,8 @@ public final class GodsContext
 		this.holyArtifactManager = new HolyArtifactManager(this);
 		this.holyPowerManager = new HolyPowerManager(this);
 		this.godListService = new GodListService(this, storage.whitelist(), storage.blacklist());
-		this.chatManager = new ChatManager(this);
+		this.chatService = new ChatService(this);
+		this.titles = new Titles(plugin.getServer().getPluginManager());
 		this.godSpeech = new GodSpeech(this);
 
 		this.worldGuard = isEnabled(plugin.getServer().getPluginManager(), "WorldGuard") ? new WorldGuardIntegration() : null;
@@ -122,9 +125,10 @@ public final class GodsContext
 		return this.languageManager;
 	}
 
-	public PermissionsManager permissionsManager()
+	/** Permission checks (Bukkit's own) */
+	public Permissions permissions()
 	{
-		return this.permissionsManager;
+		return this.permissions;
 	}
 
 	/** Gods: which exist and are online, what they are, their power and what their priests set; loads gods.yml */
@@ -218,15 +222,22 @@ public final class GodsContext
 		return this.godListService;
 	}
 
-	public ChatManager chatManager()
+	/** Religion chat, and the thread-safe snapshot the chat thread and PlaceholderAPI read */
+	public ChatService chatService()
 	{
-		return this.chatManager;
+		return this.chatService;
 	}
 
 	/** Gods speaking to players, and the info messages */
 	public GodSpeech godSpeech()
 	{
 		return this.godSpeech;
+	}
+
+	/** Titles on the screen (holy land you enter and the like) */
+	public Titles titles()
+	{
+		return this.titles;
 	}
 
 	/** Null when WorldGuard is not installed */

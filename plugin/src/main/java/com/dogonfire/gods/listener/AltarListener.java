@@ -166,7 +166,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.pray")))
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.pray")))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarPrayingNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return;
@@ -283,7 +283,7 @@ public class AltarListener implements Listener
 		{
 			return;
 		}
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.sacrifice")))
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.sacrifice")))
 		{
 			ctx.plugin().logDebug("OnPlayerDropItem(): Does not have gods.altar.sacrifice");
 			return;
@@ -326,7 +326,7 @@ public class AltarListener implements Listener
 		{
 			return;
 		}
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.sacrifice")))
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.sacrifice")))
 		{
 			ctx.plugin().logDebug("Does not have gods.altar.sacrifice");
 			return;

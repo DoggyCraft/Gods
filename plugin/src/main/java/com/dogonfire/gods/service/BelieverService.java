@@ -124,7 +124,7 @@ public class BelieverService
 
 		BelieverRules.recordPrayer(getOrCreate(believerId), godName, amount, now, recordJoin);
 		changed();
-		ctx.chatManager().refresh(believerId);
+		ctx.chatService().refresh(believerId);
 		return true;
 	}
 
@@ -135,7 +135,7 @@ public class BelieverService
 		believer.setGodName(godName);
 		believer.setPrayers(believer.prayers() + 1);
 		changed();
-		ctx.chatManager().refresh(believerId);
+		ctx.chatService().refresh(believerId);
 		return true;
 	}
 
@@ -193,7 +193,7 @@ public class BelieverService
 		}
 		believer.setGodName(null);
 		changed();
-		ctx.chatManager().refresh(believerId);
+		ctx.chatService().refresh(believerId);
 	}
 
 	/** Removes the believer's whole entry, if they believe in {@code godName} or in no god */
@@ -211,7 +211,7 @@ public class BelieverService
 		ctx.plugin().log(godName + " lost " + believerId + " as believer");
 
 		changed();
-		ctx.chatManager().refresh(believerId);
+		ctx.chatService().refresh(believerId);
 	}
 
 	// ---------------------------------------------------------------------
@@ -304,7 +304,7 @@ public class BelieverService
 			}
 		}
 		changed();
-		ctx.chatManager().refresh(believerId);
+		ctx.chatService().refresh(believerId);
 	}
 
 	public boolean isHunting(UUID believerId)

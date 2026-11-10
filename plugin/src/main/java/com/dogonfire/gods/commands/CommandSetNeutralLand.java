@@ -5,7 +5,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.TitleManager;
 
 public class CommandSetNeutralLand extends GodsCommand
 {
@@ -38,13 +37,13 @@ public class CommandSetNeutralLand extends GodsCommand
 		if (ctx.holyLandService().isNeutralLandLocation(player.getLocation()))
 		{
 			ctx.holyLandService().clearNeutralLand(player.getLocation());
-			TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.DARK_GREEN + "Wilderness", ChatColor.WHITE + "");
+			ctx.titles().send(player, 1*20, 3*20, 1*20, ChatColor.DARK_GREEN + "Wilderness", ChatColor.WHITE + "");
 			sender.sendMessage(ChatColor.AQUA + "You set cleared the neutral land in this location.");
 		}
 		else
 		{
 			ctx.holyLandService().setNeutralLand(player.getLocation());
-			TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
+			ctx.titles().send(player, 1*20, 3*20, 1*20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
 			sender.sendMessage(ChatColor.AQUA + "You set neutral land in this location.");
 		}
 	}

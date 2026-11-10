@@ -325,7 +325,7 @@ public class BlessingService
 		{
 			Player player = ctx.plugin().getServer().getPlayer(blessedPlayer);
 
-			if ((player == null) || (!ctx.permissionsManager().hasPermission(player, "gods.blessings")))
+			if ((player == null) || (!ctx.permissions().hasPermission(player, "gods.blessings")))
 			{
 				return;
 			}
@@ -359,7 +359,7 @@ public class BlessingService
 
 		if (this.random.nextInt(1 + 100 / godPower) == 0)
 		{
-			if (!ctx.permissionsManager().hasPermission(cursedPlayer, "gods.curses"))
+			if (!ctx.permissions().hasPermission(cursedPlayer, "gods.curses"))
 			{
 				return;
 			}

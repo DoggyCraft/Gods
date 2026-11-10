@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.ChatManager;
+import com.dogonfire.gods.service.ChatService;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -63,7 +63,7 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 		}
 
 		// Chat plugins resolve placeholders on the async chat thread, where the YAML data must not be
-		// read; ChatManager keeps a snapshot for that
+		// read; ChatService keeps a snapshot for that
 		String god;
 		int prayerPower;
 		ChatColor godColor;
@@ -75,7 +75,7 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 		}
 		else
 		{
-			ChatManager.ChatInfo info = this.ctx.chatManager().getChatInfo(player.getUniqueId());
+			ChatService.ChatInfo info = this.ctx.chatService().getChatInfo(player.getUniqueId());
 			god = info.godName;
 			prayerPower = info.prayerPower;
 			godColor = info.godColor;

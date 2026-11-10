@@ -1,4 +1,4 @@
-package com.dogonfire.gods.managers;
+package com.dogonfire.gods.service;
 
 import java.util.List;
 import java.util.Map;
@@ -11,14 +11,12 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.GodsContext;
 
 /**
- * Chat formatting, and a thread-safe snapshot of the religion data that the
- * (asynchronous) chat handler and PlaceholderAPI need. The managers keep their data in YAML
- * configurations that must only be touched on the main thread, so the chat
- * thread reads this cache instead. It is filled on the main thread: on join,
- * when a believer's god or chat mode changes in BelieverService, and
- * periodically for everyone online (see Gods#onEnable).
+ * Chat formatting, and a thread-safe snapshot of the religion data that the (asynchronous) chat handler and
+ * PlaceholderAPI need. The services keep their data in models that must only be touched on the main thread, so the
+ * chat thread reads this cache instead. It is filled on the main thread: on join, when a believer's god or chat mode
+ * or a god's priests change, and periodically for everyone online (see Gods#onEnable).
  */
-public class ChatManager
+public class ChatService
 {
 	/** What the chat handler knows about one online player. */
 	public static final class ChatInfo
@@ -49,7 +47,7 @@ public class ChatManager
 
 	private final GodsContext ctx;
 
-	public ChatManager(GodsContext ctx)
+	public ChatService(GodsContext ctx)
 	{
 		this.ctx = ctx;
 	}
