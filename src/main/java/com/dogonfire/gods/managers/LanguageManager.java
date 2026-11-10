@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -104,31 +103,35 @@ public class LanguageManager
 
 	public String getLanguageString(String godName, LANGUAGESTRING type)
 	{
-		FileConfiguration languageConfig = this.languageConfigs.get(getLanguageFileForGod(godName));
+		String languageFileName = getLanguageFileForGod(godName);
+		FileConfiguration languageConfig = this.languageConfigs.get(languageFileName);
 		if (languageConfig == null)
 		{
-			GodManager.GodType godType = GodManager.instance().getDivineForceForGod(godName);
-
-			Gods.instance().log("No languageConfig found for " + godName + " of type " + godType.name() + "!");
+			Gods.instance().log("No language file " + languageFileName + " loaded for " + godName + "!");
 			return "MISSING LANGUAGEFILE " + type.name();
 		}
 
 		List<String> strings = languageConfig.getStringList(type.name());
 
-		if (strings == null || strings.size() == 0)
+		if (strings.isEmpty())
 		{
 			Gods.instance().log("No language strings found for " + godName + "," + type.name() + "!");
-			return type.name() + " MISSING in " + getLanguageFileForGod(godName);
+			return type.name() + " MISSING in " + languageFileName;
 		}
 
-		String text = (String) strings.toArray()[this.random.nextInt(strings.size())];
+		String text = strings.get(this.random.nextInt(strings.size()));
 
 		return parseString(text);
 	}
 
 	public String getLanguageStringForBook(String godName, LANGUAGESTRING type)
 	{
-		List<String> strings = this.languageConfigs.get(getLanguageFileForGod(godName)).getStringList(type.name());
+		FileConfiguration languageConfig = this.languageConfigs.get(getLanguageFileForGod(godName));
+		if (languageConfig == null)
+		{
+			return "MISSING LANGUAGEFILE " + type.name();
+		}
+		List<String> strings = languageConfig.getStringList(type.name());
 		if (strings.size() == 0)
 		{
 			Gods.instance().log("No language strings found for " + type.name() + "!");
@@ -153,16 +156,6 @@ public class LanguageManager
 	public String getPlayerName()
 	{
 		return this.playerName;
-	}
-
-	public String getPriestAssignCommand(UUID playerName)
-	{
-		return "";
-	}
-
-	public String getPriestRemoveCommand(UUID playerName)
-	{
-		return "";
 	}
 
 	public String getType()
@@ -325,11 +318,6 @@ public class LanguageManager
 	public void setAmount(int a)
 	{
 		this.amount = a;
-	}
-
-	public boolean setDefault()
-	{
-		return true;
 	}
 
 	public void setPlayerName(String name)
