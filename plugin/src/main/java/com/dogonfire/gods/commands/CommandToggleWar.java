@@ -39,7 +39,7 @@ public class CommandToggleWar extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!ctx.godManager().isPriest(player.getUniqueId()))
+		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(stringPreistOnly);
 			return;

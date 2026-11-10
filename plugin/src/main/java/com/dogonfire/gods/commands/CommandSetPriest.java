@@ -44,7 +44,7 @@ public class CommandSetPriest extends GodsCommand
 			return;
 		}
 
-		if (ctx.godManager().assignPriest(godName, otherPlayer.getUniqueId()))
+		if (ctx.priestService().assignPriest(godName, otherPlayer.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + "You set " + ChatColor.GOLD + otherPlayer.getName() + ChatColor.AQUA + " as priest of " + ChatColor.GOLD + godName);
 		}

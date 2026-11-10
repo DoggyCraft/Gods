@@ -45,7 +45,7 @@ public class CommandGiveHolyArtifact extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You already carry a Holy Artifact");
 			return;
 		}
-		ctx.godManager().blessPlayerWithHolyArtifact(godName, player);
+		ctx.blessingService().blessPlayerWithHolyArtifact(godName, player);
 		sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " gave " + player.getName() + ChatColor.AQUA + " a Holy artifact!");
 	}
 }

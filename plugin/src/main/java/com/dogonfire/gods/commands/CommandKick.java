@@ -34,7 +34,7 @@ public class CommandKick extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!ctx.godManager().isPriest(player.getUniqueId()))
+		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.RED + "Only priests can kick believers from a religion");
 			return;

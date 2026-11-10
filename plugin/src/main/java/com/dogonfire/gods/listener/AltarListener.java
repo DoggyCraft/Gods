@@ -86,12 +86,12 @@ public class AltarListener implements Listener
 
 			if (cursedPlayer != null)
 			{
-				if ((godName != null) && ctx.godManager().isPriest(player.getUniqueId()))
+				if ((godName != null) && ctx.priestService().isPriest(player.getUniqueId()))
 				{
-					Player oldCursedPlayer = ctx.godManager().getCursedPlayerForGod(godName);
+					Player oldCursedPlayer = ctx.blessingService().getCursedPlayerForGod(godName);
 					if ((oldCursedPlayer != null) && oldCursedPlayer == cursedPlayer)
 					{
-						ctx.godManager().setCursedPlayerForGod(godName, null);
+						ctx.blessingService().setCursedPlayerForGod(godName, null);
 
 						ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
@@ -100,7 +100,7 @@ public class AltarListener implements Listener
 					}
 					else
 					{
-						ctx.godManager().setCursedPlayerForGod(godName, cursedPlayer.getUniqueId());
+						ctx.blessingService().setCursedPlayerForGod(godName, cursedPlayer.getUniqueId());
 
 						ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
@@ -123,12 +123,12 @@ public class AltarListener implements Listener
 			Player blessedPlayer = ctx.altarService().getBlessedPlayerFromAltarSign(block, lines);
 			if (blessedPlayer != null)
 			{
-				if ((godName != null) && ctx.godManager().isPriest(player.getUniqueId()))
+				if ((godName != null) && ctx.priestService().isPriest(player.getUniqueId()))
 				{
-					UUID oldBlessedPlayer = ctx.godManager().getBlessedPlayerForGod(godName);
+					UUID oldBlessedPlayer = ctx.blessingService().getBlessedPlayerForGod(godName);
 					if ((oldBlessedPlayer != null) && (oldBlessedPlayer.equals(blessedPlayer.getUniqueId())))
 					{
-						ctx.godManager().setBlessedPlayerForGod(godName, null);
+						ctx.blessingService().setBlessedPlayerForGod(godName, null);
 
 						ctx.languageManager().setPlayerName(blessedPlayer.getDisplayName());
 
@@ -138,7 +138,7 @@ public class AltarListener implements Listener
 					}
 					else
 					{
-						ctx.godManager().setBlessedPlayerForGod(godName, blessedPlayer.getUniqueId());
+						ctx.blessingService().setBlessedPlayerForGod(godName, blessedPlayer.getUniqueId());
 
 						ctx.languageManager().setPlayerName(blessedPlayer.getDisplayName());
 
@@ -201,7 +201,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		if (ctx.godManager().handleAltarPray(block.getLocation(), player, altarGodName))
+		if (ctx.prayerService().handleAltarPray(block.getLocation(), player, altarGodName))
 		{
 			ctx.plugin().log(player.getDisplayName() + " prayed to " + altarGodName + " at an altar");
 		}
@@ -343,6 +343,6 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		ctx.godManager().handleSacrifice(godName, player, item.getItemStack().getType());
+		ctx.commandmentService().handleSacrifice(godName, player, item.getItemStack().getType());
 	}
 }

@@ -32,7 +32,7 @@ public class CommandInvite extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!ctx.godManager().isPriest(player.getUniqueId()))
+		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(ChatColor.RED + "Only priests can invite players");
 			return;

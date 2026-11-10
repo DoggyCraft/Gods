@@ -6,7 +6,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.model.GodType;
 
@@ -51,7 +50,7 @@ public class CommandHelp extends GodsCommand
 
 	private void helpGeneral(CommandSender sender)
 	{
-		boolean isPriest = (sender instanceof Player) && ctx.godManager().isPriest(((Player) sender).getUniqueId());
+		boolean isPriest = (sender instanceof Player) && ctx.priestService().isPriest(((Player) sender).getUniqueId());
 
 		sender.sendMessage(ChatColor.YELLOW + "------------------ " + ctx.plugin().getDescription().getFullName() + " ------------------");
 		sender.sendMessage(ChatColor.AQUA + "/gods" + ChatColor.WHITE + " - Basic info");

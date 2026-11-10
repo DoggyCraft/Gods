@@ -13,7 +13,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
@@ -92,7 +91,7 @@ public class GodsCommandExecuter implements CommandExecutor
 			String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 			if (godName != null)
 			{
-				List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
+				List<UUID> priests = ctx.priestService().getPriestsForGod(godName);
 				if (priests == null || !priests.contains(player.getUniqueId()))
 				{
 					sender.sendMessage(ChatColor.WHITE + "You believe in " + ChatColor.GOLD + godName);

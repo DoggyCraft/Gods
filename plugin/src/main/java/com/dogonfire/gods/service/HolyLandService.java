@@ -457,8 +457,8 @@ public class HolyLandService
 		String attackingGodName = land.attackingGodName();
 		String playerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
-		boolean unholyFood = food == ctx.godManager().getUnholyFoodTypeForGod(holyLandGodName);
-		boolean holyFood = food == ctx.godManager().getHolyFoodTypeForGod(holyLandGodName);
+		boolean unholyFood = food == ctx.commandmentService().getUnholyFoodTypeForGod(holyLandGodName);
+		boolean holyFood = food == ctx.commandmentService().getHolyFoodTypeForGod(holyLandGodName);
 		HolyLandContest.Outcome outcome = HolyLandContest.recordMeal(land, playerGodName, unholyFood, holyFood);
 		if (outcome == null)
 		{

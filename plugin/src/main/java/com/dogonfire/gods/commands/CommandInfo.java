@@ -55,7 +55,7 @@ public class CommandInfo extends GodsCommand
 			return;
 		}
 
-		List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
+		List<UUID> priests = ctx.priestService().getPriestsForGod(godName);
 
 		if (priests == null)
 		{
@@ -90,7 +90,7 @@ public class CommandInfo extends GodsCommand
 
 		sender.sendMessage(moodColor + godName + " is " + ctx.languageManager().getGodMoodName(godMood));
 	
-		Material neededItem = ctx.godManager().getSacrificeItemTypeForGod(godName);
+		Material neededItem = ctx.commandmentService().getSacrificeItemTypeForGod(godName);
 		if (neededItem != null)
 		{
 			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " wants more " + ChatColor.WHITE + ctx.languageManager().getItemTypeName(neededItem));
@@ -117,11 +117,11 @@ public class CommandInfo extends GodsCommand
 		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + ctx.godService().getGodPower(godName));
 		if (ctx.settings().commandments().enabled())
 		{
-			sender.sendMessage(ChatColor.AQUA + "Holy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.godManager().getHolyFoodTypeForGod(godName)));
-			sender.sendMessage(ChatColor.AQUA + "Unholy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.godManager().getUnholyFoodTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Holy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.commandmentService().getHolyFoodTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Unholy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.commandmentService().getUnholyFoodTypeForGod(godName)));
 
-			sender.sendMessage(ChatColor.AQUA + "Holy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
-			sender.sendMessage(ChatColor.AQUA + "Unholy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.godManager().getUnholyMobTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Holy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.commandmentService().getHolyMobTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Unholy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.commandmentService().getUnholyMobTypeForGod(godName)));
 		}
 
 		List<String> allyRelations = ctx.relationService().getAllianceRelations(godName);

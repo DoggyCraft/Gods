@@ -365,8 +365,8 @@ public class MarriageService
 
 			float godPower = ctx.godService().getGodPower(godName);
 
-			ctx.godManager().blessPlayer(godName, player.getUniqueId(), godPower);
-			ctx.godManager().blessPlayer(godName, gettingMarriedPartnerId, godPower);
+			ctx.blessingService().blessPlayer(godName, player.getUniqueId(), godPower);
+			ctx.blessingService().blessPlayer(godName, gettingMarriedPartnerId, godPower);
 
 			ctx.languageManager().setPlayerName(partner.getDisplayName());
 			ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);

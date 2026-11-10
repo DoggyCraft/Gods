@@ -41,7 +41,7 @@ public class CommandSetBible extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		if (!ctx.godManager().isPriestForGod(player.getUniqueId(), godName))
+		if (!ctx.priestService().isPriestForGod(player.getUniqueId(), godName))
 		{
 			sender.sendMessage(ChatColor.RED + "Only your priest can set the Bible");
 			return;

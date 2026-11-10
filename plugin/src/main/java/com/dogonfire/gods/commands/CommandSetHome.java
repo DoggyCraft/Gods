@@ -36,7 +36,7 @@ public class CommandSetHome extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		if ((ctx.settings().priests().onlyPriestsCanSetHome()) && (!ctx.godManager().isPriest(player.getUniqueId())))
+		if ((ctx.settings().priests().onlyPriestsCanSetHome()) && (!ctx.priestService().isPriest(player.getUniqueId())))
 		{
 			sender.sendMessage(ChatColor.RED + "Only your priest can set the home for your religion");
 			return;

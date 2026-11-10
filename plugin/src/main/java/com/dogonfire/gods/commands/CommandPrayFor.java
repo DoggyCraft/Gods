@@ -95,7 +95,7 @@ public class CommandPrayFor extends GodsCommand
 			return;
 		}
 		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForBlessing, ChatColor.AQUA, ctx.settings().prayers().blessingCost(), godName, 1);
-		if (!ctx.godManager().blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
+		if (!ctx.blessingService().blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
 		{
 			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
 		}
@@ -120,14 +120,14 @@ public class CommandPrayFor extends GodsCommand
 			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
 			return;
 		}
-		double healing = ctx.godManager().getHealthNeed(godName, player);
+		double healing = ctx.blessingService().getHealthNeed(godName, player);
 		if (healing <= 1.0D)
 		{
 			sender.sendMessage(ChatColor.AQUA + "You are already in good health.");
 			return;
 		}
 		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForHealth, ChatColor.AQUA, ctx.settings().prayers().healthCost(), godName, 1);
-		ctx.godManager().healPlayer(godName, player);
+		ctx.blessingService().healPlayer(godName, player);
 
 		ctx.believerService().increasePrayerPower(player.getUniqueId(), -ctx.settings().prayers().healthCost());
 		ctx.believerService().setItemBlessingTime(player.getUniqueId());
@@ -148,7 +148,7 @@ public class CommandPrayFor extends GodsCommand
 			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerRecentItemBlessing);
 			return;
 		}
-		if (ctx.godManager().blessPlayerWithItem(godName, player) == null)
+		if (ctx.blessingService().blessPlayerWithItem(godName, player) == null)
 		{
 			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerWhenNoItemNeed);
 		}

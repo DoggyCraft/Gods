@@ -137,7 +137,7 @@ public class GodSpeech
 	/** To every online priest of the god, each after 2-31 ticks */
 	public void sayToPriests(String godName, LANGUAGESTRING message)
 	{
-		List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
+		List<UUID> priests = ctx.priestService().getPriestsForGod(godName);
 		if (priests == null)
 		{
 			return;

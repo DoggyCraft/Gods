@@ -218,24 +218,24 @@ public class HolyBookManager
 		pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText1));
 		try
 		{
-			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getUnholyMobTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.commandmentService().getUnholyMobTypeForGod(godName)));
 			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText2));
 
-			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.godManager().getHolyFoodTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.commandmentService().getHolyFoodTypeForGod(godName)));
 
 			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText3));
 
-			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.godManager().getUnholyFoodTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.commandmentService().getUnholyFoodTypeForGod(godName)));
 
 			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText4));
 
-			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.commandmentService().getHolyMobTypeForGod(godName)));
 			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText5));
 
-			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.commandmentService().getHolyMobTypeForGod(godName)));
 			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText6));
 
-			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.commandmentService().getHolyMobTypeForGod(godName)));
 			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText7));
 
 			biblesConfig().set(godName + ".Pages", pages);

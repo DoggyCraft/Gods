@@ -278,7 +278,7 @@ public class HolyLandListener implements Listener
 			{
 				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
-					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
+					ctx.blessingService().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
 				event.setCancelled(true);
 
@@ -288,7 +288,7 @@ public class HolyLandListener implements Listener
 			{
 				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
-					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
+					ctx.blessingService().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
 				if (!ctx.relationService().hasWarRelation(godName, attackerGodName))
 				{
@@ -358,12 +358,12 @@ public class HolyLandListener implements Listener
 				return;
 			}
 
-			if (event.getEntity().getType() == ctx.godManager().getHolyMobTypeForGod(godName))
+			if (event.getEntity().getType() == ctx.commandmentService().getHolyMobTypeForGod(godName))
 			{
 				return;
 			}
 
-			if (event.getEntity().getType() == ctx.godManager().getUnholyMobTypeForGod(godName))
+			if (event.getEntity().getType() == ctx.commandmentService().getUnholyMobTypeForGod(godName))
 			{
 				ctx.plugin().logDebug("Prevented unholy mob " + event.getEntityType() + " from spawning in Holy Land of " + godName);
 				event.setCancelled(true);

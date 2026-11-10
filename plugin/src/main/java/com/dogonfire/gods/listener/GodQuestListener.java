@@ -72,7 +72,7 @@ public class GodQuestListener implements Listener
 			return;
 		}
 
-		ctx.godManager().handleKilled(player, godName, event.getEntityType().name());
+		ctx.commandmentService().handleKilled(player, godName, event.getEntityType().name());
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -97,7 +97,7 @@ public class GodQuestListener implements Listener
 				{
 					if ((player.isOp()) || (ctx.permissionsManager().hasPermission(player, "gods.commandments")))
 					{
-						ctx.godManager().handleEat(player, godName, type.name());
+						ctx.commandmentService().handleEat(player, godName, type.name());
 					}
 				}
 				if (ctx.settings().quests().enabled())

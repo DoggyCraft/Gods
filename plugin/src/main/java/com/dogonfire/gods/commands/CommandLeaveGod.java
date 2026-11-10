@@ -34,7 +34,7 @@ public class CommandLeaveGod extends GodsCommand
 		
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		
-		if (ctx.godManager().believerLeaveGod(player.getUniqueId()))
+		if (ctx.prayerService().believerLeaveGod(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + "You left the religion of " + ChatColor.YELLOW + godName);
 		}

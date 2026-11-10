@@ -40,7 +40,7 @@ public class BelieverListener implements Listener
 		{
 			GodType godType = ctx.godService().getDivineForceForGod(godName);
 
-			ctx.godManager().handleKilledPlayer(player.getUniqueId(), godName, godType);
+			ctx.prayerService().handleKilledPlayer(player.getUniqueId(), godName, godType);
 		}
 
 		Player killer = player.getKiller();

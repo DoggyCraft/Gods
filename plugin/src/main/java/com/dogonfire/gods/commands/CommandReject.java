@@ -35,7 +35,7 @@ public class CommandReject extends GodsCommand
 		}
 
 		Player player = (Player) sender;
-		ctx.godManager().believerReject(player.getUniqueId());
+		ctx.prayerService().believerReject(player.getUniqueId());
 	}
 
 }

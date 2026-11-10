@@ -37,7 +37,7 @@ public class GodsTabCompleter implements TabCompleter
 
 		if (args.length == 1)
 		{
-			boolean isPriest = ctx.godManager().isPriest(player.getUniqueId());
+			boolean isPriest = ctx.priestService().isPriest(player.getUniqueId());
 			List<String> commands = new ArrayList<String>();
 			for (GodsCommand command : this.executer.getCommands())
 			{

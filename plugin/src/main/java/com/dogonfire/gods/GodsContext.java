@@ -15,12 +15,16 @@ import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
+import com.dogonfire.gods.service.BlessingService;
+import com.dogonfire.gods.service.CommandmentService;
 import com.dogonfire.gods.service.GodListService;
 import com.dogonfire.gods.service.GodService;
 import com.dogonfire.gods.service.GodSpeech;
 import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.service.MoodService;
+import com.dogonfire.gods.service.PrayerService;
+import com.dogonfire.gods.service.PriestService;
 import com.dogonfire.gods.service.RelationService;
 import com.dogonfire.gods.storage.Storage;
 
@@ -44,6 +48,10 @@ public final class GodsContext
 	private final GodService				godService;
 	private final MoodService				moodService;
 	private final RelationService			relationService;
+	private final PriestService				priestService;
+	private final BlessingService			blessingService;
+	private final CommandmentService		commandmentService;
+	private final PrayerService				prayerService;
 	private final GodManager				godManager;
 	private final BelieverService			believerService;
 	private final QuestManager				questManager;
@@ -70,6 +78,10 @@ public final class GodsContext
 		this.godService = new GodService(this, storage.gods());
 		this.moodService = new MoodService(this, storage.gods());
 		this.relationService = new RelationService(this, storage.gods());
+		this.priestService = new PriestService(this, storage.gods());
+		this.blessingService = new BlessingService(this, storage.gods());
+		this.commandmentService = new CommandmentService(this, storage.gods());
+		this.prayerService = new PrayerService(this);
 		this.godManager = new GodManager(this);
 		this.believerService = new BelieverService(this, storage.believers());
 		this.questManager = new QuestManager(this);
@@ -134,6 +146,30 @@ public final class GodsContext
 	public RelationService relationService()
 	{
 		return this.relationService;
+	}
+
+	/** Priests, priest offers and reminders */
+	public PriestService priestService()
+	{
+		return this.priestService;
+	}
+
+	/** Blessings and curses on players, and a god's blessed and cursed player */
+	public BlessingService blessingService()
+	{
+		return this.blessingService;
+	}
+
+	/** Holy and unholy food and mobs, and sacrifices */
+	public CommandmentService commandmentService()
+	{
+		return this.commandmentService;
+	}
+
+	/** Praying at altars, joining, answering and leaving a god */
+	public PrayerService prayerService()
+	{
+		return this.prayerService;
 	}
 
 	public GodManager godManager()

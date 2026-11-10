@@ -34,7 +34,7 @@ public class CommandAccess extends GodsCommand
 		
 		Player player = (Player) sender;
 		
-		if (!ctx.godManager().isPriest(player.getUniqueId()))
+		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(ChatColor.RED + "Only priests can set religion access");
 			return;

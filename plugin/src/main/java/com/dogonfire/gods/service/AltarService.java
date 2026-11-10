@@ -278,7 +278,7 @@ public class AltarService
 			return false;
 		}
 		
-		if (ctx.godManager().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
+		if (ctx.prayerService().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
 		{
 			if ((ctx.settings().holyLand().enabled()) && (ctx.permissionsManager().hasPermission(player, "gods.holyland")))
 			{

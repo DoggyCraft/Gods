@@ -43,7 +43,7 @@ public class CommandCheck extends GodsCommand
 		{
 			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " does not believe in a god");
 		}
-		else if (ctx.godManager().isPriest(believer.getUniqueId()))
+		else if (ctx.priestService().isPriest(believer.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " is the Priest of " + ChatColor.YELLOW + godName);
 		}

@@ -34,6 +34,6 @@ public class CommandAccept extends GodsCommand
 			return;
 		}
 		
-		ctx.godManager().believerAccept(((Player) sender).getUniqueId());
+		ctx.prayerService().believerAccept(((Player) sender).getUniqueId());
 	}
 }

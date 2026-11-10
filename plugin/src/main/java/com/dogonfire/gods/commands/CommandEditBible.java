@@ -42,7 +42,7 @@ public class CommandEditBible extends GodsCommand
 			return;
 		}
 
-		if (!ctx.godManager().isPriest(player.getUniqueId()))
+		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.RED + "Only your priest can edit your Holy Book");
 			return;
