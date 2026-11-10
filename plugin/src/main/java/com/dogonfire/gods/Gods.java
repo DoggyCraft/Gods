@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -35,6 +36,7 @@ import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.managers.WhitelistManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
+import com.dogonfire.gods.storage.Storage;
 import com.dogonfire.gods.tasks.TaskInfo;
 import com.dogonfire.gods.util.AtomicFiles;
 
@@ -47,6 +49,7 @@ public class Gods extends JavaPlugin
 
 	/** Replaced as a whole by /g reload */
 	private volatile Settings	settings;
+	private Storage				storage;
 
 	public static Gods instance()
 	{
@@ -102,32 +105,22 @@ public class Gods extends JavaPlugin
 	@Override
 	public void onDisable()
 	{
-		// Nothing was loaded if config.yml couldn't be read; saving would overwrite the data files with nothing
-		if (this.settings != null)
+		// Nothing was loaded if config.yml couldn't be read
+		if (this.storage != null)
 		{
-			saveManagers();
+			getServer().getScheduler().cancelTasks(this);
+			// Writes every changed data file and waits for the writes
+			this.storage.close();
+			this.storage = null;
 		}
 
 		pluginInstance = null;
 	}
 
-	/**
-	 * Writes the state of every enabled manager to disk.
-	 */
-	public void saveManagers()
+	/** The data files; see {@link Storage} */
+	public Storage storage()
 	{
-		GodManager.instance().save();
-		QuestManager.instance().save();
-		BelieverManager.instance().save();
-
-		if ((this.settings.gods().blacklist()) || (this.settings.gods().whitelist()))
-			WhitelistManager.instance().save();
-		if (this.settings.holyLand().enabled())
-			HolyLandManager.instance().save();
-		if (this.settings.bibles().enabled())
-			HolyBookManager.instance().save();
-		if (this.settings.marriage().enabled())
-			MarriageManager.instance().save();
+		return this.storage;
 	}
 
 	@Override
@@ -165,7 +158,11 @@ public class Gods extends JavaPlugin
 			logDebug("PlaceholderAPI not found.");
 		}
 		
+		this.storage = new Storage(getDataFolder().toPath(), getLogger());
 		loadManagers();
+
+		// Writes the data files that changed every few minutes (and on /g reload and disable)
+		getServer().getScheduler().runTaskTimer(this, () -> this.storage.flush(), Storage.AUTOSAVE_TICKS, Storage.AUTOSAVE_TICKS);
 
 		getServer().getPluginManager().registerEvents(new BlockListener(), this);
 		getServer().getPluginManager().registerEvents(new ChatListener(), this);
@@ -186,7 +183,9 @@ public class Gods extends JavaPlugin
 	 */
 	public boolean reloadSettings()
 	{
-		saveManagers();
+		// Write what changed, so the files read again below have it
+		this.storage.flush();
+		this.storage.awaitWrites(10, TimeUnit.SECONDS);
 
 		try
 		{

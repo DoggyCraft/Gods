@@ -1,6 +1,5 @@
 package com.dogonfire.gods.managers;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,12 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.storage.DataFile;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 
 public class BelieverManager
@@ -28,24 +26,26 @@ public class BelieverManager
 		return instance;
 	}
 
-	private static final long	SAVE_INTERVAL_MILLIS	= 180000L;
-	private static final long	SAVE_INTERVAL_TICKS		= SAVE_INTERVAL_MILLIS / 50L;
-
-	private FileConfiguration	believersConfig		= null;
-
-	private File				believersConfigFile	= null;
-	private long				lastSaveTime;
-	private boolean				dirty				= false;
-	private BukkitTask			flushTask			= null;
 	private final Set<String>	invalidKeys			= new HashSet<String>();
 
 	private BelieverManager()
 	{
 	}
 
+	/** believers.yml; see {@link DataFile} */
+	private DataFile believersFile()
+	{
+		return Gods.instance().storage().believers();
+	}
+
+	private YamlConfiguration believersConfig()
+	{
+		return believersFile().yaml();
+	}
+
 	public boolean addPrayer(UUID believerId, String godName)
 	{
-		String lastPrayer = this.believersConfig.getString(believerId + ".LastPrayer");
+		String lastPrayer = believersConfig().getString(believerId + ".LastPrayer");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -61,8 +61,8 @@ public class BelieverManager
 			lastPrayerDate.setTime(0L);
 		}
 
-		int prayers = this.believersConfig.getInt(believerId + ".Prayers");
-		String oldGod = this.believersConfig.getString(believerId + ".God");
+		int prayers = believersConfig().getInt(believerId + ".Prayers");
+		String oldGod = believersConfig().getString(believerId + ".God");
 
 		if ((oldGod != null) && !oldGod.equals(godName))
 		{
@@ -80,16 +80,16 @@ public class BelieverManager
 
 		if (oldGod == null || !oldGod.equals(godName))
 		{
-			this.believersConfig.set(believerId + ".Joined", formatter.format(thisDate));
+			believersConfig().set(believerId + ".Joined", formatter.format(thisDate));
 		}
 
 		prayers++;
 
-		this.believersConfig.set(believerId + ".LastPrayer", formatter.format(thisDate));
-		this.believersConfig.set(believerId + ".God", godName);
-		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
+		believersConfig().set(believerId + ".LastPrayer", formatter.format(thisDate));
+		believersConfig().set(believerId + ".God", godName);
+		believersConfig().set(believerId + ".Prayers", Integer.valueOf(prayers));
 
-		saveTimed();
+		believersFile().markDirty();
 		ChatManager.instance().refresh(believerId);
 
 		return true;
@@ -101,42 +101,42 @@ public class BelieverManager
 		{
 			return;
 		}
-		String believerGodName = this.believersConfig.getString(believerId + ".God");
+		String believerGodName = believersConfig().getString(believerId + ".God");
 		if (!godName.equals(believerGodName))
 		{
 			return;
 		}
-		this.believersConfig.set(believerId + ".God", null);
+		believersConfig().set(believerId + ".God", null);
 
-		saveTimed();
+		believersFile().markDirty();
 		ChatManager.instance().refresh(believerId);
 	}
 
 	void clearChangingGod(UUID believerId)
 	{
-		this.believersConfig.set(believerId + ".ChangingGod", null);
+		believersConfig().set(believerId + ".ChangingGod", null);
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void clearInvitation(UUID believerId)
 	{
-		this.believersConfig.set(believerId.toString() + ".Invitation", null);
+		believersConfig().set(believerId.toString() + ".Invitation", null);
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void clearPendingPriest(UUID believerId)
 	{
-		this.believersConfig.set(believerId + ".LastPriestOffer", null);
-		saveTimed();
+		believersConfig().set(believerId + ".LastPriestOffer", null);
+		believersFile().markDirty();
 	}
 
 	public void clearPrayerPower(UUID believerId)
 	{
-		this.believersConfig.set(believerId + ".PrayerPower", null);
+		believersConfig().set(believerId + ".PrayerPower", null);
 
-		saveTimed();
+		believersFile().markDirty();
 
 		Gods.instance().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, 0, "", 10);
 	}
@@ -152,14 +152,14 @@ public class BelieverManager
 
 	public Set<String> getBelievers()
 	{
-		Set<String> allBelievers = this.believersConfig.getKeys(false);
+		Set<String> allBelievers = believersConfig().getKeys(false);
 
 		return allBelievers;
 	}
 
 	public Set<UUID> getBelieversForGod(String godName)
 	{
-		Set<String> allBelievers = this.believersConfig.getKeys(false);
+		Set<String> allBelievers = believersConfig().getKeys(false);
 		Set<UUID> believers = new HashSet<UUID>();
 
 		for (String believer : allBelievers)
@@ -183,7 +183,7 @@ public class BelieverManager
 
 	boolean getChangingGod(UUID believerId)
 	{
-		String changingGodString = this.believersConfig.getString(believerId + ".ChangingGod");
+		String changingGodString = believersConfig().getString(believerId + ".ChangingGod");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -208,7 +208,7 @@ public class BelieverManager
 
 	public String getGodForBeliever(UUID believerId)
 	{
-		return this.believersConfig.getString(believerId + ".God");
+		return believersConfig().getString(believerId + ".God");
 	}
 
 	public String getInvitation(UUID believerId)
@@ -218,7 +218,7 @@ public class BelieverManager
 		Date thisDate = new Date();
 		Date offerDate = null;
 
-		String offerDateString = this.believersConfig.getString(believerId.toString() + ".Invitation.Time");
+		String offerDateString = believersConfig().getString(believerId.toString() + ".Invitation.Time");
 		try
 		{
 			offerDate = formatter.parse(offerDateString);
@@ -232,18 +232,18 @@ public class BelieverManager
 		long diffSeconds = diff / 1000L;
 		if (diffSeconds > 30L)
 		{
-			this.believersConfig.set(believerId.toString() + ".Invitation", null);
+			believersConfig().set(believerId.toString() + ".Invitation", null);
 
-			saveTimed();
+			believersFile().markDirty();
 
 			return null;
 		}
-		return this.believersConfig.getString(believerId.toString() + ".Invitation.God");
+		return believersConfig().getString(believerId.toString() + ".Invitation.God");
 	}
 
 	public Date getLastPrayerTime(UUID believerId)
 	{
-		String lastPrayerString = this.believersConfig.getString(believerId + ".LastPrayer");
+		String lastPrayerString = believersConfig().getString(believerId + ".LastPrayer");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -299,26 +299,26 @@ public class BelieverManager
 
 	public int getPrayerPower(UUID believerId)
 	{
-		int prayerPower = this.believersConfig.getInt(believerId + ".PrayerPower");
+		int prayerPower = believersConfig().getInt(believerId + ".PrayerPower");
 
 		return prayerPower;
 	}
 
 	public int getPrayers(UUID believerId)
 	{
-		int prayers = this.believersConfig.getInt(believerId + ".Prayers");
+		int prayers = believersConfig().getInt(believerId + ".Prayers");
 
 		return prayers;
 	}
 
 	public boolean getReligionChat(UUID believerId)
 	{
-		return this.believersConfig.getBoolean(believerId + ".ReligionChat");
+		return believersConfig().getBoolean(believerId + ".ReligionChat");
 	}
 
 	public int getTimeUntilCanPray(UUID believerId)
 	{
-		String lastPrayerString = this.believersConfig.getString(believerId + ".LastPrayer");
+		String lastPrayerString = believersConfig().getString(believerId + ".LastPrayer");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -342,7 +342,7 @@ public class BelieverManager
 
 	public boolean hasRecentBlessing(UUID believerId)
 	{
-		String lastItemBlessingString = this.believersConfig.getString(believerId + ".LastBlessingTime");
+		String lastItemBlessingString = believersConfig().getString(believerId + ".LastBlessingTime");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -366,7 +366,7 @@ public class BelieverManager
 
 	public boolean hasRecentCursing(UUID believerId)
 	{
-		String lastItemBlessingString = this.believersConfig.getString(believerId + ".LastCursingTime");
+		String lastItemBlessingString = believersConfig().getString(believerId + ".LastCursingTime");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -389,7 +389,7 @@ public class BelieverManager
 
 	boolean hasRecentGodChange(UUID believerId)
 	{
-		String joinedGodString = this.believersConfig.getString(believerId + ".Joined");
+		String joinedGodString = believersConfig().getString(believerId + ".Joined");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -416,7 +416,7 @@ public class BelieverManager
 
 	public boolean hasRecentHolyArtifactBlessing(UUID believerId)
 	{
-		String lastItemBlessingString = this.believersConfig.getString(believerId + ".LastHolyArtifactBlessingTime");
+		String lastItemBlessingString = believersConfig().getString(believerId + ".LastHolyArtifactBlessingTime");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -439,7 +439,7 @@ public class BelieverManager
 
 	public boolean hasRecentItemBlessing(UUID believerId)
 	{
-		String lastItemBlessingString = this.believersConfig.getString(believerId + ".LastItemBlessingTime");
+		String lastItemBlessingString = believersConfig().getString(believerId + ".LastItemBlessingTime");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -462,7 +462,7 @@ public class BelieverManager
 
 	public boolean hasRecentPrayer(UUID believerId)
 	{
-		String lastPrayerString = this.believersConfig.getString(believerId + ".LastPrayer");
+		String lastPrayerString = believersConfig().getString(believerId + ".LastPrayer");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -490,7 +490,7 @@ public class BelieverManager
 		Date thisDate = new Date();
 		Date offerDate = null;
 
-		String offerDateString = this.believersConfig.getString(believerId + ".LastPriestOffer");
+		String offerDateString = believersConfig().getString(believerId + ".LastPriestOffer");
 		try
 		{
 			offerDate = formatter.parse(offerDateString);
@@ -508,14 +508,14 @@ public class BelieverManager
 
 	public boolean incPrayer(UUID believerId, String godName)
 	{
-		int prayers = this.believersConfig.getInt(believerId + ".Prayers");
+		int prayers = believersConfig().getInt(believerId + ".Prayers");
 
 		prayers++;
 
-		this.believersConfig.set(believerId + ".God", godName);
-		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
+		believersConfig().set(believerId + ".God", godName);
+		believersConfig().set(believerId + ".Prayers", Integer.valueOf(prayers));
 
-		saveTimed();
+		believersFile().markDirty();
 		ChatManager.instance().refresh(believerId);
 
 		return true;
@@ -523,7 +523,7 @@ public class BelieverManager
 
 	public boolean increasePrayer(UUID believerId, String godName, int incPrayers)
 	{
-		String lastPrayer = this.believersConfig.getString(believerId + ".LastPrayer");
+		String lastPrayer = believersConfig().getString(believerId + ".LastPrayer");
 
 		String pattern = "HH:mm:ss dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -538,8 +538,8 @@ public class BelieverManager
 			lastPrayerDate = new Date();
 			lastPrayerDate.setTime(0L);
 		}
-		int prayers = this.believersConfig.getInt(believerId + ".Prayers");
-		String oldGod = this.believersConfig.getString(believerId + ".God");
+		int prayers = believersConfig().getInt(believerId + ".Prayers");
+		String oldGod = believersConfig().getString(believerId + ".God");
 		if ((oldGod != null) && (!oldGod.equals(godName)))
 		{
 			prayers = 0;
@@ -554,11 +554,11 @@ public class BelieverManager
 		}
 		prayers += incPrayers;
 
-		this.believersConfig.set(believerId + ".LastPrayer", formatter.format(thisDate));
-		this.believersConfig.set(believerId + ".God", godName);
-		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
+		believersConfig().set(believerId + ".LastPrayer", formatter.format(thisDate));
+		believersConfig().set(believerId + ".God", godName);
+		believersConfig().set(believerId + ".Prayers", Integer.valueOf(prayers));
 
-		saveTimed();
+		believersFile().markDirty();
 		ChatManager.instance().refresh(believerId);
 
 		return true;
@@ -566,7 +566,7 @@ public class BelieverManager
 
 	public void increasePrayerPower(UUID believerId, int powerChange)
 	{
-		int prayerPower = this.believersConfig.getInt(believerId + ".PrayerPower");
+		int prayerPower = believersConfig().getInt(believerId + ".PrayerPower");
 
 		prayerPower += powerChange;
 
@@ -575,9 +575,9 @@ public class BelieverManager
 			prayerPower = 0;
 		}
 
-		this.believersConfig.set(believerId + ".PrayerPower", prayerPower);
+		believersConfig().set(believerId + ".PrayerPower", prayerPower);
 
-		saveTimed();
+		believersFile().markDirty();
 
 		Gods.instance().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, prayerPower, "", 10);
 	}
@@ -587,7 +587,7 @@ public class BelieverManager
 		boolean hunting = false;
 		try
 		{
-			hunting = this.believersConfig.getBoolean(believerId + ".Hunting");
+			hunting = believersConfig().getBoolean(believerId + ".Hunting");
 		}
 		catch (Exception ex)
 		{
@@ -598,27 +598,15 @@ public class BelieverManager
 
 	public void load()
 	{
-		if (this.believersConfigFile == null)
-		{
-			this.believersConfigFile = new File(Gods.instance().getDataFolder(), "believers.yml");
-		}
-		this.believersConfig = YamlConfiguration.loadConfiguration(this.believersConfigFile);
-		this.dirty = false;
+		believersFile().load();
 		this.invalidKeys.clear();
 
-		Gods.instance().log("Loaded " + this.believersConfig.getKeys(false).size() + " believers.");
-
-		// saveTimed() writes at most every few minutes; this writes what it skipped
-		if (this.flushTask != null)
-		{
-			this.flushTask.cancel();
-		}
-		this.flushTask = Gods.instance().getServer().getScheduler().runTaskTimer(Gods.instance(), this::saveIfDirty, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
+		Gods.instance().log("Loaded " + believersConfig().getKeys(false).size() + " believers.");
 	}
 
 	public void removeBeliever(String godName, UUID believerId)
 	{
-		String believerGodName = this.believersConfig.getString(believerId + ".God");
+		String believerGodName = believersConfig().getString(believerId + ".God");
 
 		if (believerGodName != null && !believerGodName.equals(godName))
 		{
@@ -627,51 +615,12 @@ public class BelieverManager
 
 		clearPrayerPower(believerId);
 
-		this.believersConfig.set(believerId.toString(), null);
+		believersConfig().set(believerId.toString(), null);
 
 		Gods.instance().log(godName + " lost " + believerId + " as believer");
 
-		saveTimed();
+		believersFile().markDirty();
 		ChatManager.instance().refresh(believerId);
-	}
-
-	public void save()
-	{
-		this.lastSaveTime = System.currentTimeMillis();
-		if ((this.believersConfig == null) || (this.believersConfigFile == null))
-		{
-			return;
-		}
-		this.dirty = false;
-		try
-		{
-			this.believersConfig.save(this.believersConfigFile);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().log("Could not save config to " + this.believersConfigFile.getName() + ": " + ex.getMessage());
-		}
-	}
-
-	/** Writes believers.yml if there are changes saveTimed() has not written yet. */
-	public void saveIfDirty()
-	{
-		if (this.dirty)
-		{
-			save();
-		}
-	}
-
-	/** Marks the data as changed and writes it at most every few minutes. */
-	public void saveTimed()
-	{
-		this.dirty = true;
-
-		if (System.currentTimeMillis() - this.lastSaveTime < SAVE_INTERVAL_MILLIS)
-		{
-			return;
-		}
-		save();
 	}
 
 	public void setBlessingTime(UUID believerId)
@@ -680,9 +629,9 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".LastBlessingTime", formatter.format(thisDate));
+		believersConfig().set(believerId + ".LastBlessingTime", formatter.format(thisDate));
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	void setChangingGod(UUID believerId)
@@ -691,8 +640,8 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".ChangingGod", formatter.format(thisDate));
-		saveTimed();
+		believersConfig().set(believerId + ".ChangingGod", formatter.format(thisDate));
+		believersFile().markDirty();
 	}
 
 	public void setCursingTime(UUID believerId)
@@ -701,9 +650,9 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".LastCursingTime", formatter.format(thisDate));
+		believersConfig().set(believerId + ".LastCursingTime", formatter.format(thisDate));
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void setHolyArtifactBlessingTime(UUID believerId)
@@ -712,18 +661,18 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".LastHolyArtifactBlessingTime", formatter.format(thisDate));
+		believersConfig().set(believerId + ".LastHolyArtifactBlessingTime", formatter.format(thisDate));
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void setHunting(UUID believerId, boolean hunting)
 	{
 		Gods.instance().logDebug("Setting hunting string to '" + hunting + "' for " + believerId);
 
-		this.believersConfig.set(believerId + ".Hunting", Boolean.valueOf(hunting));
+		believersConfig().set(believerId + ".Hunting", Boolean.valueOf(hunting));
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void setInvitation(UUID believerId, String godName)
@@ -732,10 +681,10 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId.toString() + ".Invitation.Time", formatter.format(thisDate));
-		this.believersConfig.set(believerId.toString() + ".Invitation.God", godName);
+		believersConfig().set(believerId.toString() + ".Invitation.Time", formatter.format(thisDate));
+		believersConfig().set(believerId.toString() + ".Invitation.God", godName);
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void setItemBlessingTime(UUID believerId)
@@ -744,9 +693,9 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".LastItemBlessingTime", formatter.format(thisDate));
+		believersConfig().set(believerId + ".LastItemBlessingTime", formatter.format(thisDate));
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void setLastPrayerDate(UUID believerId)
@@ -755,9 +704,9 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".LastPrayer", formatter.format(thisDate));
+		believersConfig().set(believerId + ".LastPrayer", formatter.format(thisDate));
 
-		saveTimed();
+		believersFile().markDirty();
 	}
 
 	public void setPendingPriest(UUID believerId)
@@ -766,21 +715,21 @@ public class BelieverManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 
-		this.believersConfig.set(believerId + ".LastPriestOffer", formatter.format(thisDate));
-		saveTimed();
+		believersConfig().set(believerId + ".LastPriestOffer", formatter.format(thisDate));
+		believersFile().markDirty();
 	}
 
 	public void setReligionChat(UUID believerId, boolean enabled)
 	{
 		if (enabled)
 		{
-			this.believersConfig.set(believerId + ".ReligionChat", Boolean.valueOf(true));
+			believersConfig().set(believerId + ".ReligionChat", Boolean.valueOf(true));
 		}
 		else
 		{
-			this.believersConfig.set(believerId + ".ReligionChat", null);
+			believersConfig().set(believerId + ".ReligionChat", null);
 		}
-		saveTimed();
+		believersFile().markDirty();
 		ChatManager.instance().refresh(believerId);
 	}
 }

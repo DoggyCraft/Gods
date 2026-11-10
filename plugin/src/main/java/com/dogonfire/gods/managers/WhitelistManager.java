@@ -1,12 +1,12 @@
 package com.dogonfire.gods.managers;
 
-import java.io.File;
-
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.storage.DataFile;
 
+/**
+ * whitelist.yml (only these gods are allowed) and blacklist.yml (these gods are not), each read only while it is
+ * switched on in config.yml.
+ */
 public class WhitelistManager
 {
 	private static WhitelistManager instance;
@@ -18,33 +18,37 @@ public class WhitelistManager
 		return instance;
 	}
 
-	private FileConfiguration	whiteList		= null;
-
-	private File				whiteListFile	= null;
-	private FileConfiguration	blackList		= null;
-	private File				blackListFile	= null;
-
 	private WhitelistManager()
 	{
 	}
 
+	private DataFile whitelistFile()
+	{
+		return Gods.instance().storage().whitelist();
+	}
+
+	private DataFile blacklistFile()
+	{
+		return Gods.instance().storage().blacklist();
+	}
+
 	public float getMinGodPower(String godName)
 	{
-		int power = this.whiteList.getInt(godName + ".MinPower");
+		int power = whitelistFile().yaml().getInt(godName + ".MinPower");
 
 		return power;
 	}
 
 	public boolean isBlacklistedGod(String godName)
 	{
-		String name = this.blackList.getString(godName);
+		String name = blacklistFile().yaml().getString(godName);
 
 		return name != null;
 	}
 
 	public boolean isWhitelistedGod(String godName)
 	{
-		String name = this.whiteList.getString(godName);
+		String name = whitelistFile().yaml().getString(godName);
 
 		return name != null;
 	}
@@ -53,20 +57,16 @@ public class WhitelistManager
 	{
 		if (Gods.instance().settings().gods().whitelist())
 		{
-			if (this.whiteListFile == null)
+			DataFile whitelist = whitelistFile();
+			whitelist.load();
+
+			Gods.instance().log("Loaded " + whitelist.yaml().getKeys(false).size() + " whitelisted Gods.");
+
+			if (whitelist.yaml().getKeys(false).size() == 0)
 			{
-				this.whiteListFile = new File(Gods.instance().getDataFolder(), "whitelist.yml");
-			}
+				whitelist.yaml().set("TheExampleGodName.MinPower", Integer.valueOf(0));
 
-			this.whiteList = YamlConfiguration.loadConfiguration(this.whiteListFile);
-
-			Gods.instance().log("Loaded " + this.whiteList.getKeys(false).size() + " whitelisted Gods.");
-
-			if (this.whiteList.getKeys(false).size() == 0)
-			{
-				this.whiteList.set("TheExampleGodName.MinPower", Integer.valueOf(0));
-
-				save();
+				whitelist.save();
 			}
 
 			Gods.instance().log("Using whitelist");
@@ -74,48 +74,18 @@ public class WhitelistManager
 
 		if (Gods.instance().settings().gods().blacklist())
 		{
-			if (this.blackListFile == null)
-			{
-				this.blackListFile = new File(Gods.instance().getDataFolder(), "blacklist.yml");
-			}
-			this.blackList = YamlConfiguration.loadConfiguration(this.blackListFile);
+			DataFile blacklist = blacklistFile();
+			blacklist.load();
 
-			Gods.instance().log("Loaded " + this.blackList.getKeys(false).size() + " blacklisted Gods.");
-			if (this.blackList.getKeys(false).size() == 0)
+			Gods.instance().log("Loaded " + blacklist.yaml().getKeys(false).size() + " blacklisted Gods.");
+			if (blacklist.yaml().getKeys(false).size() == 0)
 			{
-				this.blackList.set("TheExampleGodName", "");
+				blacklist.yaml().set("TheExampleGodName", "");
 
-				save();
+				blacklist.save();
 			}
 
 			Gods.instance().log("Using blacklist");
-		}
-	}
-
-	public void save()
-	{
-		// Only the list that is in use has been loaded
-		if (this.whiteList != null && this.whiteListFile != null)
-		{
-			try
-			{
-				this.whiteList.save(this.whiteListFile);
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().log("Could not save whitelist to " + this.whiteListFile + ": " + ex.getMessage());
-			}
-		}
-		if (this.blackList != null && this.blackListFile != null)
-		{
-			try
-			{
-				this.blackList.save(this.blackListFile);
-			}
-			catch (Exception ex)
-			{
-				Gods.instance().log("Could not save blacklist to " + this.blackListFile + ": " + ex.getMessage());
-			}
 		}
 	}
 }

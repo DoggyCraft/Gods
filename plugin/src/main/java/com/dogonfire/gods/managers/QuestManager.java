@@ -1,6 +1,5 @@
 package com.dogonfire.gods.managers;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,7 +7,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,15 +24,14 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.storage.DataFile;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -122,21 +119,28 @@ public class QuestManager
 		return instance;
 	}
 
-	private FileConfiguration			questsConfig		= null;
-	private File						questsConfigFile	= null;
-
 	private Random						random				= new Random();
-
 
 	private QuestManager()
 	{
+	}
+
+	/** quests.yml; see {@link DataFile} */
+	private DataFile questsFile()
+	{
+		return Gods.instance().storage().quests();
+	}
+
+	private YamlConfiguration questsConfig()
+	{
+		return questsFile().yaml();
 	}
 
 	private boolean addQuestPlayerProgressForGod(String godName, UUID playerId)
 	{
 		boolean complete = false;
 
-		List<String> players = this.questsConfig.getStringList(godName + ".Players");
+		List<String> players = questsConfig().getStringList(godName + ".Players");
 		if (players.contains(playerId.toString()))
 		{
 			return false;
@@ -144,14 +148,14 @@ public class QuestManager
 
 		players.add(playerId.toString());
 
-		int questAmount = this.questsConfig.getInt(godName + ".Amount");
+		int questAmount = questsConfig().getInt(godName + ".Amount");
 
 		complete = players.size() >= questAmount;
 
-		this.questsConfig.set(godName + ".Players", players);
-		this.questsConfig.set(godName + ".Progress", Integer.valueOf(players.size()));
+		questsConfig().set(godName + ".Players", players);
+		questsConfig().set(godName + ".Progress", Integer.valueOf(players.size()));
 
-		save();
+		questsFile().save();
 
 		return complete;
 	}
@@ -160,16 +164,16 @@ public class QuestManager
 	{
 		boolean complete = false;
 
-		int questAmount = this.questsConfig.getInt(godName + ".Amount");
-		int questProgress = this.questsConfig.getInt(godName + ".Progress");
+		int questAmount = questsConfig().getInt(godName + ".Amount");
+		int questProgress = questsConfig().getInt(godName + ".Progress");
 
 		questProgress++;
 
 		complete = questProgress >= questAmount;
 
-		this.questsConfig.set(godName + ".Progress", Integer.valueOf(questProgress));
+		questsConfig().set(godName + ".Progress", Integer.valueOf(questProgress));
 
-		save();
+		questsFile().save();
 
 		return complete;
 	}
@@ -177,9 +181,9 @@ public class QuestManager
 	void clearQuestTarget(Location location)
 	{
 		int hash = hashVector(location);
-		this.questsConfig.set("QuestTargets." + hash, null);
+		questsConfig().set("QuestTargets." + hash, null);
 
-		this.save();
+		questsFile().save();
 	}
 
 	/**
@@ -214,15 +218,15 @@ public class QuestManager
 		int questAmount = 1 + nonBelievers / (2 + this.random.nextInt(3));
 		int questMaxDuration = (1 + this.random.nextInt(5)) * questAmount;
 
-		this.questsConfig.set(godName + ".Type", questType.toString());
-		this.questsConfig.set(godName + ".Amount", Integer.valueOf(questAmount));
-		this.questsConfig.set(godName + ".TargetType", bibleTitle);
-		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(godName + ".Progress", null);
-		this.questsConfig.set(godName + ".Players", null);
-		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
+		questsConfig().set(godName + ".Type", questType.toString());
+		questsConfig().set(godName + ".Amount", Integer.valueOf(questAmount));
+		questsConfig().set(godName + ".TargetType", bibleTitle);
+		questsConfig().set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
+		questsConfig().set(godName + ".Progress", null);
+		questsConfig().set(godName + ".Players", null);
+		questsConfig().set(godName + ".CreatedTime", formatter.format(thisDate));
 
-		save();
+		questsFile().save();
 
 		Gods.instance().log(godName + " issued a quest: Make " + questAmount + " non-believers read the Holy Book");
 
@@ -294,18 +298,18 @@ public class QuestManager
 
 		this.setQuestTarget(godName, targetLocation);
 
-		this.questsConfig.set(godName + ".Type", questType.toString());
-		this.questsConfig.set(godName + ".TargetType", questTargetType);
-		this.questsConfig.set(godName + ".Location.World", targetLocation.getWorld().getName());
-		this.questsConfig.set(godName + ".Location.X", Integer.valueOf(targetLocation.getBlockX()));
-		this.questsConfig.set(godName + ".Location.Y", Integer.valueOf(targetLocation.getBlockY()));
-		this.questsConfig.set(godName + ".Location.Z", Integer.valueOf(targetLocation.getBlockZ()));
-		this.questsConfig.set(godName + ".Location.Ground", groundType.name());
-		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(godName + ".Progress", null);
-		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
+		questsConfig().set(godName + ".Type", questType.toString());
+		questsConfig().set(godName + ".TargetType", questTargetType);
+		questsConfig().set(godName + ".Location.World", targetLocation.getWorld().getName());
+		questsConfig().set(godName + ".Location.X", Integer.valueOf(targetLocation.getBlockX()));
+		questsConfig().set(godName + ".Location.Y", Integer.valueOf(targetLocation.getBlockY()));
+		questsConfig().set(godName + ".Location.Z", Integer.valueOf(targetLocation.getBlockZ()));
+		questsConfig().set(godName + ".Location.Ground", groundType.name());
+		questsConfig().set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
+		questsConfig().set(godName + ".Progress", null);
+		questsConfig().set(godName + ".CreatedTime", formatter.format(thisDate));
 
-		save();
+		questsFile().save();
 
 		Gods.instance().log(godName + " issued a quest: Pilgrimage to " + questTargetType + " in " + targetLocation.getWorld().getName() + " !");
 
@@ -422,14 +426,14 @@ public class QuestManager
 			break;
 		}
 
-		this.questsConfig.set(godName + ".Type", questType.toString());
-		this.questsConfig.set(godName + ".Amount", Integer.valueOf(questAmount));
-		this.questsConfig.set(godName + ".TargetType", questTargetType);
-		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(godName + ".Progress", null);
-		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
+		questsConfig().set(godName + ".Type", questType.toString());
+		questsConfig().set(godName + ".Amount", Integer.valueOf(questAmount));
+		questsConfig().set(godName + ".TargetType", questTargetType);
+		questsConfig().set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
+		questsConfig().set(godName + ".Progress", null);
+		questsConfig().set(godName + ".CreatedTime", formatter.format(thisDate));
 
-		save();
+		questsFile().save();
 
 		Gods.instance().log(godName + " issued a quest: Sacrifice " + questAmount + " " + questTargetType);
 
@@ -474,14 +478,14 @@ public class QuestManager
 		}
 		while (targetType == null || targetType == holyCreature);
 
-		this.questsConfig.set(godName + ".Type", questType.toString());
-		this.questsConfig.set(godName + ".Amount", Integer.valueOf(questAmount));
-		this.questsConfig.set(godName + ".TargetType", targetType.name());
-		this.questsConfig.set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
-		this.questsConfig.set(godName + ".Progress", null);
-		this.questsConfig.set(godName + ".CreatedTime", formatter.format(thisDate));
+		questsConfig().set(godName + ".Type", questType.toString());
+		questsConfig().set(godName + ".Amount", Integer.valueOf(questAmount));
+		questsConfig().set(godName + ".TargetType", targetType.name());
+		questsConfig().set(godName + ".MaxDuration", Integer.valueOf(questMaxDuration));
+		questsConfig().set(godName + ".Progress", null);
+		questsConfig().set(godName + ".CreatedTime", formatter.format(thisDate));
 
-		save();
+		questsFile().save();
 
 		Gods.instance().log(godName + " issued a quest: Kill " + questAmount + " " + targetType.name());
 
@@ -613,7 +617,7 @@ public class QuestManager
 
 	public int getQuestAmountForGod(String godName)
 	{
-		int value = this.questsConfig.getInt(godName + ".Amount");
+		int value = questsConfig().getInt(godName + ".Amount");
 
 		return value;
 	}
@@ -622,7 +626,7 @@ public class QuestManager
 	{
 		String pattern = "HH:mm dd-MM-yyyy";
 		DateFormat formatter = new SimpleDateFormat(pattern);
-		String startTime = this.questsConfig.getString(godName + ".CreatedTime");
+		String startTime = questsConfig().getString(godName + ".CreatedTime");
 		Date startTimeDate = null;
 		try
 		{
@@ -655,42 +659,42 @@ public class QuestManager
 	// The stored quest target; its world is null if that world isn't loaded
 	private Location getStoredQuestLocation(String godName)
 	{
-		String worldName = this.questsConfig.getString(godName + ".Location.World");
+		String worldName = questsConfig().getString(godName + ".Location.World");
 
 		if (worldName == null)
 		{
 			return null;
 		}
 
-		int x = this.questsConfig.getInt(godName + ".Location.X");
-		int y = this.questsConfig.getInt(godName + ".Location.Y");
-		int z = this.questsConfig.getInt(godName + ".Location.Z");
+		int x = questsConfig().getInt(godName + ".Location.X");
+		int y = questsConfig().getInt(godName + ".Location.Y");
+		int z = questsConfig().getInt(godName + ".Location.Z");
 
 		return new Location(Gods.instance().getServer().getWorld(worldName), x, y, z);
 	}
 
 	public int getQuestMaxDurationForGod(String godName)
 	{
-		int value = this.questsConfig.getInt(godName + ".MaxDuration");
+		int value = questsConfig().getInt(godName + ".MaxDuration");
 
 		return value;
 	}
 
 	public int getQuestProgressForGod(String godName)
 	{
-		int value = this.questsConfig.getInt(godName + ".Progress");
+		int value = questsConfig().getInt(godName + ".Progress");
 
 		return value;
 	}
 
 	String getQuestTargetGod(Location location)
 	{
-		return this.questsConfig.getString("QuestTargets." + hashVector(location) + ".God");
+		return questsConfig().getString("QuestTargets." + hashVector(location) + ".God");
 	}
 
 	public String getQuestTargetTypeForGod(String godName)
 	{
-		String value = this.questsConfig.getString(godName + ".TargetType");
+		String value = questsConfig().getString(godName + ".TargetType");
 
 		return value;
 	}
@@ -726,7 +730,7 @@ public class QuestManager
 
 	public QUESTTYPE getQuestTypeForGod(String godName)
 	{
-		String typeName = this.questsConfig.getString(godName + ".Type");
+		String typeName = questsConfig().getString(godName + ".Type");
 		if (typeName == null)
 		{
 			return QUESTTYPE.NONE;
@@ -1213,7 +1217,7 @@ public class QuestManager
 
 	public boolean hasQuest(String godName)
 	{
-		String quest = this.questsConfig.getString(godName + ".Type");
+		String quest = questsConfig().getString(godName + ".Type");
 
 		return quest != null;
 	}
@@ -1222,30 +1226,29 @@ public class QuestManager
 	{
 		int hash = hashVector(location);
 
-		String questTargetLocationWorld = this.questsConfig.getString("QuestTargets." + hash + ".Location.World");
+		String questTargetLocationWorld = questsConfig().getString("QuestTargets." + hash + ".Location.World");
 
 		if (questTargetLocationWorld == null || location.getWorld() == null)
 		{
 			return false;
 		}
 
-		int questTargetLocationX = this.questsConfig.getInt("QuestTargets." + hash + ".Location.X");
-		int questTargetLocationY = this.questsConfig.getInt("QuestTargets." + hash + ".Location.Y");
-		int questTargetLocationZ = this.questsConfig.getInt("QuestTargets." + hash + ".Location.Z");
+		int questTargetLocationX = questsConfig().getInt("QuestTargets." + hash + ".Location.X");
+		int questTargetLocationY = questsConfig().getInt("QuestTargets." + hash + ".Location.Y");
+		int questTargetLocationZ = questsConfig().getInt("QuestTargets." + hash + ".Location.Z");
 
 		return location.getBlockX() == questTargetLocationX && location.getBlockY() == questTargetLocationY && location.getBlockZ() == questTargetLocationZ && location.getWorld().getName().equals(questTargetLocationWorld);
 	}
 
 	public void load()
 	{
-		if (this.questsConfigFile == null)
+		questsFile().load();
+		if (!questsFile().isReadOnly())
 		{
-			this.questsConfigFile = new File(Gods.instance().getDataFolder(), "quests.yml");
+			removeObsoleteQuests();
 		}
-		this.questsConfig = YamlConfiguration.loadConfiguration(this.questsConfigFile);
-		removeObsoleteQuests();
 
-		Gods.instance().log("Loaded " + this.questsConfig.getKeys(false).size() + " quests.");
+		Gods.instance().log("Loaded " + questsConfig().getKeys(false).size() + " quests.");
 	}
 
 	/**
@@ -1254,10 +1257,10 @@ public class QuestManager
 	 */
 	private void removeObsoleteQuests()
 	{
-		boolean changed = this.questsConfig.contains("Global");
-		this.questsConfig.set("Global", null);
+		boolean changed = questsConfig().contains("Global");
+		questsConfig().set("Global", null);
 
-		for (String godName : this.questsConfig.getKeys(false))
+		for (String godName : questsConfig().getKeys(false))
 		{
 			if (godName.equals("QuestTargets"))
 			{
@@ -1272,14 +1275,14 @@ public class QuestManager
 				{
 					clearQuestTarget(questLocation);
 				}
-				this.questsConfig.set(godName, null);
+				questsConfig().set(godName, null);
 				changed = true;
 			}
 		}
 
 		if (changed)
 		{
-			save();
+			questsFile().save();
 		}
 	}
 
@@ -1325,7 +1328,7 @@ public class QuestManager
 		Block underBlock = chestBlock.getRelative(BlockFace.DOWN);
 		if (underBlock.getType() == Material.GLOWSTONE)
 		{
-			String groundName = this.questsConfig.getString(godName + ".Location.Ground");
+			String groundName = questsConfig().getString(godName + ".Location.Ground");
 			Material ground = (groundName == null) ? null : Material.matchMaterial(groundName);
 			underBlock.setType((ground != null && ground.isBlock()) ? ground : Material.GRASS_BLOCK);
 		}
@@ -1345,38 +1348,22 @@ public class QuestManager
 			clearQuestTarget(questLocation);
 		}
 
-		this.questsConfig.set(godName, null);
+		questsConfig().set(godName, null);
 
-		save();
-	}
-
-	public void save()
-	{
-		if ((this.questsConfig == null) || (this.questsConfigFile == null))
-		{
-			return;
-		}
-		try
-		{
-			this.questsConfig.save(this.questsConfigFile);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().log("Could not save config to " + this.questsConfigFile.getName() + ": " + ex.getMessage());
-		}
+		questsFile().save();
 	}
 
 	void setQuestTarget(String godName, Location location)
 	{
 		int hash = hashVector(location);
 
-		this.questsConfig.set("QuestTargets." + hash + ".God", godName);
-		this.questsConfig.set("QuestTargets." + hash + ".Location.X", location.getBlockX());
-		this.questsConfig.set("QuestTargets." + hash + ".Location.Y", location.getBlockY());
-		this.questsConfig.set("QuestTargets." + hash + ".Location.Z", location.getBlockZ());
-		this.questsConfig.set("QuestTargets." + hash + ".Location.World", location.getWorld().getName());
+		questsConfig().set("QuestTargets." + hash + ".God", godName);
+		questsConfig().set("QuestTargets." + hash + ".Location.X", location.getBlockX());
+		questsConfig().set("QuestTargets." + hash + ".Location.Y", location.getBlockY());
+		questsConfig().set("QuestTargets." + hash + ".Location.Z", location.getBlockZ());
+		questsConfig().set("QuestTargets." + hash + ".Location.World", location.getWorld().getName());
 
-		this.save();
+		questsFile().save();
 	}
 
 	/**

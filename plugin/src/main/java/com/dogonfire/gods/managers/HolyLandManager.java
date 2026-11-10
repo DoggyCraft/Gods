@@ -17,7 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Enemy;
 import org.bukkit.entity.EntityType;
@@ -34,6 +33,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.storage.DataFile;
 
 /**
  * Holy lands: 128x128 block regions claimed by a god when a believer builds or
@@ -73,8 +73,6 @@ public class HolyLandManager implements Listener
 	private static final int		DEFENDER_KILLS_TO_WIN	= 5;
 	private static final int		DESECRATION_TO_WIN		= 30;
 
-	private FileConfiguration		landConfig				= null;
-	private File					landConfigFile			= null;
 	private HashMap<UUID, String>	fromLocations			= new HashMap<UUID, String>();
 
 	private String					pattern					= "HH:mm dd-MM-yyyy";
@@ -83,6 +81,17 @@ public class HolyLandManager implements Listener
 
 	private HolyLandManager()
 	{
+	}
+
+	/** holyland.yml; see {@link DataFile} */
+	private DataFile landFile()
+	{
+		return Gods.instance().storage().holyLands();
+	}
+
+	private YamlConfiguration landConfig()
+	{
+		return landFile().yaml();
 	}
 
 	// ---------------------------------------------------------------------
@@ -118,7 +127,7 @@ public class HolyLandManager implements Listener
 	{
 		List<String> paths = new ArrayList<String>();
 
-		ConfigurationSection lands = this.landConfig.getConfigurationSection(HOLY_LANDS);
+		ConfigurationSection lands = landConfig().getConfigurationSection(HOLY_LANDS);
 		if (lands == null)
 		{
 			return paths;
@@ -146,13 +155,11 @@ public class HolyLandManager implements Listener
 
 	public void load()
 	{
-		if (this.landConfigFile == null)
+		landFile().load();
+		if (!landFile().isReadOnly())
 		{
-			this.landConfigFile = new File(Gods.instance().getDataFolder(), "holyland.yml");
+			dropLegacyLands();
 		}
-		this.landConfig = YamlConfiguration.loadConfiguration(this.landConfigFile);
-
-		dropLegacyLands();
 
 		Gods.instance().log("Loaded " + getAllLandPaths().size() + " holy land entries.");
 	}
@@ -165,20 +172,20 @@ public class HolyLandManager implements Listener
 	 */
 	private void dropLegacyLands()
 	{
-		if (!this.landConfig.contains(LEGACY_HOLY_LANDS) && !this.landConfig.contains(LEGACY_NEUTRAL_LANDS))
+		if (!landConfig().contains(LEGACY_HOLY_LANDS) && !landConfig().contains(LEGACY_NEUTRAL_LANDS))
 		{
 			return;
 		}
 
-		File backup = new File(this.landConfigFile.getParentFile(), "holyland.yml.v1.bak");
+		File backup = new File(landFile().path().getParent().toFile(), "holyland.yml.v1.bak");
 		if (backup.exists())
 		{
-			backup = new File(this.landConfigFile.getParentFile(), "holyland.yml.v1." + System.currentTimeMillis() + ".bak");
+			backup = new File(landFile().path().getParent().toFile(), "holyland.yml.v1." + System.currentTimeMillis() + ".bak");
 		}
 
 		try
 		{
-			Files.copy(this.landConfigFile.toPath(), backup.toPath());
+			Files.copy(landFile().path(), backup.toPath());
 		}
 		catch (Exception ex)
 		{
@@ -186,30 +193,14 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		this.landConfig.set(LEGACY_HOLY_LANDS, null);
-		this.landConfig.set(LEGACY_NEUTRAL_LANDS, null);
+		landConfig().set(LEGACY_HOLY_LANDS, null);
+		landConfig().set(LEGACY_NEUTRAL_LANDS, null);
 
-		save();
+		landFile().save();
 
 		Gods.instance().getLogger().warning("holyland.yml was in the old format, whose land positions were broken and can't be converted.");
 		Gods.instance().getLogger().warning("All holy lands and neutral lands were reset; the old file is kept as " + backup.getName() + ".");
 		Gods.instance().getLogger().warning("Gods claim holy land again when believers build or pray at their altars. Set neutral lands again with /g setsafe.");
-	}
-
-	public void save()
-	{
-		if ((this.landConfig == null) || (this.landConfigFile == null))
-		{
-			return;
-		}
-		try
-		{
-			this.landConfig.save(this.landConfigFile);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().log("Could not save config to " + this.landConfigFile + ": " + ex.getMessage());
-		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -217,7 +208,7 @@ public class HolyLandManager implements Listener
 
 	public String getGodAtHolyLandLocation(Location location)
 	{
-		return this.landConfig.getString(landPath(location) + ".GodName");
+		return landConfig().getString(landPath(location) + ".GodName");
 	}
 
 	public String getGodAtHolyLandLocationFrom(UUID believerId)
@@ -236,14 +227,14 @@ public class HolyLandManager implements Listener
 
 	public String getHolyLandName(Location location)
 	{
-		return this.landConfig.getString(landPath(location) + ".Name");
+		return landConfig().getString(landPath(location) + ".Name");
 	}
 
 	public void setHolyLandName(Location location, String name)
 	{
-		this.landConfig.set(landPath(location) + ".Name", name);
+		landConfig().set(landPath(location) + ".Name", name);
 
-		save();
+		landFile().save();
 	}
 
 	public void sendTitleForHolyLand(Player player, String godName, Location location)
@@ -281,7 +272,6 @@ public class HolyLandManager implements Listener
 			second = new String[] {"Rock", "High", "Sky"};
 			third = new String[] {"hill", "mountain"};
 		}
-
 
 		return first[random.nextInt(first.length)] + second[random.nextInt(second.length)] + third[random.nextInt(third.length)];
 	}
@@ -331,20 +321,20 @@ public class HolyLandManager implements Listener
 		String path = landPath(location);
 
 		Date thisDate = new Date();
-		if (this.landConfig.getString(path + ".FirstPrayerTime") == null)
+		if (landConfig().getString(path + ".FirstPrayerTime") == null)
 		{
-			this.landConfig.set(path + ".FirstPrayerTime", this.formatter.format(thisDate));
+			landConfig().set(path + ".FirstPrayerTime", this.formatter.format(thisDate));
 		}
-		this.landConfig.set(path + ".GodName", godName);
-		this.landConfig.set(path + ".LastPrayerTime", this.formatter.format(thisDate));
-		this.landConfig.set(path + ".World", location.getWorld().getName());
+		landConfig().set(path + ".GodName", godName);
+		landConfig().set(path + ".LastPrayerTime", this.formatter.format(thisDate));
+		landConfig().set(path + ".World", location.getWorld().getName());
 
-		save();
+		landFile().save();
 	}
 
 	private void unsetHolyLand(String path)
 	{
-		this.landConfig.set(path, null);
+		landConfig().set(path, null);
 	}
 
 	/** Removes holy lands nobody has prayed in for HolyLand.DaysForAbandonedHolyLands days. */
@@ -362,7 +352,7 @@ public class HolyLandManager implements Listener
 			Date lastPrayerDate = null;
 			try
 			{
-				lastPrayerDate = this.formatter.parse(this.landConfig.getString(path + ".LastPrayerTime"));
+				lastPrayerDate = this.formatter.parse(landConfig().getString(path + ".LastPrayerTime"));
 			}
 			catch (Exception ex)
 			{
@@ -378,7 +368,7 @@ public class HolyLandManager implements Listener
 
 		if (removed > 0)
 		{
-			save();
+			landFile().save();
 		}
 
 		long timeAfter = System.currentTimeMillis();
@@ -392,7 +382,7 @@ public class HolyLandManager implements Listener
 
 		for (String path : getAllLandPaths())
 		{
-			if (godName != null && godName.equals(this.landConfig.getString(path + ".GodName")))
+			if (godName != null && godName.equals(landConfig().getString(path + ".GodName")))
 			{
 				unsetHolyLand(path);
 				changed = true;
@@ -401,7 +391,7 @@ public class HolyLandManager implements Listener
 
 		if (changed)
 		{
-			save();
+			landFile().save();
 		}
 	}
 
@@ -411,7 +401,7 @@ public class HolyLandManager implements Listener
 
 		for (String path : getAllLandPaths())
 		{
-			if (godName != null && godName.equals(this.landConfig.getString(path + ".GodName")))
+			if (godName != null && godName.equals(landConfig().getString(path + ".GodName")))
 			{
 				chunks++;
 			}
@@ -462,8 +452,8 @@ public class HolyLandManager implements Listener
 		{
 			if (landGodName.equals(godName))
 			{
-				this.landConfig.set(landPath(location) + ".LastPrayerTime", this.formatter.format(new Date()));
-				save();
+				landConfig().set(landPath(location) + ".LastPrayerTime", this.formatter.format(new Date()));
+				landFile().save();
 			}
 			return;
 		}
@@ -488,21 +478,21 @@ public class HolyLandManager implements Listener
 
 	public boolean isNeutralLandLocation(Location location)
 	{
-		return this.landConfig.contains(neutralLandPath(location));
+		return landConfig().contains(neutralLandPath(location));
 	}
 
 	public void setNeutralLand(Location location)
 	{
-		this.landConfig.set(neutralLandPath(location), this.formatter.format(new Date()));
+		landConfig().set(neutralLandPath(location), this.formatter.format(new Date()));
 
-		save();
+		landFile().save();
 	}
 
 	public void clearNeutralLand(Location location)
 	{
-		this.landConfig.set(neutralLandPath(location), null);
+		landConfig().set(neutralLandPath(location), null);
 
-		save();
+		landFile().save();
 	}
 
 	public void setNeutralLandLocationFrom(UUID believerId)
@@ -520,30 +510,30 @@ public class HolyLandManager implements Listener
 
 	private String getAttackingGod(Location location)
 	{
-		return this.landConfig.getString(landPath(location) + ".AttackingGodName");
+		return landConfig().getString(landPath(location) + ".AttackingGodName");
 	}
 
 	public void setContestedLand(Location location, String attackingGodName)
 	{
 		String path = landPath(location);
 
-		this.landConfig.set(path + ".AttackingGodName", attackingGodName);
-		this.landConfig.set(path + ".ContestedTime", this.formatter.format(new Date()));
+		landConfig().set(path + ".AttackingGodName", attackingGodName);
+		landConfig().set(path + ".ContestedTime", this.formatter.format(new Date()));
 
-		save();
+		landFile().save();
 	}
 
 	public void clearContestedLand(Location location)
 	{
 		String path = landPath(location);
 
-		this.landConfig.set(path + ".AttackingGodName", null);
-		this.landConfig.set(path + ".ContestedTime", null);
-		this.landConfig.set(path + ".AttackerKills", null);
-		this.landConfig.set(path + ".DefenderKills", null);
-		this.landConfig.set(path + ".Desecration", null);
+		landConfig().set(path + ".AttackingGodName", null);
+		landConfig().set(path + ".ContestedTime", null);
+		landConfig().set(path + ".AttackerKills", null);
+		landConfig().set(path + ".DefenderKills", null);
+		landConfig().set(path + ".Desecration", null);
 
-		save();
+		landFile().save();
 	}
 
 	/** Minutes left of the attack on this holy land; 0 when the defenders have held out. */
@@ -552,7 +542,7 @@ public class HolyLandManager implements Listener
 		Date contestedDate;
 		try
 		{
-			contestedDate = this.formatter.parse(this.landConfig.getString(landPath(location) + ".ContestedTime"));
+			contestedDate = this.formatter.parse(landConfig().getString(landPath(location) + ".ContestedTime"));
 		}
 		catch (Exception ex)
 		{
@@ -593,9 +583,9 @@ public class HolyLandManager implements Listener
 	private int addToContestedCounter(Location location, String counter, int n)
 	{
 		String path = landPath(location) + "." + counter;
-		int value = Math.max(0, this.landConfig.getInt(path) + n);
-		this.landConfig.set(path, value);
-		save();
+		int value = Math.max(0, landConfig().getInt(path) + n);
+		landConfig().set(path, value);
+		landFile().save();
 		return value;
 	}
 
@@ -881,9 +871,9 @@ public class HolyLandManager implements Listener
 			else
 			{
 				String path = landPath(to);
-				int attackerKillsNeeded = Math.max(0, ATTACKER_KILLS_TO_WIN - this.landConfig.getInt(path + ".AttackerKills"));
-				int defenderKillsNeeded = Math.max(0, DEFENDER_KILLS_TO_WIN - this.landConfig.getInt(path + ".DefenderKills"));
-				int desecration = this.landConfig.getInt(path + ".Desecration");
+				int attackerKillsNeeded = Math.max(0, ATTACKER_KILLS_TO_WIN - landConfig().getInt(path + ".AttackerKills"));
+				int defenderKillsNeeded = Math.max(0, DEFENDER_KILLS_TO_WIN - landConfig().getInt(path + ".DefenderKills"));
+				int desecration = landConfig().getInt(path + ".Desecration");
 
 				TitleManager.sendTitle(player, 1*20, 4*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
 

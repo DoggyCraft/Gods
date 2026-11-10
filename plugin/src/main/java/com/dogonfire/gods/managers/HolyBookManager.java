@@ -1,18 +1,17 @@
 package com.dogonfire.gods.managers;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.storage.DataFile;
 import com.dogonfire.gods.HolyBook;
 
 public class HolyBookManager
@@ -26,27 +25,35 @@ public class HolyBookManager
 		return instance;
 	}
 
-	private FileConfiguration	biblesConfig		= null;
-	private File				biblesConfigFile	= null;
-
 	private HolyBookManager()
 	{
 	}
 
+	/** bibles.yml; see {@link DataFile} */
+	private DataFile biblesFile()
+	{
+		return Gods.instance().storage().bibles();
+	}
+
+	private YamlConfiguration biblesConfig()
+	{
+		return biblesFile().yaml();
+	}
+
 	public void clearBible(String godName)
 	{
-		this.biblesConfig.set(godName, null);
+		biblesConfig().set(godName, null);
 
-		save();
+		biblesFile().save();
 	}
 
 	private List<String> getPagesOrInit(String godName)
 	{
-		List<String> pages = this.biblesConfig.getStringList(godName + ".Pages");
+		List<String> pages = biblesConfig().getStringList(godName + ".Pages");
 		if (pages.size() == 0)
 		{
 			initBible(godName);
-			pages = this.biblesConfig.getStringList(godName + ".Pages");
+			pages = biblesConfig().getStringList(godName + ".Pages");
 		}
 		return pages;
 	}
@@ -81,7 +88,7 @@ public class HolyBookManager
 
 	public String getBibleTitle(String godName)
 	{
-		return this.biblesConfig.getString(godName + ".Title");
+		return biblesConfig().getString(godName + ".Title");
 	}
 
 	public ItemStack getEditBible(String godName)
@@ -121,7 +128,7 @@ public class HolyBookManager
 			String godName = bible.getGodName();
 			if (godName != null)
 			{
-				return this.biblesConfig.contains(godName) ? godName : null;
+				return biblesConfig().contains(godName) ? godName : null;
 			}
 
 			String author = bible.getAuthor();
@@ -130,7 +137,7 @@ public class HolyBookManager
 				return null;
 			}
 			author = ChatColor.stripColor(author);
-			for (String god : this.biblesConfig.getKeys(false))
+			for (String god : biblesConfig().getKeys(false))
 			{
 				if (god.equals(author))
 				{
@@ -208,9 +215,9 @@ public class HolyBookManager
 
 		List<String> pages = new ArrayList<String>();
 
-		this.biblesConfig.set(godName + ".Title", getDefaultBibleTitle(godName));
+		biblesConfig().set(godName + ".Title", getDefaultBibleTitle(godName));
 
-		this.biblesConfig.set(godName + ".Author", godName);
+		biblesConfig().set(godName + ".Author", godName);
 
 		LanguageManager.instance().setPlayerName(godName);
 
@@ -237,14 +244,14 @@ public class HolyBookManager
 			LanguageManager.instance().setType(LanguageManager.instance().getMobTypeName(GodManager.instance().getHolyMobTypeForGod(godName)));
 			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText7));
 
-			this.biblesConfig.set(godName + ".Pages", pages);
+			biblesConfig().set(godName + ".Pages", pages);
 		}
 		catch (Exception ex)
 		{
 			Gods.instance().logDebug(ex.getMessage());
 		}
 
-		save();
+		biblesFile().save();
 
 		// if (Gods.instance().propheciesEnabled)
 		// {
@@ -253,29 +260,9 @@ public class HolyBookManager
 
 	public void load()
 	{
-		if (this.biblesConfigFile == null)
-		{
-			this.biblesConfigFile = new File(Gods.instance().getDataFolder(), "bibles.yml");
-		}
-		this.biblesConfig = YamlConfiguration.loadConfiguration(this.biblesConfigFile);
+		biblesFile().load();
 
-		Gods.instance().log("Loaded " + this.biblesConfig.getKeys(false).size() + " bibles.");
-	}
-
-	public void save()
-	{
-		if ((this.biblesConfig == null) || (this.biblesConfigFile == null))
-		{
-			return;
-		}
-		try
-		{
-			this.biblesConfig.save(this.biblesConfigFile);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().log("Could not save config to " + this.biblesConfigFile.getName() + ": " + ex.getMessage());
-		}
+		Gods.instance().log("Loaded " + biblesConfig().getKeys(false).size() + " bibles.");
 	}
 
 	/**
@@ -324,11 +311,11 @@ public class HolyBookManager
 			title = oldTitle == null ? getDefaultBibleTitle(godName) : ChatColor.stripColor(oldTitle);
 		}
 
-		this.biblesConfig.set(godName + ".Title", title);
-		this.biblesConfig.set(godName + ".Author", player.getName());
-		this.biblesConfig.set(godName + ".Pages", pages);
+		biblesConfig().set(godName + ".Title", title);
+		biblesConfig().set(godName + ".Author", player.getName());
+		biblesConfig().set(godName + ".Pages", pages);
 
-		save();
+		biblesFile().save();
 
 		if (item.getType() == Material.WRITABLE_BOOK)
 		{
