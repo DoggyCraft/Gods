@@ -19,3 +19,8 @@ dependency-reduced-pom.xml
 
 # Custom
 .direnv/
+
+# VSCode / IDEA
+.vscode/
+/.idea/
+*.iml
