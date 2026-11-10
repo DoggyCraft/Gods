@@ -46,7 +46,6 @@ import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
 import com.dogonfire.gods.tasks.TaskGiveItem;
 import com.dogonfire.gods.tasks.TaskGodSpeak;
 import com.dogonfire.gods.tasks.TaskHealPlayer;
-import com.dogonfire.gods.tasks.TaskSpawnGuideMob;
 import com.dogonfire.gods.tasks.TaskSpawnHostileMobs;
 
 public class GodManager
@@ -362,6 +361,7 @@ public class GodManager
 			}
 
 			setGodValue(godName, ".Priests", priests);
+			ChatManager.instance().refresh(playerId);
 
 			setGodValue(godName, ".PendingPriest", null);
 			setGodValue(godName, ".PendingPriestTime", null);
@@ -377,27 +377,6 @@ public class GodManager
 		}
 	}
 
-	public void believerAnswer(UUID believerId, String answer)
-	{
-		String godName = BelieverManager.instance().getGodForBeliever(believerId);
-
-		Player player = Gods.instance().getServer().getPlayer(believerId);
-		if (player == null)
-		{
-			Gods.instance().logDebug("believerAccept(): player is null for " + believerId);
-			return;
-		}
-
-		if (godName == null)
-		{
-			return;
-		}
-
-		// Holy laws, the only questions answered this way, were never finished, so there is nothing to answer
-		LanguageManager.instance().setPlayerName(player.getName());
-		GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverNoQuestion, 2 + this.random.nextInt(20));
-	}
-	
 	public void believerAccept(UUID believerId)
 	{
 		String godName = BelieverManager.instance().getGodForBeliever(believerId);
@@ -640,6 +619,8 @@ public class GodManager
 	public void clearContestedHolyLandForGod(String godName)
 	{
 		setGodValue(godName, ".ContestedLand", null);
+		setGodValue(godName, ".ContestedKills", null);
+		setGodValue(godName, ".ContestedDesecration", null);
 
 		saveTimed();
 	}
@@ -1822,6 +1803,11 @@ public class GodManager
 
 	public void giveHolyArtifact(String godName, GodType godType, Player player, boolean speak)
 	{
+		// A second artifact would only drop at their feet: the pickup is refused while they carry one
+		if (HolyArtifactManager.instance().hasHolyArtifact(player))
+		{
+			return;
+		}
 		Gods.instance().getServer().getScheduler().runTaskLater(Gods.instance(), new TaskGiveHolyArtifact(godName, godType, player, speak), 2L);
 	}
 
@@ -2026,10 +2012,6 @@ public class GodManager
 		return false;
 	}
 
-	public void handleBibleMelee(String godName, Player player)
-	{
-	}
-
 	public void handleEat(Player player, String godName, String foodType)
 	{
 		Material eatFoodType = getHolyFoodTypeForGod(godName);
@@ -2168,10 +2150,6 @@ public class GodManager
 			}
 			BelieverManager.instance().believerLeave(godName, playerId);
 		}
-	}
-
-	public void handleReadBible(String godName, Player player)
-	{
 	}
 
 	public void handleSacrifice(String godName, Player believer, Material type)
@@ -2406,7 +2384,7 @@ public class GodManager
 		return getWarRelations(godName).contains(otherGodName);
 	}
 
-	public void healPlayer(String godName, Player player, double healing)
+	public void healPlayer(String godName, Player player)
 	{
 		Gods.instance().getServer().getScheduler().runTaskLater(Gods.instance(), new TaskHealPlayer(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverHealthBlessing), 2L);
 	}
@@ -2728,7 +2706,7 @@ public class GodManager
 
 						if ((healing > 1.0D) && (this.random.nextInt(3) == 0))
 						{
-							healPlayer(godName, believer, getHealthBlessing(godName));
+							healPlayer(godName, believer);
 
 							BelieverManager.instance().setItemBlessingTime(believer.getUniqueId());
 
@@ -2890,7 +2868,7 @@ public class GodManager
 						double healing = getHealthNeed(godName, believer);
 						if ((healing > 1.0D) && (this.random.nextInt(2) == 0))
 						{
-							healPlayer(godName, believer, getHealthBlessing(godName));
+							healPlayer(godName, believer);
 
 							BelieverManager.instance().setItemBlessingTime(believer.getUniqueId());
 
@@ -3378,6 +3356,7 @@ public class GodManager
 		}
 
 		setGodValue(godName, ".Priests", priests);
+		ChatManager.instance().refresh(playerId);
 
 		saveTimed();
 
@@ -3576,18 +3555,6 @@ public class GodManager
 		setGodValue(godName, ".LastQuestTime", formatter.format(new Date()));
 
 		saveTimed();
-	}
-
-	public void spawnGuidingMobs(String godName, UUID playerId, Location targetLocation)
-	{
-		EntityType mobType = getHolyMobTypeForGod(godName);
-
-		Player player = Gods.instance().getServer().getPlayer(playerId);
-		if (player == null)
-		{
-			return;
-		}
-		Gods.instance().getServer().getScheduler().runTaskLater(Gods.instance(), new TaskSpawnGuideMob(player, targetLocation, mobType), 2L);
 	}
 
 	public void spawnHostileMobs(String godName, Player player, EntityType mobType, int numberOfMobs)

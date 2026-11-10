@@ -11,6 +11,7 @@ public class CommandReload extends GodsCommand
 	{
 		super("reload");
 		this.permission = "gods.reload";
+		this.description = "Reload the configuration and data files";
 	}
 
 	@Override

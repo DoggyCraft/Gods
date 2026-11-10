@@ -267,11 +267,6 @@ public class BlockListener implements Listener
 			QuestManager.instance().handleKilledMob(godName, event.getEntityType().name());
 		}
 
-		if (GodsConfiguration.instance().isHolyArtifactsEnabled())
-		{
-			HolyArtifactManager.instance().handleDeath(player.getName(), godName, player.getInventory().getItemInMainHand());
-		}
-
 		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.commandments")))
 		{
 			return;
@@ -352,7 +347,6 @@ public class BlockListener implements Listener
 			GodManager.GodType godType = GodManager.instance().getDivineForceForGod(godName);
 
 			GodManager.instance().handleKilledPlayer(player.getUniqueId(), godName, godType);
-			QuestManager.instance().handleKilledPlayer(player.getUniqueId(), godName);
 		}
 
 		Player killer = player.getKiller();
@@ -415,14 +409,10 @@ public class BlockListener implements Listener
 			return;
 		}
 		AltarManager.instance().addDroppedItem(event.getItemDrop().getEntityId(), player.getUniqueId());
-		if (GodsConfiguration.instance().isHolyArtifactsEnabled())
-		{
-			HolyArtifactManager.instance().handleDrop(player.getName(), event.getItemDrop(), event.getItemDrop().getLocation());
-		}
 	}
 
 	/**
-	 * Reading (right-click) and hitting with (left-click) a holy book. Clicks in
+	 * Reading a holy book (right-click). Clicks in
 	 * the air reach listeners already cancelled, so this handler doesn't ignore
 	 * cancelled events; it only skips when using the item in hand was denied.
 	 */
@@ -457,19 +447,9 @@ public class BlockListener implements Listener
 				long currentTime = System.currentTimeMillis();
 				if ((lastReadTime == null) || (currentTime - lastReadTime.longValue() > 10000L))
 				{
-					GodManager.instance().handleReadBible(godName, player);
 					QuestManager.instance().handleReadBible(godName, player.getUniqueId());
 					this.lastEatTimes.put(player.getUniqueId(), currentTime);
 				}
-			}
-		}
-		else if ((action == Action.LEFT_CLICK_AIR) || (action == Action.LEFT_CLICK_BLOCK))
-		{
-			String godName = HolyBookManager.instance().getGodForBible(book);
-			if (godName != null)
-			{
-				GodManager.instance().handleBibleMelee(godName, player);
-				QuestManager.instance().handleBibleMelee(godName, player.getUniqueId());
 			}
 		}
 	}
@@ -566,7 +546,7 @@ public class BlockListener implements Listener
 		if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK))
 		{
 			Material type = player.getInventory().getItemInMainHand().getType();
-			if ((type != Material.AIR) && (godName != null) && (GodsConfiguration.instance().isHolyArtifactsEnabled()))
+			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null) && (GodsConfiguration.instance().isHolyArtifactsEnabled()))
 			{
 				HolyArtifactManager.instance().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
 			}
@@ -755,10 +735,6 @@ public class BlockListener implements Listener
 			MarriageManager.instance().handlePickupItem(player, event.getItem(), event.getItem().getLocation());
 		}
 
-		if (GodsConfiguration.instance().isQuestsEnabled())
-		{
-			QuestManager.instance().handlePickupItem(player.getName(), event.getItem(), event.getItem().getLocation());
-		}
 	}
 
 	@EventHandler

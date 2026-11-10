@@ -131,7 +131,7 @@ public class CommandPrayFor extends GodsCommand
 			return;
 		}
 		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForHealth, ChatColor.AQUA, GodsConfiguration.instance().getPrayerPowerForHealth(), godName, 1);
-		GodManager.instance().healPlayer(godName, player, GodManager.instance().getHealthBlessing(godName));
+		GodManager.instance().healPlayer(godName, player);
 
 		BelieverManager.instance().increasePrayerPower(player.getUniqueId(), -GodsConfiguration.instance().getPrayerPowerForHealth());
 		BelieverManager.instance().setItemBlessingTime(player.getUniqueId());

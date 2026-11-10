@@ -389,14 +389,6 @@ public class GodsConfiguration
 		return holyLandLightning;
 	}
 
-	/**
-	 * Holy war quests can't be completed, so they are always off. Kept until QuestManager stops asking.
-	 */
-	public final boolean isHolywarQuestsEnabled()
-	{
-		return false;
-	}
-
 	public final boolean isIncreaseDamageBlessingEnabled()
 	{
 		return increaseDamageBlessingEnabled;
@@ -465,14 +457,6 @@ public class GodsConfiguration
 	public final boolean isSacrificesEnabled()
 	{
 		return sacrificesEnabled;
-	}
-
-	/**
-	 * Slay dragon quests can't be completed, so they are always off. Kept until QuestManager stops asking.
-	 */
-	public final boolean isSlayDragonQuestsEnabled()
-	{
-		return false;
 	}
 
 	public final boolean isSlayQuestsEnabled()
@@ -616,6 +600,7 @@ public class GodsConfiguration
 		this.pilgrimageQuestsEnabled = config.getBoolean("Quests.PilgrimageQuests", true);
 		this.giveItemsQuestsEnabled = config.getBoolean("Quests.GiveItemsQuests", false);
 
+		QuestManager.instance().clearItemRewardValues();
 		ConfigurationSection configSection = config.getConfigurationSection("Quests.RewardValues");
 		if (configSection != null)
 		{
@@ -682,6 +667,7 @@ public class GodsConfiguration
 
 		configSection = config.getConfigurationSection("Altars.BlockTypes");
 
+		AltarManager.instance().clearAltarBlockTypes();
 		if (configSection != null)
 		{
 			for (String godType : configSection.getKeys(false))

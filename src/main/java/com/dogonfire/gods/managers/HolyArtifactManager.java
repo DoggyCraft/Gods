@@ -130,15 +130,6 @@ public class HolyArtifactManager
 		return location.getWorld().dropItem(location, item);
 	}
 
-	/**
-	 * Same as {@link #createHolyArtifact(GodManager.GodType, String, Location)};
-	 * the player name is not used.
-	 */
-	public Item createHolyArtifact(String playerName, GodManager.GodType godType, String godName, Location location)
-	{
-		return createHolyArtifact(godType, godName, location);
-	}
-
 	private static String getUsesLine(int uses)
 	{
 		return ChatColor.WHITE + "Used " + uses + (uses == 1 ? " time" : " times");
@@ -261,22 +252,6 @@ public class HolyArtifactManager
 			item.setAmount(item.getAmount() - 1);
 			player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F);
 		}
-	}
-
-	/**
-	 * Nothing to do: artifacts keep their state on the item. Kept for the
-	 * existing listener call.
-	 */
-	public void handleDeath(String killerName, String godName, ItemStack itemInHand)
-	{
-	}
-
-	/**
-	 * Nothing to do: artifacts keep their state on the item. Kept for the
-	 * existing listener call.
-	 */
-	public void handleDrop(String playerName, Item item, Location pickupLocation)
-	{
 	}
 
 	/**

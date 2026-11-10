@@ -203,14 +203,6 @@ public class HolyBookManager
 		return true;
 	}
 
-	/**
-	 * Nothing happens to bibles when a quest is completed. Kept for the
-	 * existing QuestManager call.
-	 */
-	public void handleQuestCompleted(String godName, QuestManager.QUESTTYPE type, String playerName)
-	{
-	}
-
 	private void initBible(String godName)
 	{
 		Gods.instance().logDebug("Creating bible for '" + godName + "' ...");
@@ -257,7 +249,6 @@ public class HolyBookManager
 
 		// if (Gods.instance().propheciesEnabled)
 		// {
-		// Gods.instance().getProphecyManager().generateProphecies(godName);
 		// }
 	}
 
@@ -354,26 +345,5 @@ public class HolyBookManager
 		}
 
 		return true;
-	}
-
-	public void setProphecyPages(String godName, List<String> prophecyPages)
-	{
-		List<String> pages = this.biblesConfig.getStringList(godName + ".Pages");
-		List<String> newPages = new ArrayList<String>();
-		for (String page : pages)
-		{
-			if (page.contains("Prophecies of " + godName))
-			{
-				break;
-			}
-			newPages.add(page);
-		}
-		for (String page : prophecyPages)
-		{
-			newPages.add(page);
-		}
-		this.biblesConfig.set(godName + ".Pages", newPages);
-
-		save();
 	}
 }

@@ -943,13 +943,6 @@ public class QuestManager
 		}
 	}
 
-	/**
-	 * Hitting someone with a holy book does nothing for quests anymore (it only served the removed global quests).
-	 */
-	public void handleBibleMelee(String godName, UUID playerId)
-	{
-	}
-
 	public void handleBuiltPrayingAltar(String godName)
 	{
 		if (!hasQuest(godName) || getQuestTypeForGod(godName) != QUESTTYPE.BUILDALTARS)
@@ -1016,10 +1009,6 @@ public class QuestManager
 
 		if (addQuestProgressForGod(godName))
 		{
-			if (GodsConfiguration.instance().isBiblesEnabled())
-			{
-				HolyBookManager.instance().handleQuestCompleted(godName, questType, playerName);
-			}
 			LanguageManager.instance().setPlayerName(playerName);
 			GodManager.instance().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
@@ -1061,13 +1050,6 @@ public class QuestManager
 		{
 			godSayProgress(godName);
 		}
-	}
-
-	/**
-	 * No current quest counts player kills.
-	 */
-	public void handleKilledPlayer(UUID playerId, String playerGod)
-	{
 	}
 
 	public boolean handleOpenChest(UUID playerId, Location blockLocation)
@@ -1112,13 +1094,6 @@ public class QuestManager
 		removeSuccessQuestForGod(godName);
 
 		return false;
-	}
-
-	/**
-	 * No current quest is about picking up items.
-	 */
-	public void handlePickupItem(String playerName, Item item, Location location)
-	{
 	}
 
 	public void handlePrayer(String godName, UUID playerId)
@@ -1350,8 +1325,14 @@ public class QuestManager
 		save();
 	}
 
+	public void clearItemRewardValues()
+	{
+		this.rewardValues.clear();
+	}
+
 	public void resetItemRewardValues()
 	{
+		this.rewardValues.clear();
 		this.rewardValues.put(Material.NETHER_WART, 33);
 		this.rewardValues.put(Material.GLOWSTONE, 50);
 		this.rewardValues.put(Material.COAL, 5);

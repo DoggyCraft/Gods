@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -131,10 +132,7 @@ public class Gods extends JavaPlugin
 		WhitelistManager.instance().load();
 		
 		// GodsConfiguration.loadSettings() has already loaded the holy lands
-		if (GodsConfiguration.instance().isHolyLandEnabled())
-		{
-			getServer().getPluginManager().registerEvents(HolyLandManager.instance(), this);
-		}
+		registerHolyLandListener();
 		
 		getServer().getPluginManager().registerEvents(new BlockListener(), this);
 		getServer().getPluginManager().registerEvents(new ChatListener(), this);
@@ -165,6 +163,20 @@ public class Gods extends JavaPlugin
 		QuestManager.instance().load();
 		BelieverManager.instance().load();
 		WhitelistManager.instance().load();
+
+		registerHolyLandListener();
+	}
+
+	/**
+	 * Listens for holy land events only while holy land is enabled, so /g reload can switch it on or off.
+	 */
+	private void registerHolyLandListener()
+	{
+		HandlerList.unregisterAll(HolyLandManager.instance());
+		if (GodsConfiguration.instance().isHolyLandEnabled())
+		{
+			getServer().getPluginManager().registerEvents(HolyLandManager.instance(), this);
+		}
 	}
 
 	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, int amount, String name, int delay)

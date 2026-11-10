@@ -409,6 +409,11 @@ public class AltarManager
 		return isAltarSign(block);
 	}
 
+	public void clearAltarBlockTypes()
+	{
+		this.altarBlockTypes.clear();
+	}
+
 	public void resetAltarBlockTypes()
 	{
 		this.altarBlockTypes.clear();
