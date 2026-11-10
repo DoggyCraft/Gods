@@ -15,10 +15,8 @@ import com.dogonfire.gods.managers.AltarManager;
 import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.GodManager.GodType;
-import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyLandManager;
-import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.MarriageManager;
 import com.dogonfire.gods.managers.QuestManager;
 
@@ -553,11 +551,6 @@ public class GodsConfiguration
 
 		this.holyArtifactsEnabled = config.getBoolean("HolyArtifacts.Enabled", true);
 		this.minHolyArtifactBlessingTime = config.getInt("HolyArtifacts.MinHolyArtifactBlessingTime", 1440);
-		if (this.holyArtifactsEnabled)
-		{
-			HolyPowerManager.instance();
-			HolyArtifactManager.instance().load();
-		}
 
 		this.prayersEnabled = config.getBoolean("Prayers.Enabled", true);
 		this.prayerPowerForItem = config.getInt("Prayers.PrayerPowerForItem", 20);

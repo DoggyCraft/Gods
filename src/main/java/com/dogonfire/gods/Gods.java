@@ -16,7 +16,6 @@ import com.dogonfire.gods.listeners.BlockListener;
 import com.dogonfire.gods.listeners.ChatListener;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyLandManager;
 import com.dogonfire.gods.managers.LanguageManager;
@@ -98,8 +97,6 @@ public class Gods extends JavaPlugin
 			HolyBookManager.instance().save();
 		if (GodsConfiguration.instance().isMarriageEnabled())
 			MarriageManager.instance().save();
-		if (GodsConfiguration.instance().isHolyArtifactsEnabled())
-			HolyArtifactManager.instance().save();
 	}
 
 	@Override

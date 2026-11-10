@@ -365,11 +365,4 @@ public class HolyArtifactManager
 		}
 		return HolyPowerManager.instance().getHolyPowerFromDescription(ChatColor.stripColor(lore.get(2)));
 	}
-
-	/**
-	 * Nothing to load: artifacts keep their state on the item.
-	 */
-	public void load()
-	{
-	}
 }
