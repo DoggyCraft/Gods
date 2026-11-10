@@ -27,6 +27,15 @@ public class CommandmentService
 	private final GodsContext		ctx;
 	private final GodRepository		repository;
 
+	/** Holy and unholy food are picked from these */
+	private static final Material[]	FOODS				= { Material.APPLE, Material.BREAD, Material.COOKED_SALMON, Material.MELON_SLICE, Material.COOKED_BEEF, Material.COOKED_PORKCHOP,
+			Material.CARROT };
+
+	/** What a god may come to want sacrificed; its seed picks five. null is the god's unholy food. */
+	private static final Material[]	SACRIFICE_NEEDS		= { Material.POPPY, Material.COOKED_PORKCHOP, null, Material.RABBIT_HIDE, Material.RABBIT_FOOT, Material.CACTUS,
+			Material.BREAD, Material.CARROT, Material.IRON_PICKAXE, Material.IRON_INGOT, Material.GOLD_INGOT, Material.APPLE, Material.BOOK, Material.CAKE, Material.MELON_SLICE,
+			Material.COOKIE, Material.PUMPKIN, Material.SUGAR_CANE, Material.EGG, Material.WHEAT, Material.NETHERRACK, Material.POTATO, Material.BONE, Material.FEATHER };
+
 	public CommandmentService(GodsContext ctx, GodRepository repository)
 	{
 		this.ctx = ctx;
@@ -75,32 +84,7 @@ public class CommandmentService
 		
 		if (foodTypeString == null)
 		{
-			int r1 = this.random.nextInt(7);
-			switch (r1)
-			{
-			case 0:
-				foodType = Material.APPLE;
-				break;
-			case 1:
-				foodType = Material.BREAD;
-				break;
-			case 2:
-				foodType = Material.COOKED_SALMON;
-				break;
-			case 3:
-				foodType = Material.MELON_SLICE;
-				break;
-			case 4:
-				foodType = Material.COOKED_BEEF;
-				break;
-			case 5:
-				foodType = Material.COOKED_PORKCHOP;
-				break;
-			case 6:
-			default: 
-				foodType = Material.CARROT;
-					
-			}
+			foodType = FOODS[this.random.nextInt(FOODS.length)];
 			foodTypeString = foodType.name();
 
 			if (god != null)
@@ -157,31 +141,7 @@ public class CommandmentService
 		{
 			do
 			{
-				int r1 = this.random.nextInt(7);
-				switch (r1)
-				{
-				case 0:
-					foodType = Material.APPLE;
-					break;
-				case 1:
-					foodType = Material.BREAD;
-					break;
-				case 2:
-					foodType = Material.COOKED_SALMON;
-					break;
-				case 3:
-					foodType = Material.MELON_SLICE;
-					break;
-				case 4:
-					foodType = Material.COOKED_BEEF;
-					break;
-				case 5:
-					foodType = Material.COOKED_PORKCHOP;
-					break;
-				default:	
-				case 6:
-					foodType = Material.CARROT;
-				}
+				foodType = FOODS[this.random.nextInt(FOODS.length)];
 				foodTypeString = foodType.name();
 			}
 			while (foodTypeString.equals(getHolyFoodTypeForGod(godName).name()));
@@ -240,7 +200,7 @@ public class CommandmentService
 
 		for (int n = 0; n < 5; n++)
 		{
-			materials.add(materialRandom.nextInt(24));
+			materials.add(materialRandom.nextInt(SACRIFICE_NEEDS.length));
 		}
 
 		int typeIndex = 0;
@@ -250,81 +210,8 @@ public class CommandmentService
 		{
 			typeIndex = materials.get(this.random.nextInt(materials.size())).intValue();
 
-			switch (typeIndex)
-			{
-			case 0:
-				type = Material.POPPY;
-				break;
-			case 1:
-				type = Material.COOKED_PORKCHOP;
-				break;
-			case 2:
-				type = getUnholyFoodTypeForGod(godName);
-				break;
-			case 3:
-				type = Material.RABBIT_HIDE;
-				break;
-			case 4:
-				type = Material.RABBIT_FOOT;
-				break;
-			case 5:
-				type = Material.CACTUS;
-				break;
-			case 6:
-				type = Material.BREAD;
-				break;
-			case 7:
-				type = Material.CARROT;
-				break;
-			case 8:
-				type = Material.IRON_PICKAXE;
-				break;
-			case 9:
-				type = Material.IRON_INGOT;
-				break;
-			case 10:
-				type = Material.GOLD_INGOT;
-				break;
-			case 11:
-				type = Material.APPLE;
-				break;
-			case 12:
-				type = Material.BOOK;
-				break;
-			case 13:
-				type = Material.CAKE;
-				break;
-			case 14:
-				type = Material.MELON_SLICE;
-				break;
-			case 15:
-				type = Material.COOKIE;
-				break;
-			case 16:
-				type = Material.PUMPKIN;
-				break;
-			case 17:
-				type = Material.SUGAR_CANE;
-				break;
-			case 18:
-				type = Material.EGG;
-				break;
-			case 19:
-				type = Material.WHEAT;
-				break;
-			case 20:
-				type = Material.NETHERRACK;
-				break;
-			case 21:
-				type = Material.POTATO;
-				break;
-			case 22:
-				type = Material.BONE;
-				break;
-			case 23:
-			default:	
-				type = Material.FEATHER;
-			}
+			// null: the god's unholy food
+			type = SACRIFICE_NEEDS[typeIndex] != null ? SACRIFICE_NEEDS[typeIndex] : getUnholyFoodTypeForGod(godName);
 		}
 		while (type == getHolyFoodTypeForGod(godName) || type == Material.AIR);
 
