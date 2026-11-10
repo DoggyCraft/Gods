@@ -45,7 +45,7 @@ public class CommandListGods extends GodsCommand
 		{
 			int power = (int) ctx.godManager().getGodPower(godName);
 
-			int believers = ctx.believerManager().getBelieversForGod(godName).size();
+			int believers = ctx.believerService().getBelieversForGod(godName).size();
 			if (believers > 0)
 			{
 				gods.add(new God(godName, power, believers));
@@ -58,7 +58,7 @@ public class CommandListGods extends GodsCommand
 			return;
 		}
 
-		playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		sender.sendMessage(ChatColor.YELLOW + "--------- The Gods of " + ctx.settings().general().serverName() + " ---------");
 
 		Collections.sort(gods, new TopGodsComparator());

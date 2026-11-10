@@ -15,7 +15,7 @@ import com.dogonfire.gods.GodsContext;
  * (asynchronous) chat handler and PlaceholderAPI need. The managers keep their data in YAML
  * configurations that must only be touched on the main thread, so the chat
  * thread reads this cache instead. It is filled on the main thread: on join,
- * when a believer's god or chat mode changes in BelieverManager, and
+ * when a believer's god, prayer power or chat mode changes in BelieverService, and
  * periodically for everyone online (see Gods#onEnable).
  */
 public class ChatManager
@@ -85,19 +85,19 @@ public class ChatManager
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(playerId);
+		String godName = ctx.believerService().getGodForBeliever(playerId);
 
 		if (godName == null)
 		{
-			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, ctx.believerManager().getPrayerPower(playerId)));
+			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, ctx.believerService().getPrayerPower(playerId)));
 			return;
 		}
 
-		boolean religionChat = ctx.believerManager().getReligionChat(playerId);
+		boolean religionChat = ctx.believerService().getReligionChat(playerId);
 		List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
 		boolean priest = priests != null && priests.contains(playerId);
 
-		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godManager().getColorForGod(godName), ctx.believerManager().getPrayerPower(playerId)));
+		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godManager().getColorForGod(godName), ctx.believerService().getPrayerPower(playerId)));
 	}
 
 	/** Main thread only: refreshes everyone online. */

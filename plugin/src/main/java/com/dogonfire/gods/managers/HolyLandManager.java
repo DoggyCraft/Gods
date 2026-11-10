@@ -652,7 +652,7 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		String attackerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String attackerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if ((attackerGod == null) || (!attackerGod.equals(godName)))
 		{
@@ -737,7 +737,7 @@ public class HolyLandManager implements Listener
 		}
 
 		String defendingGodName = getGodAtHolyLandLocation(location);
-		String killerGodName = ctx.believerManager().getGodForBeliever(killer.getUniqueId());
+		String killerGodName = ctx.believerService().getGodForBeliever(killer.getUniqueId());
 
 		if (killerGodName == null || defendingGodName == null)
 		{
@@ -788,7 +788,7 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		String playerGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String playerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		Material food = event.getItem().getType();
 
 		if (!holylandGodName.equals(playerGodName))
@@ -880,7 +880,7 @@ public class HolyLandManager implements Listener
 
 		if ((godTo != null) && ((godFrom == null) || !godFrom.equals(godTo)))
 		{
-			String playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+			String playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 			if ((playerGod != null) && (playerGod.equals(godTo)))
 			{
 				TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.WHITE + nullToEmpty(this.getHolyLandName(to)));
@@ -928,7 +928,7 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if ((godName == null) || (!targetLandGodName.equals(godName)))
 		{

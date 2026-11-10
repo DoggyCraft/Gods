@@ -36,7 +36,7 @@ public class CommandMarry extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String thisGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String thisGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (thisGodName == null)
 		{
 			player.sendMessage(ChatColor.RED + "You do not believe in a God");
@@ -63,7 +63,7 @@ public class CommandMarry extends GodsCommand
 			return;
 		}
 
-		String otherGodName = ctx.believerManager().getGodForBeliever(otherPlayer.getUniqueId());
+		String otherGodName = ctx.believerService().getGodForBeliever(otherPlayer.getUniqueId());
 
 		if (otherGodName == null)
 		{

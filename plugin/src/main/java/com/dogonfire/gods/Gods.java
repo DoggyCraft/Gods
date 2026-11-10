@@ -207,7 +207,7 @@ public class Gods extends JavaPlugin
 		this.ctx.languageManager().load();
 		this.ctx.godManager().load();
 		this.ctx.questManager().load();
-		this.ctx.believerManager().load();
+		this.ctx.believerService().load();
 		this.ctx.whitelistManager().load();
 	}
 

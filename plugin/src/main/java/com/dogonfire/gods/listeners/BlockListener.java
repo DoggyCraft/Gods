@@ -98,7 +98,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if ((playerGod == null) || (!playerGod.equals(godName)))
 		{
@@ -144,7 +144,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
@@ -205,7 +205,7 @@ public class BlockListener implements Listener
 		{
 			Player player = (Player) attacker;
 
-			String attackerGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+			String attackerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 			if (attackerGodName == null)
 			{
 				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
@@ -227,7 +227,7 @@ public class BlockListener implements Listener
 					event.setCancelled(true);
 				}
 			}
-			else if ((event.getEntity() instanceof Player victim) && godName.equals(ctx.believerManager().getGodForBeliever(victim.getUniqueId()))
+			else if ((event.getEntity() instanceof Player victim) && godName.equals(ctx.believerService().getGodForBeliever(victim.getUniqueId()))
 					&& (!ctx.godManager().getGodPvP(godName)))
 			{
 				// Believers fighting each other in their own god's holy land; intruders can always be fought off
@@ -255,7 +255,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
@@ -308,7 +308,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		Material type = event.getItem().getType();
 		if (godName != null)
 		{
@@ -340,7 +340,7 @@ public class BlockListener implements Listener
 		{
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (godName != null)
 		{
@@ -355,7 +355,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String killerGodName = ctx.believerManager().getGodForBeliever(killer.getUniqueId());
+		String killerGodName = ctx.believerService().getGodForBeliever(killer.getUniqueId());
 		if (killerGodName == null)
 		{
 			return;
@@ -382,10 +382,10 @@ public class BlockListener implements Listener
 
 		if (message != null)
 		{
-			double powerBefore = ctx.believerManager().getBelieverPower(killer.getUniqueId());
-			ctx.believerManager().increasePrayer(killer.getUniqueId(), killerGodName, 2);
-			ctx.believerManager().increasePrayerPower(killer.getUniqueId(), 2);
-			double powerAfter = ctx.believerManager().getBelieverPower(killer.getUniqueId());
+			double powerBefore = ctx.believerService().getBelieverPower(killer.getUniqueId());
+			ctx.believerService().increasePrayer(killer.getUniqueId(), killerGodName, 2);
+			ctx.believerService().increasePrayerPower(killer.getUniqueId(), 2);
+			double powerAfter = ctx.believerService().getBelieverPower(killer.getUniqueId());
 
 			ctx.plugin().sendInfo(killer.getUniqueId(), message, ChatColor.AQUA, (int) (powerAfter - powerBefore), killerGodName, 20);
 		}
@@ -509,7 +509,7 @@ public class BlockListener implements Listener
 			event.setCancelled(true);
 			return;
 		}
-		String playerGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String playerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (playerGodName == null)
 		{
 			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.GOLD + blockGodName);
@@ -541,7 +541,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK))
 		{

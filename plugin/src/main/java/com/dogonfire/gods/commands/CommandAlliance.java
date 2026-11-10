@@ -39,7 +39,7 @@ public class CommandAlliance extends GodsCommand {
 			sender.sendMessage(ChatColor.RED + "Only priests can declare alliances");
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		String allyGodName = ctx.godManager().formatGodName(args[1]);
 		if (!ctx.godManager().godExist(args[1])) {
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);

@@ -37,7 +37,7 @@ public class CommandInvite extends GodsCommand
 			player.sendMessage(ChatColor.RED + "Only priests can invite players");
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
@@ -56,13 +56,13 @@ public class CommandInvite extends GodsCommand
 			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.YELLOW + playerName + ChatColor.RED + "' online.");
 			return;
 		}
-		String invitedPlayerGod = ctx.believerManager().getGodForBeliever(invitedPlayer.getUniqueId());
+		String invitedPlayerGod = ctx.believerService().getGodForBeliever(invitedPlayer.getUniqueId());
 		if ((invitedPlayerGod != null) && (invitedPlayerGod.equals(godName)))
 		{
 			player.sendMessage(ChatColor.YELLOW + playerName + ChatColor.RED + " already believes in '" + ChatColor.GOLD + godName + ChatColor.RED + "!");
 			return;
 		}
-		ctx.believerManager().setInvitation(invitedPlayer.getUniqueId(), godName);
+		ctx.believerService().setInvitation(invitedPlayer.getUniqueId(), godName);
 		ctx.plugin().log(godName + " invited to " + invitedPlayer.getName() + " to join the religion");
 		ctx.languageManager().setPlayerName(invitedPlayer.getName());
 		ctx.godManager().GodSay(godName, invitedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerInvite, 10);

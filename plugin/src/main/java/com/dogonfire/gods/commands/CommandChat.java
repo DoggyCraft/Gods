@@ -29,7 +29,7 @@ public class CommandChat extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
@@ -37,14 +37,14 @@ public class CommandChat extends GodsCommand
 			return;
 		}
 
-		if (ctx.believerManager().getReligionChat(player.getUniqueId()))
+		if (ctx.believerService().getReligionChat(player.getUniqueId()))
 		{
-			ctx.believerManager().setReligionChat(player.getUniqueId(), false);
+			ctx.believerService().setReligionChat(player.getUniqueId(), false);
 			sender.sendMessage(ChatColor.AQUA + "You are now chatting public");
 		}
 		else
 		{
-			ctx.believerManager().setReligionChat(player.getUniqueId(), true);
+			ctx.believerService().setReligionChat(player.getUniqueId(), true);
 			sender.sendMessage(ChatColor.AQUA + "You are now only chatting with the believers of " + ChatColor.YELLOW + godName);
 		}
 	}

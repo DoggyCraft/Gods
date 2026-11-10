@@ -75,8 +75,8 @@ class StorageTest
 	void missingFileIsEmptyAndNotWrittenUntilChanged() throws IOException
 	{
 		Storage storage = storage();
-		assertTrue(storage.believers().load());
-		assertTrue(storage.believers().yaml().getKeys(false).isEmpty());
+		assertTrue(storage.bibles().load());
+		assertTrue(storage.bibles().yaml().getKeys(false).isEmpty());
 		storage.flush();
 		storage.close();
 

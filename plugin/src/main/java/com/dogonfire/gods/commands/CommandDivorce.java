@@ -34,7 +34,7 @@ public class CommandDivorce extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String thisGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String thisGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (thisGodName == null)
 		{

@@ -289,7 +289,7 @@ public class AltarManager
 			return false;
 		}
 
-		String currentGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String currentGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (currentGodName != null && !currentGodName.equals(godName))
 		{
 			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotBuildAltarToOtherGods, ChatColor.DARK_RED, 0, godName, 1);

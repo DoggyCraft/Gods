@@ -188,7 +188,7 @@ public class QuestManager
 		int nonBelievers = 0;
 		for (Player player : ctx.plugin().getServer().getOnlinePlayers())
 		{
-			if (ctx.believerManager().getGodForBeliever(player.getUniqueId()) == null)
+			if (ctx.believerService().getGodForBeliever(player.getUniqueId()) == null)
 			{
 				nonBelievers++;
 			}
@@ -254,7 +254,7 @@ public class QuestManager
 		QUESTTYPE questType = QUESTTYPE.PILGRIMAGE;
 		int questMaxDuration = 15 + this.random.nextInt(10);
 
-		Set<UUID> thisGodOnlineBelievers = ctx.believerManager().getOnlineBelieversForGod(godName);
+		Set<UUID> thisGodOnlineBelievers = ctx.believerService().getOnlineBelieversForGod(godName);
 		if (thisGodOnlineBelievers.isEmpty())
 		{
 			ctx.plugin().logDebug("No online believers for a pilgrimage quest for " + godName);
@@ -377,7 +377,7 @@ public class QuestManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		QUESTTYPE questType = QUESTTYPE.ITEMSACRIFICE;
-		int questAmount = 1 + this.random.nextInt(1 + ctx.believerManager().getOnlineBelieversForGod(godName).size());
+		int questAmount = 1 + this.random.nextInt(1 + ctx.believerService().getOnlineBelieversForGod(godName).size());
 		int questMaxDuration = (1 + this.random.nextInt(5)) * questAmount;
 
 		switch (this.random.nextInt(10))
@@ -435,7 +435,7 @@ public class QuestManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		QUESTTYPE questType = QUESTTYPE.SLAY;
-		int questAmount = 1 + this.random.nextInt(3) + ctx.believerManager().getOnlineBelieversForGod(godName).size();
+		int questAmount = 1 + this.random.nextInt(3) + ctx.believerService().getOnlineBelieversForGod(godName).size();
 		int questMaxDuration = (5 + this.random.nextInt(5)) * questAmount;
 
 		EntityType holyCreature = ctx.godManager().getHolyMobTypeForGod(godName);
@@ -857,7 +857,7 @@ public class QuestManager
 			return;
 		}
 
-		for (UUID believerId : ctx.believerManager().getBelieversForGod(godName))
+		for (UUID believerId : ctx.believerService().getBelieversForGod(godName))
 		{
 			Player player = ctx.plugin().getServer().getPlayer(believerId);
 
@@ -866,7 +866,7 @@ public class QuestManager
 				continue;
 			}
 
-			if (!ctx.believerManager().isHunting(believerId))
+			if (!ctx.believerService().isHunting(believerId))
 			{
 				if (this.random.nextInt(10) == 0)
 				{
@@ -1003,7 +1003,7 @@ public class QuestManager
 		}
 
 		String questGod = getQuestTargetGod(blockLocation);
-		String godName = ctx.believerManager().getGodForBeliever(playerId);
+		String godName = ctx.believerService().getGodForBeliever(playerId);
 
 		// Only believers of the god who set the pilgrimage may open its chest
 		if (questGod == null || godName == null || !questGod.equals(godName))
@@ -1024,7 +1024,7 @@ public class QuestManager
 
 		ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
 		ctx.godManager().addBeliefAndRewardBelievers(godName);
-		ctx.believerManager().increasePrayerPower(playerId, 1);
+		ctx.believerService().increasePrayerPower(playerId, 1);
 
 		Player player = ctx.plugin().getServer().getPlayer(playerId);
 		if (player != null)
@@ -1032,7 +1032,7 @@ public class QuestManager
 			ctx.plugin().getServer().broadcastMessage(ChatColor.GOLD + player.getDisplayName() + ChatColor.AQUA + " completed a pilgrimage to " + ChatColor.GOLD + getQuestTargetTypeForGod(questGod));
 		}
 
-		ctx.believerManager().setHunting(playerId, false);
+		ctx.believerService().setHunting(playerId, false);
 
 		removeSuccessQuestForGod(godName);
 
@@ -1046,7 +1046,7 @@ public class QuestManager
 			return;
 		}
 
-		String playerGod = ctx.believerManager().getGodForBeliever(playerId);
+		String playerGod = ctx.believerService().getGodForBeliever(playerId);
 
 		if ((playerGod != null) && (playerGod.equals(godName)))
 		{
@@ -1079,7 +1079,7 @@ public class QuestManager
 		}
 
 		// Only non-believers count
-		if (ctx.believerManager().getGodForBeliever(playerId) != null)
+		if (ctx.believerService().getGodForBeliever(playerId) != null)
 		{
 			return;
 		}
@@ -1127,7 +1127,7 @@ public class QuestManager
 		}
 
 		boolean complete = addQuestProgressForGod(godName);
-		ctx.believerManager().increasePrayerPower(player.getUniqueId(), 1);
+		ctx.believerService().increasePrayerPower(player.getUniqueId(), 1);
 
 		if (complete)
 		{

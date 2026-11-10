@@ -44,7 +44,7 @@ public class CommandToggleWar extends GodsCommand
 			player.sendMessage(stringPreistOnly);
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		String enemyGodName = ctx.godManager().formatGodName(args[1]);
 		if (!ctx.godManager().godExist(args[1]))
 		{

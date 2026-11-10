@@ -28,7 +28,7 @@ public class CommandAccept extends GodsCommand
 			return;
 		}
 
-		if (ctx.believerManager().getGodForBeliever(((Player) sender).getUniqueId()) == null)
+		if (ctx.believerService().getGodForBeliever(((Player) sender).getUniqueId()) == null)
 		{
 			sender.sendMessage(stringNoGod);
 			return;

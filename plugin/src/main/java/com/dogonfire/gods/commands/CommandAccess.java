@@ -40,7 +40,7 @@ public class CommandAccess extends GodsCommand
 			return;
 		}
 		
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null || !ctx.godManager().godExist(godName))
 		{

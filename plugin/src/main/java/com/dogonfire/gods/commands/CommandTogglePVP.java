@@ -34,7 +34,7 @@ public class CommandTogglePVP extends GodsCommand
 			player.sendMessage(stringPreistOnly);
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		boolean pvp = ctx.godManager().getGodPvP(godName);
 		if (pvp)
 		{

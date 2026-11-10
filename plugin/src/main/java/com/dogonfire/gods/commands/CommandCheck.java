@@ -37,7 +37,7 @@ public class CommandCheck extends GodsCommand
 			return;
 		}
 
-		String godName = ctx.believerManager().getGodForBeliever(believer.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(believer.getUniqueId());
 
 		if (godName == null)
 		{

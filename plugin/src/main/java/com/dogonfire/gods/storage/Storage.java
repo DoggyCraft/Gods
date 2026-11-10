@@ -30,7 +30,7 @@ public final class Storage
 	private final Logger			logger;
 	private final ExecutorService	writer;
 	private final DataFile			gods;
-	private final DataFile			believers;
+	private final BelieverRepository	believers;
 	private final DataFile			quests;
 	private final DataFile			holyLands;
 	private final DataFile			marriages;
@@ -55,14 +55,14 @@ public final class Storage
 		this.logger = logger;
 		this.writer = writer;
 		this.gods = file(dataFolder, "gods.yml", UUID_TAGS);
-		this.believers = file(dataFolder, "believers.yml", null);
+		this.believers = new BelieverRepository(file(dataFolder, "believers.yml", null), logger);
 		this.quests = file(dataFolder, "quests.yml", null);
 		this.holyLands = file(dataFolder, "holyland.yml", null);
 		this.marriages = file(dataFolder, "marriages.yml", null);
 		this.bibles = file(dataFolder, "bibles.yml", null);
 		this.whitelist = file(dataFolder, "whitelist.yml", null);
 		this.blacklist = file(dataFolder, "blacklist.yml", null);
-		this.files = List.of(this.gods, this.believers, this.quests, this.holyLands, this.marriages, this.bibles, this.whitelist, this.blacklist);
+		this.files = List.of(this.gods, this.believers.file(), this.quests, this.holyLands, this.marriages, this.bibles, this.whitelist, this.blacklist);
 	}
 
 	private DataFile file(Path dataFolder, String name, DataFile.Repair repair)
@@ -80,7 +80,7 @@ public final class Storage
 		return this.gods;
 	}
 
-	public DataFile believers()
+	public BelieverRepository believers()
 	{
 		return this.believers;
 	}

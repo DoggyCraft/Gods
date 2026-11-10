@@ -41,7 +41,7 @@ public class CommandInfo extends GodsCommand
 		if (godName == null)
 		{
 			if (sender instanceof Player)
-				godName = ctx.believerManager().getGodForBeliever(((Player) sender).getUniqueId());
+				godName = ctx.believerService().getGodForBeliever(((Player) sender).getUniqueId());
 			if (godName == null)
 			{
 				sender.sendMessage(ChatColor.RED + "You do not believe in any God.");
@@ -113,7 +113,7 @@ public class CommandInfo extends GodsCommand
 			}
 		}
 
-		sender.sendMessage(ChatColor.AQUA + "Believers: " + ChatColor.YELLOW + ctx.believerManager().getBelieversForGod(godName).size());
+		sender.sendMessage(ChatColor.AQUA + "Believers: " + ChatColor.YELLOW + ctx.believerService().getBelieversForGod(godName).size());
 		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + ctx.godManager().getGodPower(godName));
 		if (ctx.settings().commandments().enabled())
 		{

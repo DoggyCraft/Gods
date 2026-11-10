@@ -44,7 +44,7 @@ public class CommandKick extends GodsCommand
 			sendUsage(sender);
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		String believerName = args[1];
 		UUID believerId = findBeliever(godName, believerName);
 		if (godName == null || believerId == null)
@@ -57,7 +57,7 @@ public class CommandKick extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You cannot kick yourself from your own religion, Bozo!");
 			return;
 		}
-		ctx.believerManager().removeBeliever(godName, believerId);
+		ctx.believerService().removeBeliever(godName, believerId);
 		sender.sendMessage(ChatColor.AQUA + "You kicked " + ChatColor.YELLOW + believerName + ChatColor.AQUA + " from your religion!");
 		Player believer = ctx.plugin().getServer().getPlayer(believerId);
 		if (believer != null)
@@ -77,7 +77,7 @@ public class CommandKick extends GodsCommand
 		{
 			return null;
 		}
-		for (UUID believerId : ctx.believerManager().getBelieversForGod(godName))
+		for (UUID believerId : ctx.believerService().getBelieversForGod(godName))
 		{
 			OfflinePlayer offlinePlayer = ctx.plugin().getServer().getOfflinePlayer(believerId);
 			if (believerName.equalsIgnoreCase(offlinePlayer.getName()))

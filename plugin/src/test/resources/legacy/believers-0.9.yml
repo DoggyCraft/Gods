@@ -1,0 +1,29 @@
+8667ba71-b85a-4004-af54-457a9734eed7:
+  God: Thor
+  Prayers: 12
+  LastPrayer: 21:15:03 14-03-2019
+  Joined: 10:00:00 01-01-2019
+  PrayerPower: 4
+  ReligionChat: true
+  Hunting: false
+  LastBlessingTime: 21:15:03 14-03-2019
+  LastItemBlessingTime: 20:00:00 14-03-2019
+  LastPriestOffer: 08:30:00 12-03-2019
+  Invitation:
+    Time: 21:16:00 14-03-2019
+    God: Odin
+0b8d4f7e-3c1a-4bfa-9a3e-6f0f1c2d3e4f:
+  God: Odin
+  Prayers: 1
+  LastPrayer: 07:00:00 02-02-2020
+  Hunting: true
+  LastCursingTime: 07:01:00 02-02-2020
+  LastHolyArtifactBlessingTime: 07:02:00 02-02-2020
+  ChangingGod: 07:03:00 02-02-2020
+  SomethingNewer: 3
+5d0e2f3a-1b2c-4d5e-8f90-a1b2c3d4e5f6:
+  Prayers: 3
+  LastPrayer: not a date
+Notch:
+  God: Thor
+  Prayers: 99

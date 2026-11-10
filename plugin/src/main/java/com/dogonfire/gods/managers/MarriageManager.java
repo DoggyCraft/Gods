@@ -189,7 +189,7 @@ public class MarriageManager
 					marriagesFile().save();
 				}
 
-				couples.add(new MarriedCouple(playerId, partnerId, ctx.believerManager().getGodForBeliever(playerId), lastLove));
+				couples.add(new MarriedCouple(playerId, partnerId, ctx.believerService().getGodForBeliever(playerId), lastLove));
 
 				names.add(playerId);
 			}
@@ -334,7 +334,7 @@ public class MarriageManager
 
 		// if (hasPickupWeddingRing(player.getUniqueId()))
 		{
-			String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+			String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 			if (hasPickupWeddingRing(gettingMarriedPartnerId))
 			{

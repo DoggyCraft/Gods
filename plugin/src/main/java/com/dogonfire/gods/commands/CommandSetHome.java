@@ -30,7 +30,7 @@ public class CommandSetHome extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");

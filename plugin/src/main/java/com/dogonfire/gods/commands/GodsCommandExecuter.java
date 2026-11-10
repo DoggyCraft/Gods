@@ -84,12 +84,12 @@ public class GodsCommandExecuter implements CommandExecutor
 		sender.sendMessage(ChatColor.AQUA + "By DogOnFire");
 		sender.sendMessage("" + ChatColor.AQUA);
 		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + ctx.godManager().getAllGods().size() + ChatColor.AQUA + " Gods and");
-		sender.sendMessage("" + ChatColor.WHITE + ctx.believerManager().getBelievers().size() + ChatColor.AQUA + " believers in " + ctx.settings().general().serverName());
+		sender.sendMessage("" + ChatColor.WHITE + ctx.believerService().getBelieverCount() + ChatColor.AQUA + " believers in " + ctx.settings().general().serverName());
 		sender.sendMessage("" + ChatColor.AQUA);
 		if (sender != null && sender instanceof Player)
 		{
 			Player player = (Player) sender;
-			String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+			String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 			if (godName != null)
 			{
 				List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
@@ -104,7 +104,7 @@ public class GodsCommandExecuter implements CommandExecutor
 
 				if (ctx.settings().prayers().enabled())
 				{
-					sender.sendMessage(ChatColor.WHITE + "You have " + ChatColor.GOLD + ctx.believerManager().getPrayerPower(player.getUniqueId()) + ChatColor.WHITE + " prayer power");
+					sender.sendMessage(ChatColor.WHITE + "You have " + ChatColor.GOLD + ctx.believerService().getPrayerPower(player.getUniqueId()) + ChatColor.WHITE + " prayer power");
 				}
 			}
 			else

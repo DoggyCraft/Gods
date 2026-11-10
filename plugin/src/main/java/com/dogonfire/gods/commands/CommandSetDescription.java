@@ -36,7 +36,7 @@ public class CommandSetDescription extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "Only priests can set religion info");
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (args.length < 2)
 		{
 			sendUsage(sender);

@@ -41,7 +41,7 @@ public class CommandPriestStartAttack extends GodsCommand
 			player.sendMessage(stringPreistOnly);
 			return;
 		}
-		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
 			player.sendMessage(stringNoGod);

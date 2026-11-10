@@ -69,8 +69,8 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 		ChatColor godColor;
 		if (Bukkit.isPrimaryThread())
 		{
-			god = this.ctx.believerManager().getGodForBeliever(player.getUniqueId());
-			prayerPower = this.ctx.believerManager().getPrayerPower(player.getUniqueId());
+			god = this.ctx.believerService().getGodForBeliever(player.getUniqueId());
+			prayerPower = this.ctx.believerService().getPrayerPower(player.getUniqueId());
 			godColor = (god != null) ? this.ctx.godManager().getColorForGod(god) : ChatColor.WHITE;
 		}
 		else

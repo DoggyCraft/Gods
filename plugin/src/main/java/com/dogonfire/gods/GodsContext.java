@@ -6,7 +6,6 @@ import org.bukkit.plugin.PluginManager;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
 import com.dogonfire.gods.managers.AltarManager;
-import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyArtifactManager;
@@ -18,6 +17,7 @@ import com.dogonfire.gods.managers.MarriageManager;
 import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.managers.WhitelistManager;
+import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.storage.Storage;
 
 /**
@@ -37,7 +37,7 @@ public final class GodsContext
 	private final LanguageManager			languageManager;
 	private final PermissionsManager		permissionsManager;
 	private final GodManager				godManager;
-	private final BelieverManager			believerManager;
+	private final BelieverService			believerService;
 	private final QuestManager				questManager;
 	private final AltarManager				altarManager;
 	private final HolyLandManager			holyLandManager;
@@ -59,7 +59,7 @@ public final class GodsContext
 		this.languageManager = new LanguageManager(this);
 		this.permissionsManager = new PermissionsManager();
 		this.godManager = new GodManager(this);
-		this.believerManager = new BelieverManager(this);
+		this.believerService = new BelieverService(this, storage.believers());
 		this.questManager = new QuestManager(this);
 		this.altarManager = new AltarManager(this);
 		this.holyLandManager = new HolyLandManager(this);
@@ -110,9 +110,9 @@ public final class GodsContext
 		return this.godManager;
 	}
 
-	public BelieverManager believerManager()
+	public BelieverService believerService()
 	{
-		return this.believerManager;
+		return this.believerService;
 	}
 
 	public QuestManager questManager()

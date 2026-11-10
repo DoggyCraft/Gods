@@ -48,7 +48,7 @@ public class CommandFollowers extends GodsCommand
 		}
 		else
 		{
-			godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+			godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		}
 
 		if (godName == null)
@@ -57,11 +57,11 @@ public class CommandFollowers extends GodsCommand
 			return;
 		}
 
-		Set<UUID> list = ctx.believerManager().getBelieversForGod(godName);
+		Set<UUID> list = ctx.believerService().getBelieversForGod(godName);
 
 		for (UUID believerId : list)
 		{
-			Date lastPrayer = ctx.believerManager().getLastPrayerTime(believerId);
+			Date lastPrayer = ctx.believerService().getLastPrayerTime(believerId);
 			believers.add(new Believer(believerId, lastPrayer));
 		}
 
@@ -71,7 +71,7 @@ public class CommandFollowers extends GodsCommand
 			return;
 		}
 
-		playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		sender.sendMessage(ChatColor.YELLOW + "--------- The Followers of " + godName + " ---------");
 		Collections.sort(believers, new BelieversComparator());
 
