@@ -16,3 +16,6 @@
 # Maven build
 /target/
 dependency-reduced-pom.xml
+
+# Custom
+.direnv/
