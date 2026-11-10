@@ -72,6 +72,11 @@ public class CommandPriestStartAttack extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You are not in war with " + ChatColor.GOLD + otherGodName + "!");
 			return;
 		}
+		if (HolyLandManager.instance().isUnderAttack(player.getLocation()))
+		{
+			sender.sendMessage(ChatColor.RED + "This Holy Land is already under attack!");
+			return;
+		}
 		GodManager.instance().setContestedHolyLandForGod(godName, player.getLocation());
 		sender.sendMessage(ChatColor.AQUA + "You started an attack on the Holy Land of " + ChatColor.GOLD + otherGodName);
 		GodManager.instance().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.AttackingHolyLandsHelp, ChatColor.AQUA, 80);

@@ -876,14 +876,26 @@ public class GodManager
 		return new Location(Gods.instance().getServer().getWorld(worldName), x, y, z);
 	}
 
+	/**
+	 * The region hash of the holy land godName is attacking, or null. An attack whose land no longer has
+	 * godName as attacker (it was settled, abandoned or taken over, or comes from an old data file) is cleared.
+	 */
 	public Long getContestedHolyLandForGod(String godName)
 	{
-		Long contestedLand = Long.valueOf(this.godsConfig.getLong(godName + ".ContestedLand.Hash"));
-		if (contestedLand.longValue() == 0L)
+		if (godName == null || !this.godsConfig.contains(godName + ".ContestedLand.World"))
 		{
 			return null;
 		}
-		return contestedLand;
+		Location location = getContestedHolyLandAttackLocationForGod(godName);
+		if (!HolyLandManager.instance().isAttackingHolyLand(godName, location))
+		{
+			if (this.godsConfig.contains(godName + ".ContestedLand"))
+			{
+				clearContestedHolyLandForGod(godName);
+			}
+			return null;
+		}
+		return HolyLandManager.instance().hashLocation(location);
 	}
 
 	public Player getCursedPlayerForGod(String godName)
@@ -2387,33 +2399,6 @@ public class GodManager
 	public void healPlayer(String godName, Player player)
 	{
 		Gods.instance().getServer().getScheduler().runTaskLater(Gods.instance(), new TaskHealPlayer(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverHealthBlessing), 2L);
-	}
-
-	public boolean increaseContestedHolyLandKillsForGod(String godName, int n)
-	{
-		int kills = this.godsConfig.getInt(godName + ".ContestedKills");
-
-		setGodValue(godName, ".ContestedKills", kills + n);
-
-		saveTimed();
-
-		return kills + n > 10;
-	}
-
-	public boolean increaseContestedHolyLandDesecrationForGod(String godName, int n)
-	{
-		int desecration = this.godsConfig.getInt(godName + ".ContestedDesecration");
-
-		setGodValue(godName, ".ContestedDesecration", desecration + n);
-
-		saveTimed();
-
-		return desecration + n > 30;
-	}
-	
-	public int getContestedHolyLandDesecrationForGod(String godName)
-	{
-		return this.godsConfig.getInt(godName + ".ContestedDesecration");		
 	}
 
 	public boolean isDeadGod(String godName)

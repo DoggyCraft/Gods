@@ -40,7 +40,7 @@ import com.dogonfire.gods.config.GodsConfiguration;
  * Holy lands: 128x128 block regions claimed by a god when a believer builds or
  * prays at an altar there. Stored in holyland.yml as
  * <pre>
- * Holylands.&lt;world&gt;.&lt;region hash&gt;.GodName / Name / FirstPrayerTime / LastPrayerTime / World / AttackingGodName / ContestedTime
+ * Holylands.&lt;world&gt;.&lt;region hash&gt;.GodName / Name / FirstPrayerTime / LastPrayerTime / World / AttackingGodName / ContestedTime / AttackerKills / DefenderKills / Desecration
  * NeutralLands.&lt;world&gt;.&lt;region hash&gt;: &lt;time set&gt;
  * </pre>
  * Gods before 1.0 stored them under "Holyland.&lt;hash&gt;" and "NeutralLand.&lt;hash&gt;"
@@ -69,6 +69,10 @@ public class HolyLandManager implements Listener
 
 	/** How long an attack on a holy land lasts before the defenders win. */
 	private static final long		CONTEST_MINUTES			= 60L;
+	// Kills (or unholy meals) one side needs to win a contested holy land
+	private static final int		ATTACKER_KILLS_TO_WIN	= 10;
+	private static final int		DEFENDER_KILLS_TO_WIN	= 5;
+	private static final int		DESECRATION_TO_WIN		= 30;
 
 	private FileConfiguration		landConfig				= null;
 	private File					landConfigFile			= null;
@@ -536,6 +540,9 @@ public class HolyLandManager implements Listener
 
 		this.landConfig.set(path + ".AttackingGodName", null);
 		this.landConfig.set(path + ".ContestedTime", null);
+		this.landConfig.set(path + ".AttackerKills", null);
+		this.landConfig.set(path + ".DefenderKills", null);
+		this.landConfig.set(path + ".Desecration", null);
 
 		save();
 	}
@@ -558,6 +565,41 @@ public class HolyLandManager implements Listener
 		return Math.max(0L, CONTEST_MINUTES - elapsedMinutes);
 	}
 
+	/**
+	 * True if godName is attacking the holy land at location right now. An attack whose time ran out is
+	 * settled here (the defenders win), so an attack nobody visits still ends.
+	 */
+	public boolean isAttackingHolyLand(String godName, Location location)
+	{
+		if (location == null || location.getWorld() == null || !godName.equals(getAttackingGod(location)))
+		{
+			return false;
+		}
+		if (getContestedTimeAtHolyLand(location) <= 0L)
+		{
+			resolveContestedLand(location, getGodAtHolyLandLocation(location), godName, true);
+			return false;
+		}
+		return true;
+	}
+
+	/** True if some god is attacking the holy land at location right now. */
+	public boolean isUnderAttack(Location location)
+	{
+		String attackingGodName = getAttackingGod(location);
+		return attackingGodName != null && isAttackingHolyLand(attackingGodName, location);
+	}
+
+	/** Adds n to a counter of the contested land at location and returns the new value. */
+	private int addToContestedCounter(Location location, String counter, int n)
+	{
+		String path = landPath(location) + "." + counter;
+		int value = Math.max(0, this.landConfig.getInt(path) + n);
+		this.landConfig.set(path, value);
+		save();
+		return value;
+	}
+
 	private void resolveContestedLand(Location location, String defendingGodName, String attackingGodName, boolean defenderWins)
 	{
 		if (defendingGodName != null && attackingGodName != null)
@@ -577,10 +619,7 @@ public class HolyLandManager implements Listener
 
 		clearContestedLand(location);
 
-		if (defendingGodName != null)
-		{
-			GodManager.instance().clearContestedHolyLandForGod(defendingGodName);
-		}
+		// Only the attacker's attack ends; the defender may be attacking a land of its own
 		if (attackingGodName != null)
 		{
 			GodManager.instance().clearContestedHolyLandForGod(attackingGodName);
@@ -728,14 +767,14 @@ public class HolyLandManager implements Listener
 
 		if (killerGodName.equals(attackingGodName))
 		{
-			if (GodManager.instance().increaseContestedHolyLandKillsForGod(attackingGodName, 1))
+			if (addToContestedCounter(location, "AttackerKills", 1) >= ATTACKER_KILLS_TO_WIN)
 			{
 				resolveContestedLand(location, defendingGodName, attackingGodName, false);
 			}
 		}
 		else if (killerGodName.equals(defendingGodName))
 		{
-			if (GodManager.instance().increaseContestedHolyLandKillsForGod(defendingGodName, 1))
+			if (addToContestedCounter(location, "DefenderKills", 1) >= DEFENDER_KILLS_TO_WIN)
 			{
 				resolveContestedLand(location, defendingGodName, attackingGodName, true);
 			}
@@ -780,7 +819,7 @@ public class HolyLandManager implements Listener
 				return;
 			}
 
-			if (GodManager.instance().increaseContestedHolyLandDesecrationForGod(holylandGodName, 1))
+			if (addToContestedCounter(location, "Desecration", 1) >= DESECRATION_TO_WIN)
 			{
 				resolveContestedLand(location, holylandGodName, attackingGodName, false);
 			}
@@ -792,10 +831,7 @@ public class HolyLandManager implements Listener
 				return;
 			}
 
-			if (GodManager.instance().getContestedHolyLandDesecrationForGod(holylandGodName) > 0)
-			{
-				GodManager.instance().increaseContestedHolyLandDesecrationForGod(holylandGodName, -1);
-			}
+			addToContestedCounter(location, "Desecration", -1);
 		}
 	}
 
@@ -845,9 +881,10 @@ public class HolyLandManager implements Listener
 			}
 			else
 			{
-				int defenderKillsNeeded = 5;
-				int attackerKillsNeeded = 10;
-				int desecration = GodManager.instance().getContestedHolyLandDesecrationForGod(godTo);
+				String path = landPath(to);
+				int attackerKillsNeeded = Math.max(0, ATTACKER_KILLS_TO_WIN - this.landConfig.getInt(path + ".AttackerKills"));
+				int defenderKillsNeeded = Math.max(0, DEFENDER_KILLS_TO_WIN - this.landConfig.getInt(path + ".DefenderKills"));
+				int desecration = this.landConfig.getInt(path + ".Desecration");
 
 				TitleManager.sendTitle(player, 1*20, 4*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
 
