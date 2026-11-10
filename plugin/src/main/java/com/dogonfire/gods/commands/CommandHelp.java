@@ -7,15 +7,17 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.AltarManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandHelp extends GodsCommand
 {
-	protected CommandHelp()
+	private final GodsCommandExecuter	executer;
+
+	CommandHelp(GodsContext ctx, GodsCommandExecuter executer)
 	{
-		super("help");
+		super(ctx, "help");
+		this.executer = executer;
 		this.permission = "gods.help";
 		this.parameters = "[altar/blocks]";
 		this.description = "Show the list of Gods commands";
@@ -49,12 +51,12 @@ public class CommandHelp extends GodsCommand
 
 	private void helpGeneral(CommandSender sender)
 	{
-		boolean isPriest = (sender instanceof Player) && GodManager.instance().isPriest(((Player) sender).getUniqueId());
+		boolean isPriest = (sender instanceof Player) && ctx.godManager().isPriest(((Player) sender).getUniqueId());
 
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + Gods.instance().getDescription().getFullName() + " ------------------");
+		sender.sendMessage(ChatColor.YELLOW + "------------------ " + ctx.plugin().getDescription().getFullName() + " ------------------");
 		sender.sendMessage(ChatColor.AQUA + "/gods" + ChatColor.WHITE + " - Basic info");
 
-		for (GodsCommand localCommand : GodsCommandExecuter.instance().getCommands())
+		for (GodsCommand localCommand : this.executer.getCommands())
 		{
 			if (!localCommand.isAvailableTo(sender, isPriest))
 			{
@@ -97,12 +99,12 @@ public class CommandHelp extends GodsCommand
 		
 		for (GodManager.GodType godType : GodManager.GodType.values())
 		{
-			List<String> materials = AltarManager.instance().getAltarBlockTypesFromGodType(godType);
+			List<String> materials = ctx.altarManager().getAltarBlockTypesFromGodType(godType);
 			if (materials != null)
 			{
 				for (String blockMaterial : materials)
 				{
-					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + GodManager.instance().getColorForGodType(godType) + LanguageManager.instance().getGodTypeName(godType, "God"));
+					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + ctx.godManager().getColorForGodType(godType) + ctx.languageManager().getGodTypeName(godType, "God"));
 				}
 			}
 		}

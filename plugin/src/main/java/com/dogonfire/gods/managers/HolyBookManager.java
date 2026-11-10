@@ -10,29 +10,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.storage.DataFile;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.HolyBook;
+import com.dogonfire.gods.storage.DataFile;
 
 public class HolyBookManager
 {
-	private static HolyBookManager instance;
+	private final GodsContext ctx;
 
-	public static HolyBookManager instance()
+	public HolyBookManager(GodsContext ctx)
 	{
-		if (Gods.instance().settings().bibles().enabled() && instance == null)
-			instance = new HolyBookManager();
-		return instance;
-	}
-
-	private HolyBookManager()
-	{
+		this.ctx = ctx;
 	}
 
 	/** bibles.yml; see {@link DataFile} */
 	private DataFile biblesFile()
 	{
-		return Gods.instance().storage().bibles();
+		return ctx.storage().bibles();
 	}
 
 	private YamlConfiguration biblesConfig()
@@ -69,7 +63,7 @@ public class HolyBookManager
 
 		try
 		{
-			HolyBook b = new HolyBook(new ItemStack(Material.WRITTEN_BOOK, 1));
+			HolyBook b = new HolyBook(ctx.plugin(), new ItemStack(Material.WRITTEN_BOOK, 1));
 
 			String title = getBibleTitle(godName);
 			b.setTitle(title == null ? getDefaultBibleTitle(godName) : ChatColor.stripColor(title));
@@ -81,7 +75,7 @@ public class HolyBookManager
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug("ERROR: Could not instance a bible for '" + godName + ": " + ex.getMessage());
+			ctx.plugin().logDebug("ERROR: Could not instance a bible for '" + godName + ": " + ex.getMessage());
 		}
 		return null;
 	}
@@ -98,14 +92,14 @@ public class HolyBookManager
 		try
 		{
 			// Writable books have no title or author
-			HolyBook b = new HolyBook(new ItemStack(Material.WRITABLE_BOOK, 1));
+			HolyBook b = new HolyBook(ctx.plugin(), new ItemStack(Material.WRITABLE_BOOK, 1));
 			b.setPages(pages);
 
 			return b.getItem();
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug("ERROR: Could not instance a bible for '" + godName + ": " + ex.getMessage());
+			ctx.plugin().logDebug("ERROR: Could not instance a bible for '" + godName + ": " + ex.getMessage());
 		}
 		return null;
 	}
@@ -123,7 +117,7 @@ public class HolyBookManager
 		}
 		try
 		{
-			HolyBook bible = new HolyBook(book);
+			HolyBook bible = new HolyBook(ctx.plugin(), book);
 
 			String godName = bible.getGodName();
 			if (godName != null)
@@ -147,7 +141,7 @@ public class HolyBookManager
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().log("ERROR: Could not get bible for " + book + ": " + ex.getMessage());
+			ctx.plugin().log("ERROR: Could not get bible for " + book + ": " + ex.getMessage());
 		}
 		return null;
 	}
@@ -180,10 +174,10 @@ public class HolyBookManager
 		{
 			return false;
 		}
-		Player player = Gods.instance().getServer().getPlayerExact(playerName);
+		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
 		if (player == null)
 		{
-			Gods.instance().logDebug("ERROR: Could not give bible to offline player '" + playerName);
+			ctx.plugin().logDebug("ERROR: Could not give bible to offline player '" + playerName);
 			return false;
 		}
 		giveBook(player, bible);
@@ -198,10 +192,10 @@ public class HolyBookManager
 		{
 			return false;
 		}
-		Player player = Gods.instance().getServer().getPlayerExact(playerName);
+		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
 		if (player == null)
 		{
-			Gods.instance().logDebug("ERROR: Could not give editable bible to offline player '" + playerName);
+			ctx.plugin().logDebug("ERROR: Could not give editable bible to offline player '" + playerName);
 			return false;
 		}
 		giveBook(player, bible);
@@ -211,7 +205,7 @@ public class HolyBookManager
 
 	private void initBible(String godName)
 	{
-		Gods.instance().logDebug("Creating bible for '" + godName + "' ...");
+		ctx.plugin().logDebug("Creating bible for '" + godName + "' ...");
 
 		List<String> pages = new ArrayList<String>();
 
@@ -219,50 +213,46 @@ public class HolyBookManager
 
 		biblesConfig().set(godName + ".Author", godName);
 
-		LanguageManager.instance().setPlayerName(godName);
+		ctx.languageManager().setPlayerName(godName);
 
-		pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText1));
+		pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText1));
 		try
 		{
-			LanguageManager.instance().setType(LanguageManager.instance().getMobTypeName(GodManager.instance().getUnholyMobTypeForGod(godName)));
-			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText2));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getUnholyMobTypeForGod(godName)));
+			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText2));
 
-			LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(GodManager.instance().getHolyFoodTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.godManager().getHolyFoodTypeForGod(godName)));
 
-			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText3));
+			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText3));
 
-			LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(GodManager.instance().getUnholyFoodTypeForGod(godName)));
+			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.godManager().getUnholyFoodTypeForGod(godName)));
 
-			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText4));
+			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText4));
 
-			LanguageManager.instance().setType(LanguageManager.instance().getMobTypeName(GodManager.instance().getHolyMobTypeForGod(godName)));
-			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText5));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText5));
 
-			LanguageManager.instance().setType(LanguageManager.instance().getMobTypeName(GodManager.instance().getHolyMobTypeForGod(godName)));
-			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText6));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText6));
 
-			LanguageManager.instance().setType(LanguageManager.instance().getMobTypeName(GodManager.instance().getHolyMobTypeForGod(godName)));
-			pages.add(LanguageManager.instance().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText7));
+			ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			pages.add(ctx.languageManager().getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText7));
 
 			biblesConfig().set(godName + ".Pages", pages);
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug(ex.getMessage());
+			ctx.plugin().logDebug(ex.getMessage());
 		}
 
 		biblesFile().save();
-
-		// if (Gods.instance().propheciesEnabled)
-		// {
-		// }
 	}
 
 	public void load()
 	{
 		biblesFile().load();
 
-		Gods.instance().log("Loaded " + biblesConfig().getKeys(false).size() + " bibles.");
+		ctx.plugin().log("Loaded " + biblesConfig().getKeys(false).size() + " bibles.");
 	}
 
 	/**
@@ -272,7 +262,7 @@ public class HolyBookManager
 	 */
 	public boolean setBible(String godName, String priestName)
 	{
-		Player player = Gods.instance().getServer().getPlayerExact(priestName);
+		Player player = ctx.plugin().getServer().getPlayerExact(priestName);
 		if (player == null)
 		{
 			return false;
@@ -286,11 +276,11 @@ public class HolyBookManager
 		HolyBook book;
 		try
 		{
-			book = new HolyBook(item);
+			book = new HolyBook(ctx.plugin(), item);
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug("ERROR: Could not set a bible for '" + godName + ": " + ex.getMessage());
+			ctx.plugin().logDebug("ERROR: Could not set a bible for '" + godName + ": " + ex.getMessage());
 			return false;
 		}
 

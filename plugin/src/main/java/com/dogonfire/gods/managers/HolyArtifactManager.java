@@ -18,7 +18,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 
 //
 // Holy artifacts are items a God gives to a believer. Right-clicking one
@@ -27,15 +27,6 @@ import com.dogonfire.gods.Gods;
 //
 public class HolyArtifactManager
 {
-	private static HolyArtifactManager instance;
-
-	public static HolyArtifactManager instance()
-	{
-		if (instance == null)
-			instance = new HolyArtifactManager();
-		return instance;
-	}
-
 	private record ArtifactItem(Material material, String name)
 	{
 	}
@@ -51,12 +42,15 @@ public class HolyArtifactManager
 	private final NamespacedKey	usesKey;
 	private final NamespacedKey	nameKey;
 
-	private HolyArtifactManager()
+	private final GodsContext ctx;
+
+	public HolyArtifactManager(GodsContext ctx)
 	{
-		this.powerKey = new NamespacedKey(Gods.instance(), "holy_power");
-		this.powerValueKey = new NamespacedKey(Gods.instance(), "holy_power_value");
-		this.usesKey = new NamespacedKey(Gods.instance(), "holy_artifact_uses");
-		this.nameKey = new NamespacedKey(Gods.instance(), "holy_artifact_name");
+		this.ctx = ctx;
+		this.powerKey = new NamespacedKey(ctx.plugin(), "holy_power");
+		this.powerValueKey = new NamespacedKey(ctx.plugin(), "holy_power_value");
+		this.usesKey = new NamespacedKey(ctx.plugin(), "holy_artifact_uses");
+		this.nameKey = new NamespacedKey(ctx.plugin(), "holy_artifact_name");
 	}
 
 	private static ArtifactKind getArtifactKind(GodManager.GodType godType)
@@ -83,7 +77,7 @@ public class HolyArtifactManager
 	{
 		if (godType == null)
 		{
-			Gods.instance().log("createHolyArtifact(): " + godName + " has no god type");
+			ctx.plugin().log("createHolyArtifact(): " + godName + " has no god type");
 			return null;
 		}
 
@@ -97,7 +91,7 @@ public class HolyArtifactManager
 		ItemMeta itemMeta = item.getItemMeta();
 		if (itemMeta == null)
 		{
-			Gods.instance().logDebug("createHolyArtifact(): Could not get item meta for " + artifactItem.material());
+			ctx.plugin().logDebug("createHolyArtifact(): Could not get item meta for " + artifactItem.material());
 			return null;
 		}
 
@@ -106,7 +100,7 @@ public class HolyArtifactManager
 		List<String> lore = new ArrayList<String>();
 		lore.add(ChatColor.DARK_PURPLE + kind.lore());
 		lore.add(getUsesLine(0));
-		lore.add(ChatColor.GREEN + HolyPowerManager.instance().describe(holyPower, powerValue));
+		lore.add(ChatColor.GREEN + ctx.holyPowerManager().describe(holyPower, powerValue));
 		itemMeta.setLore(lore);
 
 		switch (this.random.nextInt(6))
@@ -187,14 +181,14 @@ public class HolyArtifactManager
 		{
 			return;
 		}
-		Player player = Gods.instance().getServer().getPlayerExact(playerName);
+		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
 		HolyPowerManager.PowerDescription holyPower = getHolyPower(item);
 		if (player == null || holyPower == null)
 		{
 			return;
 		}
 
-		if (!HolyPowerManager.instance().activatePower(player, holyPower.power(), holyPower.value()))
+		if (!ctx.holyPowerManager().activatePower(player, holyPower.power(), holyPower.value()))
 		{
 			return;
 		}
@@ -227,7 +221,7 @@ public class HolyArtifactManager
 		{
 			String baseName = data.getOrDefault(this.nameKey, PersistentDataType.STRING, ChatColor.stripColor(itemMeta.getDisplayName()));
 			itemMeta.setDisplayName(rankName + " " + ChatColor.GOLD + baseName);
-			Gods.instance().getServer().broadcastMessage(ChatColor.AQUA + player.getName() + "'s " + ChatColor.WHITE + baseName + ChatColor.AQUA + " is now " + rankName);
+			ctx.plugin().getServer().broadcastMessage(ChatColor.AQUA + player.getName() + "'s " + ChatColor.WHITE + baseName + ChatColor.AQUA + " is now " + rankName);
 		}
 
 		boolean broken = false;
@@ -262,7 +256,7 @@ public class HolyArtifactManager
 	 */
 	public boolean hasHolyArtifact(String playerName)
 	{
-		Player player = Gods.instance().getServer().getPlayerExact(playerName);
+		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
 		return player != null && hasHolyArtifact(player);
 	}
 
@@ -315,7 +309,7 @@ public class HolyArtifactManager
 		}
 		catch (IllegalArgumentException ex)
 		{
-			Gods.instance().logDebug("Unknown holy power '" + powerName + "' on a Holy artifact");
+			ctx.plugin().logDebug("Unknown holy power '" + powerName + "' on a Holy artifact");
 			return null;
 		}
 	}
@@ -341,6 +335,6 @@ public class HolyArtifactManager
 		{
 			return null;
 		}
-		return HolyPowerManager.instance().getHolyPowerFromDescription(ChatColor.stripColor(lore.get(2)));
+		return ctx.holyPowerManager().getHolyPowerFromDescription(ChatColor.stripColor(lore.get(2)));
 	}
 }

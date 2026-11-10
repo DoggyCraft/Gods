@@ -12,15 +12,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandFollowers extends GodsCommand
 {
-	protected CommandFollowers()
+	CommandFollowers(GodsContext ctx)
 	{
-		super("followers");
+		super(ctx, "followers");
 		this.permission = "gods.followers";
 		this.parameters = "[god]";
 		this.description = "Show the followers of your/a God";
@@ -46,11 +44,11 @@ public class CommandFollowers extends GodsCommand
 		String godName = "";
 		if (args.length >= 2)
 		{
-			godName = GodManager.instance().formatGodName(args[1]);
+			godName = ctx.godManager().formatGodName(args[1]);
 		}
 		else
 		{
-			godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+			godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		}
 
 		if (godName == null)
@@ -59,11 +57,11 @@ public class CommandFollowers extends GodsCommand
 			return;
 		}
 
-		Set<UUID> list = BelieverManager.instance().getBelieversForGod(godName);
+		Set<UUID> list = ctx.believerManager().getBelieversForGod(godName);
 
 		for (UUID believerId : list)
 		{
-			Date lastPrayer = BelieverManager.instance().getLastPrayerTime(believerId);
+			Date lastPrayer = ctx.believerManager().getLastPrayerTime(believerId);
 			believers.add(new Believer(believerId, lastPrayer));
 		}
 
@@ -73,7 +71,7 @@ public class CommandFollowers extends GodsCommand
 			return;
 		}
 
-		playerGod = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		sender.sendMessage(ChatColor.YELLOW + "--------- The Followers of " + godName + " ---------");
 		Collections.sort(believers, new BelieversComparator());
 
@@ -110,7 +108,7 @@ public class CommandFollowers extends GodsCommand
 				date = minutes + " min ago";
 			}
 
-			String believerName = Gods.instance().getServer().getOfflinePlayer(believer.believerId).getName();
+			String believerName = ctx.plugin().getServer().getOfflinePlayer(believer.believerId).getName();
 
 			if (sender != null)
 			{
@@ -126,7 +124,7 @@ public class CommandFollowers extends GodsCommand
 			}
 			else
 			{
-				Gods.instance().log(String.format("%-20s", believerName) + ChatColor.AQUA + String.format("%-18s", new StringBuilder().append(" Prayed ").append(ChatColor.GOLD).append(date).toString()));
+				ctx.plugin().log(String.format("%-20s", believerName) + ChatColor.AQUA + String.format("%-18s", new StringBuilder().append(" Prayed ").append(ChatColor.GOLD).append(date).toString()));
 			}
 		}
 
@@ -134,7 +132,7 @@ public class CommandFollowers extends GodsCommand
 		{
 			for (Believer believer : believers)
 			{
-				String believerName = Gods.instance().getServer().getOfflinePlayer(believer.believerId).getName();
+				String believerName = ctx.plugin().getServer().getOfflinePlayer(believer.believerId).getName();
 
 				if ((playerGod != null) && (believer.believerId.equals(player.getUniqueId())))
 				{

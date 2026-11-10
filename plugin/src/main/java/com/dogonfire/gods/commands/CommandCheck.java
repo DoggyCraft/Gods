@@ -5,14 +5,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandCheck extends GodsCommand
 {
-	protected CommandCheck()
+	CommandCheck(GodsContext ctx)
 	{
-		super("check");
+		super(ctx, "check");
 		this.permission = "gods.check";
 		this.parameters = "<player>";
 		this.description = "Show the religion of a player";
@@ -38,13 +37,13 @@ public class CommandCheck extends GodsCommand
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(believer.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(believer.getUniqueId());
 
 		if (godName == null)
 		{
 			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " does not believe in a god");
 		}
-		else if (GodManager.instance().isPriest(believer.getUniqueId()))
+		else if (ctx.godManager().isPriest(believer.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " is the Priest of " + ChatColor.YELLOW + godName);
 		}

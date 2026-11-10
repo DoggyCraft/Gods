@@ -6,14 +6,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandAlliance extends GodsCommand {
 
-	protected CommandAlliance() {
-		super("ally");
+	CommandAlliance(GodsContext ctx) {
+		super(ctx, "ally");
 		this.permission = "gods.priest.alliance";
 		this.parameters = "<god>";
 		this.description = "Toggle alliance with another religion";
@@ -36,13 +35,13 @@ public class CommandAlliance extends GodsCommand {
 			return;
 		}
 		Player player = (Player) sender;
-		if (!GodManager.instance().isPriest(player.getUniqueId())) {
+		if (!ctx.godManager().isPriest(player.getUniqueId())) {
 			sender.sendMessage(ChatColor.RED + "Only priests can declare alliances");
 			return;
 		}
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		String allyGodName = GodManager.instance().formatGodName(args[1]);
-		if (!GodManager.instance().godExist(args[1])) {
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String allyGodName = ctx.godManager().formatGodName(args[1]);
+		if (!ctx.godManager().godExist(args[1])) {
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
 			return;
 		}
@@ -50,22 +49,22 @@ public class CommandAlliance extends GodsCommand {
 			player.sendMessage(ChatColor.RED + "You cannot ally with your own God!");
 			return;
 		}
-		List<?> wars = GodManager.instance().getWarRelations(godName);
+		List<?> wars = ctx.godManager().getWarRelations(godName);
 		if (wars.contains(allyGodName)) {
 			player.sendMessage(ChatColor.RED + "You are in WAR with " + ChatColor.GOLD + args[1] + ChatColor.RED + "!");
 			return;
 		}
-		if (GodManager.instance().toggleAllianceRelationForGod(godName, allyGodName)) {
-			LanguageManager.instance().setPlayerName(godName);
-			GodManager.instance().godSayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
-			LanguageManager.instance().setPlayerName(allyGodName);
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
+		if (ctx.godManager().toggleAllianceRelationForGod(godName, allyGodName)) {
+			ctx.languageManager().setPlayerName(godName);
+			ctx.godManager().godSayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
+			ctx.languageManager().setPlayerName(allyGodName);
+			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
 		} else {
-			LanguageManager.instance().setPlayerName(godName);
-			GodManager.instance().godSayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
+			ctx.languageManager().setPlayerName(godName);
+			ctx.godManager().godSayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
 
-			LanguageManager.instance().setPlayerName(allyGodName);
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
+			ctx.languageManager().setPlayerName(allyGodName);
+			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
 		}
 	}
 }

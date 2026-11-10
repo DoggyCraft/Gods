@@ -4,7 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.PermissionsManager;
+import com.dogonfire.gods.GodsContext;
 
 public abstract class GodsCommand
 {
@@ -15,6 +15,7 @@ public abstract class GodsCommand
 	protected static final String	stringPlayerOnly	= ChatColor.RED + "This is a Player-Only command.";
 	protected static final String	stringPreistOnly	= ChatColor.RED + "This is a Priest-Only command.";
 
+	protected final GodsContext		ctx;
 	protected final String			name;
 	protected String				permission, parameters, description;
 
@@ -24,26 +25,15 @@ public abstract class GodsCommand
 	 */
 	protected boolean				priestOnly			= false;
 
-	protected GodsCommand(String name)
+	protected GodsCommand(GodsContext ctx, String name)
 	{
+		this.ctx = ctx;
 		this.name = name;
 	}
 
 	protected void sendUsage(CommandSender sender)
 	{
 		sender.sendMessage(String.format("%sUsage: /gods %s %s", ChatColor.GREEN.toString(), name, parameters == null ? "" : parameters).trim());
-	}
-
-	/**
-	 * Checks if a command is the same as the one in the provided string
-	 *
-	 * @param key
-	 *            a string the represents a command
-	 * @return true if the string represents this command, false otherwise
-	 */
-	protected final boolean isCommand(String key)
-	{
-		return key.equalsIgnoreCase(name);
 	}
 
 	/**
@@ -62,7 +52,7 @@ public abstract class GodsCommand
 		if (permission == null)
 			return false;
 		if (sender instanceof Player)
-			return PermissionsManager.instance().hasPermission((Player) sender, permission);
+			return ctx.permissionsManager().hasPermission((Player) sender, permission);
 		return sender.hasPermission(permission);
 	}
 
@@ -88,5 +78,4 @@ public abstract class GodsCommand
 	 *            the arguments that the user passed to the command
 	 */
 	public abstract void onCommand(CommandSender sender, String command, String... args);
-
 }

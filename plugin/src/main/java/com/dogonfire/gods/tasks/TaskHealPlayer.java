@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class TaskHealPlayer extends Task
@@ -16,8 +16,9 @@ public class TaskHealPlayer extends Task
 	private String							godName	= null;
 	private LanguageManager.LANGUAGESTRING	languageString;
 
-	public TaskHealPlayer(String god, Player p, LanguageManager.LANGUAGESTRING speak)
+	public TaskHealPlayer(GodsContext ctx, String god, Player p, LanguageManager.LANGUAGESTRING speak)
 	{
+		super(ctx);
 		this.player = p;
 		this.godName = new String(god);
 		this.languageString = speak;
@@ -37,8 +38,8 @@ public class TaskHealPlayer extends Task
 		Random random = new Random();
 		if (healPlayer())
 		{
-			LanguageManager.instance().setPlayerName(this.player.getName());
-			GodManager.instance().GodSay(this.godName, this.player, this.languageString, 2 + random.nextInt(10));
+			ctx.languageManager().setPlayerName(this.player.getName());
+			ctx.godManager().GodSay(this.godName, this.player, this.languageString, 2 + random.nextInt(10));
 			getPlugin().log(this.godName + " healed " + this.player.getName());
 		}
 	}

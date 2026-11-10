@@ -19,7 +19,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.storage.DataFile;
 import com.dogonfire.gods.tasks.TaskLove;
 
@@ -58,32 +58,23 @@ public class MarriageManager
 		}
 	}
 
-	private static MarriageManager instance;
-
-	public static MarriageManager instance()
-	{
-		if (Gods.instance().settings().marriage().enabled() && instance == null)
-		{
-			instance = new MarriageManager();
-		}
-		
-		return instance;
-	}
-
 	private Random				random				= new Random();
 
 	private Material			marriageTokenType	= Material.GOLD_NUGGET;
 
 	private final Set<String>	invalidIds			= new HashSet<String>();
 
-	private MarriageManager()
+	private final GodsContext ctx;
+
+	public MarriageManager(GodsContext ctx)
 	{
+		this.ctx = ctx;
 	}
 
 	/** marriages.yml; see {@link DataFile} */
 	private DataFile marriagesFile()
 	{
-		return Gods.instance().storage().marriages();
+		return ctx.storage().marriages();
 	}
 
 	private YamlConfiguration marriagesConfig()
@@ -105,10 +96,10 @@ public class MarriageManager
 			if (partner != null)
 			{
 				// Tell the partner who divorced them
-				Player divorcer = Gods.instance().getServer().getPlayer(believerId);
-				String divorcerName = divorcer != null ? divorcer.getDisplayName() : Gods.instance().getServer().getOfflinePlayer(believerId).getName();
+				Player divorcer = ctx.plugin().getServer().getPlayer(believerId);
+				String divorcerName = divorcer != null ? divorcer.getDisplayName() : ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
 
-				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, divorcerName, "DIVORCED", 1);
+				ctx.plugin().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, divorcerName, "DIVORCED", 1);
 			}
 		}
 		
@@ -141,7 +132,7 @@ public class MarriageManager
 		{
 			if (this.invalidIds.add(value))
 			{
-				Gods.instance().log("Ignoring marriages.yml entry '" + value + "': it is not a player UUID");
+				ctx.plugin().log("Ignoring marriages.yml entry '" + value + "': it is not a player UUID");
 			}
 			return null;
 		}
@@ -151,7 +142,7 @@ public class MarriageManager
 	{
 		UUID id = parseId(playerId);
 
-		return id != null ? Gods.instance().getServer().getPlayer(id) : null;
+		return id != null ? ctx.plugin().getServer().getPlayer(id) : null;
 	}
 
 	public List<MarriedCouple> getMarriedCouples()
@@ -189,7 +180,7 @@ public class MarriageManager
 				}
 				catch (Exception ex)
 				{
-					Gods.instance().log("Invalid lastlove format for " + playerId);
+					ctx.plugin().log("Invalid lastlove format for " + playerId);
 					lastLove = new Date();
 
 					marriagesConfig().set(playerId.toString() + ".Married.LastLove", formatter.format(lastLove));
@@ -198,7 +189,7 @@ public class MarriageManager
 					marriagesFile().save();
 				}
 
-				couples.add(new MarriedCouple(playerId, partnerId, BelieverManager.instance().getGodForBeliever(playerId), lastLove));
+				couples.add(new MarriedCouple(playerId, partnerId, ctx.believerManager().getGodForBeliever(playerId), lastLove));
 
 				names.add(playerId);
 			}
@@ -230,7 +221,7 @@ public class MarriageManager
 			return null;
 		}
 
-		return Gods.instance().getServer().getOfflinePlayer(partnerId).getName();
+		return ctx.plugin().getServer().getOfflinePlayer(partnerId).getName();
 	}
 
 	public UUID getProposal(UUID believerId)
@@ -252,7 +243,7 @@ public class MarriageManager
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug("Could no parse marriage proposal time: " + ex.getMessage());
+			ctx.plugin().logDebug("Could no parse marriage proposal time: " + ex.getMessage());
 			offerDate = new Date();
 			offerDate.setTime(0L);
 		}
@@ -262,7 +253,7 @@ public class MarriageManager
 
 		if (diffSeconds > 30L)
 		{
-			Gods.instance().logDebug("getProposal DiffSeconds is " + diffSeconds);
+			ctx.plugin().logDebug("getProposal DiffSeconds is " + diffSeconds);
 
 			marriagesConfig().set(believerId + ".MarriageProposal", null);
 
@@ -278,8 +269,8 @@ public class MarriageManager
 
 	public void handleAcceptProposal(UUID playerId1, UUID playerId2, String godName)
 	{
-		Player player1 = Gods.instance().getServer().getPlayer(playerId1);
-		Player player2 = Gods.instance().getServer().getPlayer(playerId2);
+		Player player1 = ctx.plugin().getServer().getPlayer(playerId1);
+		Player player2 = ctx.plugin().getServer().getPlayer(playerId2);
 
 		// The proposal can be accepted after the other player logged off
 		marriagesConfig().set(playerId1 + ".MarriageProposal", null);
@@ -292,18 +283,18 @@ public class MarriageManager
 
 		try
 		{
-			LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(this.marriageTokenType));
+			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(this.marriageTokenType));
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().logDebug(ex.getMessage());
+			ctx.plugin().logDebug(ex.getMessage());
 		}
 
-		LanguageManager.instance().setPlayerName(player2.getDisplayName());
-		GodManager.instance().GodSay(godName, player1, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedMarriageProposal, 2 + this.random.nextInt(40));
+		ctx.languageManager().setPlayerName(player2.getDisplayName());
+		ctx.godManager().GodSay(godName, player1, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedMarriageProposal, 2 + this.random.nextInt(40));
 
-		LanguageManager.instance().setPlayerName(player1.getDisplayName());
-		GodManager.instance().GodSay(godName, player2, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedYourMarriageProposal, 2 + this.random.nextInt(40));
+		ctx.languageManager().setPlayerName(player1.getDisplayName());
+		ctx.godManager().GodSay(godName, player2, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedYourMarriageProposal, 2 + this.random.nextInt(40));
 
 		setGettingMarried(playerId1, playerId2);
 	}
@@ -332,7 +323,7 @@ public class MarriageManager
 			return;
 		}
 
-		Player partner = Gods.instance().getServer().getPlayer(gettingMarriedPartnerId);
+		Player partner = ctx.plugin().getServer().getPlayer(gettingMarriedPartnerId);
 
 		if (player == null || partner == null)
 		{
@@ -343,46 +334,46 @@ public class MarriageManager
 
 		// if (hasPickupWeddingRing(player.getUniqueId()))
 		{
-			String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+			String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 			if (hasPickupWeddingRing(gettingMarriedPartnerId))
 			{
 				setMarried(player.getUniqueId(), gettingMarriedPartnerId);
 
-				float godPower = GodManager.instance().getGodPower(godName);
+				float godPower = ctx.godManager().getGodPower(godName);
 
-				GodManager.instance().blessPlayer(godName, player.getUniqueId(), godPower);
-				GodManager.instance().blessPlayer(godName, gettingMarriedPartnerId, godPower);
+				ctx.godManager().blessPlayer(godName, player.getUniqueId(), godPower);
+				ctx.godManager().blessPlayer(godName, gettingMarriedPartnerId, godPower);
 
-				LanguageManager.instance().setPlayerName(partner.getDisplayName());
-				GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
+				ctx.languageManager().setPlayerName(partner.getDisplayName());
+				ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
 
-				LanguageManager.instance().setPlayerName(player.getDisplayName());
-				GodManager.instance().GodSay(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
+				ctx.languageManager().setPlayerName(player.getDisplayName());
+				ctx.godManager().GodSay(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
 
-				Gods.instance().log(player.getDisplayName() + " just married " + partner.getDisplayName() + " in the name of " + godName);
-				Gods.instance().getServer().broadcastMessage(ChatColor.WHITE + player.getDisplayName() + ChatColor.AQUA + " just married " + ChatColor.WHITE + partner.getDisplayName() + ChatColor.AQUA + " in the name of " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
-				if ((Gods.instance().settings().holyArtifacts().enabled()) && (Gods.instance().settings().marriage().weddingFireworks()))
+				ctx.plugin().log(player.getDisplayName() + " just married " + partner.getDisplayName() + " in the name of " + godName);
+				ctx.plugin().getServer().broadcastMessage(ChatColor.WHITE + player.getDisplayName() + ChatColor.AQUA + " just married " + ChatColor.WHITE + partner.getDisplayName() + ChatColor.AQUA + " in the name of " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
+				if ((ctx.settings().holyArtifacts().enabled()) && (ctx.settings().marriage().weddingFireworks()))
 				{
-					HolyPowerManager.instance().shootFirework(player, 16);
-					HolyPowerManager.instance().shootFirework(partner, 16);
+					ctx.holyPowerManager().shootFirework(player, 16);
+					ctx.holyPowerManager().shootFirework(partner, 16);
 				}
 			}
 			else
 			{
 				try
 				{
-					LanguageManager.instance().setType(LanguageManager.instance().getItemTypeName(this.marriageTokenType));
+					ctx.languageManager().setType(ctx.languageManager().getItemTypeName(this.marriageTokenType));
 				}
 				catch (Exception ex)
 				{
-					Gods.instance().logDebug(ex.getMessage());
+					ctx.plugin().logDebug(ex.getMessage());
 				}
-				LanguageManager.instance().setPlayerName(partner.getDisplayName());
-				GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageTokenPickup, 10);
+				ctx.languageManager().setPlayerName(partner.getDisplayName());
+				ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageTokenPickup, 10);
 
-				LanguageManager.instance().setPlayerName(player.getDisplayName());
-				GodManager.instance().GodSay(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarriagePartnerTokenPickup, 10);
+				ctx.languageManager().setPlayerName(player.getDisplayName());
+				ctx.godManager().GodSay(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarriagePartnerTokenPickup, 10);
 			}
 		}
 
@@ -409,7 +400,7 @@ public class MarriageManager
 
 		marriagesFile().load();
 
-		Gods.instance().log("Loaded " + marriagesConfig().getKeys(false).size() + " marriages.");
+		ctx.plugin().log("Loaded " + marriagesConfig().getKeys(false).size() + " marriages.");
 	}
 
 	public void love(UUID playerId)
@@ -421,7 +412,7 @@ public class MarriageManager
 
 		if (partnerId != null)
 		{
-			Player player = Gods.instance().getServer().getPlayer(playerId);
+			Player player = ctx.plugin().getServer().getPlayer(playerId);
 			Player partner = getOnlinePlayer(partnerId);
 
 			marriagesConfig().set(playerId.toString() + ".Married.LastLove", formatter.format(thisDate));
@@ -429,9 +420,9 @@ public class MarriageManager
 
 			if (player != null && partner != null)
 			{
-				Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskLove(player, partner), 1L);
+				ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskLove(ctx, player, partner), 1L);
 
-				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, player.getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
+				ctx.plugin().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, player.getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
 			}
 		}
 

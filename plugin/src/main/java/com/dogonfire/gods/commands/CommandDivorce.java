@@ -4,16 +4,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.MarriageManager;
-
+import com.dogonfire.gods.GodsContext;
 
 public class CommandDivorce extends GodsCommand
 {
-	protected CommandDivorce()
+	CommandDivorce(GodsContext ctx)
 	{
-		super("divorce");
+		super(ctx, "divorce");
 		this.permission = "gods.divorce";
 		this.description = "Divorce your partner";
 	}
@@ -21,7 +18,7 @@ public class CommandDivorce extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!Gods.instance().settings().marriage().enabled())
+		if (!ctx.settings().marriage().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
 			return;
@@ -37,7 +34,7 @@ public class CommandDivorce extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String thisGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String thisGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if (thisGodName == null)
 		{
@@ -45,7 +42,7 @@ public class CommandDivorce extends GodsCommand
 			return;
 		}
 
-		String partnerName = MarriageManager.instance().getPartnerName(player.getUniqueId());
+		String partnerName = ctx.marriageManager().getPartnerName(player.getUniqueId());
 
 		if (partnerName == null)
 		{
@@ -53,7 +50,7 @@ public class CommandDivorce extends GodsCommand
 			return;
 		}
 
-		MarriageManager.instance().divorce(player.getUniqueId());
+		ctx.marriageManager().divorce(player.getUniqueId());
 
 		player.sendMessage(ChatColor.AQUA + "You divorced " + ChatColor.WHITE + partnerName + "!");
 	}

@@ -4,15 +4,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandAccess extends GodsCommand
 {
-	protected CommandAccess()
+	CommandAccess(GodsContext ctx)
 	{
-		super("access");
+		super(ctx, "access");
 		this.permission = "gods.priest.access";
 		this.parameters = "[open/close]";
 		this.description = "Set your religion as open or invite only";
@@ -36,15 +34,15 @@ public class CommandAccess extends GodsCommand
 		
 		Player player = (Player) sender;
 		
-		if (!GodManager.instance().isPriest(player.getUniqueId()))
+		if (!ctx.godManager().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(ChatColor.RED + "Only priests can set religion access");
 			return;
 		}
 		
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
-		if (godName == null || !GodManager.instance().godExist(godName))
+		if (godName == null || !ctx.godManager().godExist(godName))
 		{
 			player.sendMessage(ChatColor.RED + "That God does not exist");
 			return;
@@ -60,15 +58,15 @@ public class CommandAccess extends GodsCommand
 		
 		if (access.equalsIgnoreCase("open"))
 		{
-			GodManager.instance().setPrivateAccess(godName, false);
-			Gods.instance().log(player.getName() + " /gods open");
+			ctx.godManager().setPrivateAccess(godName, false);
+			ctx.plugin().log(player.getName() + " /gods open");
 			player.sendMessage(ChatColor.AQUA + "You set the religion access to " + ChatColor.YELLOW + "open" + ChatColor.AQUA + ".");
 			player.sendMessage(ChatColor.AQUA + "Players can join religion by praying at altars.");
 		}
 		else if (access.equalsIgnoreCase("close"))
 		{
-			GodManager.instance().setPrivateAccess(godName, true);
-			Gods.instance().log(player.getName() + " /gods close");
+			ctx.godManager().setPrivateAccess(godName, true);
+			ctx.plugin().log(player.getName() + " /gods close");
 			player.sendMessage(ChatColor.AQUA + "You set the religion access to " + ChatColor.RED + "closed" + ChatColor.AQUA + ".");
 			player.sendMessage(ChatColor.AQUA + "Players can now only pray to this religion by invitation.");
 		}

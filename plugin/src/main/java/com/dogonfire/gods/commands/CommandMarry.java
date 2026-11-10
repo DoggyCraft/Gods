@@ -4,17 +4,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.MarriageManager;
 
 public class CommandMarry extends GodsCommand
 {
-	protected CommandMarry()
+	CommandMarry(GodsContext ctx)
 	{
-		super("marry");
+		super(ctx, "marry");
 		this.permission = "gods.marry";
 		this.parameters = "<name>";
 		this.description = "Ask another player to marry you";
@@ -23,7 +20,7 @@ public class CommandMarry extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!Gods.instance().settings().marriage().enabled())
+		if (!ctx.settings().marriage().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
 			return;
@@ -39,7 +36,7 @@ public class CommandMarry extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String thisGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String thisGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		if (thisGodName == null)
 		{
 			player.sendMessage(ChatColor.RED + "You do not believe in a God");
@@ -53,7 +50,7 @@ public class CommandMarry extends GodsCommand
 		}
 
 		String otherPlayerName = args[1];
-		Player otherPlayer = Gods.instance().getServer().getPlayerExact(otherPlayerName);
+		Player otherPlayer = ctx.plugin().getServer().getPlayerExact(otherPlayerName);
 		if (otherPlayer == null)
 		{
 			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.WHITE + otherPlayerName + ChatColor.RED + "' online.");
@@ -66,7 +63,7 @@ public class CommandMarry extends GodsCommand
 			return;
 		}
 
-		String otherGodName = BelieverManager.instance().getGodForBeliever(otherPlayer.getUniqueId());
+		String otherGodName = ctx.believerManager().getGodForBeliever(otherPlayer.getUniqueId());
 
 		if (otherGodName == null)
 		{
@@ -80,23 +77,23 @@ public class CommandMarry extends GodsCommand
 			return;
 		}
 
-		String partnerName = MarriageManager.instance().getPartnerName(otherPlayer.getUniqueId());
+		String partnerName = ctx.marriageManager().getPartnerName(otherPlayer.getUniqueId());
 		if (partnerName != null)
 		{
 			player.sendMessage(ChatColor.WHITE + otherPlayerName + ChatColor.RED + " is already married to " + ChatColor.WHITE + partnerName + "!");
 			return;
 		}
-		partnerName = MarriageManager.instance().getPartnerName(player.getUniqueId());
+		partnerName = ctx.marriageManager().getPartnerName(player.getUniqueId());
 		if (partnerName != null)
 		{
 			player.sendMessage(ChatColor.RED + "You are already married to " + ChatColor.WHITE + partnerName + "!");
 			return;
 		}
 
-		MarriageManager.instance().proposeMarriage(player.getUniqueId(), otherPlayer.getUniqueId());
+		ctx.marriageManager().proposeMarriage(player.getUniqueId(), otherPlayer.getUniqueId());
 
-		LanguageManager.instance().setPlayerName(player.getName());
-		GodManager.instance().GodSayWithQuestion(thisGodName, otherPlayer, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageProposal, 1);
+		ctx.languageManager().setPlayerName(player.getName());
+		ctx.godManager().GodSayWithQuestion(thisGodName, otherPlayer, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageProposal, 1);
 
 		player.sendMessage(ChatColor.AQUA + "You proposed " + ChatColor.WHITE + otherPlayerName + ChatColor.AQUA + " to marry you in the name of " + ChatColor.GOLD + thisGodName + "!");
 	}

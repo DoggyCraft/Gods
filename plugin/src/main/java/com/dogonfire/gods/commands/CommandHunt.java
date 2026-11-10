@@ -6,16 +6,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.QuestManager;
 
 public class CommandHunt extends GodsCommand
 {
-	protected CommandHunt()
+	CommandHunt(GodsContext ctx)
 	{
-		super("hunt");
+		super(ctx, "hunt");
 		this.permission = "gods.hunt";
 		this.description = "Show how far you are from the quest target";
 	}
@@ -34,13 +32,13 @@ public class CommandHunt extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		Location pilgrimageLocation = QuestManager.instance().getQuestLocation(godName);
+		Location pilgrimageLocation = ctx.questManager().getQuestLocation(godName);
 		if (player == null || player.isFlying())
 		{
 			sender.sendMessage(ChatColor.RED + "No flying allowed.");
@@ -53,12 +51,12 @@ public class CommandHunt extends GodsCommand
 		}
 		if (!pilgrimageLocation.getWorld().getName().equals(player.getWorld().getName()))
 		{
-			Gods.instance().logDebug("PilgrimageQuest for '" + player.getDisplayName() + "' is wrong world");
+			ctx.plugin().logDebug("PilgrimageQuest for '" + player.getDisplayName() + "' is wrong world");
 			return;
 		}
 		Vector vector = pilgrimageLocation.toVector().subtract(player.getLocation().toVector());
-		LanguageManager.instance().setAmount((int) vector.length());
-		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, (int) vector.length(), "", 20);
+		ctx.languageManager().setAmount((int) vector.length());
+		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, (int) vector.length(), "", 20);
 
 	}
 

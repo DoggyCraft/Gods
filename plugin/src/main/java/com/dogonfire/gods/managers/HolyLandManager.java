@@ -33,6 +33,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.storage.DataFile;
 
 /**
@@ -48,15 +49,6 @@ import com.dogonfire.gods.storage.DataFile;
  */
 public class HolyLandManager implements Listener
 {
-	private static HolyLandManager instance;
-
-	public static HolyLandManager instance()
-	{
-		if (instance == null)
-			instance = new HolyLandManager();
-		return instance;
-	}
-
 	private static final String		HOLY_LANDS				= "Holylands";
 	private static final String		NEUTRAL_LANDS			= "NeutralLands";
 	private static final String		LEGACY_HOLY_LANDS		= "Holyland";
@@ -79,14 +71,17 @@ public class HolyLandManager implements Listener
 	private DateFormat				formatter				= new SimpleDateFormat(this.pattern);
 	private Random 					random 					= new Random();
 
-	private HolyLandManager()
+	private final GodsContext ctx;
+
+	public HolyLandManager(GodsContext ctx)
 	{
+		this.ctx = ctx;
 	}
 
 	/** holyland.yml; see {@link DataFile} */
 	private DataFile landFile()
 	{
-		return Gods.instance().storage().holyLands();
+		return ctx.storage().holyLands();
 	}
 
 	private YamlConfiguration landConfig()
@@ -161,7 +156,7 @@ public class HolyLandManager implements Listener
 			dropLegacyLands();
 		}
 
-		Gods.instance().log("Loaded " + getAllLandPaths().size() + " holy land entries.");
+		ctx.plugin().log("Loaded " + getAllLandPaths().size() + " holy land entries.");
 	}
 
 	/**
@@ -189,7 +184,7 @@ public class HolyLandManager implements Listener
 		}
 		catch (Exception ex)
 		{
-			Gods.instance().getLogger().severe("Could not back up holyland.yml to " + backup.getName() + ": " + ex.getMessage() + ". Leaving the old holy lands in place.");
+			ctx.plugin().getLogger().severe("Could not back up holyland.yml to " + backup.getName() + ": " + ex.getMessage() + ". Leaving the old holy lands in place.");
 			return;
 		}
 
@@ -198,9 +193,9 @@ public class HolyLandManager implements Listener
 
 		landFile().save();
 
-		Gods.instance().getLogger().warning("holyland.yml was in the old format, whose land positions were broken and can't be converted.");
-		Gods.instance().getLogger().warning("All holy lands and neutral lands were reset; the old file is kept as " + backup.getName() + ".");
-		Gods.instance().getLogger().warning("Gods claim holy land again when believers build or pray at their altars. Set neutral lands again with /g setsafe.");
+		ctx.plugin().getLogger().warning("holyland.yml was in the old format, whose land positions were broken and can't be converted.");
+		ctx.plugin().getLogger().warning("All holy lands and neutral lands were reset; the old file is kept as " + backup.getName() + ".");
+		ctx.plugin().getLogger().warning("Gods claim holy land again when believers build or pray at their altars. Set neutral lands again with /g setsafe.");
 	}
 
 	// ---------------------------------------------------------------------
@@ -235,11 +230,6 @@ public class HolyLandManager implements Listener
 		landConfig().set(landPath(location) + ".Name", name);
 
 		landFile().save();
-	}
-
-	public void sendTitleForHolyLand(Player player, String godName, Location location)
-	{
-		TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(this.getHolyLandName(location)));
 	}
 
 	private static String nullToEmpty(String text)
@@ -343,7 +333,7 @@ public class HolyLandManager implements Listener
 		long timeBefore = System.currentTimeMillis();
 
 		Date thisDate = new Date();
-		long maxMinutes = Gods.instance().settings().holyLand().deleteAbandonedAfterDays() * 24L * 60L;
+		long maxMinutes = ctx.settings().holyLand().deleteAbandonedAfterDays() * 24L * 60L;
 		List<String> paths = getAllLandPaths();
 		int removed = 0;
 
@@ -373,7 +363,7 @@ public class HolyLandManager implements Listener
 
 		long timeAfter = System.currentTimeMillis();
 
-		Gods.instance().logDebug("Traversed " + paths.size() + " Holy lands in " + (timeAfter - timeBefore) + " ms, removed " + removed + " abandoned");
+		ctx.plugin().logDebug("Traversed " + paths.size() + " Holy lands in " + (timeAfter - timeBefore) + " ms, removed " + removed + " abandoned");
 	}
 
 	public void removeHolyLandsForGod(String godName)
@@ -412,7 +402,7 @@ public class HolyLandManager implements Listener
 
 	public int getMaximumChunksForGod(String godName)
 	{
-		return (int) (GodManager.instance().getGodPower(godName) / 10 + 3);
+		return (int) (ctx.godManager().getGodPower(godName) / 10 + 3);
 	}
 
 	/** A believer built an altar here: claim the land for the god if it's free. */
@@ -425,7 +415,7 @@ public class HolyLandManager implements Listener
 
 		if(getClaimedChunksForGod(godName) >= getMaximumChunksForGod(godName))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotClaimMoreHolyland, ChatColor.RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotClaimMoreHolyland, ChatColor.RED, 0, "", 1);
 			return;
 		}
 
@@ -435,9 +425,9 @@ public class HolyLandManager implements Listener
 		int claimed = getClaimedChunksForGod(godName);
 		int max = getMaximumChunksForGod(godName);
 
-		LanguageManager.instance().setPlayerName(player.getName());
-		GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
-		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimed, Integer.toString(max), 20*5);
+		ctx.languageManager().setPlayerName(player.getName());
+		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
+		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimed, Integer.toString(max), 20*5);
 	}
 
 	/**
@@ -468,9 +458,9 @@ public class HolyLandManager implements Listener
 		int claimedAfter = getClaimedChunksForGod(godName);
 		int max = getMaximumChunksForGod(godName);
 
-		LanguageManager.instance().setPlayerName(player.getName());
-		GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
-		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimedAfter, Integer.toString(max), 20*5);
+		ctx.languageManager().setPlayerName(player.getName());
+		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
+		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimedAfter, Integer.toString(max), 20*5);
 	}
 
 	// ---------------------------------------------------------------------
@@ -595,14 +585,14 @@ public class HolyLandManager implements Listener
 		{
 			if (defenderWins)
 			{
-				GodManager.instance().godSayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandSuccess, 1);
-				GodManager.instance().godSayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandFailed, 1);
+				ctx.godManager().godSayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandSuccess, 1);
+				ctx.godManager().godSayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandFailed, 1);
 			}
 			else
 			{
 				setHolyLand(location, attackingGodName);
-				GodManager.instance().godSayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandFailed, 1);
-				GodManager.instance().godSayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandSuccess, 1);
+				ctx.godManager().godSayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandFailed, 1);
+				ctx.godManager().godSayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandSuccess, 1);
 			}
 		}
 
@@ -611,7 +601,7 @@ public class HolyLandManager implements Listener
 		// Only the attacker's attack ends; the defender may be attacking a land of its own
 		if (attackingGodName != null)
 		{
-			GodManager.instance().clearContestedHolyLandForGod(attackingGodName);
+			ctx.godManager().clearContestedHolyLandForGod(attackingGodName);
 		}
 	}
 
@@ -620,7 +610,7 @@ public class HolyLandManager implements Listener
 
 	private boolean isActiveIn(World world)
 	{
-		return Gods.instance().settings().holyLand().enabled() && world != null && Gods.instance().isEnabledInWorld(world);
+		return ctx.settings().holyLand().enabled() && world != null && ctx.plugin().isEnabledInWorld(world);
 	}
 
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -636,9 +626,9 @@ public class HolyLandManager implements Listener
 		{
 			return;
 		}
-		if (!PermissionsManager.instance().hasPermission(player, "gods.holyland"))
+		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
 		{
-			Gods.instance().logDebug(player.getName() + " does not have holyland permission");
+			ctx.plugin().logDebug(player.getName() + " does not have holyland permission");
 			return;
 		}
 
@@ -657,12 +647,12 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		if (Gods.instance().settings().holyLand().breakableBlocks().contains(event.getBlock().getType()))
+		if (ctx.settings().holyLand().breakableBlocks().contains(event.getBlock().getType()))
 		{
 			return;
 		}
 
-		String attackerGod = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String attackerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if ((attackerGod == null) || (!attackerGod.equals(godName)))
 		{
@@ -683,7 +673,7 @@ public class HolyLandManager implements Listener
 		{
 			if (event.getEntity() instanceof Enemy)
 			{
-				Gods.instance().logDebug("Prevented " + event.getEntityType() + " from spawning in Neutral land");
+				ctx.plugin().logDebug("Prevented " + event.getEntityType() + " from spawning in Neutral land");
 				event.setCancelled(true);
 			}
 			return;
@@ -692,31 +682,31 @@ public class HolyLandManager implements Listener
 		String godName = getGodAtHolyLandLocation(event.getLocation());
 		if (godName != null)
 		{
-			if (GodManager.instance().getDivineForceForGod(godName) == GodManager.GodType.NATURE)
+			if (ctx.godManager().getDivineForceForGod(godName) == GodManager.GodType.NATURE)
 			{
 				return;
 			}
 
-			if (event.getEntity().getType() == GodManager.instance().getHolyMobTypeForGod(godName))
+			if (event.getEntity().getType() == ctx.godManager().getHolyMobTypeForGod(godName))
 			{
 				return;
 			}
 
-			if (event.getEntity().getType() == GodManager.instance().getUnholyMobTypeForGod(godName))
+			if (event.getEntity().getType() == ctx.godManager().getUnholyMobTypeForGod(godName))
 			{
-				Gods.instance().logDebug("Prevented unholy mob " + event.getEntityType() + " from spawning in Holy Land of " + godName);
+				ctx.plugin().logDebug("Prevented unholy mob " + event.getEntityType() + " from spawning in Holy Land of " + godName);
 				event.setCancelled(true);
 				return;
 			}
 
-			if (GodManager.instance().getGodMobSpawning(godName))
+			if (ctx.godManager().getGodMobSpawning(godName))
 			{
 				return;
 			}
 
 			if (!isMobTypeAllowedToSpawn(event.getEntityType()))
 			{
-				Gods.instance().logDebug("Prevented banned " + event.getEntityType() + " from spawning in Holy Land of " + godName);
+				ctx.plugin().logDebug("Prevented banned " + event.getEntityType() + " from spawning in Holy Land of " + godName);
 				event.setCancelled(true);
 			}
 		}
@@ -747,7 +737,7 @@ public class HolyLandManager implements Listener
 		}
 
 		String defendingGodName = getGodAtHolyLandLocation(location);
-		String killerGodName = BelieverManager.instance().getGodForBeliever(killer.getUniqueId());
+		String killerGodName = ctx.believerManager().getGodForBeliever(killer.getUniqueId());
 
 		if (killerGodName == null || defendingGodName == null)
 		{
@@ -798,12 +788,12 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		String playerGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String playerGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		Material food = event.getItem().getType();
 
 		if (!holylandGodName.equals(playerGodName))
 		{
-			if (food != GodManager.instance().getUnholyFoodTypeForGod(holylandGodName))
+			if (food != ctx.godManager().getUnholyFoodTypeForGod(holylandGodName))
 			{
 				return;
 			}
@@ -815,7 +805,7 @@ public class HolyLandManager implements Listener
 		}
 		else
 		{
-			if (food != GodManager.instance().getHolyFoodTypeForGod(holylandGodName))
+			if (food != ctx.godManager().getHolyFoodTypeForGod(holylandGodName))
 			{
 				return;
 			}
@@ -840,7 +830,7 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		if (!PermissionsManager.instance().hasPermission(player, "gods.holyland"))
+		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
 		{
 			return;
 		}
@@ -877,8 +867,8 @@ public class HolyLandManager implements Listener
 
 				TitleManager.sendTitle(player, 1*20, 4*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
 
-				Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandKillsStatus, ChatColor.AQUA, String.valueOf(minutesLeft), attackerKillsNeeded, defenderKillsNeeded, 20);
-				Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandDesecrationStatus, ChatColor.AQUA, godTo, 0, desecration, 20);
+				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandKillsStatus, ChatColor.AQUA, String.valueOf(minutesLeft), attackerKillsNeeded, defenderKillsNeeded, 20);
+				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandDesecrationStatus, ChatColor.AQUA, godTo, 0, desecration, 20);
 				return;
 			}
 		}
@@ -890,14 +880,14 @@ public class HolyLandManager implements Listener
 
 		if ((godTo != null) && ((godFrom == null) || !godFrom.equals(godTo)))
 		{
-			String playerGod = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+			String playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 			if ((playerGod != null) && (playerGod.equals(godTo)))
 			{
 				TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.WHITE + nullToEmpty(this.getHolyLandName(to)));
 			}
 			else
 			{
-				TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(GodManager.instance().getGodDescription(godTo)));
+				TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(ctx.godManager().getGodDescription(godTo)));
 			}
 		}
 		else if ((godFrom != null) && (godTo == null))
@@ -926,7 +916,7 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		if (player.isOp() || !PermissionsManager.instance().hasPermission(player, "gods.holyland"))
+		if (player.isOp() || !ctx.permissionsManager().hasPermission(player, "gods.holyland"))
 		{
 			return;
 		}
@@ -938,11 +928,11 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if ((godName == null) || (!targetLandGodName.equals(godName)))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.TeleportIntoHolylandNotAllowed, ChatColor.DARK_RED, 0, targetLandGodName, 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.TeleportIntoHolylandNotAllowed, ChatColor.DARK_RED, 0, targetLandGodName, 1);
 			event.setCancelled(true);
 		}
 	}
@@ -953,7 +943,7 @@ public class HolyLandManager implements Listener
 		Player player = event.getPlayer();
 		Location location = player.getLocation();
 
-		if (!isActiveIn(location.getWorld()) || !PermissionsManager.instance().hasPermission(player, "gods.holyland"))
+		if (!isActiveIn(location.getWorld()) || !ctx.permissionsManager().hasPermission(player, "gods.holyland"))
 		{
 			return;
 		}
@@ -969,7 +959,7 @@ public class HolyLandManager implements Listener
 
 		if (godName != null)
 		{
-			TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(GodManager.instance().getGodDescription(godName)));
+			TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(ctx.godManager().getGodDescription(godName)));
 		}
 		else
 		{

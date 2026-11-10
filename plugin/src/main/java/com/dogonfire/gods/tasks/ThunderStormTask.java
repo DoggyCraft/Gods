@@ -6,14 +6,15 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.HolyPowerManager;
+import com.dogonfire.gods.GodsContext;
 
 public class ThunderStormTask extends Task {
 	private long stopTime;
 	private Player player;
 	private Random random = new Random();
 
-	public ThunderStormTask(Player player, long stopTime) {
+	public ThunderStormTask(GodsContext ctx, Player player, long stopTime) {
+		super(ctx);
 		this.stopTime = stopTime;
 		this.player = player;
 	}
@@ -27,7 +28,7 @@ public class ThunderStormTask extends Task {
 
 		this.player.getWorld().setStorm(true);
 
-		Entity[] entities = HolyPowerManager.instance().getNearbyLivingEntities(this.player.getLocation(), 20.0D);
+		Entity[] entities = ctx.holyPowerManager().getNearbyLivingEntities(this.player.getLocation(), 20.0D);
 
 		if (entities.length > 0) {
 			Entity targetEntity = entities[this.random.nextInt(entities.length)];

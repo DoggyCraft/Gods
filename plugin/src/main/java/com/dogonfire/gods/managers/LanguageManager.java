@@ -15,20 +15,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 
 public class LanguageManager
 {
 	public static enum LANGUAGESTRING {
 		GodToBelieverPrayerRecentItemBlessing, GodToBelieverPrayerWhenNoItemNeed, GodToBelieverPrayerTooSoon, GodToBelieversClaimedHolyLand, EnterHolyLandInfoYourGod, EnterHolyLandInfoOtherGod, EnterWildernessInfo, EnterNeutralLandInfo, EnterContestedLandInfo, PrivateGodNoAccess, DivorcedYou, MarrigeLovesYou, MarrigeYouLove, HolylandSize, YouLeftReligion, AttackHelp, GodsHelp, AltarHelp, PrayForHelp, DescriptionHelp, FollowersHelp, InviteHelp, PrayAlterHelp, PrayToBlacklistedGodNotAllowed, BlessingsNotAllowed, CursesNotAllowed, CannotClaimMoreHolyland, TeleportIntoHolylandNotAllowed, AltarPrayingNotAllowed, YouEarnedPowerBySlayingHeathen, YouEarnedPowerBySlayingEnemy, PvPLostPower, ConfirmChangeToOtherReligion, CannotPraySoSoon, CannotChangeGodSoSoon, CannotBuildAltarToOtherGods, InfoHelp, YourPrayerPower, YouHealedBeings, RejectedJoinOffer, PrayedForBlessing, PrayedForQuest, PrayedForItem, PrayedForHealth, PrayedForHolyArtifact, NotEnoughPrayerPower, NowHunting, NotHunting, InvalidGodName, InvalidAltarSign, BlessingsHelp, CursesHelp, BuildAltarNotAllowed, CreateGodNotAllowed, SacrificeHelp, QuestTargetHelp, QuestTargetRange, BelieverPower, AttackingHolyLandsHelp, DefendingHolyLandsHelp, ContestedLandKillsStatus, ContestedLandDesecrationStatus, GodToBelieversDefendHolyLandSuccess, GodToBelieversDefendHolyLandFailed, GodToBelieversAttackHolyLandSuccess, GodToBelieversAttackHolyLandFailed, GodToBelieversAttackStarted, GodToBelieversAttackProgress, GodToBelieversAttackStatus, GodToBelieverQuestionHelp, GodToBelieverNoQuestion, GodToBelieversNewPlayerAccepted, GodToPriestPriestAccepted, GodToPriestBlessedPlayerSet, GodToPriestBlessedPlayerUnset, GodToPriestCursedPlayerSet, GodToPriestCursedPlayerUnset, GodToPriestEatFoodType, GodToPriestNotEatFoodType, GodToPriestSlayMobType, GodToPriestNotSlayMobType, GodToPriestUseBible, GodToPriestUseProphecies, GodToPriestBelieverKilledDeclareWarQuestion, GodToBelieversBlessedPlayerSet, GodToBelieversBlessedPlayerUnset, GodToBelieversCursedPlayerSet, GodToBelieversCursedPlayerUnset, GodToBelieverOfferPriest, GodToBelieverPraying, GodToBelieverMarriageProposal, GodToBelieverAcceptedMarriageProposal, GodToBelieverAcceptedYourMarriageProposal, GodToBelieverMarriageTokenPickup, GodToBelieverMarriagePartnerTokenPickup, GodToBelieverMarried, GodToBelieverMarriedCouple, GodToBelieversSlayDragonQuestStarted, GodToBelieversSlayDragonQuestProgress, GodToBelieversSlayDragonQuestStatus, GodToBelieversSlayDragonQuestCompleted, GodToBelieversSlayDragonQuestFailed, GodToBelieversSlayQuestStarted, GodToBelieversSlayQuestProgress, GodToBelieversSlayQuestStatus, GodToBelieversSlayQuestCompleted, GodToBelieversSlayQuestFailed, GodToBelieversConvertQuestStarted, GodToBelieversConvertQuestProgress, GodToBelieversConvertQuestStatus, GodToBelieversConvertQuestCompleted, GodToBelieversConvertQuestFailed, GodToBelieversBuildAltarsQuestStarted, GodToBelieversBuildAltarsQuestProgress, GodToBelieversBuildAltarsQuestStatus, GodToBelieversBuildAltarsQuestCompleted, GodToBelieversBuildAltarsQuestFailed, GodToBelieversBuildTowerQuestStarted, GodToBelieversBuildTowerQuestProgress, GodToBelieversBuildTowerQuestStatus, GodToBelieversBuildTowerQuestCompleted, GodToBelieversBuildTowerQuestFailed, GodToBelieversSacrificeQuestStarted, GodToBelieversSacrificeQuestProgress, GodToBelieversSacrificeQuestStatus, GodToBelieversSacrificeQuestCompleted, GodToBelieversSacrificeQuestFailed, GodToBelieversHolyFeastQuestStarted, GodToBelieversHolyFeastQuestProgress, GodToBelieversHolyFeastQuestStatus, GodToBelieversHolyFeastQuestCompleted, GodToBelieversHolyFeastQuestFailed, GodToBelieversHolyBattleQuestStarted, GodToBelieversHolyBattleQuestProgress, GodToBelieversHolyBattleQuestStatus, GodToBelieversHolyBattleQuestCompleted, GodToBelieversHolyBattleQuestFailed, GodToBelieversGiveItemsQuestStarted, GodToBelieversGiveBiblesQuestProgress, GodToBelieversGiveItemsQuestStatus, GodToBelieversGiveItemsQuestCompleted, GodToBelieversGiveItemsQuestFailed, GodToBelieversBurnBiblesQuestStarted, GodToBelieversBurnBiblesQuestProgress, GodToBelieversBurnBiblesQuestStatus, GodToBelieversBurnBiblesQuestCompleted, GodToBelieversBurnBiblesQuestFailed, GodToBelieversCrusadeQuestStarted, GodToBelieversCrusadeQuestProgress, GodToBelieversCrusadeQuestStatus, GodToBelieversCrusadeQuestCompleted, GodToBelieversCrusadeQuestFailed, GodToBelieversPVPRevengeQuestStarted, GodToBelieversPVPRevengeQuestProgress, GodToBelieversPVPRevengeQuestStatus, GodToBelieversPVPRevengeQuestCompleted, GodToBelieversPVPRevengeQuestFailed, GodToBelieversPilgrimageQuestStarted, GodToBelieversPilgrimageQuestProgress, GodToBelieversPilgrimageQuestStatus, GodToBelieversPilgrimageQuestCompleted, GodToBelieversPilgrimageQuestFailed, GodToBelieversClaimHolyLandQuestStarted, GodToBelieversClaimHolyLandQuestProgress, GodToBelieversClaimHolyLandQuestStatus, GodToBelieversClaimHolyLandQuestCompleted, GodToBelieversClaimHolyLandQuestFailed, GodToBelieversGetHolyArtifactQuestStarted, GodToBelieversGetHolyArtifactQuestProgress, GodToBelieversGetHolyArtifactQuestHelp, GodToBelieversGetHolyArtifactQuestRange, GodToBelieversGetHolyArtifactQuestStatus, GodToBelieversGetHolyArtifactQuestCompleted, GodToBelieversGetHolyArtifactOtherQuestFailed, GodToBelieversGetHolyArtifactQuestFailed, GodToBelieversHolywarQuestStarted, GodToBelieversHolywarQuestProgress, GodToBelieversHolywarQuestHelp, GodToBelieversHolywarQuestRange, GodToBelieversHolywarQuestStatus, GodToBelieversHolywarQuestCompleted, GodToBelieversHolywarOtherQuestFailed, GodToBelieversHolywarQuestFailed, GodToBelieversRemovedPriest, GodToBelieverPriestRejected, GodToBelieverAltarBuilt, GodToBelieversPlayerJoinedReligion, GodToBelieversPlayerLeftReligion, GodToBelieverRandomExaltedSpeech, GodToBelieverRandomPleasedSpeech, GodToBelieverRandomNeutralSpeech, GodToBelieverRandomDispleasedSpeech, GodToBelieverRandomAngrySpeech, GodToBelieversLostBeliever, GodToPlayerBlessed, GodToPlayerCursed, GodToPlayerInvite, GodToPlayerAcceptedInvitation, GodToBelieverCursedAngry, GodToBelieverGoodSacrifice, GodToBelieverMehSacrifice, GodToBelieverBadSacrifice, GodToBelieverHolyFoodSacrifice, GodToBelieversPlayerCursed, GodToBelieversPlayerBlessed, GodToBelieverItemBlessing, GodToBelieverHolyArtifactBlessing, GodToBelieverHealthBlessing, GodToBelieverSmiteBlessing, GodToBelieversEatFoodBlessing, GodToBelieversNotEatFoodCursing, GodToBelieversSlayMobBlessing, GodToBelieversNotSlayMobCursing, GodToBelieversPriestAccepted, GodToBelieversAltarDestroyed, GodToBelieversAltarDestroyedByPlayer, GodToBelieversWar, GodToBelieversAlliance, GodToBelieversWarCancelled, GodToBelieversAllianceCancelled, GodToBelieversSetHome, GodToBelieversSacrificeItemType, GodToBelieversAllPropheciesFulfilled, GodToBelieversProphecyFulfilled, GodToBelieversJustMarried, ProphecyHeaderBibleText, UnholyMobWillBeSlainFutureProphecyBibleText, UnholyMobWillBeSlainPastProphecyBibleText, StormProphecyEffectPastBibleText, StormProphecyEffectFutureBibleText, HolyFoodRainProphecyEffectBibleText, DarknessProphecyEffectBibleText, HeathenWillBeSlainProphecyEffectBibleText, BelieverWillLeaveReligionProphecyBibleText, DragonBossWillBeSlainPastProphecyBibleText, DragonBossWillBeSlainFutureProphecyBibleText, DragonBossProphecyEffectPastBibleText, DragonBossProphecyEffectFutureBibleText, DefaultBibleText1, DefaultBibleText2, DefaultBibleText3, DefaultBibleText4, DefaultBibleText5, DefaultBibleText6, DefaultBibleText7;
-	}
-
-	private static LanguageManager instance;
-
-	public static LanguageManager instance()
-	{
-		if (instance == null)
-			instance = new LanguageManager();
-		return instance;
 	}
 
 	private String								generalLanguageFileName	= null;
@@ -38,8 +30,11 @@ public class LanguageManager
 	private String								playerName;
 	private String								type;
 
-	private LanguageManager()
+	private final GodsContext ctx;
+
+	public LanguageManager(GodsContext ctx)
 	{
+		this.ctx = ctx;
 	}
 
 	public int getAmount()
@@ -73,7 +68,7 @@ public class LanguageManager
 
 		if (text == null)
 		{
-			Gods.instance().logDebug("WARNING: No language string in " + this.generalLanguageFileName + " for the info type '" + languageString.name() + "'");
+			ctx.plugin().logDebug("WARNING: No language string in " + this.generalLanguageFileName + " for the info type '" + languageString.name() + "'");
 			return languageString.name() + " MISSING in " + this.generalLanguageFileName;
 		}
 		return parseString(text, defaultColor);
@@ -89,7 +84,7 @@ public class LanguageManager
 		String itemTypeName = configuration.getString("Items." + material.name());
 		if (itemTypeName == null)
 		{
-			Gods.instance().logDebug("WARNING: No language string in " + this.generalLanguageFileName + " for the item '" + material.name() + "'");
+			ctx.plugin().logDebug("WARNING: No language string in " + this.generalLanguageFileName + " for the item '" + material.name() + "'");
 			return material.name();
 		}
 		return itemTypeName;
@@ -97,7 +92,7 @@ public class LanguageManager
 
 	private String getLanguageFileForGod(String godName)
 	{
-		return GodManager.instance().getLanguageFileForGod(godName);
+		return ctx.godManager().getLanguageFileForGod(godName);
 	}
 
 	public String getLanguageString(String godName, LANGUAGESTRING type)
@@ -106,7 +101,7 @@ public class LanguageManager
 		FileConfiguration languageConfig = this.languageConfigs.get(languageFileName);
 		if (languageConfig == null)
 		{
-			Gods.instance().log("No language file " + languageFileName + " loaded for " + godName + "!");
+			ctx.plugin().log("No language file " + languageFileName + " loaded for " + godName + "!");
 			return "MISSING LANGUAGEFILE " + type.name();
 		}
 
@@ -114,7 +109,7 @@ public class LanguageManager
 
 		if (strings.isEmpty())
 		{
-			Gods.instance().log("No language strings found for " + godName + "," + type.name() + "!");
+			ctx.plugin().log("No language strings found for " + godName + "," + type.name() + "!");
 			return type.name() + " MISSING in " + languageFileName;
 		}
 
@@ -133,7 +128,7 @@ public class LanguageManager
 		List<String> strings = languageConfig.getStringList(type.name());
 		if (strings.size() == 0)
 		{
-			Gods.instance().log("No language strings found for " + type.name() + "!");
+			ctx.plugin().log("No language strings found for " + type.name() + "!");
 			return type.name() + " MISSING in " + getLanguageFileForGod(godName);
 		}
 		String text = (String) strings.toArray()[this.random.nextInt(strings.size())];
@@ -146,7 +141,7 @@ public class LanguageManager
 		String mobTypeName = this.languageConfigs.get(this.generalLanguageFileName).getString("Mobs." + type.name());
 		if (mobTypeName == null)
 		{
-			Gods.instance().logDebug("WARNING: No language string in " + this.generalLanguageFileName + " for the mob type '" + type.name() + "'");
+			ctx.plugin().logDebug("WARNING: No language string in " + this.generalLanguageFileName + " for the mob type '" + type.name() + "'");
 			return type.name();
 		}
 		return mobTypeName;
@@ -169,7 +164,7 @@ public class LanguageManager
 	 */
 	public void load()
 	{
-		String language = Gods.instance().settings().general().language();
+		String language = ctx.settings().general().language();
 		this.generalLanguageFileName = language + "_general.yml";
 		this.languageConfigs.clear();
 
@@ -189,7 +184,7 @@ public class LanguageManager
 
 	private YamlConfiguration loadBundledLanguageFile(String fileName)
 	{
-		InputStream stream = Gods.instance().getResource("lang/" + fileName);
+		InputStream stream = ctx.plugin().getResource("lang/" + fileName);
 		if (stream == null)
 		{
 			return null;
@@ -209,10 +204,10 @@ public class LanguageManager
 		}
 		YamlConfiguration defaults = bundled != null ? bundled : english;
 
-		File languageConfigFile = new File(Gods.instance().getDataFolder(), "lang/" + fileName);
+		File languageConfigFile = new File(ctx.plugin().getDataFolder(), "lang/" + fileName);
 		if (!languageConfigFile.exists() && bundled != null)
 		{
-			Gods.instance().saveResource("lang/" + fileName, false);
+			ctx.plugin().saveResource("lang/" + fileName, false);
 		}
 
 		FileConfiguration languageConfig;
@@ -225,7 +220,7 @@ public class LanguageManager
 			}
 			catch (Exception ex)
 			{
-				Gods.instance().log("Could not load " + languageConfigFile + ": " + ex.getMessage());
+				ctx.plugin().log("Could not load " + languageConfigFile + ": " + ex.getMessage());
 			}
 			if (defaults != null)
 			{
@@ -234,18 +229,18 @@ public class LanguageManager
 		}
 		else if (defaults != null)
 		{
-			Gods.instance().log("Language file " + fileName + " was not found. Using english.");
+			ctx.plugin().log("Language file " + fileName + " was not found. Using english.");
 			languageConfig = defaults;
 		}
 		else
 		{
-			Gods.instance().log("Language file " + fileName + " was not found, and there is no english one either!");
+			ctx.plugin().log("Language file " + fileName + " was not found, and there is no english one either!");
 			return;
 		}
 
 		this.languageConfigs.put(fileName, languageConfig);
 
-		Gods.instance().logDebug("Loaded " + fileName + ": " + languageConfig.getString("Version.Name") + " by " + languageConfig.getString("Version.Author") + " version " + languageConfig.getString("Version.Version"));
+		ctx.plugin().logDebug("Loaded " + fileName + ": " + languageConfig.getString("Version.Name") + " by " + languageConfig.getString("Version.Author") + " version " + languageConfig.getString("Version.Version"));
 	}
 
 	public String parseString(String id)
@@ -253,7 +248,7 @@ public class LanguageManager
 		String string = id;
 		if (string.contains("$ServerName"))
 		{
-			string = string.replace("$ServerName", ChatColor.GOLD + Gods.instance().settings().general().serverName() + ChatColor.WHITE + ChatColor.BOLD);
+			string = string.replace("$ServerName", ChatColor.GOLD + ctx.settings().general().serverName() + ChatColor.WHITE + ChatColor.BOLD);
 		}
 		if (string.contains("$PlayerName"))
 		{
@@ -275,7 +270,7 @@ public class LanguageManager
 		String string = id;
 		if (string.contains("$ServerName"))
 		{
-			string = string.replace("$ServerName", ChatColor.GOLD + Gods.instance().settings().general().serverName() + defaultColor);
+			string = string.replace("$ServerName", ChatColor.GOLD + ctx.settings().general().serverName() + defaultColor);
 		}
 		if (string.contains("$PlayerName"))
 		{
@@ -297,7 +292,7 @@ public class LanguageManager
 		String string = id;
 		if (string.contains("$ServerName"))
 		{
-			string = string.replace("$ServerName", Gods.instance().settings().general().serverName());
+			string = string.replace("$ServerName", ctx.settings().general().serverName());
 		}
 		if (string.contains("$PlayerName"))
 		{
@@ -323,7 +318,7 @@ public class LanguageManager
 	{
 		if (name == null)
 		{
-			Gods.instance().logDebug("WARNING: Setting null playername");
+			ctx.plugin().logDebug("WARNING: Setting null playername");
 		}
 		this.playerName = name;
 	}
@@ -332,7 +327,7 @@ public class LanguageManager
 	{
 		if (t == null)
 		{
-			Gods.instance().logDebug("WARNING: Setting null type");
+			ctx.plugin().logDebug("WARNING: Setting null type");
 			throw new Exception("WARNING: Setting null type");
 		}
 		this.type = t;

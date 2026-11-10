@@ -4,6 +4,8 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import com.dogonfire.gods.GodsContext;
+
 /**
  * Speeds time up until night falls, then keeps it night until stopTime (System.currentTimeMillis()).
  */
@@ -16,8 +18,9 @@ public class TaskCallMoon extends Task
 	private Player				player;
 	private World				world;
 
-	public TaskCallMoon(Player player, long stopTime)
+	public TaskCallMoon(GodsContext ctx, Player player, long stopTime)
 	{
+		super(ctx);
 		this.stopTime = stopTime;
 		this.player = player;
 		this.world = player.getWorld();

@@ -73,11 +73,6 @@ public final class DataFile
 	}
 
 	/** Whether {@link #load()} has been called (successfully or not) */
-	public boolean isLoaded()
-	{
-		return this.loaded;
-	}
-
 	/** True while the file on disk could not be read: it is then never written over */
 	public boolean isReadOnly()
 	{

@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 
 /**
  * Chat formatting, and a thread-safe snapshot of the religion data that the
@@ -16,19 +16,10 @@ import com.dogonfire.gods.Gods;
  * configurations that must only be touched on the main thread, so the chat
  * thread reads this cache instead. It is filled on the main thread: on join,
  * when a believer's god or chat mode changes in BelieverManager, and
- * periodically for everyone online (see ChatListener).
+ * periodically for everyone online (see Gods#onEnable).
  */
 public class ChatManager
 {
-	private static ChatManager instance;
-
-	public static ChatManager instance()
-	{
-		if (instance == null)
-			instance = new ChatManager();
-		return instance;
-	}
-
 	/** What the chat handler knows about one online player. */
 	public static final class ChatInfo
 	{
@@ -48,13 +39,19 @@ public class ChatManager
 		}
 	}
 
+	/** How often the cache is refreshed for everyone online, in ticks */
+	public static final long			REFRESH_TICKS	= 100L;
+
 	private static final ChatInfo		NO_GOD		= new ChatInfo(null, false, false, ChatColor.WHITE, 0);
 
 	private final String				chatTag		= "[GOD]";
 	private final Map<UUID, ChatInfo>	chatInfos	= new ConcurrentHashMap<UUID, ChatInfo>();
 
-	private ChatManager()
+	private final GodsContext ctx;
+
+	public ChatManager(GodsContext ctx)
 	{
+		this.ctx = ctx;
 	}
 
 	/**
@@ -82,36 +79,36 @@ public class ChatManager
 	/** Main thread only: reads the believer and god data for an online player. */
 	public void refresh(UUID playerId)
 	{
-		if (Gods.instance() == null || Gods.instance().getServer().getPlayer(playerId) == null)
+		if (ctx.plugin().getServer().getPlayer(playerId) == null)
 		{
 			this.chatInfos.remove(playerId);
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(playerId);
+		String godName = ctx.believerManager().getGodForBeliever(playerId);
 
 		if (godName == null)
 		{
-			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, BelieverManager.instance().getPrayerPower(playerId)));
+			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, ctx.believerManager().getPrayerPower(playerId)));
 			return;
 		}
 
-		boolean religionChat = BelieverManager.instance().getReligionChat(playerId);
-		List<UUID> priests = GodManager.instance().getPriestsForGod(godName);
+		boolean religionChat = ctx.believerManager().getReligionChat(playerId);
+		List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
 		boolean priest = priests != null && priests.contains(playerId);
 
-		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, GodManager.instance().getColorForGod(godName), BelieverManager.instance().getPrayerPower(playerId)));
+		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godManager().getColorForGod(godName), ctx.believerManager().getPrayerPower(playerId)));
 	}
 
 	/** Main thread only: refreshes everyone online. */
 	public void refreshAll()
 	{
-		for (Player player : Gods.instance().getServer().getOnlinePlayers())
+		for (Player player : ctx.plugin().getServer().getOnlinePlayers())
 		{
 			refresh(player.getUniqueId());
 		}
 
-		this.chatInfos.keySet().removeIf(playerId -> Gods.instance().getServer().getPlayer(playerId) == null);
+		this.chatInfos.keySet().removeIf(playerId -> ctx.plugin().getServer().getPlayer(playerId) == null);
 	}
 
 	public void remove(UUID playerId)

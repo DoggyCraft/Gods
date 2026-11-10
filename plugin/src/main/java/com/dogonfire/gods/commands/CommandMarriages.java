@@ -7,14 +7,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.MarriageManager;
 
 public class CommandMarriages extends GodsCommand
 {
-	protected CommandMarriages()
+	CommandMarriages(GodsContext ctx)
 	{
-		super("marriages");
+		super(ctx, "marriages");
 		this.permission = "gods.marriages";
 		this.description = "List the most loving married couples";
 	}
@@ -22,7 +22,7 @@ public class CommandMarriages extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!Gods.instance().settings().marriage().enabled())
+		if (!ctx.settings().marriage().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Marriages are not enabled on this server");
 			return;
@@ -38,13 +38,13 @@ public class CommandMarriages extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		List<MarriageManager.MarriedCouple> couples = MarriageManager.instance().getMarriedCouples();
+		List<MarriageManager.MarriedCouple> couples = ctx.marriageManager().getMarriedCouples();
 		if (couples.size() == 0)
 		{
 			sender.sendMessage("There are no married couples yet!");
 			return;
 		}
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Married Couples in " + Gods.instance().settings().general().serverName() + " ---------");
+		sender.sendMessage(ChatColor.YELLOW + "--------- The Married Couples in " + ctx.settings().general().serverName() + " ---------");
 		int l = couples.size();
 
 		List<MarriageManager.MarriedCouple> couplesList = couples;
@@ -77,8 +77,8 @@ public class CommandMarriages extends GodsCommand
 				date = minutes + " min ago";
 			}
 
-			String player1Name = Gods.instance().getServer().getOfflinePlayer(couple.player1Id).getName();
-			String player2Name = Gods.instance().getServer().getOfflinePlayer(couple.player2Id).getName();
+			String player1Name = ctx.plugin().getServer().getOfflinePlayer(couple.player1Id).getName();
+			String player2Name = ctx.plugin().getServer().getOfflinePlayer(couple.player2Id).getName();
 
 			if (sender != null)
 			{
@@ -97,7 +97,7 @@ public class CommandMarriages extends GodsCommand
 			}
 			else
 			{
-				Gods.instance().log(String.format("%-30s", new StringBuilder(player1Name).append(" & ").append(player2Name).append(" (").append(couple.godName).append(")").toString()) + ChatColor.AQUA
+				ctx.plugin().log(String.format("%-30s", new StringBuilder(player1Name).append(" & ").append(player2Name).append(" (").append(couple.godName).append(")").toString()) + ChatColor.AQUA
 						+ String.format("%-18s", new StringBuilder().append(" Loved ").append(ChatColor.GOLD).append(date).toString()));
 			}
 			n++;
@@ -109,8 +109,8 @@ public class CommandMarriages extends GodsCommand
 		{
 			for (MarriageManager.MarriedCouple couple : couples)
 			{
-				String player1Name = Gods.instance().getServer().getOfflinePlayer(couple.player1Id).getName();
-				String player2Name = Gods.instance().getServer().getOfflinePlayer(couple.player2Id).getName();
+				String player1Name = ctx.plugin().getServer().getOfflinePlayer(couple.player1Id).getName();
+				String player2Name = ctx.plugin().getServer().getOfflinePlayer(couple.player2Id).getName();
 
 				if ((couple.player1Id.equals(player.getUniqueId())) || (couple.player2Id.equals(player.getUniqueId())))
 				{

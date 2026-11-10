@@ -4,14 +4,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandTogglePVP extends GodsCommand
 {
-	protected CommandTogglePVP()
+	CommandTogglePVP(GodsContext ctx)
 	{
-		super("pvp");
+		super(ctx, "pvp");
 		this.permission = "gods.priest.pvp";
 		this.description = "Toggle PvP for your religion";
 		this.priestOnly = true;
@@ -30,22 +29,22 @@ public class CommandTogglePVP extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!GodManager.instance().isPriest(player.getUniqueId()))
+		if (!ctx.godManager().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(stringPreistOnly);
 			return;
 		}
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		boolean pvp = GodManager.instance().getGodPvP(godName);
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		boolean pvp = ctx.godManager().getGodPvP(godName);
 		if (pvp)
 		{
 			sender.sendMessage(ChatColor.AQUA + "You set PvP for your religion to " + ChatColor.YELLOW + " disabled");
-			GodManager.instance().setGodPvP(godName, false);
+			ctx.godManager().setGodPvP(godName, false);
 		}
 		else
 		{
 			sender.sendMessage(ChatColor.AQUA + "You set PvP for your religion to " + ChatColor.YELLOW + " enabled");
-			GodManager.instance().setGodPvP(godName, true);
+			ctx.godManager().setGodPvP(godName, true);
 		}
 	}
 

@@ -1,14 +1,23 @@
 package com.dogonfire.gods.tasks;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 
-public abstract class Task implements Runnable {
+/** A short task run once (or rescheduling itself until it is done) through the Bukkit scheduler */
+public abstract class Task implements Runnable
+{
+	protected final GodsContext ctx;
 
-	protected Gods getPlugin() {
-		return Gods.instance();
+	protected Task(GodsContext ctx)
+	{
+		this.ctx = ctx;
+	}
+
+	protected Gods getPlugin()
+	{
+		return this.ctx.plugin();
 	}
 
 	@Override
 	public abstract void run();
-
 }

@@ -11,15 +11,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandListGods extends GodsCommand
 {
-	protected CommandListGods()
+	CommandListGods(GodsContext ctx)
 	{
-		super("list");
+		super(ctx, "list");
 		this.permission = "gods.list";
 		this.description = "List the Gods of this server";
 	}
@@ -41,12 +40,12 @@ public class CommandListGods extends GodsCommand
 		List<God> gods = new ArrayList<God>();
 		String playerGod = null;
 
-		Set<String> list = GodManager.instance().getTopGods();
+		Set<String> list = ctx.godManager().getTopGods();
 		for (String godName : list)
 		{
-			int power = (int) GodManager.instance().getGodPower(godName);
+			int power = (int) ctx.godManager().getGodPower(godName);
 
-			int believers = BelieverManager.instance().getBelieversForGod(godName).size();
+			int believers = ctx.believerManager().getBelieversForGod(godName).size();
 			if (believers > 0)
 			{
 				gods.add(new God(godName, power, believers));
@@ -55,12 +54,12 @@ public class CommandListGods extends GodsCommand
 
 		if (gods.size() == 0)
 		{
-			sender.sendMessage(ChatColor.GOLD + "There are no Gods in " + Gods.instance().settings().general().serverName() + "!");
+			sender.sendMessage(ChatColor.GOLD + "There are no Gods in " + ctx.settings().general().serverName() + "!");
 			return;
 		}
 
-		playerGod = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Gods of " + Gods.instance().settings().general().serverName() + " ---------");
+		playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		sender.sendMessage(ChatColor.YELLOW + "--------- The Gods of " + ctx.settings().general().serverName() + " ---------");
 
 		Collections.sort(gods, new TopGodsComparator());
 
@@ -77,7 +76,7 @@ public class CommandListGods extends GodsCommand
 
 		for (God god : topGods)
 		{
-			String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { GodManager.instance().getTitleForGod(god.name) });
+			String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godManager().getTitleForGod(god.name) });
 			if (sender != null)
 			{
 				if ((playerGod != null) && (god.name.equals(playerGod)))
@@ -95,7 +94,7 @@ public class CommandListGods extends GodsCommand
 			}
 			else
 			{
-				Gods.instance().log(String.format("%2d", new Object[] { Integer.valueOf(n) }) + " - " + fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Mood ").append(GodManager.instance().getExactMoodForGod(god.name)).toString())
+				ctx.plugin().log(String.format("%2d", new Object[] { Integer.valueOf(n) }) + " - " + fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Mood ").append(ctx.godManager().getExactMoodForGod(god.name)).toString())
 						+ String.format("%-2s", new StringBuilder().append(" Power ").append(god.power).toString()) + String.format("%-2s", new StringBuilder().append(" Believers ").append(god.believers).toString()));
 			}
 			n++;
@@ -107,7 +106,7 @@ public class CommandListGods extends GodsCommand
 		{
 			for (God god : gods)
 			{
-				String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { GodManager.instance().getTitleForGod(god.name) });
+				String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godManager().getTitleForGod(god.name) });
 				if ((playerGod != null) && (god.name.equals(playerGod)))
 				{
 					playerGodShown = true;
@@ -118,7 +117,7 @@ public class CommandListGods extends GodsCommand
 		}
 		if (sender != null)
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InfoHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g info <godname>", 80);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InfoHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g info <godname>", 80);
 		}
 
 	}

@@ -10,17 +10,17 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class GodsTabCompleter implements TabCompleter
 {
-	private static GodsTabCompleter instance;
+	private final GodsContext			ctx;
+	private final GodsCommandExecuter	executer;
 
-	public static GodsTabCompleter instance()
+	public GodsTabCompleter(GodsContext ctx, GodsCommandExecuter executer)
 	{
-		if (instance == null)
-			instance = new GodsTabCompleter();
-		return instance;
+		this.ctx = ctx;
+		this.executer = executer;
 	}
 
 	@Override
@@ -37,9 +37,9 @@ public class GodsTabCompleter implements TabCompleter
 
 		if (args.length == 1)
 		{
-			boolean isPriest = GodManager.instance().isPriest(player.getUniqueId());
+			boolean isPriest = ctx.godManager().isPriest(player.getUniqueId());
 			List<String> commands = new ArrayList<String>();
-			for (GodsCommand command : GodsCommandExecuter.instance().getCommands())
+			for (GodsCommand command : this.executer.getCommands())
 			{
 				if (command.isAvailableTo(player, isPriest))
 				{
@@ -50,7 +50,7 @@ public class GodsTabCompleter implements TabCompleter
 		}
 		else if (args.length == 2 || (args.length == 3 && args[0].equalsIgnoreCase("setpriest")))
 		{
-			GodsCommand command = GodsCommandExecuter.instance().getCommand(args[0]);
+			GodsCommand command = this.executer.getCommand(args[0]);
 			if (command == null || !command.hasPermission(player))
 			{
 				return result;
@@ -77,7 +77,7 @@ public class GodsTabCompleter implements TabCompleter
 			case "war":
 			case "followers":
 			case "info":
-				options.addAll(GodManager.instance().getAllGods());
+				options.addAll(ctx.godManager().getAllGods());
 				break;
 			case "setpriest":
 				if (args.length == 3)
@@ -85,7 +85,7 @@ public class GodsTabCompleter implements TabCompleter
 					// Player names
 					return null;
 				}
-				options.addAll(GodManager.instance().getAllGods());
+				options.addAll(ctx.godManager().getAllGods());
 				break;
 			case "marry":
 			case "invite":

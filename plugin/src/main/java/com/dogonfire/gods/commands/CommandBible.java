@@ -4,16 +4,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.HolyBookManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandBible extends GodsCommand
 {
-	protected CommandBible()
+	CommandBible(GodsContext ctx)
 	{
-		super("bible");
+		super(ctx, "bible");
 		this.permission = "gods.priest.bible";
 		this.description = "Produce a copy of the Holy Book of your religion";
 		this.priestOnly = true;
@@ -22,7 +19,7 @@ public class CommandBible extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!Gods.instance().settings().bibles().enabled())
+		if (!ctx.settings().bibles().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Bibles are not enabled on this server");
 			return;
@@ -38,23 +35,23 @@ public class CommandBible extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
 
-		if (!GodManager.instance().isPriest(player.getUniqueId()))
+		if (!ctx.godManager().isPriest(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.RED + "Only your priest can produce the Holy Book");
 			return;
 		}
-		if (!HolyBookManager.instance().giveBible(godName, player.getName()))
+		if (!ctx.holyBookManager().giveBible(godName, player.getName()))
 		{
 			sender.sendMessage(ChatColor.RED + "Could not produce a Holy Book for " + godName);
 			return;
 		}
-		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + HolyBookManager.instance().getBibleTitle(godName) + ChatColor.AQUA + "!");
+		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + ctx.holyBookManager().getBibleTitle(godName) + ChatColor.AQUA + "!");
 	}
 }

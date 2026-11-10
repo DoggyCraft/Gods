@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class TaskGiveItem extends Task {
@@ -18,7 +18,8 @@ public class TaskGiveItem extends Task {
 	private String godName = null;
 	private boolean speak = false;
 
-	public TaskGiveItem(String god, Player p, Material material, boolean godspeak) {
+	public TaskGiveItem(GodsContext ctx, String god, Player p, Material material, boolean godspeak) {
+		super(ctx);
 		this.player = p;
 		this.godName = new String(god);
 		this.itemType = material;
@@ -51,13 +52,13 @@ public class TaskGiveItem extends Task {
 		if (giveItem()) {
 			Random random = new Random();
 			if (this.speak) {
-				LanguageManager.instance().setPlayerName(this.player.getName());
+				ctx.languageManager().setPlayerName(this.player.getName());
 				try {
-					LanguageManager.instance().setType(this.itemType.name());
+					ctx.languageManager().setType(this.itemType.name());
 				} catch (Exception ex) {
 					getPlugin().logDebug(ex.getMessage());
 				}
-				GodManager.instance().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverItemBlessing, 2 + random.nextInt(10));
+				ctx.godManager().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverItemBlessing, 2 + random.nextInt(10));
 			}
 		}
 	}

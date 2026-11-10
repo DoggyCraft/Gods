@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class TaskInfo extends Task {
@@ -15,7 +16,8 @@ public class TaskInfo extends Task {
 	private int amount;
 	private ChatColor color;
 
-	public TaskInfo(ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, int amount, String name1) {
+	public TaskInfo(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, int amount, String name1) {
+		super(ctx);
 		this.playerId = playerId;
 		this.message = m;
 		this.name1 = name1;
@@ -26,7 +28,8 @@ public class TaskInfo extends Task {
 	/**
 	 * $PlayerName is name, $Type is amount1 and $Amount is amount2.
 	 */
-	public TaskInfo(ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name, int amount1, int amount2) {
+	public TaskInfo(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name, int amount1, int amount2) {
+		super(ctx);
 		this.playerId = playerId;
 		this.name1 = name;
 		this.name2 = String.valueOf(amount1);
@@ -35,7 +38,8 @@ public class TaskInfo extends Task {
 		this.color = color;
 	}
 
-	public TaskInfo(ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name1, String name2) {
+	public TaskInfo(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name1, String name2) {
+		super(ctx);
 		this.playerId = playerId;
 		this.name1 = name1;
 		this.name2 = name2;
@@ -51,18 +55,18 @@ public class TaskInfo extends Task {
 			return;
 		}
 
-		LanguageManager.instance().setPlayerName((this.name1 != null) ? this.name1 : "");
+		ctx.languageManager().setPlayerName((this.name1 != null) ? this.name1 : "");
 
 		if (this.name2 != null) {
 			try {
-				LanguageManager.instance().setType(this.name2);
+				ctx.languageManager().setType(this.name2);
 			} catch (Exception ex) {
 				getPlugin().logDebug(ex.getMessage());
 			}
 		}
 
-		LanguageManager.instance().setAmount(this.amount);
+		ctx.languageManager().setAmount(this.amount);
 
-		player.sendMessage(this.color + LanguageManager.instance().getInfoString(this.message, this.color));
+		player.sendMessage(this.color + ctx.languageManager().getInfoString(this.message, this.color));
 	}
 }

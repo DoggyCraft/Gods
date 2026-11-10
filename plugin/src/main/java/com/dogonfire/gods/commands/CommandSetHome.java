@@ -4,17 +4,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.HolyLandManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandSetHome extends GodsCommand
 {
-	protected CommandSetHome()
+	CommandSetHome(GodsContext ctx)
 	{
-		super("sethome");
+		super(ctx, "sethome");
 		this.permission = "gods.sethome";
 		this.description = "Set the home of your religion";
 	}
@@ -33,33 +30,33 @@ public class CommandSetHome extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		if ((Gods.instance().settings().priests().onlyPriestsCanSetHome()) && (!GodManager.instance().isPriest(player.getUniqueId())))
+		if ((ctx.settings().priests().onlyPriestsCanSetHome()) && (!ctx.godManager().isPriest(player.getUniqueId())))
 		{
 			sender.sendMessage(ChatColor.RED + "Only your priest can set the home for your religion");
 			return;
 		}
-		if (Gods.instance().settings().holyLand().enabled())
+		if (ctx.settings().holyLand().enabled())
 		{
-			if (HolyLandManager.instance().isNeutralLandLocation(player.getLocation()))
+			if (ctx.holyLandManager().isNeutralLandLocation(player.getLocation()))
 			{
 				sender.sendMessage(ChatColor.RED + "You can only set religion home within your Holy Land");
 				return;
 			}
-			String locationGod = HolyLandManager.instance().getGodAtHolyLandLocation(player.getLocation());
+			String locationGod = ctx.holyLandManager().getGodAtHolyLandLocation(player.getLocation());
 			if ((locationGod == null) || (!locationGod.equals(godName)))
 			{
 				sender.sendMessage(ChatColor.RED + "You can only set religion home within your Holy Land");
 				return;
 			}
 		}
-		GodManager.instance().setHomeForGod(godName, player.getLocation());
-		LanguageManager.instance().setPlayerName(player.getName());
-		GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSetHome, 2);
+		ctx.godManager().setHomeForGod(godName, player.getLocation());
+		ctx.languageManager().setPlayerName(player.getName());
+		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSetHome, 2);
 	}
 }

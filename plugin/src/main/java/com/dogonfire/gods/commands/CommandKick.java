@@ -7,15 +7,13 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandKick extends GodsCommand
 {
-	protected CommandKick()
+	CommandKick(GodsContext ctx)
 	{
-		super("kick");
+		super(ctx, "kick");
 		this.permission = "gods.priest.kick";
 		this.parameters = "<player>";
 		this.description = "Kick a believer from your religion";
@@ -36,7 +34,7 @@ public class CommandKick extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!GodManager.instance().isPriest(player.getUniqueId()))
+		if (!ctx.godManager().isPriest(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.RED + "Only priests can kick believers from a religion");
 			return;
@@ -46,7 +44,7 @@ public class CommandKick extends GodsCommand
 			sendUsage(sender);
 			return;
 		}
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		String believerName = args[1];
 		UUID believerId = findBeliever(godName, believerName);
 		if (godName == null || believerId == null)
@@ -59,14 +57,14 @@ public class CommandKick extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You cannot kick yourself from your own religion, Bozo!");
 			return;
 		}
-		BelieverManager.instance().removeBeliever(godName, believerId);
+		ctx.believerManager().removeBeliever(godName, believerId);
 		sender.sendMessage(ChatColor.AQUA + "You kicked " + ChatColor.YELLOW + believerName + ChatColor.AQUA + " from your religion!");
-		Player believer = Gods.instance().getServer().getPlayer(believerId);
+		Player believer = ctx.plugin().getServer().getPlayer(believerId);
 		if (believer != null)
 		{
 			believer.sendMessage(ChatColor.RED + "You were kicked from the religion of " + ChatColor.YELLOW + godName + ChatColor.RED + "!");
 		}
-		Gods.instance().log(sender.getName() + " /gods kick " + believerName);
+		ctx.plugin().log(sender.getName() + " /gods kick " + believerName);
 	}
 
 	/**
@@ -79,9 +77,9 @@ public class CommandKick extends GodsCommand
 		{
 			return null;
 		}
-		for (UUID believerId : BelieverManager.instance().getBelieversForGod(godName))
+		for (UUID believerId : ctx.believerManager().getBelieversForGod(godName))
 		{
-			OfflinePlayer offlinePlayer = Gods.instance().getServer().getOfflinePlayer(believerId);
+			OfflinePlayer offlinePlayer = ctx.plugin().getServer().getOfflinePlayer(believerId);
 			if (believerName.equalsIgnoreCase(offlinePlayer.getName()))
 			{
 				return believerId;

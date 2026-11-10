@@ -6,15 +6,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandToggleWar extends GodsCommand
 {
-	protected CommandToggleWar()
+	CommandToggleWar(GodsContext ctx)
 	{
-		super("war");
+		super(ctx, "war");
 		this.permission = "gods.priest.war";
 		this.parameters = "<god>";
 		this.description = "Toggle war with another religion";
@@ -40,14 +39,14 @@ public class CommandToggleWar extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!GodManager.instance().isPriest(player.getUniqueId()))
+		if (!ctx.godManager().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(stringPreistOnly);
 			return;
 		}
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		String enemyGodName = GodManager.instance().formatGodName(args[1]);
-		if (!GodManager.instance().godExist(args[1]))
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
+		String enemyGodName = ctx.godManager().formatGodName(args[1]);
+		if (!ctx.godManager().godExist(args[1]))
 		{
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
 			return;
@@ -57,27 +56,27 @@ public class CommandToggleWar extends GodsCommand
 			player.sendMessage(ChatColor.RED + "You cannot go to war with your own God!");
 			return;
 		}
-		List<String> alliances = GodManager.instance().getAllianceRelations(godName);
+		List<String> alliances = ctx.godManager().getAllianceRelations(godName);
 		if (alliances.contains(enemyGodName))
 		{
 			player.sendMessage(ChatColor.RED + "You are ALLIED with " + ChatColor.GOLD + args[1] + ChatColor.RED + "!");
 			return;
 		}
-		if (GodManager.instance().toggleWarRelationForGod(godName, enemyGodName))
+		if (ctx.godManager().toggleWarRelationForGod(godName, enemyGodName))
 		{
-			LanguageManager.instance().setPlayerName(godName);
-			GodManager.instance().godSayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
+			ctx.languageManager().setPlayerName(godName);
+			ctx.godManager().godSayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
 
-			LanguageManager.instance().setPlayerName(enemyGodName);
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
+			ctx.languageManager().setPlayerName(enemyGodName);
+			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
 		}
 		else
 		{
-			LanguageManager.instance().setPlayerName(godName);
-			GodManager.instance().godSayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
+			ctx.languageManager().setPlayerName(godName);
+			ctx.godManager().godSayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
 
-			LanguageManager.instance().setPlayerName(enemyGodName);
-			GodManager.instance().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
+			ctx.languageManager().setPlayerName(enemyGodName);
+			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
 		}
 
 	}

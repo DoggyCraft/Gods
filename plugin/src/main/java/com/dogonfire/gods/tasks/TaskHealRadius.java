@@ -8,7 +8,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.HolyPowerManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 
 /**
@@ -18,7 +18,8 @@ public class TaskHealRadius extends Task {
 	private Player player;
 	private long maxPlayers;
 
-	public TaskHealRadius(Player player, long maxPlayers) {
+	public TaskHealRadius(GodsContext ctx, Player player, long maxPlayers) {
+		super(ctx);
 		this.player = player;
 		this.maxPlayers = maxPlayers;
 	}
@@ -32,7 +33,7 @@ public class TaskHealRadius extends Task {
 		this.player.playSound(this.player.getLocation(), Sound.AMBIENT_CAVE, 1.0F, 0.1F);
 
 		int n = 0;
-		for (Entity entity : HolyPowerManager.instance().getNearbyLivingEntities(this.player.getLocation(), 20.0D)) {
+		for (Entity entity : ctx.holyPowerManager().getNearbyLivingEntities(this.player.getLocation(), 20.0D)) {
 			if (n >= this.maxPlayers) {
 				break;
 			}

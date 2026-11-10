@@ -9,31 +9,28 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.ChatManager;
 
 public class ChatListener implements Listener
 {
-	/** How often the chat cache is refreshed for everyone online (ticks). */
-	private static final long CACHE_REFRESH_TICKS = 100L;
+	private final GodsContext ctx;
 
-	public ChatListener()
+	public ChatListener(GodsContext ctx)
 	{
-		// Priest status and the like change in places that don't notify the
-		// chat cache, so refresh it now and then on the main thread
-		Gods.instance().getServer().getScheduler().runTaskTimer(Gods.instance(), () -> ChatManager.instance().refreshAll(), 1L, CACHE_REFRESH_TICKS);
+		this.ctx = ctx;
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		ChatManager.instance().refresh(event.getPlayer().getUniqueId());
+		ctx.chatManager().refresh(event.getPlayer().getUniqueId());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event)
 	{
-		ChatManager.instance().remove(event.getPlayer().getUniqueId());
+		ctx.chatManager().remove(event.getPlayer().getUniqueId());
 	}
 
 	// Runs on the chat thread: only read the ChatManager cache here
@@ -42,12 +39,12 @@ public class ChatListener implements Listener
 	{
 		Player player = event.getPlayer();
 
-		ChatManager.ChatInfo info = ChatManager.instance().getChatInfo(player.getUniqueId());
+		ChatManager.ChatInfo info = ctx.chatManager().getChatInfo(player.getUniqueId());
 		String godName = info.godName;
 
-		if (Gods.instance().settings().chat().formatting())
+		if (ctx.settings().chat().formatting())
 		{
-			event.setFormat(ChatManager.instance().formatChat(player, godName, event.getFormat()));
+			event.setFormat(ctx.chatManager().formatChat(player, godName, event.getFormat()));
 		}
 
 		if (godName == null || !info.religionChat)
@@ -67,14 +64,14 @@ public class ChatListener implements Listener
 			message = ChatColor.YELLOW + "[" + godName + "Chat] " + ChatColor.RED + player.getName() + ChatColor.YELLOW + ": " + ChatColor.WHITE + event.getMessage();
 		}
 
-		for (Player otherPlayer : Gods.instance().getServer().getOnlinePlayers())
+		for (Player otherPlayer : ctx.plugin().getServer().getOnlinePlayers())
 		{
-			if (godName.equals(ChatManager.instance().getChatInfo(otherPlayer.getUniqueId()).godName))
+			if (godName.equals(ctx.chatManager().getChatInfo(otherPlayer.getUniqueId()).godName))
 			{
 				otherPlayer.sendMessage(message);
 			}
 		}
 
-		Gods.instance().log(player.getName() + "(GODCHAT): " + event.getMessage());
+		ctx.plugin().log(player.getName() + "(GODCHAT): " + event.getMessage());
 	}
 }

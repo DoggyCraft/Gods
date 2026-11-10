@@ -14,61 +14,51 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.MarriageManager;
 
 public class GodsCommandExecuter implements CommandExecutor
 {
-	private static GodsCommandExecuter instance;
+	private final GodsContext				ctx;
+	private final Map<String, GodsCommand>	commandList;
 
-	public static GodsCommandExecuter instance()
+	public GodsCommandExecuter(GodsContext ctx)
 	{
-		if (instance == null)
-			instance = new GodsCommandExecuter();
-		return instance;
-	}
-
-	// TODO: Change all commands into subclasses and add them here
-	private Map<String, GodsCommand> commandList;
-
-	private GodsCommandExecuter()
-	{
+		this.ctx = ctx;
 		commandList = new TreeMap<String, GodsCommand>();
-		registerCommand(new CommandAccept());
-		registerCommand(new CommandAccess());
-		registerCommand(new CommandAlliance());
-		registerCommand(new CommandAttackHolyLand());
-		registerCommand(new CommandBible());
-		registerCommand(new CommandChat());
-		registerCommand(new CommandCheck());
-		registerCommand(new CommandDivorce());
-		registerCommand(new CommandEditBible());
-		registerCommand(new CommandFollowers());
-		registerCommand(new CommandGiveHolyArtifact());
-		registerCommand(new CommandHelp());
-		registerCommand(new CommandHome());
-		registerCommand(new CommandHunt());
-		registerCommand(new CommandInfo());
-		registerCommand(new CommandInvite());
-		registerCommand(new CommandKick());
-		registerCommand(new CommandLeaveGod());
-		registerCommand(new CommandListGods());
-		registerCommand(new CommandLove());
-		registerCommand(new CommandMarriages());
-		registerCommand(new CommandMarry());
-		registerCommand(new CommandPrayFor());
-		registerCommand(new CommandReject());
-		registerCommand(new CommandReload());
-		registerCommand(new CommandSetBible());
-		registerCommand(new CommandSetDescription());
-		registerCommand(new CommandSetHome());
-		registerCommand(new CommandSetNeutralLand());
-		registerCommand(new CommandSetPriest());
-		registerCommand(new CommandPriestStartAttack());
-		registerCommand(new CommandTogglePVP());
-		registerCommand(new CommandToggleWar());
+		registerCommand(new CommandAccept(ctx));
+		registerCommand(new CommandAccess(ctx));
+		registerCommand(new CommandAlliance(ctx));
+		registerCommand(new CommandAttackHolyLand(ctx));
+		registerCommand(new CommandBible(ctx));
+		registerCommand(new CommandChat(ctx));
+		registerCommand(new CommandCheck(ctx));
+		registerCommand(new CommandDivorce(ctx));
+		registerCommand(new CommandEditBible(ctx));
+		registerCommand(new CommandFollowers(ctx));
+		registerCommand(new CommandGiveHolyArtifact(ctx));
+		registerCommand(new CommandHelp(ctx, this));
+		registerCommand(new CommandHome(ctx));
+		registerCommand(new CommandHunt(ctx));
+		registerCommand(new CommandInfo(ctx));
+		registerCommand(new CommandInvite(ctx));
+		registerCommand(new CommandKick(ctx));
+		registerCommand(new CommandLeaveGod(ctx));
+		registerCommand(new CommandListGods(ctx));
+		registerCommand(new CommandLove(ctx));
+		registerCommand(new CommandMarriages(ctx));
+		registerCommand(new CommandMarry(ctx));
+		registerCommand(new CommandPrayFor(ctx));
+		registerCommand(new CommandReject(ctx));
+		registerCommand(new CommandReload(ctx));
+		registerCommand(new CommandSetBible(ctx));
+		registerCommand(new CommandSetDescription(ctx));
+		registerCommand(new CommandSetHome(ctx));
+		registerCommand(new CommandSetNeutralLand(ctx));
+		registerCommand(new CommandSetPriest(ctx));
+		registerCommand(new CommandPriestStartAttack(ctx));
+		registerCommand(new CommandTogglePVP(ctx));
+		registerCommand(new CommandToggleWar(ctx));
 	}
 
 	protected Collection<GodsCommand> getCommands()
@@ -90,19 +80,19 @@ public class GodsCommandExecuter implements CommandExecutor
 
 	private void CommandGods(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + Gods.instance().getDescription().getFullName() + " ------------------");
+		sender.sendMessage(ChatColor.YELLOW + "------------------ " + ctx.plugin().getDescription().getFullName() + " ------------------");
 		sender.sendMessage(ChatColor.AQUA + "By DogOnFire");
 		sender.sendMessage("" + ChatColor.AQUA);
-		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + GodManager.instance().getAllGods().size() + ChatColor.AQUA + " Gods and");
-		sender.sendMessage("" + ChatColor.WHITE + BelieverManager.instance().getBelievers().size() + ChatColor.AQUA + " believers in " + Gods.instance().settings().general().serverName());
+		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + ctx.godManager().getAllGods().size() + ChatColor.AQUA + " Gods and");
+		sender.sendMessage("" + ChatColor.WHITE + ctx.believerManager().getBelievers().size() + ChatColor.AQUA + " believers in " + ctx.settings().general().serverName());
 		sender.sendMessage("" + ChatColor.AQUA);
 		if (sender != null && sender instanceof Player)
 		{
 			Player player = (Player) sender;
-			String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+			String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 			if (godName != null)
 			{
-				List<UUID> priests = GodManager.instance().getPriestsForGod(godName);
+				List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
 				if (priests == null || !priests.contains(player.getUniqueId()))
 				{
 					sender.sendMessage(ChatColor.WHITE + "You believe in " + ChatColor.GOLD + godName);
@@ -112,42 +102,41 @@ public class GodsCommandExecuter implements CommandExecutor
 					sender.sendMessage(ChatColor.WHITE + "You are the priest of " + ChatColor.GOLD + godName);
 				}
 
-				if (Gods.instance().settings().prayers().enabled())
+				if (ctx.settings().prayers().enabled())
 				{
-					sender.sendMessage(ChatColor.WHITE + "You have " + ChatColor.GOLD + BelieverManager.instance().getPrayerPower(player.getUniqueId()) + ChatColor.WHITE + " prayer power");
+					sender.sendMessage(ChatColor.WHITE + "You have " + ChatColor.GOLD + ctx.believerManager().getPrayerPower(player.getUniqueId()) + ChatColor.WHITE + " prayer power");
 				}
 			}
 			else
 			{
 				sender.sendMessage(ChatColor.RED + "You do not believe in any god");
 			}
-			if (Gods.instance().settings().marriage().enabled())
+			if (ctx.settings().marriage().enabled())
 			{
-				String partnerName = MarriageManager.instance().getPartnerName(player.getUniqueId());
+				String partnerName = ctx.marriageManager().getPartnerName(player.getUniqueId());
 				if (partnerName != null)
 				{
 					sender.sendMessage(ChatColor.WHITE + "You are married to " + ChatColor.GOLD + partnerName);
 				}
 			}
 			sender.sendMessage("" + ChatColor.AQUA);
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodsHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help", 80);
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help altar", 160);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodsHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help", 80);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help altar", 160);
 
-			if (Gods.instance().settings().prayers().enabled())
+			if (ctx.settings().prayers().enabled())
 			{
-				Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayForHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g prayfor", 240);
+				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayForHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g prayfor", 240);
 			}
 		}
 		sender.sendMessage(ChatColor.GREEN + "For the full command list, please use " + ChatColor.AQUA + "/gods help");
 	}
 
-	// TODO: END OF FILE, REMOVE EVERYTHING BELOW HERE
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
 		if (args.length == 0)
 		{
 			CommandGods(sender);
-			Gods.instance().log(sender.getName() + " /gods");
+			ctx.plugin().log(sender.getName() + " /gods");
 			return true;
 		}
 

@@ -4,14 +4,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandSetPriest extends GodsCommand
 {
-	protected CommandSetPriest()
+	CommandSetPriest(GodsContext ctx)
 	{
-		super("setpriest");
+		super(ctx, "setpriest");
 		this.permission = "gods.setpriest";
 		this.parameters = "<god> <player>";
 		this.description = "Assign someone to be the priest";
@@ -31,21 +30,21 @@ public class CommandSetPriest extends GodsCommand
 			sender.sendMessage(stringNoPermission);
 			return;
 		}
-		String godName = GodManager.instance().formatGodName(args[1]);
-		if (!GodManager.instance().godExist(godName))
+		String godName = ctx.godManager().formatGodName(args[1]);
+		if (!ctx.godManager().godExist(godName))
 		{
 			sender.sendMessage(ChatColor.RED + "There is no god called '" + ChatColor.GOLD + godName + ChatColor.AQUA + "'");
 			return;
 		}
 
-		Player otherPlayer = Gods.instance().getServer().getPlayerExact(args[2]);
+		Player otherPlayer = ctx.plugin().getServer().getPlayerExact(args[2]);
 		if (otherPlayer == null)
 		{
 			sender.sendMessage(ChatColor.RED + "There is no such player online");
 			return;
 		}
 
-		if (GodManager.instance().assignPriest(godName, otherPlayer.getUniqueId()))
+		if (ctx.godManager().assignPriest(godName, otherPlayer.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + "You set " + ChatColor.GOLD + otherPlayer.getName() + ChatColor.AQUA + " as priest of " + ChatColor.GOLD + godName);
 		}

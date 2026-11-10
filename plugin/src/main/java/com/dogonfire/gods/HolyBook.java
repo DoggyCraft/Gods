@@ -10,6 +10,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.WritableBookMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 
 /**
  * A written book or a book and quill. Only written books have a title and an
@@ -21,19 +22,16 @@ public class HolyBook
 	private static final int	MAX_TITLE_LENGTH	= 32;
 
 	private final ItemStack		s;
+	private final NamespacedKey	godKey;
 
-	public HolyBook(ItemStack itemStack) throws Exception
+	public HolyBook(Plugin plugin, ItemStack itemStack) throws Exception
 	{
 		if ((itemStack.getType() != Material.WRITTEN_BOOK) && (itemStack.getType() != Material.WRITABLE_BOOK))
 		{
 			throw new Exception("HolyBook: CraftItemStack is not Material.WRITTEN_BOOK or Material.WRITABLE_BOOK");
 		}
 		this.s = itemStack;
-	}
-
-	private static NamespacedKey getGodKey()
-	{
-		return new NamespacedKey(Gods.instance(), "holy_book_god");
+		this.godKey = new NamespacedKey(plugin, "holy_book_god");
 	}
 
 	public String getAuthor()
@@ -47,7 +45,7 @@ public class HolyBook
 	 */
 	public String getGodName()
 	{
-		return this.s.getItemMeta().getPersistentDataContainer().get(getGodKey(), PersistentDataType.STRING);
+		return this.s.getItemMeta().getPersistentDataContainer().get(this.godKey, PersistentDataType.STRING);
 	}
 
 	public ItemStack getItem()
@@ -81,7 +79,7 @@ public class HolyBook
 	public void setGodName(String godName)
 	{
 		ItemMeta meta = this.s.getItemMeta();
-		meta.getPersistentDataContainer().set(getGodKey(), PersistentDataType.STRING, godName);
+		meta.getPersistentDataContainer().set(this.godKey, PersistentDataType.STRING, godName);
 		this.s.setItemMeta(meta);
 	}
 

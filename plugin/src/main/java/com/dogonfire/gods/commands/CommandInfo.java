@@ -9,19 +9,14 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.HolyLandManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.GodManager.GodMood;
-import com.dogonfire.gods.managers.LanguageManager;
-
 
 public class CommandInfo extends GodsCommand
 {
-	protected CommandInfo()
+	CommandInfo(GodsContext ctx)
 	{
-		super("info");
+		super(ctx, "info");
 		this.permission = "gods.info";
 		this.parameters = "[god]";
 		this.description = "Show info about your/a God";
@@ -40,13 +35,13 @@ public class CommandInfo extends GodsCommand
 
 		if (args.length == 2)
 		{
-			godName = GodManager.instance().formatGodName(args[1]);
+			godName = ctx.godManager().formatGodName(args[1]);
 		}
 
 		if (godName == null)
 		{
 			if (sender instanceof Player)
-				godName = BelieverManager.instance().getGodForBeliever(((Player) sender).getUniqueId());
+				godName = ctx.believerManager().getGodForBeliever(((Player) sender).getUniqueId());
 			if (godName == null)
 			{
 				sender.sendMessage(ChatColor.RED + "You do not believe in any God.");
@@ -54,25 +49,25 @@ public class CommandInfo extends GodsCommand
 			}
 		}
 
-		if (!GodManager.instance().godExist(godName))
+		if (!ctx.godManager().godExist(godName))
 		{
 			sender.sendMessage(ChatColor.RED + "There is no God with such name.");
 			return;
 		}
 
-		List<UUID> priests = GodManager.instance().getPriestsForGod(godName);
+		List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
 
 		if (priests == null)
 		{
 			priests = new ArrayList<UUID>();
 		}
 
-		sender.sendMessage(ChatColor.YELLOW + "--------- " + godName + " " + GodManager.instance().getColorForGod(godName) + GodManager.instance().getTitleForGod(godName) + ChatColor.YELLOW + " ---------");
+		sender.sendMessage(ChatColor.YELLOW + "--------- " + godName + " " + ctx.godManager().getColorForGod(godName) + ctx.godManager().getTitleForGod(godName) + ChatColor.YELLOW + " ---------");
 
-		sender.sendMessage("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + GodManager.instance().getGodDescription(godName));
+		sender.sendMessage("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + ctx.godManager().getGodDescription(godName));
 
 		ChatColor moodColor = ChatColor.AQUA;
-		GodMood godMood = GodManager.instance().getMoodForGod(godName);
+		GodMood godMood = ctx.godManager().getMoodForGod(godName);
 
 		switch (godMood)
 		{
@@ -93,12 +88,12 @@ public class CommandInfo extends GodsCommand
 			break;
 		}
 
-		sender.sendMessage(moodColor + godName + " is " + LanguageManager.instance().getGodMoodName(godMood));
+		sender.sendMessage(moodColor + godName + " is " + ctx.languageManager().getGodMoodName(godMood));
 	
-		Material neededItem = GodManager.instance().getSacrificeItemTypeForGod(godName);
+		Material neededItem = ctx.godManager().getSacrificeItemTypeForGod(godName);
 		if (neededItem != null)
 		{
-			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " wants more " + ChatColor.WHITE + LanguageManager.instance().getItemTypeName(neededItem));
+			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " wants more " + ChatColor.WHITE + ctx.languageManager().getItemTypeName(neededItem));
 		}
 
 		if (priests.size() == 0)
@@ -107,49 +102,49 @@ public class CommandInfo extends GodsCommand
 		}
 		else if (priests.size() == 1)
 		{
-			sender.sendMessage(ChatColor.AQUA + "Priest: " + ChatColor.YELLOW + Gods.instance().getServer().getOfflinePlayer(priests.get(0)).getName());
+			sender.sendMessage(ChatColor.AQUA + "Priest: " + ChatColor.YELLOW + ctx.plugin().getServer().getOfflinePlayer(priests.get(0)).getName());
 		}
 		else
 		{
 			sender.sendMessage(ChatColor.AQUA + "Priests: ");
 			for (UUID priest : priests)
 			{
-				sender.sendMessage(ChatColor.YELLOW + " - " + Gods.instance().getServer().getOfflinePlayer(priest).getName());
+				sender.sendMessage(ChatColor.YELLOW + " - " + ctx.plugin().getServer().getOfflinePlayer(priest).getName());
 			}
 		}
 
-		sender.sendMessage(ChatColor.AQUA + "Believers: " + ChatColor.YELLOW + BelieverManager.instance().getBelieversForGod(godName).size());
-		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + GodManager.instance().getGodPower(godName));
-		if (Gods.instance().settings().commandments().enabled())
+		sender.sendMessage(ChatColor.AQUA + "Believers: " + ChatColor.YELLOW + ctx.believerManager().getBelieversForGod(godName).size());
+		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + ctx.godManager().getGodPower(godName));
+		if (ctx.settings().commandments().enabled())
 		{
-			sender.sendMessage(ChatColor.AQUA + "Holy food: " + ChatColor.YELLOW + LanguageManager.instance().getItemTypeName(GodManager.instance().getHolyFoodTypeForGod(godName)));
-			sender.sendMessage(ChatColor.AQUA + "Unholy food: " + ChatColor.YELLOW + LanguageManager.instance().getItemTypeName(GodManager.instance().getUnholyFoodTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Holy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.godManager().getHolyFoodTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Unholy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.godManager().getUnholyFoodTypeForGod(godName)));
 
-			sender.sendMessage(ChatColor.AQUA + "Holy creature: " + ChatColor.YELLOW + LanguageManager.instance().getMobTypeName(GodManager.instance().getHolyMobTypeForGod(godName)));
-			sender.sendMessage(ChatColor.AQUA + "Unholy creature: " + ChatColor.YELLOW + LanguageManager.instance().getMobTypeName(GodManager.instance().getUnholyMobTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Holy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.godManager().getHolyMobTypeForGod(godName)));
+			sender.sendMessage(ChatColor.AQUA + "Unholy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.godManager().getUnholyMobTypeForGod(godName)));
 		}
 
-		List<String> allyRelations = GodManager.instance().getAllianceRelations(godName);
-		Object warRelations = GodManager.instance().getWarRelations(godName);
+		List<String> allyRelations = ctx.godManager().getAllianceRelations(godName);
+		Object warRelations = ctx.godManager().getWarRelations(godName);
 
 		if ((((List<?>) warRelations).size() > 0) || (allyRelations.size() > 0))
 		{
 			sender.sendMessage(ChatColor.AQUA + "Religious relations: ");
-			for (String ally : GodManager.instance().getAllianceRelations(godName))
+			for (String ally : ctx.godManager().getAllianceRelations(godName))
 			{
 				sender.sendMessage(ChatColor.GREEN + " Alliance with " + ChatColor.GOLD + ally);
 			}
-			List<String> enemies = GodManager.instance().getWarRelations(godName);
+			List<String> enemies = ctx.godManager().getWarRelations(godName);
 			for (String enemy : enemies)
 			{
 				sender.sendMessage(ChatColor.RED + " War with " + ChatColor.GOLD + enemy);
 			}
 		}
 		
-		if(Gods.instance().settings().holyLand().enabled())
+		if(ctx.settings().holyLand().enabled())
 		{
-			int claimed = HolyLandManager.instance().getClaimedChunksForGod(godName);
-			int maxclaim = HolyLandManager.instance().getMaximumChunksForGod(godName);
+			int claimed = ctx.holyLandManager().getClaimedChunksForGod(godName);
+			int maxclaim = ctx.holyLandManager().getMaximumChunksForGod(godName);
 			sender.sendMessage(ChatColor.AQUA + "Holyland claimed: " + ChatColor.GOLD + claimed + "/" + maxclaim);					
 		}
 	}

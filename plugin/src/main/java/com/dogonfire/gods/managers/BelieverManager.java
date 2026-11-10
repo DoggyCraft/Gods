@@ -11,31 +11,25 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.storage.DataFile;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
+import com.dogonfire.gods.storage.DataFile;
 
 public class BelieverManager
 {
-	private static BelieverManager instance;
-
-	public static BelieverManager instance()
-	{
-		if (instance == null)
-			instance = new BelieverManager();
-		return instance;
-	}
-
 	private final Set<String>	invalidKeys			= new HashSet<String>();
 
-	private BelieverManager()
+	private final GodsContext ctx;
+
+	public BelieverManager(GodsContext ctx)
 	{
+		this.ctx = ctx;
 	}
 
 	/** believers.yml; see {@link DataFile} */
 	private DataFile believersFile()
 	{
-		return Gods.instance().storage().believers();
+		return ctx.storage().believers();
 	}
 
 	private YamlConfiguration believersConfig()
@@ -73,7 +67,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastPrayerDate.getTime();
 
 		long diffMinutes = diff / 60000L;
-		if (diffMinutes < Gods.instance().settings().prayers().minMinutesBetweenPrayers())
+		if (diffMinutes < ctx.settings().prayers().minMinutesBetweenPrayers())
 		{
 			return false;
 		}
@@ -90,7 +84,7 @@ public class BelieverManager
 		believersConfig().set(believerId + ".Prayers", Integer.valueOf(prayers));
 
 		believersFile().markDirty();
-		ChatManager.instance().refresh(believerId);
+		ctx.chatManager().refresh(believerId);
 
 		return true;
 	}
@@ -109,7 +103,7 @@ public class BelieverManager
 		believersConfig().set(believerId + ".God", null);
 
 		believersFile().markDirty();
-		ChatManager.instance().refresh(believerId);
+		ctx.chatManager().refresh(believerId);
 	}
 
 	void clearChangingGod(UUID believerId)
@@ -138,7 +132,7 @@ public class BelieverManager
 
 		believersFile().markDirty();
 
-		Gods.instance().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, 0, "", 10);
+		ctx.plugin().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, 0, "", 10);
 	}
 
 	public float getBelieverPower(UUID believerId)
@@ -264,7 +258,7 @@ public class BelieverManager
 	{
 		Set<UUID> believers = new HashSet<UUID>();
 
-		for (Player player : Gods.instance().getServer().getOnlinePlayers())
+		for (Player player : ctx.plugin().getServer().getOnlinePlayers())
 		{
 			String believerGod = getGodForBeliever(player.getUniqueId());
 			if ((believerGod != null) && (believerGod.equals(godName)))
@@ -291,7 +285,7 @@ public class BelieverManager
 		{
 			if (this.invalidKeys.add(key))
 			{
-				Gods.instance().log("Ignoring believers.yml entry '" + key + "': it is not a player UUID");
+				ctx.plugin().log("Ignoring believers.yml entry '" + key + "': it is not a player UUID");
 			}
 			return null;
 		}
@@ -333,7 +327,7 @@ public class BelieverManager
 			lastPrayerDate = new Date();
 			lastPrayerDate.setTime(0L);
 		}
-		long diff = Gods.instance().settings().prayers().minMinutesBetweenPrayers() * 60 * 1000 + lastPrayerDate.getTime() - thisDate.getTime();
+		long diff = ctx.settings().prayers().minMinutesBetweenPrayers() * 60 * 1000 + lastPrayerDate.getTime() - thisDate.getTime();
 		long diffSeconds = diff / 1000L;
 		int diffMinutes = (int) (diffSeconds / 60L);
 
@@ -361,7 +355,7 @@ public class BelieverManager
 
 		long diffSeconds = diff / 1000L;
 
-		return diffSeconds < Gods.instance().settings().blessings().minSecondsBetweenBlessings();
+		return diffSeconds < ctx.settings().blessings().minSecondsBetweenBlessings();
 	}
 
 	public boolean hasRecentCursing(UUID believerId)
@@ -384,7 +378,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastItemBlessingDate.getTime();
 		long diffSeconds = diff / 1000L;
 
-		return diffSeconds < Gods.instance().settings().curses().minSecondsBetweenCurses();
+		return diffSeconds < ctx.settings().curses().minSecondsBetweenCurses();
 	}
 
 	boolean hasRecentGodChange(UUID believerId)
@@ -404,7 +398,7 @@ public class BelieverManager
 			long diff = thisDate.getTime() - joinedGodDate.getTime();
 			long diffSeconds = diff / 1000L;
 
-			joinedRecently = diffSeconds <= Gods.instance().settings().believers().minSecondsBetweenChangingGod();
+			joinedRecently = diffSeconds <= ctx.settings().believers().minSecondsBetweenChangingGod();
 		}
 		catch (Exception ex)
 		{
@@ -434,7 +428,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastItemBlessingDate.getTime();
 		long diffMinutes = diff / 60000L;
 
-		return diffMinutes < Gods.instance().settings().holyArtifacts().minMinutesBetweenBlessings();
+		return diffMinutes < ctx.settings().holyArtifacts().minMinutesBetweenBlessings();
 	}
 
 	public boolean hasRecentItemBlessing(UUID believerId)
@@ -457,7 +451,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastItemBlessingDate.getTime();
 		long diffMinutes = diff / 60000L;
 
-		return diffMinutes < Gods.instance().settings().itemBlessings().minMinutesBetweenBlessings();
+		return diffMinutes < ctx.settings().itemBlessings().minMinutesBetweenBlessings();
 	}
 
 	public boolean hasRecentPrayer(UUID believerId)
@@ -480,7 +474,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastPrayerDate.getTime();
 		long diffMinutes = diff / 60000L;
 
-		return diffMinutes <= Gods.instance().settings().prayers().minMinutesBetweenPrayers();
+		return diffMinutes <= ctx.settings().prayers().minMinutesBetweenPrayers();
 	}
 
 	public boolean hasRecentPriestOffer(UUID believerId)
@@ -516,7 +510,7 @@ public class BelieverManager
 		believersConfig().set(believerId + ".Prayers", Integer.valueOf(prayers));
 
 		believersFile().markDirty();
-		ChatManager.instance().refresh(believerId);
+		ctx.chatManager().refresh(believerId);
 
 		return true;
 	}
@@ -548,7 +542,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastPrayerDate.getTime();
 
 		long diffMinutes = diff / 60000L;
-		if (diffMinutes < Gods.instance().settings().prayers().minMinutesBetweenPrayers())
+		if (diffMinutes < ctx.settings().prayers().minMinutesBetweenPrayers())
 		{
 			return false;
 		}
@@ -559,7 +553,7 @@ public class BelieverManager
 		believersConfig().set(believerId + ".Prayers", Integer.valueOf(prayers));
 
 		believersFile().markDirty();
-		ChatManager.instance().refresh(believerId);
+		ctx.chatManager().refresh(believerId);
 
 		return true;
 	}
@@ -579,7 +573,7 @@ public class BelieverManager
 
 		believersFile().markDirty();
 
-		Gods.instance().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, prayerPower, "", 10);
+		ctx.plugin().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, prayerPower, "", 10);
 	}
 
 	public boolean isHunting(UUID believerId)
@@ -601,7 +595,7 @@ public class BelieverManager
 		believersFile().load();
 		this.invalidKeys.clear();
 
-		Gods.instance().log("Loaded " + believersConfig().getKeys(false).size() + " believers.");
+		ctx.plugin().log("Loaded " + believersConfig().getKeys(false).size() + " believers.");
 	}
 
 	public void removeBeliever(String godName, UUID believerId)
@@ -617,10 +611,10 @@ public class BelieverManager
 
 		believersConfig().set(believerId.toString(), null);
 
-		Gods.instance().log(godName + " lost " + believerId + " as believer");
+		ctx.plugin().log(godName + " lost " + believerId + " as believer");
 
 		believersFile().markDirty();
-		ChatManager.instance().refresh(believerId);
+		ctx.chatManager().refresh(believerId);
 	}
 
 	public void setBlessingTime(UUID believerId)
@@ -668,7 +662,7 @@ public class BelieverManager
 
 	public void setHunting(UUID believerId, boolean hunting)
 	{
-		Gods.instance().logDebug("Setting hunting string to '" + hunting + "' for " + believerId);
+		ctx.plugin().logDebug("Setting hunting string to '" + hunting + "' for " + believerId);
 
 		believersConfig().set(believerId + ".Hunting", Boolean.valueOf(hunting));
 
@@ -730,6 +724,6 @@ public class BelieverManager
 			believersConfig().set(believerId + ".ReligionChat", null);
 		}
 		believersFile().markDirty();
-		ChatManager.instance().refresh(believerId);
+		ctx.chatManager().refresh(believerId);
 	}
 }

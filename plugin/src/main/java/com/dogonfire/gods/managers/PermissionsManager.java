@@ -8,22 +8,8 @@ import org.bukkit.entity.Player;
  */
 public class PermissionsManager
 {
-	private static PermissionsManager instance = null;
-
-	public static PermissionsManager instance()
+	public PermissionsManager()
 	{
-		if (instance == null)
-			instance = new PermissionsManager();
-		return instance;
-	}
-
-	private PermissionsManager()
-	{
-	}
-
-	public void load()
-	{
-		// Nothing to load: permissions come from Bukkit
 	}
 
 	public boolean hasPermission(Player player, String node)

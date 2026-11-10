@@ -5,129 +5,72 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.dogonfire.gods.commands.GodsCommandExecuter;
 import com.dogonfire.gods.commands.GodsTabCompleter;
 import com.dogonfire.gods.config.ConfigDefaults;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
+import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
 import com.dogonfire.gods.listeners.BlockListener;
 import com.dogonfire.gods.listeners.ChatListener;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.HolyBookManager;
-import com.dogonfire.gods.managers.HolyLandManager;
+import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.MarriageManager;
-import com.dogonfire.gods.managers.PermissionsManager;
-import com.dogonfire.gods.managers.QuestManager;
-import com.dogonfire.gods.managers.WhitelistManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.storage.Storage;
 import com.dogonfire.gods.tasks.TaskInfo;
 import com.dogonfire.gods.util.AtomicFiles;
 
+/**
+ * The plugin. It only wires things: onEnable reads the settings, builds the {@link GodsContext} (the object graph),
+ * loads the data, registers the command, the always-on listeners and the repeating tasks, then starts the features
+ * that can be switched on and off in config.yml ({@link #startFeatures()}). /g reload ({@link #reload()}) re-reads
+ * config, language and data files and restarts those features; onDisable undoes everything and saves.
+ */
 public class Gods extends JavaPlugin
 {
 	/** The layout of config.yml this version writes; see {@link ConfigV1ToV2} */
-	public static final int		CONFIG_VERSION	= 2;
-
-	private static Gods			pluginInstance;
+	public static final int					CONFIG_VERSION		= 2;
 
 	/** Replaced as a whole by /g reload */
-	private volatile Settings	settings;
-	private Storage				storage;
+	private volatile Settings				settings;
+	private Storage							storage;
+	private GodsContext						ctx;
+	private GodsPlaceholderExpansion		placeholderExpansion;
 
-	public static Gods instance()
-	{
-		return pluginInstance;
-	}
+	// Repeating tasks started by onEnable, cancelled by onDisable
+	private final List<BukkitTask>			tasks				= new ArrayList<BukkitTask>();
+	// Started by startFeatures, undone by stopFeatures
+	private final List<Listener>			featureListeners	= new ArrayList<Listener>();
 
 	/**
-	 * The settings read from config.yml at the last (re)load. Read them through here every time instead of keeping
-	 * them, so /g reload takes effect.
+	 * The settings read from config.yml at the last (re)load. Read them through here (or {@link GodsContext#settings()})
+	 * every time instead of keeping them, so /g reload takes effect.
 	 */
 	public Settings settings()
 	{
 		return this.settings;
 	}
 
-	public boolean isBlacklistedGod(String godName)
-	{
-		if (this.settings.gods().blacklist())
-		{
-			return WhitelistManager.instance().isBlacklistedGod(godName);
-		}
-		return false;
-	}
-
-	public boolean isEnabledInWorld(World world)
-	{
-		return this.settings.general().worlds().contains(world.getName());
-	}
-
-	public boolean isWhitelistedGod(String godName)
-	{
-		if (this.settings.gods().whitelist())
-		{
-			return WhitelistManager.instance().isWhitelistedGod(godName);
-		}
-		return true;
-	}
-
-	public void log(String message)
-	{
-		this.getLogger().info(message);
-	}
-
-	public void logDebug(String message)
-	{
-		Settings current = this.settings;
-		if (current != null && current.general().debug())
-		{
-			this.getLogger().info("[Debug] " + message);
-		}
-	}
-
-	@Override
-	public void onDisable()
-	{
-		// Nothing was loaded if config.yml couldn't be read
-		if (this.storage != null)
-		{
-			getServer().getScheduler().cancelTasks(this);
-			// Writes every changed data file and waits for the writes
-			this.storage.close();
-			this.storage = null;
-		}
-
-		pluginInstance = null;
-	}
-
-	/** The data files; see {@link Storage} */
-	public Storage storage()
-	{
-		return this.storage;
-	}
-
 	@Override
 	public void onEnable()
 	{
-		pluginInstance = this;
-
 		try
 		{
 			this.settings = loadSettings();
@@ -140,52 +83,91 @@ public class Gods extends JavaPlugin
 			return;
 		}
 
-		getCommand("gods").setExecutor(GodsCommandExecuter.instance());
-		getCommand("g").setExecutor(GodsCommandExecuter.instance());
-		getCommand("gods").setTabCompleter(GodsTabCompleter.instance());
-		getCommand("g").setTabCompleter(GodsTabCompleter.instance());
-		
-		PluginManager pm = getServer().getPluginManager();
+		this.storage = new Storage(getDataFolder().toPath(), getLogger());
+		this.ctx = new GodsContext(this, this.storage);
 
-		// Check for PlaceholderAPI
+		loadData();
+
+		GodsCommandExecuter executer = new GodsCommandExecuter(this.ctx);
+		GodsTabCompleter tabCompleter = new GodsTabCompleter(this.ctx, executer);
+		for (String name : List.of("gods", "g"))
+		{
+			PluginCommand command = getCommand(name);
+			command.setExecutor(executer);
+			command.setTabCompleter(tabCompleter);
+		}
+
+		PluginManager pm = getServer().getPluginManager();
+		pm.registerEvents(new BlockListener(this.ctx), this);
+		pm.registerEvents(new ChatListener(this.ctx), this);
+
 		if (pm.getPlugin("PlaceholderAPI") != null)
 		{
 			log("PlaceholderAPI found.");
-			new GodsPlaceholderExpansion(Gods.instance()).register();
+			this.placeholderExpansion = new GodsPlaceholderExpansion(this.ctx);
+			this.placeholderExpansion.register();
 		}
 		else
 		{
 			logDebug("PlaceholderAPI not found.");
 		}
-		
-		this.storage = new Storage(getDataFolder().toPath(), getLogger());
-		loadManagers();
 
-		// Writes the data files that changed every few minutes (and on /g reload and disable)
-		getServer().getScheduler().runTaskTimer(this, () -> this.storage.flush(), Storage.AUTOSAVE_TICKS, Storage.AUTOSAVE_TICKS);
+		// Moods, priests, quests, holy land attacks and the like
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.godManager().update(), 20L, 200L));
+		// Writes the data files that changed (and on /g reload and disable)
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.storage.flush(), Storage.AUTOSAVE_TICKS, Storage.AUTOSAVE_TICKS));
+		// Priest status and the like change in places that don't notify the chat cache, so refresh it now and then
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.chatManager().refreshAll(), 1L, ChatManager.REFRESH_TICKS));
 
-		getServer().getPluginManager().registerEvents(new BlockListener(), this);
-		getServer().getPluginManager().registerEvents(new ChatListener(), this);
+		startFeatures();
+	}
 
-		new BukkitRunnable()
+	@Override
+	public void onDisable()
+	{
+		if (this.ctx == null)
 		{
-			@Override
-			public void run()
-			{
-				GodManager.instance().update();
-			}
-		}.runTaskTimer(this, 20L, 200L);
+			// config.yml couldn't be read: nothing was loaded, so nothing is saved
+			return;
+		}
+
+		if (this.placeholderExpansion != null)
+		{
+			this.placeholderExpansion.unregister();
+			this.placeholderExpansion = null;
+		}
+
+		stopFeatures();
+		for (BukkitTask task : this.tasks)
+		{
+			task.cancel();
+		}
+		this.tasks.clear();
+		// The delayed effect tasks (god speech, powers, fireworks, ...) too
+		getServer().getScheduler().cancelTasks(this);
+		HandlerList.unregisterAll(this);
+
+		// Writes every changed data file and waits for the writes
+		this.storage.close();
+
+		this.ctx = null;
+		this.storage = null;
 	}
 
 	/**
-	 * Saves every manager, re-reads config.yml and loads everything again from disk. Used by /gods reload. If config.yml
-	 * can't be read, the old settings stay and false is returned.
+	 * /g reload: saves the data, reads config.yml again, then the language files and the data files, and restarts the
+	 * features so switching them on or off in config.yml takes effect. If config.yml can't be read, the old settings
+	 * and data stay and false is returned.
 	 */
-	public boolean reloadSettings()
+	public boolean reload()
 	{
 		// Write what changed, so the files read again below have it
 		this.storage.flush();
-		this.storage.awaitWrites(10, TimeUnit.SECONDS);
+		if (!this.storage.awaitWrites(10, TimeUnit.SECONDS))
+		{
+			getLogger().severe("Reload failed: the data files could not be saved in time, so they are not read again.");
+			return false;
+		}
 
 		try
 		{
@@ -197,34 +179,60 @@ public class Gods extends JavaPlugin
 			return false;
 		}
 
-		loadManagers();
+		stopFeatures();
+		loadData();
+		startFeatures();
 		return true;
 	}
 
-	/** Loads every enabled manager's data, in the order they depend on each other. */
-	private void loadManagers()
+	/**
+	 * Loads the language files and the data of every enabled feature, in the order the managers depend on each other.
+	 * Data of a feature that is switched off is not read (and so not written).
+	 */
+	private void loadData()
 	{
 		if (this.settings.bibles().enabled())
 		{
-			HolyBookManager.instance().load();
+			this.ctx.holyBookManager().load();
 		}
 		if (this.settings.marriage().enabled())
 		{
-			MarriageManager.instance().load();
+			this.ctx.marriageManager().load();
 		}
 		if (this.settings.holyLand().enabled())
 		{
-			HolyLandManager.instance().load();
+			this.ctx.holyLandManager().load();
 		}
 
-		PermissionsManager.instance().load();
-		LanguageManager.instance().load();
-		GodManager.instance().load();
-		QuestManager.instance().load();
-		BelieverManager.instance().load();
-		WhitelistManager.instance().load();
+		this.ctx.languageManager().load();
+		this.ctx.godManager().load();
+		this.ctx.questManager().load();
+		this.ctx.believerManager().load();
+		this.ctx.whitelistManager().load();
+	}
 
-		registerHolyLandListener();
+	/** The features that can be switched on and off in config.yml */
+	private void startFeatures()
+	{
+		if (this.settings.holyLand().enabled())
+		{
+			registerFeature(this.ctx.holyLandManager());
+		}
+	}
+
+	private void stopFeatures()
+	{
+		for (Listener listener : this.featureListeners)
+		{
+			HandlerList.unregisterAll(listener);
+		}
+		this.featureListeners.clear();
+	}
+
+	private void registerFeature(Listener listener)
+	{
+		getServer().getPluginManager().registerEvents(listener, this);
+		this.featureListeners.add(listener);
 	}
 
 	/**
@@ -276,52 +284,75 @@ public class Gods extends JavaPlugin
 		}
 	}
 
-	/**
-	 * Listens for holy land events only while holy land is enabled, so /g reload can switch it on or off.
-	 */
-	private void registerHolyLandListener()
+	public boolean isBlacklistedGod(String godName)
 	{
-		HandlerList.unregisterAll(HolyLandManager.instance());
-		if (this.settings.holyLand().enabled())
+		if (this.settings.gods().blacklist())
 		{
-			getServer().getPluginManager().registerEvents(HolyLandManager.instance(), this);
+			return this.ctx.whitelistManager().isBlacklistedGod(godName);
+		}
+		return false;
+	}
+
+	public boolean isWhitelistedGod(String godName)
+	{
+		if (this.settings.gods().whitelist())
+		{
+			return this.ctx.whitelistManager().isWhitelistedGod(godName);
+		}
+		return true;
+	}
+
+	public boolean isEnabledInWorld(World world)
+	{
+		return this.settings.general().worlds().contains(world.getName());
+	}
+
+	public void log(String message)
+	{
+		getLogger().info(message);
+	}
+
+	public void logDebug(String message)
+	{
+		Settings current = this.settings;
+		if (current != null && current.general().debug())
+		{
+			getLogger().info("[Debug] " + message);
 		}
 	}
 
-
 	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, int amount, String name, int delay)
 	{
-		Player player = getServer().getPlayer(playerId);
-
-		if (player == null)
+		if (isOnline(playerId))
 		{
-			logDebug("sendInfo can not find online player with id " + playerId);
-			return;
+			getServer().getScheduler().runTaskLater(this, new TaskInfo(this.ctx, color, playerId, message, amount, name), delay);
 		}
-
-		getServer().getScheduler().runTaskLater(this, new TaskInfo(color, playerId, message, amount, name), delay);
 	}
 
 	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, String name, int amount1, int amount2, int delay)
 	{
-		Player player = getServer().getPlayer(playerId);
-		if (player == null)
+		if (isOnline(playerId))
 		{
-			logDebug("sendInfo can not find online player with id " + playerId);
-			return;
+			getServer().getScheduler().runTaskLater(this, new TaskInfo(this.ctx, color, playerId, message, name, amount1, amount2), delay);
 		}
-		getServer().getScheduler().runTaskLater(this, new TaskInfo(color, playerId, message, name, amount1, amount2), delay);
 	}
 
 	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, String name1, String name2, int delay)
+	{
+		if (isOnline(playerId))
+		{
+			getServer().getScheduler().runTaskLater(this, new TaskInfo(this.ctx, color, playerId, message, name1, name2), delay);
+		}
+	}
+
+	private boolean isOnline(UUID playerId)
 	{
 		Player player = getServer().getPlayer(playerId);
 		if (player == null)
 		{
 			logDebug("sendInfo can not find online player with id " + playerId);
-			return;
+			return false;
 		}
-
-		getServer().getScheduler().runTaskLater(this, new TaskInfo(color, playerId, message, name1, name2), delay);
+		return true;
 	}
 }

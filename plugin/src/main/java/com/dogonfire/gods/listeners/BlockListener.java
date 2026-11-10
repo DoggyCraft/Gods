@@ -42,26 +42,26 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.AltarManager;
-import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
-import com.dogonfire.gods.managers.HolyArtifactManager;
-import com.dogonfire.gods.managers.HolyBookManager;
-import com.dogonfire.gods.managers.HolyLandManager;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.MarriageManager;
-import com.dogonfire.gods.managers.PermissionsManager;
-import com.dogonfire.gods.managers.QuestManager;
 
 public class BlockListener implements Listener
 {
 	/** Last time a player ate or read a holy book, to rate-limit those effects. */
-	private HashMap<UUID, Long> lastEatTimes = new HashMap<UUID, Long>();
+	private final HashMap<UUID, Long> lastEatTimes = new HashMap<UUID, Long>();
 
-	private static boolean isHolyLandActiveIn(World world)
+	private final GodsContext ctx;
+
+	public BlockListener(GodsContext ctx)
 	{
-		return Gods.instance().settings().holyLand().enabled() && world != null && Gods.instance().isEnabledInWorld(world);
+		this.ctx = ctx;
+	}
+
+	private boolean isHolyLandActiveIn(World world)
+	{
+		return ctx.settings().holyLand().enabled() && world != null && ctx.plugin().isEnabledInWorld(world);
 	}
 
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -77,13 +77,13 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (!PermissionsManager.instance().hasPermission(player, "gods.holyland"))
+		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
 		{
-			Gods.instance().logDebug(event.getPlayer().getName() + " does not have holyland permission");
+			ctx.plugin().logDebug(event.getPlayer().getName() + " does not have holyland permission");
 			return;
 		}
 
-		if (HolyLandManager.instance().isNeutralLandLocation(event.getBlock().getLocation()))
+		if (ctx.holyLandManager().isNeutralLandLocation(event.getBlock().getLocation()))
 		{
 			player.sendMessage(ChatColor.RED + "You cannot build in neutral land");
 
@@ -91,14 +91,14 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String godName = HolyLandManager.instance().getGodAtHolyLandLocation(event.getBlock().getLocation());
+		String godName = ctx.holyLandManager().getGodAtHolyLandLocation(event.getBlock().getLocation());
 
 		if (godName == null)
 		{
 			return;
 		}
 
-		String playerGod = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String playerGod = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if ((playerGod == null) || (!playerGod.equals(godName)))
 		{
@@ -111,7 +111,7 @@ public class BlockListener implements Listener
 	@EventHandler
 	public void OnEntityCombust(EntityCombustEvent event)
 	{
-		if (!Gods.instance().settings().sacrifices().enabled())
+		if (!ctx.settings().sacrifices().enabled())
 		{
 			return;
 		}
@@ -120,7 +120,7 @@ public class BlockListener implements Listener
 			return;
 		}
 		Item item = (Item) event.getEntity();
-		if (!Gods.instance().isEnabledInWorld(item.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(item.getWorld()))
 		{
 			return;
 		}
@@ -128,35 +128,35 @@ public class BlockListener implements Listener
 		{
 			return;
 		}
-		UUID believerId = AltarManager.instance().getDroppedItemPlayer(event.getEntity().getEntityId());
+		UUID believerId = ctx.altarManager().getDroppedItemPlayer(event.getEntity().getEntityId());
 		if (believerId == null)
 		{
 			return;
 		}
-		Player player = Gods.instance().getServer().getPlayer(believerId);
+		Player player = ctx.plugin().getServer().getPlayer(believerId);
 		if (player == null)
 		{
 			return;
 		}
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.sacrifice")))
+		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.sacrifice")))
 		{
-			Gods.instance().logDebug("Does not have gods.altar.sacrifice");
+			ctx.plugin().logDebug("Does not have gods.altar.sacrifice");
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
 			return;
 		}
 
-		if (QuestManager.instance().handleSacrifice(player, godName, item.getItemStack().getType().name()))
+		if (ctx.questManager().handleSacrifice(player, godName, item.getItemStack().getType().name()))
 		{
 			return;
 		}
 
-		GodManager.instance().handleSacrifice(godName, player, item.getItemStack().getType());
+		ctx.godManager().handleSacrifice(godName, player, item.getItemStack().getType());
 	}
 
 	/** The entity really behind some damage: the shooter of a projectile, the igniter of TNT. */
@@ -187,13 +187,13 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (HolyLandManager.instance().isNeutralLandLocation(location))
+		if (ctx.holyLandManager().isNeutralLandLocation(location))
 		{
 			event.setCancelled(true);
 			return;
 		}
 
-		String godName = HolyLandManager.instance().getGodAtHolyLandLocation(location);
+		String godName = ctx.holyLandManager().getGodAtHolyLandLocation(location);
 		if (godName == null)
 		{
 			return;
@@ -205,12 +205,12 @@ public class BlockListener implements Listener
 		{
 			Player player = (Player) attacker;
 
-			String attackerGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+			String attackerGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 			if (attackerGodName == null)
 			{
-				if ((Gods.instance().settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
+				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
-					GodManager.instance().strikePlayerWithLightning(player.getUniqueId(), 3);
+					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
 				event.setCancelled(true);
 
@@ -218,23 +218,23 @@ public class BlockListener implements Listener
 			}
 			if (!godName.equals(attackerGodName))
 			{
-				if ((Gods.instance().settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
+				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
-					GodManager.instance().strikePlayerWithLightning(player.getUniqueId(), 3);
+					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
-				if (!GodManager.instance().hasWarRelation(godName, attackerGodName))
+				if (!ctx.godManager().hasWarRelation(godName, attackerGodName))
 				{
 					event.setCancelled(true);
 				}
 			}
-			else if ((event.getEntity() instanceof Player victim) && godName.equals(BelieverManager.instance().getGodForBeliever(victim.getUniqueId()))
-					&& (!GodManager.instance().getGodPvP(godName)))
+			else if ((event.getEntity() instanceof Player victim) && godName.equals(ctx.believerManager().getGodForBeliever(victim.getUniqueId()))
+					&& (!ctx.godManager().getGodPvP(godName)))
 			{
 				// Believers fighting each other in their own god's holy land; intruders can always be fought off
 				event.setCancelled(true);
 			}
 		}
-		else if ((attacker instanceof LivingEntity) && (!GodManager.instance().getGodMobDamage(godName)))
+		else if ((attacker instanceof LivingEntity) && (!ctx.godManager().getGodMobDamage(godName)))
 		{
 			event.setCancelled(true);
 		}
@@ -250,40 +250,40 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
 			return;
 		}
 
-		if (Gods.instance().settings().quests().enabled())
+		if (ctx.settings().quests().enabled())
 		{
-			QuestManager.instance().handleKilledMob(godName, event.getEntityType().name());
+			ctx.questManager().handleKilledMob(godName, event.getEntityType().name());
 		}
 
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.commandments")))
+		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.commandments")))
 		{
 			return;
 		}
 
-		GodManager.instance().handleKilled(player, godName, event.getEntityType().name());
+		ctx.godManager().handleKilled(player, godName, event.getEntityType().name());
 	}
 
 	/** Explosions don't destroy blocks in holy lands or neutral lands. */
-	private static void protectBlocksFromExplosion(List<Block> blocks)
+	private void protectBlocksFromExplosion(List<Block> blocks)
 	{
 		if (blocks.isEmpty() || !isHolyLandActiveIn(blocks.get(0).getWorld()))
 		{
 			return;
 		}
 
-		blocks.removeIf(block -> HolyLandManager.instance().isNeutralLandLocation(block.getLocation()) || HolyLandManager.instance().getGodAtHolyLandLocation(block.getLocation()) != null);
+		blocks.removeIf(block -> ctx.holyLandManager().isNeutralLandLocation(block.getLocation()) || ctx.holyLandManager().getGodAtHolyLandLocation(block.getLocation()) != null);
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -303,12 +303,12 @@ public class BlockListener implements Listener
 	{
 		Player player = event.getPlayer();
 
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		Material type = event.getItem().getType();
 		if (godName != null)
 		{
@@ -316,16 +316,16 @@ public class BlockListener implements Listener
 			long currentTime = System.currentTimeMillis();
 			if ((lastEatTime == null) || (currentTime - lastEatTime.longValue() > 10000L))
 			{
-				if ((Gods.instance().settings().commandments().enabled()) && (player.getHealth() != player.getAttribute(Attribute.MAX_HEALTH).getValue()))
+				if ((ctx.settings().commandments().enabled()) && (player.getHealth() != player.getAttribute(Attribute.MAX_HEALTH).getValue()))
 				{
-					if ((player.isOp()) || (PermissionsManager.instance().hasPermission(player, "gods.commandments")))
+					if ((player.isOp()) || (ctx.permissionsManager().hasPermission(player, "gods.commandments")))
 					{
-						GodManager.instance().handleEat(player, godName, type.name());
+						ctx.godManager().handleEat(player, godName, type.name());
 					}
 				}
-				if (Gods.instance().settings().quests().enabled())
+				if (ctx.settings().quests().enabled())
 				{
-					QuestManager.instance().handleEat(player.getName(), godName, type.name());
+					ctx.questManager().handleEat(player.getName(), godName, type.name());
 				}
 				this.lastEatTimes.put(player.getUniqueId(), currentTime);
 			}
@@ -336,17 +336,17 @@ public class BlockListener implements Listener
 	public void onPlayerDeath(PlayerDeathEvent event)
 	{
 		Player player = event.getEntity();
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if (godName != null)
 		{
-			GodManager.GodType godType = GodManager.instance().getDivineForceForGod(godName);
+			GodManager.GodType godType = ctx.godManager().getDivineForceForGod(godName);
 
-			GodManager.instance().handleKilledPlayer(player.getUniqueId(), godName, godType);
+			ctx.godManager().handleKilledPlayer(player.getUniqueId(), godName, godType);
 		}
 
 		Player killer = player.getKiller();
@@ -355,7 +355,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		String killerGodName = BelieverManager.instance().getGodForBeliever(killer.getUniqueId());
+		String killerGodName = ctx.believerManager().getGodForBeliever(killer.getUniqueId());
 		if (killerGodName == null)
 		{
 			return;
@@ -366,14 +366,14 @@ public class BlockListener implements Listener
 		if (godName == null)
 		{
 			// War gods reward slaying heathens
-			if (GodManager.instance().getDivineForceForGod(killerGodName) == GodManager.GodType.WAR)
+			if (ctx.godManager().getDivineForceForGod(killerGodName) == GodManager.GodType.WAR)
 			{
 				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingHeathen;
 			}
 		}
 		else
 		{
-			List<String> warRelations = GodManager.instance().getWarRelations(killerGodName);
+			List<String> warRelations = ctx.godManager().getWarRelations(killerGodName);
 			if ((warRelations != null) && (warRelations.contains(godName)))
 			{
 				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingEnemy;
@@ -382,12 +382,12 @@ public class BlockListener implements Listener
 
 		if (message != null)
 		{
-			double powerBefore = BelieverManager.instance().getBelieverPower(killer.getUniqueId());
-			BelieverManager.instance().increasePrayer(killer.getUniqueId(), killerGodName, 2);
-			BelieverManager.instance().increasePrayerPower(killer.getUniqueId(), 2);
-			double powerAfter = BelieverManager.instance().getBelieverPower(killer.getUniqueId());
+			double powerBefore = ctx.believerManager().getBelieverPower(killer.getUniqueId());
+			ctx.believerManager().increasePrayer(killer.getUniqueId(), killerGodName, 2);
+			ctx.believerManager().increasePrayerPower(killer.getUniqueId(), 2);
+			double powerAfter = ctx.believerManager().getBelieverPower(killer.getUniqueId());
 
-			Gods.instance().sendInfo(killer.getUniqueId(), message, ChatColor.AQUA, (int) (powerAfter - powerBefore), killerGodName, 20);
+			ctx.plugin().sendInfo(killer.getUniqueId(), message, ChatColor.AQUA, (int) (powerAfter - powerBefore), killerGodName, 20);
 		}
 	}
 
@@ -395,20 +395,20 @@ public class BlockListener implements Listener
 	public void OnPlayerDropItem(PlayerDropItemEvent event)
 	{
 		Player player = event.getPlayer();
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.sacrifice")))
+		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.sacrifice")))
 		{
-			Gods.instance().logDebug("OnPlayerDropItem(): Does not have gods.altar.sacrifice");
+			ctx.plugin().logDebug("OnPlayerDropItem(): Does not have gods.altar.sacrifice");
 			return;
 		}
 		if (player.getGameMode() == GameMode.CREATIVE)
 		{
 			return;
 		}
-		AltarManager.instance().addDroppedItem(event.getItemDrop().getEntityId(), player.getUniqueId());
+		ctx.altarManager().addDroppedItem(event.getItemDrop().getEntityId(), player.getUniqueId());
 	}
 
 	/**
@@ -419,13 +419,13 @@ public class BlockListener implements Listener
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onHolyBookUse(PlayerInteractEvent event)
 	{
-		if (!Gods.instance().settings().bibles().enabled() || event.useItemInHand() == Event.Result.DENY || event.getHand() != EquipmentSlot.HAND)
+		if (!ctx.settings().bibles().enabled() || event.useItemInHand() == Event.Result.DENY || event.getHand() != EquipmentSlot.HAND)
 		{
 			return;
 		}
 
 		Player player = event.getPlayer();
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
@@ -440,14 +440,14 @@ public class BlockListener implements Listener
 
 		if ((action == Action.RIGHT_CLICK_AIR) || (action == Action.RIGHT_CLICK_BLOCK))
 		{
-			String godName = HolyBookManager.instance().getGodForBible(book);
+			String godName = ctx.holyBookManager().getGodForBible(book);
 			if (godName != null)
 			{
 				Long lastReadTime = this.lastEatTimes.get(player.getUniqueId());
 				long currentTime = System.currentTimeMillis();
 				if ((lastReadTime == null) || (currentTime - lastReadTime.longValue() > 10000L))
 				{
-					QuestManager.instance().handleReadBible(godName, player.getUniqueId());
+					ctx.questManager().handleReadBible(godName, player.getUniqueId());
 					this.lastEatTimes.put(player.getUniqueId(), currentTime);
 				}
 			}
@@ -459,32 +459,32 @@ public class BlockListener implements Listener
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
 		Player player = event.getPlayer();
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
 
-		if (Gods.instance().settings().quests().enabled())
+		if (ctx.settings().quests().enabled())
 		{
-			if (event.getClickedBlock() != null && QuestManager.instance().handleOpenChest(event.getPlayer().getUniqueId(), event.getClickedBlock().getLocation()))
+			if (event.getClickedBlock() != null && ctx.questManager().handleOpenChest(event.getPlayer().getUniqueId(), event.getClickedBlock().getLocation()))
 			{
 				event.setCancelled(true);
 			}
 		}
 
-		if (!Gods.instance().settings().holyLand().enabled())
+		if (!ctx.settings().holyLand().enabled())
 		{
 			return;
 		}
 
-		if (!PermissionsManager.instance().hasPermission(event.getPlayer(), "gods.holyland"))
+		if (!ctx.permissionsManager().hasPermission(event.getPlayer(), "gods.holyland"))
 		{
-			Gods.instance().logDebug(event.getPlayer().getName() + " does not have holyland permission");
+			ctx.plugin().logDebug(event.getPlayer().getName() + " does not have holyland permission");
 			return;
 		}
-		if ((!player.isOp()) && (HolyLandManager.instance().isNeutralLandLocation(player.getLocation())))
+		if ((!player.isOp()) && (ctx.holyLandManager().isNeutralLandLocation(player.getLocation())))
 		{
-			if (!Gods.instance().settings().holyLand().allowInteractionInNeutralLands())
+			if (!ctx.settings().holyLand().allowInteractionInNeutralLands())
 			{
 				event.setCancelled(true);
 			}
@@ -494,22 +494,22 @@ public class BlockListener implements Listener
 		{
 			return;
 		}
-		String blockGodName = HolyLandManager.instance().getGodAtHolyLandLocation(event.getClickedBlock().getLocation());
+		String blockGodName = ctx.holyLandManager().getGodAtHolyLandLocation(event.getClickedBlock().getLocation());
 		if (blockGodName == null)
 		{
 			return;
 		}
-		if ((Gods.instance().settings().holyLand().breakableBlocks().contains(event.getClickedBlock().getType())) || (AltarManager.instance().isAltarBlock(event.getClickedBlock())))
+		if ((ctx.settings().holyLand().breakableBlocks().contains(event.getClickedBlock().getType())) || (ctx.altarManager().isAltarBlock(event.getClickedBlock())))
 		{
 			return;
 		}
-		if (HolyLandManager.instance().isContestedLand(player.getLocation()))
+		if (ctx.holyLandManager().isContestedLand(player.getLocation()))
 		{
 			player.sendMessage(ChatColor.RED + "This Holy Land is contested! Win the battle before you can access this Holy Land!");
 			event.setCancelled(true);
 			return;
 		}
-		String playerGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String playerGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		if (playerGodName == null)
 		{
 			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.GOLD + blockGodName);
@@ -518,7 +518,7 @@ public class BlockListener implements Listener
 		}
 		if (!playerGodName.equals(blockGodName))
 		{
-			if (GodManager.instance().hasAllianceRelation(blockGodName, playerGodName))
+			if (ctx.godManager().hasAllianceRelation(blockGodName, playerGodName))
 			{
 				return;
 			}
@@ -536,19 +536,19 @@ public class BlockListener implements Listener
 	public void OnPlayerInteract(PlayerInteractEvent event)
 	{
 		Player player = event.getPlayer();
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
 
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK))
 		{
 			Material type = player.getInventory().getItemInMainHand().getType();
-			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null) && (Gods.instance().settings().holyArtifacts().enabled()))
+			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null) && (ctx.settings().holyArtifacts().enabled()))
 			{
-				HolyArtifactManager.instance().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
+				ctx.holyArtifactManager().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
 			}
 		}
 
@@ -559,7 +559,7 @@ public class BlockListener implements Listener
 
 		Block block = event.getClickedBlock();
 
-		if (!AltarManager.instance().isAltarSign(block))
+		if (!ctx.altarManager().isAltarSign(block))
 		{
 			return;
 		}
@@ -579,78 +579,78 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (Gods.instance().settings().curses().enabled())
+		if (ctx.settings().curses().enabled())
 		{
-			Player cursedPlayer = AltarManager.instance().getCursedPlayerFromAltar(block, lines);
+			Player cursedPlayer = ctx.altarManager().getCursedPlayerFromAltar(block, lines);
 
 			if (cursedPlayer != null)
 			{
-				if ((godName != null) && GodManager.instance().isPriest(player.getUniqueId()))
+				if ((godName != null) && ctx.godManager().isPriest(player.getUniqueId()))
 				{
-					Player oldCursedPlayer = GodManager.instance().getCursedPlayerForGod(godName);
+					Player oldCursedPlayer = ctx.godManager().getCursedPlayerForGod(godName);
 					if ((oldCursedPlayer != null) && oldCursedPlayer == cursedPlayer)
 					{
-						GodManager.instance().setCursedPlayerForGod(godName, null);
+						ctx.godManager().setCursedPlayerForGod(godName, null);
 
-						LanguageManager.instance().setPlayerName(cursedPlayer.getDisplayName());
+						ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
-						GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerUnset, 2);
-						GodManager.instance().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerUnset, cursedPlayer.getUniqueId());
+						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerUnset, 2);
+						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerUnset, cursedPlayer.getUniqueId());
 					}
 					else
 					{
-						GodManager.instance().setCursedPlayerForGod(godName, cursedPlayer.getUniqueId());
+						ctx.godManager().setCursedPlayerForGod(godName, cursedPlayer.getUniqueId());
 
-						LanguageManager.instance().setPlayerName(cursedPlayer.getDisplayName());
+						ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
-						GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerSet, 2);
-						GodManager.instance().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerSet, player.getUniqueId());
+						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerSet, 2);
+						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerSet, player.getUniqueId());
 
-						Gods.instance().log(player.getName() + " asked " + godName + " for curses on " + cursedPlayer.getName());
+						ctx.plugin().log(player.getName() + " asked " + godName + " for curses on " + cursedPlayer.getName());
 					}
 				}
 				else
 				{
-					Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 				}
 
 				return;
 			}
 		}
-		if (Gods.instance().settings().blessings().enabled())
+		if (ctx.settings().blessings().enabled())
 		{
-			Player blessedPlayer = AltarManager.instance().getBlessedPlayerFromAltarSign(block, lines);
+			Player blessedPlayer = ctx.altarManager().getBlessedPlayerFromAltarSign(block, lines);
 			if (blessedPlayer != null)
 			{
-				if ((godName != null) && GodManager.instance().isPriest(player.getUniqueId()))
+				if ((godName != null) && ctx.godManager().isPriest(player.getUniqueId()))
 				{
-					UUID oldBlessedPlayer = GodManager.instance().getBlessedPlayerForGod(godName);
+					UUID oldBlessedPlayer = ctx.godManager().getBlessedPlayerForGod(godName);
 					if ((oldBlessedPlayer != null) && (oldBlessedPlayer.equals(blessedPlayer.getUniqueId())))
 					{
-						GodManager.instance().setBlessedPlayerForGod(godName, null);
+						ctx.godManager().setBlessedPlayerForGod(godName, null);
 
-						LanguageManager.instance().setPlayerName(blessedPlayer.getDisplayName());
+						ctx.languageManager().setPlayerName(blessedPlayer.getDisplayName());
 
-						GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerUnset, 2);
+						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerUnset, 2);
 
-						GodManager.instance().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerUnset, player.getUniqueId());
+						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerUnset, player.getUniqueId());
 					}
 					else
 					{
-						GodManager.instance().setBlessedPlayerForGod(godName, blessedPlayer.getUniqueId());
+						ctx.godManager().setBlessedPlayerForGod(godName, blessedPlayer.getUniqueId());
 
-						LanguageManager.instance().setPlayerName(blessedPlayer.getDisplayName());
+						ctx.languageManager().setPlayerName(blessedPlayer.getDisplayName());
 
-						GodManager.instance().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerSet, 2);
+						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerSet, 2);
 
-						GodManager.instance().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerSet, player.getUniqueId());
+						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerSet, player.getUniqueId());
 
-						Gods.instance().log(player.getName() + " asked " + godName + " for blessings on " + blessedPlayer.getName());
+						ctx.plugin().log(player.getName() + " asked " + godName + " for blessings on " + blessedPlayer.getName());
 					}
 				}
 				else
 				{
-					Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 				}
 				return;
 			}
@@ -659,14 +659,14 @@ public class BlockListener implements Listener
 		// Only a finished "Altar / of / <god>" sign is a praying altar. A curse or blessing sign whose player
 		// is offline (or with cursing/blessing off), or any other sign on an altar block, does nothing
 		String firstLine = ChatColor.stripColor(lines[0]).trim();
-		if (!firstLine.equals("Altar") || !AltarManager.instance().isFormattedAltarSign(block))
+		if (!firstLine.equals("Altar") || !ctx.altarManager().isFormattedAltarSign(block))
 		{
 			return;
 		}
 
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.pray")))
+		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.pray")))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarPrayingNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarPrayingNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
@@ -682,34 +682,34 @@ public class BlockListener implements Listener
 
 		if (altarGodName.length() <= 1)
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
-		altarGodName = GodManager.instance().formatGodName(altarGodName);
+		altarGodName = ctx.godManager().formatGodName(altarGodName);
 
-		if ((Gods.instance().isBlacklistedGod(altarGodName)) || (!Gods.instance().isWhitelistedGod(altarGodName)))
+		if ((ctx.plugin().isBlacklistedGod(altarGodName)) || (!ctx.plugin().isWhitelistedGod(altarGodName)))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
-		if (!GodManager.instance().hasGodAccess(player.getUniqueId(), altarGodName))
+		if (!ctx.godManager().hasGodAccess(player.getUniqueId(), altarGodName))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
-		if (GodManager.instance().handleAltarPray(block.getLocation(), player, altarGodName))
+		if (ctx.godManager().handleAltarPray(block.getLocation(), player, altarGodName))
 		{
-			Gods.instance().log(player.getDisplayName() + " prayed to " + altarGodName + " at an altar");
+			ctx.plugin().log(player.getDisplayName() + " prayed to " + altarGodName + " at an altar");
 		}
 	}
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		GodManager.instance().updateOnlineGods();
+		ctx.godManager().updateOnlineGods();
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -721,16 +721,16 @@ public class BlockListener implements Listener
 
 		Player player = (Player) event.getEntity();
 
-		if (!Gods.instance().isEnabledInWorld(player.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
 			return;
 		}
 
-		if (Gods.instance().settings().holyArtifacts().enabled())
+		if (ctx.settings().holyArtifacts().enabled())
 		{
-			if (HolyArtifactManager.instance().isHolyArtifact(event.getItem().getItemStack()))
+			if (ctx.holyArtifactManager().isHolyArtifact(event.getItem().getItemStack()))
 			{
-				if (HolyArtifactManager.instance().hasHolyArtifact(player.getName()))
+				if (ctx.holyArtifactManager().hasHolyArtifact(player.getName()))
 				{
 					event.setCancelled(true);
 					return;
@@ -738,9 +738,9 @@ public class BlockListener implements Listener
 			}
 		}
 
-		if (Gods.instance().settings().marriage().enabled())
+		if (ctx.settings().marriage().enabled())
 		{
-			MarriageManager.instance().handlePickupItem(player, event.getItem(), event.getItem().getLocation());
+			ctx.marriageManager().handlePickupItem(player, event.getItem(), event.getItem().getLocation());
 		}
 
 	}
@@ -752,15 +752,15 @@ public class BlockListener implements Listener
 
 		this.lastEatTimes.remove(player.getUniqueId());
 
-		if (Gods.instance().settings().holyLand().enabled())
+		if (ctx.settings().holyLand().enabled())
 		{
-			HolyLandManager.instance().handleQuit(player.getUniqueId());
+			ctx.holyLandManager().handleQuit(player.getUniqueId());
 		}
 
 		// The player still counts as online during this event
-		if (Gods.instance().isEnabled())
+		if (ctx.plugin().isEnabled())
 		{
-			Gods.instance().getServer().getScheduler().runTask(Gods.instance(), () -> GodManager.instance().updateOnlineGods());
+			ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> ctx.godManager().updateOnlineGods());
 		}
 	}
 
@@ -771,18 +771,18 @@ public class BlockListener implements Listener
 		Player player = event.getPlayer();
 		Block block = event.getBlock();
 
-		if (!Gods.instance().isEnabledInWorld(block.getWorld()))
+		if (!ctx.plugin().isEnabledInWorld(block.getWorld()))
 		{
 			return;
 		}
 
-		if (!AltarManager.instance().isAltarSign(block))
+		if (!ctx.altarManager().isAltarSign(block))
 		{
 			return;
 		}
 
 		// An existing altar sign is not rewritten (its editor can still be opened by other plugins)
-		if (AltarManager.instance().isFormattedAltarSign(block))
+		if (ctx.altarManager().isFormattedAltarSign(block))
 		{
 			event.setCancelled(true);
 			return;
@@ -796,13 +796,13 @@ public class BlockListener implements Listener
 
 		boolean created;
 
-		if ((Gods.instance().settings().curses().enabled()) && (AltarManager.instance().isCursingAltar(block, event.getLines())))
+		if ((ctx.settings().curses().enabled()) && (ctx.altarManager().isCursingAltar(block, event.getLines())))
 		{
-			created = AltarManager.instance().handleNewCursingAltar(event);
+			created = ctx.altarManager().handleNewCursingAltar(event);
 		}
-		else if ((Gods.instance().settings().blessings().enabled()) && (AltarManager.instance().isBlessingAltar(block, event.getLines())))
+		else if ((ctx.settings().blessings().enabled()) && (ctx.altarManager().isBlessingAltar(block, event.getLines())))
 		{
-			created = AltarManager.instance().handleNewBlessingAltar(event);
+			created = ctx.altarManager().handleNewBlessingAltar(event);
 		}
 		else
 		{
@@ -819,12 +819,12 @@ public class BlockListener implements Listener
 			{
 				return;
 			}
-			created = AltarManager.instance().handleNewPrayingAltar(event);
+			created = ctx.altarManager().handleNewPrayingAltar(event);
 		}
 
 		if (created)
 		{
-			AltarManager.instance().waxAltarSignLater(block);
+			ctx.altarManager().waxAltarSignLater(block);
 		}
 		else
 		{

@@ -11,6 +11,8 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
 
+import com.dogonfire.gods.GodsContext;
+
 public class TaskFirework extends Task {
 	private static final Color[] COLORS = { Color.AQUA, Color.BLACK, Color.BLUE, Color.FUCHSIA, Color.GRAY, Color.GREEN, Color.LIME, Color.MAROON, Color.NAVY, Color.OLIVE, Color.ORANGE, Color.PURPLE, Color.RED, Color.SILVER, Color.TEAL, Color.WHITE, Color.YELLOW };
 
@@ -18,7 +20,8 @@ public class TaskFirework extends Task {
 	private Random random = new Random();
 	private int numberOfRockets = 1;
 
-	public TaskFirework(Player player, int numberOfRockets) {
+	public TaskFirework(GodsContext ctx, Player player, int numberOfRockets) {
+		super(ctx);
 		this.player = player;
 		this.numberOfRockets = numberOfRockets;
 	}
@@ -51,7 +54,7 @@ public class TaskFirework extends Task {
 		int n = (int) (this.numberOfRockets / 1.50f);
 
 		if (n > 0) {
-			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new TaskFirework(this.player, n), 20 + this.random.nextInt(80));
+			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new TaskFirework(ctx, this.player, n), 20 + this.random.nextInt(80));
 		}
 	}
 }

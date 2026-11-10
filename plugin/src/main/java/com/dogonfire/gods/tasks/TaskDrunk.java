@@ -5,11 +5,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.dogonfire.gods.GodsContext;
+
 public class TaskDrunk extends Task {
 	private Player player;
 	private long seconds;
 
-	public TaskDrunk(Player player, long seconds) {
+	public TaskDrunk(GodsContext ctx, Player player, long seconds) {
+		super(ctx);
 		this.player = player;
 		this.seconds = seconds;
 	}

@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class TaskGodSpeak extends Task {
@@ -15,7 +16,8 @@ public class TaskGodSpeak extends Task {
 	private String playerNameString;
 	private String typeString;
 
-	public TaskGodSpeak(String gname, UUID playerId, String player, String type, int a, LanguageManager.LANGUAGESTRING m) {
+	public TaskGodSpeak(GodsContext ctx, String gname, UUID playerId, String player, String type, int a, LanguageManager.LANGUAGESTRING m) {
+		super(ctx);
 		this.playerId = playerId;
 		this.godName = gname;
 		this.message = m;
@@ -32,14 +34,14 @@ public class TaskGodSpeak extends Task {
 		}
 
 		// LanguageManager is shared, so set every value this message may use before reading it
-		LanguageManager.instance().setAmount(this.amount);
+		ctx.languageManager().setAmount(this.amount);
 		try {
-			LanguageManager.instance().setType(this.typeString);
+			ctx.languageManager().setType(this.typeString);
 		} catch (Exception ex) {
 			getPlugin().logDebug(ex.getMessage());
 		}
-		LanguageManager.instance().setPlayerName(this.playerNameString);
+		ctx.languageManager().setPlayerName(this.playerNameString);
 
-		player.sendMessage(ChatColor.GOLD + "<" + this.godName + ">: " + ChatColor.WHITE + ChatColor.BOLD + LanguageManager.instance().getLanguageString(this.godName, this.message));
+		player.sendMessage(ChatColor.GOLD + "<" + this.godName + ">: " + ChatColor.WHITE + ChatColor.BOLD + ctx.languageManager().getLanguageString(this.godName, this.message));
 	}
 }

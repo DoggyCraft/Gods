@@ -8,9 +8,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.GodManager.GodType;
-import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class TaskGiveHolyArtifact extends Task
@@ -20,8 +19,9 @@ public class TaskGiveHolyArtifact extends Task
 	private GodType	godType	= null;
 	private boolean	speak	= false;
 
-	public TaskGiveHolyArtifact(String god, GodType godType, Player p, boolean godspeak)
+	public TaskGiveHolyArtifact(GodsContext ctx, String god, GodType godType, Player p, boolean godspeak)
 	{
+		super(ctx);
 		this.player = p;
 		this.godName = new String(god);
 		this.godType = godType;
@@ -44,7 +44,7 @@ public class TaskGiveHolyArtifact extends Task
 		{
 			getPlugin().logDebug("Creating holy artifact for " + this.player.getName());
 
-			HolyArtifactManager.instance().createHolyArtifact(this.godType, this.godName, spawnLocation);
+			ctx.holyArtifactManager().createHolyArtifact(this.godType, this.godName, spawnLocation);
 
 			spawnLocation.getWorld().playEffect(spawnLocation, Effect.MOBSPAWNER_FLAMES, 25);
 		}
@@ -64,8 +64,8 @@ public class TaskGiveHolyArtifact extends Task
 			Random random = new Random();
 			if (this.speak)
 			{
-				LanguageManager.instance().setPlayerName(this.player.getName());
-				GodManager.instance().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverHolyArtifactBlessing, 2 + random.nextInt(10));
+				ctx.languageManager().setPlayerName(this.player.getName());
+				ctx.godManager().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverHolyArtifactBlessing, 2 + random.nextInt(10));
 			}
 		}
 	}

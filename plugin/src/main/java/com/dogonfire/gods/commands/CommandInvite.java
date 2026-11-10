@@ -4,16 +4,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandInvite extends GodsCommand
 {
-	protected CommandInvite()
+	CommandInvite(GodsContext ctx)
 	{
-		super("invite");
+		super(ctx, "invite");
 		this.permission = "gods.priest.invite";
 		this.parameters = "<player>";
 		this.description = "Invite a player to your religion";
@@ -34,12 +32,12 @@ public class CommandInvite extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (!GodManager.instance().isPriest(player.getUniqueId()))
+		if (!ctx.godManager().isPriest(player.getUniqueId()))
 		{
 			player.sendMessage(ChatColor.RED + "Only priests can invite players");
 			return;
 		}
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
@@ -52,23 +50,23 @@ public class CommandInvite extends GodsCommand
 			return;
 		}
 		String playerName = args[1];
-		Player invitedPlayer = Gods.instance().getServer().getPlayerExact(playerName);
+		Player invitedPlayer = ctx.plugin().getServer().getPlayerExact(playerName);
 		if (invitedPlayer == null)
 		{
 			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.YELLOW + playerName + ChatColor.RED + "' online.");
 			return;
 		}
-		String invitedPlayerGod = BelieverManager.instance().getGodForBeliever(invitedPlayer.getUniqueId());
+		String invitedPlayerGod = ctx.believerManager().getGodForBeliever(invitedPlayer.getUniqueId());
 		if ((invitedPlayerGod != null) && (invitedPlayerGod.equals(godName)))
 		{
 			player.sendMessage(ChatColor.YELLOW + playerName + ChatColor.RED + " already believes in '" + ChatColor.GOLD + godName + ChatColor.RED + "!");
 			return;
 		}
-		BelieverManager.instance().setInvitation(invitedPlayer.getUniqueId(), godName);
-		Gods.instance().log(godName + " invited to " + invitedPlayer.getName() + " to join the religion");
-		LanguageManager.instance().setPlayerName(invitedPlayer.getName());
-		GodManager.instance().GodSay(godName, invitedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerInvite, 10);
-		Gods.instance().sendInfo(invitedPlayer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, "/gods yes or /gods no", "/gods yes or /gods no", 40);
+		ctx.believerManager().setInvitation(invitedPlayer.getUniqueId(), godName);
+		ctx.plugin().log(godName + " invited to " + invitedPlayer.getName() + " to join the religion");
+		ctx.languageManager().setPlayerName(invitedPlayer.getName());
+		ctx.godManager().GodSay(godName, invitedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerInvite, 10);
+		ctx.plugin().sendInfo(invitedPlayer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, "/gods yes or /gods no", "/gods yes or /gods no", 40);
 		player.sendMessage(ChatColor.AQUA + "You invited " + ChatColor.YELLOW + playerName + ChatColor.AQUA + " to join " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
 	}
 

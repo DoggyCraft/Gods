@@ -5,14 +5,13 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandHome extends GodsCommand
 {
-	protected CommandHome()
+	CommandHome(GodsContext ctx)
 	{
-		super("home");
+		super(ctx, "home");
 		this.permission = "gods.home";
 		this.description = "Teleport to the home of your religion";
 	}
@@ -31,14 +30,14 @@ public class CommandHome extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 
 		if (godName == null)
 		{
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		Location location = GodManager.instance().getHomeForGod(godName);
+		Location location = ctx.godManager().getHomeForGod(godName);
 		if (location == null || location.getWorld() == null)
 		{
 			sender.sendMessage(ChatColor.RED + "Your religion does not have a home");

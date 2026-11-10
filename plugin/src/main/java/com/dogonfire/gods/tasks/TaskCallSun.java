@@ -4,6 +4,8 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import com.dogonfire.gods.GodsContext;
+
 /**
  * Speeds time up until day breaks, then keeps it day until stopTime (System.currentTimeMillis()).
  */
@@ -15,8 +17,9 @@ public class TaskCallSun extends Task
 	private Player				player;
 	private World				world;
 
-	public TaskCallSun(Player player, long stopTime)
+	public TaskCallSun(GodsContext ctx, Player player, long stopTime)
 	{
+		super(ctx);
 		this.stopTime = stopTime;
 		this.player = player;
 		this.world = player.getWorld();

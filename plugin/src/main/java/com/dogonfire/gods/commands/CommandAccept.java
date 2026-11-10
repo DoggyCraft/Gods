@@ -3,14 +3,13 @@ package com.dogonfire.gods.commands;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandAccept extends GodsCommand
 {
-	protected CommandAccept()
+	CommandAccept(GodsContext ctx)
 	{
-		super("yes");
+		super(ctx, "yes");
 		this.permission = "gods.accept";
 		this.description = "Accept a proposal from your God";
 	}
@@ -29,12 +28,12 @@ public class CommandAccept extends GodsCommand
 			return;
 		}
 
-		if (BelieverManager.instance().getGodForBeliever(((Player) sender).getUniqueId()) == null)
+		if (ctx.believerManager().getGodForBeliever(((Player) sender).getUniqueId()) == null)
 		{
 			sender.sendMessage(stringNoGod);
 			return;
 		}
 		
-		GodManager.instance().believerAccept(((Player) sender).getUniqueId());
+		ctx.godManager().believerAccept(((Player) sender).getUniqueId());
 	}
 }

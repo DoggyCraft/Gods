@@ -20,25 +20,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.GodManager.GodType;
 
 public class AltarManager
 {
-	private static AltarManager instance;
-
-	public static AltarManager instance()
-	{
-		if (instance == null)
-			instance = new AltarManager();
-		return instance;
-	}
-
 	private Random							random			= new Random();
 	private Map<Integer, UUID>			droppedItems	= new HashMap<Integer, UUID>();
 
-	private AltarManager()
+	private final GodsContext ctx;
+
+	public AltarManager(GodsContext ctx)
 	{
+		this.ctx = ctx;
 	}
 
 	public void addDroppedItem(int entityID, UUID playerId)
@@ -48,7 +42,7 @@ public class AltarManager
 
 	public void clearDroppedItems()
 	{
-		Gods.instance().logDebug("Cleared " + this.droppedItems.size() + " dropped items");
+		ctx.plugin().logDebug("Cleared " + this.droppedItems.size() + " dropped items");
 		this.droppedItems.clear();
 	}
 
@@ -83,7 +77,7 @@ public class AltarManager
 	 */
 	public void waxAltarSignLater(Block signBlock)
 	{
-		Gods.instance().getServer().getScheduler().runTask(Gods.instance(), () -> {
+		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> {
 			if (signBlock.getState() instanceof Sign)
 			{
 				Sign sign = (Sign) signBlock.getState();
@@ -107,7 +101,7 @@ public class AltarManager
 
 		Block altarBlock = block.getRelative(directional.getFacing().getOppositeFace());
 
-		Gods.instance().logDebug("getAltarBlockFromSign(): AltarBlock block is " + altarBlock.getType().name());
+		ctx.plugin().logDebug("getAltarBlockFromSign(): AltarBlock block is " + altarBlock.getType().name());
 		if (getGodTypeForAltarBlockType(altarBlock.getType()) == null)
 		{
 			return null;
@@ -127,7 +121,7 @@ public class AltarManager
 	public List<String> getAltarBlockTypesFromGodType(GodManager.GodType godType)
 	{
 		List<String> list = new ArrayList<String>();
-		for (Material blockMaterial : Gods.instance().settings().altars().blocksFor(godType))
+		for (Material blockMaterial : ctx.settings().altars().blocksFor(godType))
 		{
 			list.add(blockMaterial.name());
 		}
@@ -164,7 +158,7 @@ public class AltarManager
 		}
 
 		// Exact name: getPlayer(String) would also match name prefixes
-		return Gods.instance().getServer().getPlayerExact(ChatColor.stripColor(playerName).trim());
+		return ctx.plugin().getServer().getPlayerExact(ChatColor.stripColor(playerName).trim());
 	}
 
 	public UUID getDroppedItemPlayer(int entityID)
@@ -183,10 +177,10 @@ public class AltarManager
 
 	public GodManager.GodType getGodTypeForAltarBlockType(Material altarBlockType)
 	{
-		List<GodManager.GodType> godTypes = Gods.instance().settings().altars().godTypesFor(altarBlockType);
+		List<GodManager.GodType> godTypes = ctx.settings().altars().godTypesFor(altarBlockType);
 		if (godTypes.isEmpty())
 		{
-			Gods.instance().logDebug("No god types available for block type " + altarBlockType.name() + "!");
+			ctx.plugin().logDebug("No god types available for block type " + altarBlockType.name() + "!");
 			return null;
 		}
 		return godTypes.get(this.random.nextInt(godTypes.size()));
@@ -196,7 +190,7 @@ public class AltarManager
 	{
 		Player player = event.getPlayer();
 
-		if (!player.isOp() && !PermissionsManager.instance().hasPermission(player, "gods.altar.build"))
+		if (!player.isOp() && !ctx.permissionsManager().hasPermission(player, "gods.altar.build"))
 		{
 			return false;
 		}
@@ -205,7 +199,7 @@ public class AltarManager
 
 		event.setLine(3, "");
 
-		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsHelp, ChatColor.AQUA, 0, "", 10);
+		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsHelp, ChatColor.AQUA, 0, "", 10);
 
 		return true;
 	}
@@ -213,9 +207,9 @@ public class AltarManager
 	public boolean handleNewCursingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.build")))
+		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.build")))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
 			return false;
 		}
 		
@@ -223,7 +217,7 @@ public class AltarManager
 		event.setLine(1, "On");
 		event.setLine(3, "");
 
-		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesHelp, ChatColor.AQUA, 0, "", 20);
+		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesHelp, ChatColor.AQUA, 0, "", 20);
 
 		return true;
 	}
@@ -231,9 +225,9 @@ public class AltarManager
 	public boolean handleNewPrayingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.build")))
+		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.build")))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
 			return false;
 		}
 
@@ -261,7 +255,7 @@ public class AltarManager
 
 				if ((text != null) && (text.length() > 0))
 				{
-					Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidAltarSign, ChatColor.DARK_RED, 0, "", 10);
+					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidAltarSign, ChatColor.DARK_RED, 0, "", 10);
 					return false;
 				}
 				otherline++;
@@ -270,35 +264,35 @@ public class AltarManager
 
 		if (godName.length() <= 1)
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
 			return false;
 		}
 
 		godName = godName.trim();
-		godName = GodManager.instance().formatGodName(godName);
+		godName = ctx.godManager().formatGodName(godName);
 
 		if ((godName.length() <= 1) || (godName.contains(" ")))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
 			return false;
 		}
 
-		if ((Gods.instance().isBlacklistedGod(godName)) || (!Gods.instance().isWhitelistedGod(godName)))
+		if ((ctx.plugin().isBlacklistedGod(godName)) || (!ctx.plugin().isWhitelistedGod(godName)))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return false;
 		}
 
-		if (!GodManager.instance().hasGodAccess(player.getUniqueId(), godName))
+		if (!ctx.godManager().hasGodAccess(player.getUniqueId(), godName))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
 			return false;
 		}
 
-		String currentGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String currentGodName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		if (currentGodName != null && !currentGodName.equals(godName))
 		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotBuildAltarToOtherGods, ChatColor.DARK_RED, 0, godName, 1);
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotBuildAltarToOtherGods, ChatColor.DARK_RED, 0, godName, 1);
 			return false;
 		}
 
@@ -309,21 +303,21 @@ public class AltarManager
 			return false;
 		}
 		
-		if (GodManager.instance().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
+		if (ctx.godManager().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
 		{
-			if ((Gods.instance().settings().holyLand().enabled()) && (PermissionsManager.instance().hasPermission(player, "gods.holyland")))
+			if ((ctx.settings().holyLand().enabled()) && (ctx.permissionsManager().hasPermission(player, "gods.holyland")))
 			{
-				HolyLandManager.instance().addAltar(player, godName, altarBlock.getLocation());
+				ctx.holyLandManager().addAltar(player, godName, altarBlock.getLocation());
 			}
 			
-			QuestManager.instance().handleBuiltPrayingAltar(godName);
+			ctx.questManager().handleBuiltPrayingAltar(godName);
 
 			event.setLine(0, "Altar");
 			event.setLine(1, "of");
 			event.setLine(2, godName);
 			event.setLine(3, "");
 
-			Gods.instance().sendInfo(event.getPlayer().getUniqueId(), LanguageManager.LANGUAGESTRING.PrayAlterHelp, ChatColor.AQUA, 0, godName, 80);
+			ctx.plugin().sendInfo(event.getPlayer().getUniqueId(), LanguageManager.LANGUAGESTRING.PrayAlterHelp, ChatColor.AQUA, 0, godName, 80);
 		}
 		else
 		{
@@ -397,10 +391,5 @@ public class AltarManager
 			return false;
 		}
 		return getCursedPlayerFromAltar(block, lines) != null;
-	}
-
-	public boolean isPrayingAltar(Block block)
-	{
-		return isAltarSign(block);
 	}
 }

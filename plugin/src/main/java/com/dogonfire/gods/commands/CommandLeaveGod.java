@@ -4,14 +4,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.managers.BelieverManager;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.GodsContext;
 
 public class CommandLeaveGod extends GodsCommand
 {
-	protected CommandLeaveGod()
+	CommandLeaveGod(GodsContext ctx)
 	{
-		super("leave");
+		super(ctx, "leave");
 		this.permission = "gods.leave";
 		this.description = "Leave your religion";
 	}
@@ -33,9 +32,9 @@ public class CommandLeaveGod extends GodsCommand
 		
 		Player player = (Player) sender;
 		
-		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		String godName = ctx.believerManager().getGodForBeliever(player.getUniqueId());
 		
-		if (GodManager.instance().believerLeaveGod(player.getUniqueId()))
+		if (ctx.godManager().believerLeaveGod(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + "You left the religion of " + ChatColor.YELLOW + godName);
 		}

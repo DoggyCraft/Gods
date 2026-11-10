@@ -1,6 +1,7 @@
 package com.dogonfire.gods.managers;
 
 import com.dogonfire.gods.Gods;
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.storage.DataFile;
 
 /**
@@ -9,27 +10,21 @@ import com.dogonfire.gods.storage.DataFile;
  */
 public class WhitelistManager
 {
-	private static WhitelistManager instance;
+	private final GodsContext ctx;
 
-	public static WhitelistManager instance()
+	public WhitelistManager(GodsContext ctx)
 	{
-		if (instance == null)
-			instance = new WhitelistManager();
-		return instance;
-	}
-
-	private WhitelistManager()
-	{
+		this.ctx = ctx;
 	}
 
 	private DataFile whitelistFile()
 	{
-		return Gods.instance().storage().whitelist();
+		return ctx.storage().whitelist();
 	}
 
 	private DataFile blacklistFile()
 	{
-		return Gods.instance().storage().blacklist();
+		return ctx.storage().blacklist();
 	}
 
 	public float getMinGodPower(String godName)
@@ -55,12 +50,12 @@ public class WhitelistManager
 
 	public void load()
 	{
-		if (Gods.instance().settings().gods().whitelist())
+		if (ctx.settings().gods().whitelist())
 		{
 			DataFile whitelist = whitelistFile();
 			whitelist.load();
 
-			Gods.instance().log("Loaded " + whitelist.yaml().getKeys(false).size() + " whitelisted Gods.");
+			ctx.plugin().log("Loaded " + whitelist.yaml().getKeys(false).size() + " whitelisted Gods.");
 
 			if (whitelist.yaml().getKeys(false).size() == 0)
 			{
@@ -69,15 +64,15 @@ public class WhitelistManager
 				whitelist.save();
 			}
 
-			Gods.instance().log("Using whitelist");
+			ctx.plugin().log("Using whitelist");
 		}
 
-		if (Gods.instance().settings().gods().blacklist())
+		if (ctx.settings().gods().blacklist())
 		{
 			DataFile blacklist = blacklistFile();
 			blacklist.load();
 
-			Gods.instance().log("Loaded " + blacklist.yaml().getKeys(false).size() + " blacklisted Gods.");
+			ctx.plugin().log("Loaded " + blacklist.yaml().getKeys(false).size() + " blacklisted Gods.");
 			if (blacklist.yaml().getKeys(false).size() == 0)
 			{
 				blacklist.yaml().set("TheExampleGodName", "");
@@ -85,7 +80,7 @@ public class WhitelistManager
 				blacklist.save();
 			}
 
-			Gods.instance().log("Using blacklist");
+			ctx.plugin().log("Using blacklist");
 		}
 	}
 }
