@@ -59,7 +59,7 @@ class GodsPlaceholderExpansion extends PlaceholderExpansion {
      */
     @Override
     public String getAuthor(){
-        return plugin.getDescription().getAuthors().toString();
+        return String.join(", ", plugin.getDescription().getAuthors());
     }
 
     /**
@@ -150,9 +150,9 @@ class GodsPlaceholderExpansion extends PlaceholderExpansion {
         	god = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
         	
         	if (god == null) {
-        		god = "";
+        		return "&" + ChatColor.WHITE.getChar();
         	}
-        	
+
         	ChatColor godColor = GodManager.instance().getColorForGod(god);
         	
             return "&" + String.valueOf(godColor.getChar());
