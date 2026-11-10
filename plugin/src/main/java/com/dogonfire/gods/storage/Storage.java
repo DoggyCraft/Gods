@@ -161,6 +161,34 @@ public final class Storage
 		}
 	}
 
+	/**
+	 * /g reload, before the data is loaded again: waits for pending writes, then lets every file decide whether it is
+	 * read again (it was edited on disk, or could not be read) or keeps the data in memory, and saves the files that keep
+	 * theirs. Returns false if the writes did not finish in time; nothing is changed then.
+	 */
+	public boolean prepareReload(long timeout, TimeUnit unit)
+	{
+		if (!awaitWrites(timeout, unit))
+		{
+			return false;
+		}
+		for (DataFile file : this.files)
+		{
+			file.prepareReload();
+		}
+		flush();
+		return true;
+	}
+
+	/** After the data was loaded again on /g reload */
+	public void finishReload()
+	{
+		for (DataFile file : this.files)
+		{
+			file.finishReload();
+		}
+	}
+
 	/** onDisable: writes every changed file and waits for the writes to finish. Nothing can be saved afterwards. */
 	public void close()
 	{

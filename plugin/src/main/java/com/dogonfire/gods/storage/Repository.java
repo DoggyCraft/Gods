@@ -65,6 +65,11 @@ public abstract class Repository
 		this.loaded = true;
 
 		boolean read = this.file.load();
+		if (this.file.lastLoadKept())
+		{
+			// /g reload and the file was not edited: the models in memory are still the truth
+			return true;
+		}
 		if (read || firstLoad)
 		{
 			clear();

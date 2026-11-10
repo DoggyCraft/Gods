@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -200,4 +201,56 @@ class StorageTest
 		assertTrue(storage.bibles().isDirty());
 		assertEquals(List.of(), filesInDir());
 	}
+	@Test
+	void reloadKeepsUnsavedChangesOfFilesNobodyEdited()
+	{
+		Storage storage = storage();
+		storage.gods().load();
+		storage.gods().yaml().set("Thor.Power", 1.0);
+		storage.gods().markDirty();
+
+		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
+		assertTrue(storage.gods().load());
+		storage.finishReload();
+
+		assertTrue(storage.gods().lastLoadKept());
+		assertEquals(1.0, storage.gods().yaml().getDouble("Thor.Power"));
+		storage.close();
+
+		Storage again = storage();
+		again.gods().load();
+		assertEquals(1.0, again.gods().yaml().getDouble("Thor.Power"));
+		again.close();
+	}
+
+	@Test
+	void reloadReadsFilesEditedOnDiskAndDropsUnsavedChanges() throws IOException
+	{
+		Storage storage = storage();
+		storage.gods().load();
+		storage.gods().yaml().set("Thor.Power", 1.0);
+		storage.gods().save();
+		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+
+		// A change that isn't saved yet, then an admin edits the file
+		storage.gods().yaml().set("Thor.Power", 2.0);
+		storage.gods().markDirty();
+		Path file = this.dir.resolve("gods.yml");
+		Files.writeString(file, "Thor:\n  Power: 5.0\n");
+		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+
+		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
+		assertTrue(storage.gods().load());
+		storage.finishReload();
+
+		assertFalse(storage.gods().lastLoadKept());
+		assertEquals(5.0, storage.gods().yaml().getDouble("Thor.Power"));
+		storage.close();
+
+		Storage again = storage();
+		again.gods().load();
+		assertEquals(5.0, again.gods().yaml().getDouble("Thor.Power"));
+		again.close();
+	}
+
 }

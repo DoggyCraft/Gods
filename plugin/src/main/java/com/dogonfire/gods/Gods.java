@@ -161,23 +161,17 @@ public class Gods extends JavaPlugin
 	}
 
 	/**
-	 * /g reload: saves the data, reads config.yml again, then the language files and the data files, and restarts the
-	 * features so switching them on or off in config.yml takes effect. If config.yml can't be read, the old settings
-	 * and data stay and false is returned.
+	 * /g reload: reads config.yml again, then the language files and the data files, and restarts the features so
+	 * switching them on or off in config.yml takes effect. A data file that was edited on disk is read again (the edit
+	 * wins over changes not yet saved); the others keep what is in memory and are saved. If config.yml can't be read,
+	 * or the data files couldn't be saved in time, the old settings and data stay and false is returned.
 	 */
 	public boolean reload()
 	{
-		// Write what changed, so the files read again below have it
-		this.storage.flush();
-		if (!this.storage.awaitWrites(10, TimeUnit.SECONDS))
-		{
-			getLogger().severe("Reload failed: the data files could not be saved in time, so they are not read again.");
-			return false;
-		}
-
+		Settings newSettings;
 		try
 		{
-			this.settings = loadSettings();
+			newSettings = loadSettings();
 		}
 		catch (VersionedYaml.LoadException e)
 		{
@@ -185,9 +179,17 @@ public class Gods extends JavaPlugin
 			return false;
 		}
 
+		if (!this.storage.prepareReload(10, TimeUnit.SECONDS))
+		{
+			getLogger().severe("Reload failed: the data files could not be saved in time, so they are not read again.");
+			return false;
+		}
+
+		this.settings = newSettings;
 		stopFeatures();
 		loadData();
 		startFeatures();
+		this.storage.finishReload();
 		return true;
 	}
 

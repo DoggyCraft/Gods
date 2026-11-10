@@ -5,8 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
@@ -50,6 +52,11 @@ public final class DataFile
 	private volatile boolean					dirty;
 	private volatile boolean					readOnly;
 	private boolean								loaded;
+	// When the file was last read or written by Gods, to see on /g reload whether someone edited it since
+	private volatile FileTime				knownModified;
+	// Set by prepareReload: the next load keeps the data in memory instead of reading the unchanged file again
+	private boolean								keepOnNextLoad;
+	private boolean								lastLoadKept;
 
 	DataFile(Path file, Logger logger, Executor writer, Repair repair)
 	{
@@ -117,12 +124,21 @@ public final class DataFile
 	 */
 	public boolean load()
 	{
+		if (this.keepOnNextLoad)
+		{
+			this.keepOnNextLoad = false;
+			this.lastLoadKept = true;
+			return !this.readOnly;
+		}
+		this.lastLoadKept = false;
+
 		boolean firstLoad = !this.loaded;
 		this.loaded = true;
 
 		if (!Files.exists(this.file))
 		{
 			this.yaml = new YamlConfiguration();
+			this.knownModified = null;
 			this.dirty = false;
 			this.readOnly = false;
 			return true;
@@ -132,6 +148,7 @@ public final class DataFile
 		boolean repaired = false;
 		try
 		{
+			this.knownModified = modifiedTime();
 			String text = Files.readString(this.file, StandardCharsets.UTF_8);
 			if (this.repair != null)
 			{
@@ -189,6 +206,58 @@ public final class DataFile
 		this.readOnly = false;
 		this.dirty = repaired;
 		return true;
+	}
+
+
+	/** True if the last {@link #load()} kept the data in memory because the file had not changed (see {@link #prepareReload}) */
+	public boolean lastLoadKept()
+	{
+		return this.lastLoadKept;
+	}
+
+	/**
+	 * /g reload, after pending writes have finished: decides whether the next {@link #load()} reads the file again. A
+	 * file that was edited on disk since Gods last read or wrote it (or could not be read before) is read again, so the
+	 * hand edit wins over changes not yet saved; any other file keeps the data in memory (and is saved as usual).
+	 */
+	void prepareReload()
+	{
+		this.keepOnNextLoad = false;
+		if (!this.loaded)
+		{
+			return;
+		}
+
+		if (!this.readOnly && Objects.equals(modifiedTime(), this.knownModified))
+		{
+			this.keepOnNextLoad = true;
+			return;
+		}
+
+		if (this.dirty && !this.readOnly)
+		{
+			this.logger.warning(name() + " was changed on disk; reading it again (changes not yet saved are discarded if it can be read).");
+		}
+		// Never write the old data over the edit
+		this.dirty = false;
+	}
+
+	/** After /g reload: a file that was not loaded again (its feature is off) reads the file the next time it is loaded */
+	void finishReload()
+	{
+		this.keepOnNextLoad = false;
+	}
+
+	private FileTime modifiedTime()
+	{
+		try
+		{
+			return Files.exists(this.file) ? Files.getLastModifiedTime(this.file) : null;
+		}
+		catch (IOException ex)
+		{
+			return null;
+		}
 	}
 
 	private String keepBrokenCopy()
@@ -249,6 +318,7 @@ public final class DataFile
 		try
 		{
 			AtomicFiles.write(this.file, text);
+			this.knownModified = modifiedTime();
 		}
 		catch (IOException ex)
 		{
