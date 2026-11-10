@@ -16,9 +16,11 @@ import com.dogonfire.gods.listeners.BlockListener;
 import com.dogonfire.gods.listeners.ChatListener;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyLandManager;
 import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.managers.MarriageManager;
 import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.managers.WhitelistManager;
@@ -74,20 +76,30 @@ public class Gods extends JavaPlugin
 	@Override
 	public void onDisable()
 	{
-		reloadSettings();
+		saveManagers();
 
+		pluginInstance = null;
+	}
+
+	/**
+	 * Writes the state of every enabled manager to disk.
+	 */
+	public void saveManagers()
+	{
 		GodManager.instance().save();
 		QuestManager.instance().save();
 		BelieverManager.instance().save();
-		
+
 		if ((GodsConfiguration.instance().isUseBlacklist()) || (GodsConfiguration.instance().isUseWhitelist()))
 			WhitelistManager.instance().save();
 		if (GodsConfiguration.instance().isHolyLandEnabled())
 			HolyLandManager.instance().save();
 		if (GodsConfiguration.instance().isBiblesEnabled())
 			HolyBookManager.instance().save();
-		
-		pluginInstance = null;
+		if (GodsConfiguration.instance().isMarriageEnabled())
+			MarriageManager.instance().save();
+		if (GodsConfiguration.instance().isHolyArtifactsEnabled())
+			HolyArtifactManager.instance().save();
 	}
 
 	@Override
@@ -133,11 +145,11 @@ public class Gods extends JavaPlugin
 		BelieverManager.instance().load();
 		WhitelistManager.instance().load();
 		
-		if(GodsConfiguration.instance().isHolyLandEnabled())
+		// GodsConfiguration.loadSettings() has already loaded the holy lands
+		if (GodsConfiguration.instance().isHolyLandEnabled())
 		{
-			HolyLandManager.instance().load();
 			getServer().getPluginManager().registerEvents(HolyLandManager.instance(), this);
-		}		
+		}
 		
 		getServer().getPluginManager().registerEvents(new BlockListener(), this);
 		getServer().getPluginManager().registerEvents(new ChatListener(), this);
@@ -152,12 +164,21 @@ public class Gods extends JavaPlugin
 		}.runTaskTimer(this, 20L, 200L);
 	}
 
+	/**
+	 * Saves every manager, re-reads config.yml and loads everything again from disk. Used by /gods reload.
+	 */
 	public void reloadSettings()
 	{
+		saveManagers();
+
 		reloadConfig();
 
 		GodsConfiguration.instance().loadSettings();
-
+		PermissionsManager.instance().load();
+		LanguageManager.instance().load();
+		GodManager.instance().load();
+		QuestManager.instance().load();
+		BelieverManager.instance().load();
 		WhitelistManager.instance().load();
 	}
 
