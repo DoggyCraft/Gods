@@ -56,15 +56,15 @@ public class CommandAlliance extends GodsCommand {
 		}
 		if (ctx.godManager().toggleAllianceRelationForGod(godName, allyGodName)) {
 			ctx.languageManager().setPlayerName(godName);
-			ctx.godManager().godSayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
+			ctx.godSpeech().sayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
 			ctx.languageManager().setPlayerName(allyGodName);
-			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
+			ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
 		} else {
 			ctx.languageManager().setPlayerName(godName);
-			ctx.godManager().godSayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
+			ctx.godSpeech().sayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
 
 			ctx.languageManager().setPlayerName(allyGodName);
-			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
+			ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
 		}
 	}
 }

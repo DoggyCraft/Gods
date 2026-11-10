@@ -76,9 +76,9 @@ public class CommandPriestStartAttack extends GodsCommand
 		}
 		ctx.godManager().setContestedHolyLandForGod(godName, player.getLocation());
 		sender.sendMessage(ChatColor.AQUA + "You started an attack on the Holy Land of " + ChatColor.GOLD + otherGodName);
-		ctx.godManager().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.AttackingHolyLandsHelp, ChatColor.AQUA, 80);
+		ctx.godSpeech().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.AttackingHolyLandsHelp, ChatColor.AQUA, 80);
 		ctx.languageManager().setPlayerName(otherGodName);
-		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackStarted, 40);
+		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackStarted, 40);
 	}
 
 }

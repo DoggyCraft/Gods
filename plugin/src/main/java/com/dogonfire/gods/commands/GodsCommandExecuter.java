@@ -120,12 +120,12 @@ public class GodsCommandExecuter implements CommandExecutor
 				}
 			}
 			sender.sendMessage("" + ChatColor.AQUA);
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodsHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help", 80);
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help altar", 160);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodsHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help", 80);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help altar", 160);
 
 			if (ctx.settings().prayers().enabled())
 			{
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayForHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g prayfor", 240);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayForHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g prayfor", 240);
 			}
 		}
 		sender.sendMessage(ChatColor.GREEN + "For the full command list, please use " + ChatColor.AQUA + "/gods help");

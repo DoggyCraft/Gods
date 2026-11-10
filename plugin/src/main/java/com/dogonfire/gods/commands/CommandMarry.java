@@ -93,7 +93,7 @@ public class CommandMarry extends GodsCommand
 		ctx.marriageService().proposeMarriage(player.getUniqueId(), otherPlayer.getUniqueId());
 
 		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godManager().GodSayWithQuestion(thisGodName, otherPlayer, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageProposal, 1);
+		ctx.godSpeech().sayWithQuestion(thisGodName, otherPlayer, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageProposal, 1);
 
 		player.sendMessage(ChatColor.AQUA + "You proposed " + ChatColor.WHITE + otherPlayerName + ChatColor.AQUA + " to marry you in the name of " + ChatColor.GOLD + thisGodName + "!");
 	}

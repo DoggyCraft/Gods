@@ -198,7 +198,7 @@ public class AltarService
 
 		event.setLine(3, "");
 
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsHelp, ChatColor.AQUA, 0, "", 10);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsHelp, ChatColor.AQUA, 0, "", 10);
 
 		return true;
 	}
@@ -208,7 +208,7 @@ public class AltarService
 		Player player = event.getPlayer();
 		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.build")))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
 			return false;
 		}
 		
@@ -216,7 +216,7 @@ public class AltarService
 		event.setLine(1, "On");
 		event.setLine(3, "");
 
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesHelp, ChatColor.AQUA, 0, "", 20);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesHelp, ChatColor.AQUA, 0, "", 20);
 
 		return true;
 	}
@@ -226,7 +226,7 @@ public class AltarService
 		Player player = event.getPlayer();
 		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.build")))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
 			return false;
 		}
 
@@ -234,12 +234,12 @@ public class AltarService
 		AltarSigns.GodNameLine nameLine = AltarSigns.godNameOnNewSign(event.getLines());
 		if (nameLine.problem() == AltarSigns.Problem.INVALID_SIGN)
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidAltarSign, ChatColor.DARK_RED, 0, "", 10);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidAltarSign, ChatColor.DARK_RED, 0, "", 10);
 			return false;
 		}
 		if (nameLine.problem() == AltarSigns.Problem.INVALID_GOD_NAME)
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
 			return false;
 		}
 
@@ -248,26 +248,26 @@ public class AltarService
 
 		if ((godName.length() <= 1) || (godName.contains(" ")))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
 			return false;
 		}
 
 		if (!ctx.godListService().isAllowedGod(godName))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return false;
 		}
 
 		if (!ctx.godManager().hasGodAccess(player.getUniqueId(), godName))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
 			return false;
 		}
 
 		String currentGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (currentGodName != null && !currentGodName.equals(godName))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotBuildAltarToOtherGods, ChatColor.DARK_RED, 0, godName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotBuildAltarToOtherGods, ChatColor.DARK_RED, 0, godName, 1);
 			return false;
 		}
 
@@ -292,7 +292,7 @@ public class AltarService
 			event.setLine(2, godName);
 			event.setLine(3, "");
 
-			ctx.plugin().sendInfo(event.getPlayer().getUniqueId(), LanguageManager.LANGUAGESTRING.PrayAlterHelp, ChatColor.AQUA, 0, godName, 80);
+			ctx.godSpeech().sendInfo(event.getPlayer().getUniqueId(), LanguageManager.LANGUAGESTRING.PrayAlterHelp, ChatColor.AQUA, 0, godName, 80);
 		}
 		else
 		{

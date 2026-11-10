@@ -65,8 +65,8 @@ public class CommandInvite extends GodsCommand
 		ctx.believerService().setInvitation(invitedPlayer.getUniqueId(), godName);
 		ctx.plugin().log(godName + " invited to " + invitedPlayer.getName() + " to join the religion");
 		ctx.languageManager().setPlayerName(invitedPlayer.getName());
-		ctx.godManager().GodSay(godName, invitedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerInvite, 10);
-		ctx.plugin().sendInfo(invitedPlayer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, "/gods yes or /gods no", "/gods yes or /gods no", 40);
+		ctx.godSpeech().say(godName, invitedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerInvite, 10);
+		ctx.godSpeech().sendInfo(invitedPlayer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, "/gods yes or /gods no", "/gods yes or /gods no", 40);
 		player.sendMessage(ChatColor.AQUA + "You invited " + ChatColor.YELLOW + playerName + ChatColor.AQUA + " to join " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
 	}
 

@@ -12,12 +12,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
@@ -37,11 +35,9 @@ import com.dogonfire.gods.listener.GodQuestListener;
 import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
 import com.dogonfire.gods.managers.ChatManager;
-import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.storage.Storage;
-import com.dogonfire.gods.tasks.TaskInfo;
 import com.dogonfire.gods.util.AtomicFiles;
 
 /**
@@ -337,40 +333,5 @@ public class Gods extends JavaPlugin
 		{
 			getLogger().info("[Debug] " + message);
 		}
-	}
-
-	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, int amount, String name, int delay)
-	{
-		if (isOnline(playerId))
-		{
-			getServer().getScheduler().runTaskLater(this, new TaskInfo(this.ctx, color, playerId, message, amount, name), delay);
-		}
-	}
-
-	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, String name, int amount1, int amount2, int delay)
-	{
-		if (isOnline(playerId))
-		{
-			getServer().getScheduler().runTaskLater(this, new TaskInfo(this.ctx, color, playerId, message, name, amount1, amount2), delay);
-		}
-	}
-
-	public void sendInfo(UUID playerId, LanguageManager.LANGUAGESTRING message, ChatColor color, String name1, String name2, int delay)
-	{
-		if (isOnline(playerId))
-		{
-			getServer().getScheduler().runTaskLater(this, new TaskInfo(this.ctx, color, playerId, message, name1, name2), delay);
-		}
-	}
-
-	private boolean isOnline(UUID playerId)
-	{
-		Player player = getServer().getPlayer(playerId);
-		if (player == null)
-		{
-			logDebug("sendInfo can not find online player with id " + playerId);
-			return false;
-		}
-		return true;
 	}
 }

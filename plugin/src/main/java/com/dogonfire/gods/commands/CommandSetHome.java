@@ -57,6 +57,6 @@ public class CommandSetHome extends GodsCommand
 		}
 		ctx.godManager().setHomeForGod(godName, player.getLocation());
 		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSetHome, 2);
+		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSetHome, 2);
 	}
 }

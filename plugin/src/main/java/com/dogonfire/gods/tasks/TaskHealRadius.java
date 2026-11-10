@@ -48,6 +48,6 @@ public class TaskHealRadius extends Task {
 			target.getWorld().playEffect(target.getLocation(), Effect.ENDER_SIGNAL, 0);
 			n++;
 		}
-		getPlugin().sendInfo(this.player.getUniqueId(), LANGUAGESTRING.YouHealedBeings, ChatColor.AQUA, n, "", 20);
+		ctx.godSpeech().sendInfo(this.player.getUniqueId(), LANGUAGESTRING.YouHealedBeings, ChatColor.AQUA, n, "", 20);
 	}
 }

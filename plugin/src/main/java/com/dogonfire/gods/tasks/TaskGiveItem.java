@@ -58,7 +58,7 @@ public class TaskGiveItem extends Task {
 				} catch (Exception ex) {
 					getPlugin().logDebug(ex.getMessage());
 				}
-				ctx.godManager().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverItemBlessing, 2 + random.nextInt(10));
+				ctx.godSpeech().say(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverItemBlessing, 2 + random.nextInt(10));
 			}
 		}
 	}

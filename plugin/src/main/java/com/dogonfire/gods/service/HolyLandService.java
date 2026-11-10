@@ -268,7 +268,7 @@ public class HolyLandService
 
 		if (getClaimedChunksForGod(godName) >= getMaximumChunksForGod(godName))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotClaimMoreHolyland, ChatColor.RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotClaimMoreHolyland, ChatColor.RED, 0, "", 1);
 			return;
 		}
 
@@ -279,8 +279,8 @@ public class HolyLandService
 		int max = getMaximumChunksForGod(godName);
 
 		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimed, Integer.toString(max), 20 * 5);
+		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimed, Integer.toString(max), 20 * 5);
 	}
 
 	/**
@@ -313,8 +313,8 @@ public class HolyLandService
 		int max = getMaximumChunksForGod(godName);
 
 		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimedAfter, Integer.toString(max), 20 * 5);
+		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimedAfter, Integer.toString(max), 20 * 5);
 	}
 
 	// ---------------------------------------------------------------------
@@ -487,14 +487,14 @@ public class HolyLandService
 		{
 			if (defenderWins)
 			{
-				ctx.godManager().godSayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandSuccess, 1);
-				ctx.godManager().godSayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandFailed, 1);
+				ctx.godSpeech().sayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandSuccess, 1);
+				ctx.godSpeech().sayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandFailed, 1);
 			}
 			else
 			{
 				setHolyLand(location, attackingGodName);
-				ctx.godManager().godSayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandFailed, 1);
-				ctx.godManager().godSayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandSuccess, 1);
+				ctx.godSpeech().sayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandFailed, 1);
+				ctx.godSpeech().sayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandSuccess, 1);
 			}
 		}
 

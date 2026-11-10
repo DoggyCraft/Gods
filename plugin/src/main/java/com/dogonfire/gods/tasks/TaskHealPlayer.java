@@ -39,7 +39,7 @@ public class TaskHealPlayer extends Task
 		if (healPlayer())
 		{
 			ctx.languageManager().setPlayerName(this.player.getName());
-			ctx.godManager().GodSay(this.godName, this.player, this.languageString, 2 + random.nextInt(10));
+			ctx.godSpeech().say(this.godName, this.player, this.languageString, 2 + random.nextInt(10));
 			getPlugin().log(this.godName + " healed " + this.player.getName());
 		}
 	}

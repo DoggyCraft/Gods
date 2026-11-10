@@ -36,10 +36,10 @@ import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.MarriedCouple;
+import com.dogonfire.gods.service.GodSpeech;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
 import com.dogonfire.gods.tasks.TaskGiveItem;
-import com.dogonfire.gods.tasks.TaskGodSpeak;
 import com.dogonfire.gods.tasks.TaskHealPlayer;
 import com.dogonfire.gods.tasks.TaskSpawnHostileMobs;
 import com.dogonfire.gods.util.LegacyDates;
@@ -111,6 +111,11 @@ public class GodManager
 		return gods().getOrCreate(godName);
 	}
 
+	private GodSpeech speech()
+	{
+		return ctx.godSpeech();
+	}
+
 	private static Instant now()
 	{
 		return LegacyDates.SECONDS.now();
@@ -153,7 +158,7 @@ public class GodManager
 		{
 			ctx.languageManager().setPlayerName(player.getName());
 
-			GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverAltarBuilt, 2 + this.random.nextInt(30));
+			speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverAltarBuilt, 2 + this.random.nextInt(30));
 
 			return true;
 		}
@@ -167,7 +172,7 @@ public class GodManager
 
 		if (godName == null)
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.RED, 0, "", 1);
 			return false;
 		}
 
@@ -177,13 +182,13 @@ public class GodManager
 			{
 				ctx.believerService().setChangingGod(player.getUniqueId());
 
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ConfirmChangeToOtherReligion, ChatColor.YELLOW, 0, oldGodName, 1);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ConfirmChangeToOtherReligion, ChatColor.YELLOW, 0, oldGodName, 1);
 				return false;
 			}
 
 			if (ctx.believerService().hasRecentGodChange(player.getUniqueId()))
 			{
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotChangeGodSoSoon, ChatColor.RED, 0, "", 1);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotChangeGodSoSoon, ChatColor.RED, 0, "", 1);
 				return false;
 			}
 
@@ -194,7 +199,7 @@ public class GodManager
 		{
 			int timeUntilCanPray = ctx.believerService().getTimeUntilCanPray(player.getUniqueId());
 
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotPraySoSoon, ChatColor.RED, timeUntilCanPray, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotPraySoSoon, ChatColor.RED, timeUntilCanPray, "", 1);
 			return false;
 		}
 
@@ -207,11 +212,11 @@ public class GodManager
 
 			ctx.languageManager().setPlayerName(player.getName());
 
-			godSayToBelievers(oldGodName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerLeftReligion, 2 + this.random.nextInt(20));
+			speech().sayToBelievers(oldGodName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerLeftReligion, 2 + this.random.nextInt(20));
 
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.YouLeftReligion, ChatColor.RED, 0, oldGodName, 20);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.YouLeftReligion, ChatColor.RED, 0, oldGodName, 20);
 
-			GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerJoinedReligion, player.getUniqueId());
+			speech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerJoinedReligion, player.getUniqueId());
 
 			ctx.believerService().clearPrayerPower(player.getUniqueId());
 		}
@@ -279,7 +284,7 @@ public class GodManager
 		{
 			if (!player.isOp() && (!ctx.permissionsManager().hasPermission(player, "gods.god.create")))
 			{
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CreateGodNotAllowed, ChatColor.RED, 0, "", 20);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CreateGodNotAllowed, ChatColor.RED, 0, "", 20);
 				return false;
 			}
 
@@ -410,8 +415,8 @@ public class GodManager
 
 				ctx.plugin().log(player.getName() + " accepted the invitation to join " + pendingGodInvitation);
 
-				GodSay(pendingGodInvitation, player, LanguageManager.LANGUAGESTRING.GodToPlayerAcceptedInvitation, 2 + this.random.nextInt(40));
-				GodSayToBelieversExcept(pendingGodInvitation, LanguageManager.LANGUAGESTRING.GodToBelieversNewPlayerAccepted, player.getUniqueId());
+				speech().say(pendingGodInvitation, player, LanguageManager.LANGUAGESTRING.GodToPlayerAcceptedInvitation, 2 + this.random.nextInt(40));
+				speech().sayToBelieversExcept(pendingGodInvitation, LanguageManager.LANGUAGESTRING.GodToBelieversNewPlayerAccepted, player.getUniqueId());
 			}
 			else
 			{
@@ -437,18 +442,18 @@ public class GodManager
 
 				ctx.plugin().log(player.getName() + " accepted the offer from " + godName + " to be priest");
 
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InviteHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods invite <playername>", ChatColor.WHITE + "/gods invite <playername>", 100);
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.FollowersHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods followers", ChatColor.WHITE + "/gods followers", 200);
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.DescriptionHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods desc", ChatColor.WHITE + "/gods desc", 300);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InviteHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods invite <playername>", ChatColor.WHITE + "/gods invite <playername>", 100);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.FollowersHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods followers", ChatColor.WHITE + "/gods followers", 200);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.DescriptionHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods desc", ChatColor.WHITE + "/gods desc", 300);
 
 				if (ctx.settings().holyArtifacts().enabled())
 				{
-					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AttackHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods startattack", ChatColor.WHITE + "/gods startattack", 300);
+					ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AttackHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods startattack", ChatColor.WHITE + "/gods startattack", 300);
 				}
 				try
 				{
-					GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestPriestAccepted, 2 + this.random.nextInt(40));
-					GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPriestAccepted, player.getUniqueId());
+					speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestPriestAccepted, 2 + this.random.nextInt(40));
+					speech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPriestAccepted, player.getUniqueId());
 				}
 				catch (Exception ex)
 				{
@@ -459,7 +464,7 @@ public class GodManager
 		}
 
 		ctx.plugin().logDebug(player.getDisplayName() + " did not have anything to accepted from " + godName);
-		GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverNoQuestion, 2 + this.random.nextInt(20));
+		speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverNoQuestion, 2 + this.random.nextInt(20));
 	}
 
 	public boolean believerLeaveGod(UUID believerId)
@@ -485,7 +490,7 @@ public class GodManager
 
 		ctx.believerService().clearPrayerPower(believerId);
 
-		godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerLeftReligion, 2 + this.random.nextInt(20));
+		speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerLeftReligion, 2 + this.random.nextInt(20));
 
 		return true;
 	}
@@ -508,7 +513,7 @@ public class GodManager
 
 			ctx.plugin().log(player.getName() + " rejected the invitation to join " + pendingGodInvitation);
 
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.RejectedJoinOffer, ChatColor.RED, 0, pendingGodInvitation, 20);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.RejectedJoinOffer, ChatColor.RED, 0, pendingGodInvitation, 20);
 
 			return;
 		}
@@ -522,7 +527,7 @@ public class GodManager
 
 		if (pendingPriest == null)
 		{
-			GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverNoQuestion, 2 + this.random.nextInt(20));
+			speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverNoQuestion, 2 + this.random.nextInt(20));
 			return;
 		}
 
@@ -534,7 +539,7 @@ public class GodManager
 
 			ctx.plugin().log(player.getName() + " rejected the offer from " + godName + " to be priest");
 
-			GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverPriestRejected, 2 + this.random.nextInt(20));
+			speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverPriestRejected, 2 + this.random.nextInt(20));
 
 			gods().markDirty();
 		}
@@ -1438,7 +1443,7 @@ public class GodManager
 			{
 				String priestName = ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
 				ctx.languageManager().setPlayerName(priestName != null ? priestName : "our priest");
-				godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversRemovedPriest, 2 + this.random.nextInt(40));
+				speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversRemovedPriest, 2 + this.random.nextInt(40));
 				removePriest(godName, believerId);
 			}
 			else
@@ -1778,32 +1783,6 @@ public class GodManager
 		return god != null && god.created() != null;
 	}
 
-	public void GodSay(String godName, Player player, LanguageManager.LANGUAGESTRING message, int delay)
-	{
-		String playerNameString = ctx.languageManager().getPlayerName();
-		String typeNameString = ctx.languageManager().getType();
-		int amount = ctx.languageManager().getAmount();
-
-		if (player == null)
-		{
-			ctx.plugin().logDebug("GodSay(): Player is null!");
-			return;
-		}
-
-		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
-		{
-			return;
-		}
-
-		ctx.plugin().logDebug(godName + " to " + player.getName() + ": " + ctx.languageManager().getLanguageString(godName, message));
-
-		if (!ctx.permissionsManager().hasPermission(player, "gods.listen"))
-		{
-			return;
-		}
-
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskGodSpeak(ctx, godName, player.getUniqueId(), playerNameString, typeNameString, amount, message), delay);
-	}
 	
 	private boolean godSayNeededSacrificeToBeliever(String godName, UUID believerId)
 	{
@@ -1822,98 +1801,12 @@ public class GodManager
 					ctx.plugin().logDebug(ex.getMessage());
 				}
 
-				godSayToBeliever(godName, believerId, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeItemType);
+				speech().sayToBeliever(godName, believerId, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeItemType);
 
 				return true;
 			}
 		}
 		return false;
-	}
-
-	public void godSayToBeliever(String godName, UUID playerId, LanguageManager.LANGUAGESTRING message)
-	{
-		godSayToBeliever(godName, playerId, message, 2 + this.random.nextInt(10));
-	}
-
-	public void godSayToBeliever(String godName, UUID playerId, LanguageManager.LANGUAGESTRING message, int delay)
-	{
-		Player player = ctx.plugin().getServer().getPlayer(playerId);
-
-		if (player == null)
-		{
-			ctx.plugin().logDebug("GodSayToBeliever player is null");
-			return;
-		}
-		GodSay(godName, player, message, delay);
-	}
-
-	public void godSayToBelievers(String godName, LanguageManager.LANGUAGESTRING message, int delay)
-	{
-		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
-		{
-			Player player = ctx.plugin().getServer().getPlayer(playerId);
-			if (player != null)
-			{
-				GodSay(godName, player, message, delay);
-			}
-		}
-	}
-
-	public void GodSayToBelieversExcept(String godName, LanguageManager.LANGUAGESTRING message, UUID exceptPlayer)
-	{
-		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
-		{
-			Player player = ctx.plugin().getServer().getPlayer(playerId);
-
-			if (player != null && !player.getUniqueId().equals(exceptPlayer))
-			{
-				GodSay(godName, player, message, 2 + this.random.nextInt(20));
-			}
-		}
-	}
-
-	public void GodSayToPriest(String godName, LanguageManager.LANGUAGESTRING message)
-	{
-		List<UUID> priests = getPriestsForGod(godName);
-		if (priests == null)
-		{
-			return;
-		}
-
-		for (UUID priest : priests)
-		{
-			Player player = ctx.plugin().getServer().getPlayer(priest);
-			if (player != null)
-			{
-				GodSay(godName, player, message, 2 + this.random.nextInt(30));
-			}
-		}
-	}
-
-	public void GodSayWithQuestion(String godName, Player player, LanguageManager.LANGUAGESTRING message, int delay)
-	{
-		String playerNameString = ctx.languageManager().getPlayerName();
-		String typeNameString = ctx.languageManager().getType();
-		int amount = ctx.languageManager().getAmount();
-
-		if (player == null)
-		{
-			ctx.plugin().logDebug("GodSay(): Player is null!");
-			return;
-		}
-		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
-		{
-			return;
-		}
-		ctx.plugin().logDebug(godName + " to " + player.getName() + ": " + ctx.languageManager().getLanguageString(godName, message));
-		if (!ctx.permissionsManager().hasPermission(player, "gods.listen"))
-		{
-			return;
-		}
-
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskGodSpeak(ctx, godName, player.getUniqueId(), playerNameString, typeNameString, amount, message), delay);
-
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods yes or /gods no", ChatColor.WHITE + "/gods yes or /gods no", delay + 80);
 	}
 
 	public boolean handleAltarPray(Location location, Player player, String godName)
@@ -1955,7 +1848,7 @@ public class GodManager
 
 			ctx.languageManager().setPlayerName(player.getName());
 
-			GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverPraying, 2 + this.random.nextInt(10));
+			speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverPraying, 2 + this.random.nextInt(10));
 			location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 25);
 
 			return true;
@@ -1988,11 +1881,11 @@ public class GodManager
 				
 				if (ctx.settings().commandments().broadcastFoodEaten())
 				{
-					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing, 2 + this.random.nextInt(20));
+					speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing, 2 + this.random.nextInt(20));
 				}
 				else
 				{
-					godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing);
+					speech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing);
 				}
 			}
 		}
@@ -2016,11 +1909,11 @@ public class GodManager
 
 				if (ctx.settings().commandments().broadcastFoodEaten())
 				{
-					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing, 2 + this.random.nextInt(10));
+					speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing, 2 + this.random.nextInt(10));
 				}
 				else
 				{
-					godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing);
+					speech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing);
 				}
 			}
 		}
@@ -2051,11 +1944,11 @@ public class GodManager
 				}
 				if (ctx.settings().commandments().broadcastMobSlain())
 				{
-					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing, 2 + this.random.nextInt(20));
+					speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing, 2 + this.random.nextInt(20));
 				}
 				else
 				{
-					godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing);
+					speech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing);
 				}
 			}
 		}
@@ -2078,11 +1971,11 @@ public class GodManager
 				
 				if (ctx.settings().commandments().broadcastMobSlain())
 				{
-					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing, 2 + this.random.nextInt(10));
+					speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing, 2 + this.random.nextInt(10));
 				}
 				else
 				{
-					godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing);
+					speech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing);
 				}
 			}
 		}
@@ -2145,11 +2038,11 @@ public class GodManager
 
 			if (ctx.settings().commandments().broadcastFoodEaten())
 			{
-				godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice, 2 + this.random.nextInt(10));
+				speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice, 2 + this.random.nextInt(10));
 			}
 			else
 			{
-				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice);
+				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice);
 			}
 
 			strikePlayerWithLightning(believer.getUniqueId(), 1 + this.random.nextInt(3));
@@ -2176,19 +2069,19 @@ public class GodManager
 			ctx.believerService().addPrayer(believer.getUniqueId(), godName);
 
 			blessPlayer(godName, believer.getUniqueId(), godPower);
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverGoodSacrifice);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverGoodSacrifice);
 
 			ctx.believerService().increasePrayerPower(believer.getUniqueId(), 1);
 		}
 		else if (value >= -5.0F)
 		{
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMehSacrifice);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMehSacrifice);
 		}
 		else
 		{
 			addMoodForGod(godName, getAngryModifierForGod(godName));
 			strikePlayerWithLightning(believer.getUniqueId(), 1 + this.random.nextInt(3));
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverBadSacrifice);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverBadSacrifice);
 		}
 
 		value -= 1.0F;
@@ -2424,7 +2317,7 @@ public class GodManager
 			{
 				ctx.languageManager().setPlayerName(believer.getDisplayName());
 
-				GodSay(godName, believer, LanguageManager.LANGUAGESTRING.GodToBelieverCursedAngry, 2 + this.random.nextInt(10));
+				speech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToBelieverCursedAngry, 2 + this.random.nextInt(10));
 
 				return true;
 			}
@@ -2436,7 +2329,7 @@ public class GodManager
 			{
 				return false;
 			}
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomAngrySpeech);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomAngrySpeech);
 			return true;
 		}
 
@@ -2466,7 +2359,7 @@ public class GodManager
 			{
 				return false;
 			}
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomDispleasedSpeech);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomDispleasedSpeech);
 			return true;
 		}
 		if (this.random.nextInt(1 + 600 / getVerbosityForGod(godName)) == 0)
@@ -2559,9 +2452,9 @@ public class GodManager
 			{
 				ctx.languageManager().setPlayerName(believer.getDisplayName());
 
-				GodSay(godName, believer, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
+				speech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
 
-				GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, believer.getUniqueId());
+				speech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, believer.getUniqueId());
 
 				return true;
 			}
@@ -2575,7 +2468,7 @@ public class GodManager
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
 				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
 		}
@@ -2586,7 +2479,7 @@ public class GodManager
 			{
 				return false;
 			}
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomExaltedSpeech);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomExaltedSpeech);
 			return true;
 		}
 
@@ -2619,7 +2512,7 @@ public class GodManager
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
 				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
 		}
@@ -2629,7 +2522,7 @@ public class GodManager
 			{
 				return false;
 			}
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomNeutralSpeech);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomNeutralSpeech);
 			return true;
 		}
 
@@ -2705,7 +2598,7 @@ public class GodManager
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
 				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
 		}
@@ -2717,7 +2610,7 @@ public class GodManager
 				return false;
 			}
 
-			godSayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomPleasedSpeech);
+			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomPleasedSpeech);
 
 			return true;
 		}
@@ -2800,9 +2693,9 @@ public class GodManager
 			{
 				ctx.languageManager().setPlayerName(player.getName());
 
-				GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
+				speech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
 
-				GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, player.getUniqueId());
+				speech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, player.getUniqueId());
 			}
 		}
 	}
@@ -2834,9 +2727,9 @@ public class GodManager
 			{
 				ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
-				GodSay(godName, cursedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerCursed, 2 + this.random.nextInt(10));
+				speech().say(godName, cursedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerCursed, 2 + this.random.nextInt(10));
 
-				GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerCursed, cursedPlayer.getUniqueId());
+				speech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerCursed, cursedPlayer.getUniqueId());
 			}
 		}
 	}
@@ -2894,7 +2787,7 @@ public class GodManager
 					{
 						ctx.languageManager().setPlayerName(believerName);
 
-						godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversLostBeliever, 2 + this.random.nextInt(100));
+						speech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversLostBeliever, 2 + this.random.nextInt(100));
 					}
 
 					ctx.believerService().removeBeliever(godName, believerId);
@@ -2955,7 +2848,7 @@ public class GodManager
 					ctx.plugin().log(godName + " offered " + player.getName() + " to be priest");
 					ctx.languageManager().setPlayerName(player.getName());
 
-					GodSayWithQuestion(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverOfferPriest, 2);
+					speech().sayWithQuestion(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverOfferPriest, 2);
 
 					return true;
 				}
@@ -2983,25 +2876,25 @@ public class GodManager
 							{
 							case 0:
 								ctx.languageManager().setType(ctx.languageManager().getItemTypeName(getHolyFoodTypeForGod(godName)));
-								GodSayToPriest(godName, LanguageManager.LANGUAGESTRING.GodToPriestEatFoodType);
+								speech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestEatFoodType);
 								break;
 							case 1:
 								ctx.languageManager().setType(ctx.languageManager().getItemTypeName(getUnholyFoodTypeForGod(godName)));
-								GodSayToPriest(godName, LanguageManager.LANGUAGESTRING.GodToPriestNotEatFoodType);
+								speech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestNotEatFoodType);
 								break;
 							case 2:
 								ctx.languageManager().setType(ctx.languageManager().getMobTypeName(getUnholyMobTypeForGod(godName)));
-								GodSayToPriest(godName, LanguageManager.LANGUAGESTRING.GodToPriestSlayMobType);
+								speech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestSlayMobType);
 								break;
 							default:
 								ctx.languageManager().setType(ctx.languageManager().getMobTypeName(getHolyMobTypeForGod(godName)));
-								GodSayToPriest(godName, LanguageManager.LANGUAGESTRING.GodToPriestNotSlayMobType);
+								speech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestNotSlayMobType);
 							}
 						}
 						else
 						{
 							ctx.languageManager().setType(ctx.holyBookManager().getBibleTitle(godName));
-							GodSayToPriest(godName, LanguageManager.LANGUAGESTRING.GodToPriestUseBible);
+							speech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestUseBible);
 						}
 						return true;
 					}
@@ -3168,31 +3061,6 @@ public class GodManager
 		if (god != null)
 		{
 			(allies ? god.allies() : god.enemies()).remove(otherGodName);
-		}
-	}
-
-	public void sendInfoToBelievers(String godName, LanguageManager.LANGUAGESTRING message, ChatColor color, int delay)
-	{
-		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
-		{
-			Player player = ctx.plugin().getServer().getPlayer(playerId);
-
-			if (player != null)
-			{
-				ctx.plugin().sendInfo(playerId, message, color, 0, "", 10);
-			}
-		}
-	}
-
-	public void sendInfoToBelievers(String godName, LanguageManager.LANGUAGESTRING message, ChatColor color, String name, int amount1, int amount2, int delay)
-	{
-		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
-		{
-			Player player = ctx.plugin().getServer().getPlayer(playerId);
-			if (player != null)
-			{
-				ctx.plugin().sendInfo(playerId, message, color, name, amount1, amount2, 10);
-			}
 		}
 	}
 

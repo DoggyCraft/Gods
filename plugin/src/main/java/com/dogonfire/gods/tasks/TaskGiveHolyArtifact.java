@@ -65,7 +65,7 @@ public class TaskGiveHolyArtifact extends Task
 			if (this.speak)
 			{
 				ctx.languageManager().setPlayerName(this.player.getName());
-				ctx.godManager().GodSay(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverHolyArtifactBlessing, 2 + random.nextInt(10));
+				ctx.godSpeech().say(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverHolyArtifactBlessing, 2 + random.nextInt(10));
 			}
 		}
 	}

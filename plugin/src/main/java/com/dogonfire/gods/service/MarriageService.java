@@ -141,7 +141,7 @@ public class MarriageService
 			{
 				ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskLove(ctx, player, partner), 1L);
 
-				ctx.plugin().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, player.getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
+				ctx.godSpeech().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, player.getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
 			}
 		}
 
@@ -166,7 +166,7 @@ public class MarriageService
 				Player divorcer = ctx.plugin().getServer().getPlayer(believerId);
 				String divorcerName = divorcer != null ? divorcer.getDisplayName() : ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
 
-				ctx.plugin().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, divorcerName, "DIVORCED", 1);
+				ctx.godSpeech().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, divorcerName, "DIVORCED", 1);
 			}
 		}
 
@@ -252,10 +252,10 @@ public class MarriageService
 		}
 
 		ctx.languageManager().setPlayerName(player2.getDisplayName());
-		ctx.godManager().GodSay(godName, player1, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedMarriageProposal, 2 + this.random.nextInt(40));
+		ctx.godSpeech().say(godName, player1, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedMarriageProposal, 2 + this.random.nextInt(40));
 
 		ctx.languageManager().setPlayerName(player1.getDisplayName());
-		ctx.godManager().GodSay(godName, player2, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedYourMarriageProposal, 2 + this.random.nextInt(40));
+		ctx.godSpeech().say(godName, player2, LanguageManager.LANGUAGESTRING.GodToBelieverAcceptedYourMarriageProposal, 2 + this.random.nextInt(40));
 
 		setGettingMarried(playerId1, playerId2);
 	}
@@ -369,10 +369,10 @@ public class MarriageService
 			ctx.godManager().blessPlayer(godName, gettingMarriedPartnerId, godPower);
 
 			ctx.languageManager().setPlayerName(partner.getDisplayName());
-			ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
+			ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
 
 			ctx.languageManager().setPlayerName(player.getDisplayName());
-			ctx.godManager().GodSay(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
+			ctx.godSpeech().say(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarried, 10);
 
 			ctx.plugin().log(player.getDisplayName() + " just married " + partner.getDisplayName() + " in the name of " + godName);
 			ctx.plugin().getServer().broadcastMessage(ChatColor.WHITE + player.getDisplayName() + ChatColor.AQUA + " just married " + ChatColor.WHITE + partner.getDisplayName() + ChatColor.AQUA + " in the name of " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
@@ -393,10 +393,10 @@ public class MarriageService
 				ctx.plugin().logDebug(ex.getMessage());
 			}
 			ctx.languageManager().setPlayerName(partner.getDisplayName());
-			ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageTokenPickup, 10);
+			ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageTokenPickup, 10);
 
 			ctx.languageManager().setPlayerName(player.getDisplayName());
-			ctx.godManager().GodSay(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarriagePartnerTokenPickup, 10);
+			ctx.godSpeech().say(godName, partner, LanguageManager.LANGUAGESTRING.GodToBelieverMarriagePartnerTokenPickup, 10);
 		}
 
 		this.repository.save();

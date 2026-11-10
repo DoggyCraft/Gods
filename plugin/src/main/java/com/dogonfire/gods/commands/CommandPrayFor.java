@@ -91,13 +91,13 @@ public class CommandPrayFor extends GodsCommand
 		int currentPrayerPower = ctx.believerService().getPrayerPower(player.getUniqueId());
 		if (currentPrayerPower < ctx.settings().prayers().blessingCost())
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().blessingCost() - currentPrayerPower, godName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().blessingCost() - currentPrayerPower, godName, 1);
 			return;
 		}
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForBlessing, ChatColor.AQUA, ctx.settings().prayers().blessingCost(), godName, 1);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForBlessing, ChatColor.AQUA, ctx.settings().prayers().blessingCost(), godName, 1);
 		if (!ctx.godManager().blessPlayer(godName, player.getUniqueId(), ctx.godManager().getGodPower(godName)))
 		{
-			ctx.godManager().godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
+			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
 		}
 		else
 		{
@@ -112,12 +112,12 @@ public class CommandPrayFor extends GodsCommand
 		int currentPrayerPower = ctx.believerService().getPrayerPower(player.getUniqueId());
 		if (currentPrayerPower < ctx.settings().prayers().healthCost())
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().healthCost() - currentPrayerPower, godName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().healthCost() - currentPrayerPower, godName, 1);
 			return;
 		}
 		if (ctx.believerService().hasRecentItemBlessing(player.getUniqueId()))
 		{
-			ctx.godManager().godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
+			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
 			return;
 		}
 		double healing = ctx.godManager().getHealthNeed(godName, player);
@@ -126,7 +126,7 @@ public class CommandPrayFor extends GodsCommand
 			sender.sendMessage(ChatColor.AQUA + "You are already in good health.");
 			return;
 		}
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForHealth, ChatColor.AQUA, ctx.settings().prayers().healthCost(), godName, 1);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForHealth, ChatColor.AQUA, ctx.settings().prayers().healthCost(), godName, 1);
 		ctx.godManager().healPlayer(godName, player);
 
 		ctx.believerService().increasePrayerPower(player.getUniqueId(), -ctx.settings().prayers().healthCost());
@@ -140,21 +140,21 @@ public class CommandPrayFor extends GodsCommand
 		int currentPrayerPower = ctx.believerService().getPrayerPower(player.getUniqueId());
 		if (currentPrayerPower < ctx.settings().prayers().itemCost())
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().itemCost() - currentPrayerPower, godName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().itemCost() - currentPrayerPower, godName, 1);
 			return;
 		}
 		if (ctx.believerService().hasRecentItemBlessing(player.getUniqueId()))
 		{
-			ctx.godManager().godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerRecentItemBlessing);
+			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerRecentItemBlessing);
 			return;
 		}
 		if (ctx.godManager().blessPlayerWithItem(godName, player) == null)
 		{
-			ctx.godManager().godSayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerWhenNoItemNeed);
+			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerWhenNoItemNeed);
 		}
 		else
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForItem, ChatColor.AQUA, ctx.settings().prayers().itemCost(), godName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForItem, ChatColor.AQUA, ctx.settings().prayers().itemCost(), godName, 1);
 			ctx.believerService().increasePrayerPower(player.getUniqueId(), -ctx.settings().prayers().itemCost());
 		}
 	}
@@ -166,7 +166,7 @@ public class CommandPrayFor extends GodsCommand
 		int currentPrayerPower = ctx.believerService().getPrayerPower(player.getUniqueId());
 		if (currentPrayerPower < ctx.settings().prayers().questCost())
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().questCost() - currentPrayerPower, godName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().questCost() - currentPrayerPower, godName, 1);
 			return;
 		}
 		if (ctx.questManager().hasQuest(godName))
@@ -174,7 +174,7 @@ public class CommandPrayFor extends GodsCommand
 			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " already has given a quest!");
 			return;
 		}
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForQuest, ChatColor.AQUA, ctx.settings().prayers().questCost(), godName, 1);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForQuest, ChatColor.AQUA, ctx.settings().prayers().questCost(), godName, 1);
 		if (ctx.questManager().generateQuest(godName))
 		{
 			ctx.believerService().increasePrayerPower(player.getUniqueId(), -ctx.settings().prayers().questCost());

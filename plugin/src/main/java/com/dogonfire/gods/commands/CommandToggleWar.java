@@ -65,18 +65,18 @@ public class CommandToggleWar extends GodsCommand
 		if (ctx.godManager().toggleWarRelationForGod(godName, enemyGodName))
 		{
 			ctx.languageManager().setPlayerName(godName);
-			ctx.godManager().godSayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
+			ctx.godSpeech().sayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
 
 			ctx.languageManager().setPlayerName(enemyGodName);
-			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
+			ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);
 		}
 		else
 		{
 			ctx.languageManager().setPlayerName(godName);
-			ctx.godManager().godSayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
+			ctx.godSpeech().sayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
 
 			ctx.languageManager().setPlayerName(enemyGodName);
-			ctx.godManager().godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
+			ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversWarCancelled, 10);
 		}
 
 	}

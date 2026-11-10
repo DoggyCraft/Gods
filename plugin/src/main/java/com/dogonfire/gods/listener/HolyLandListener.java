@@ -419,7 +419,7 @@ public class HolyLandListener implements Listener
 
 		if ((godName == null) || (!targetLandGodName.equals(godName)))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.TeleportIntoHolylandNotAllowed, ChatColor.DARK_RED, 0, targetLandGodName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.TeleportIntoHolylandNotAllowed, ChatColor.DARK_RED, 0, targetLandGodName, 1);
 			event.setCancelled(true);
 		}
 	}
@@ -520,8 +520,8 @@ public class HolyLandListener implements Listener
 
 				TitleManager.sendTitle(player, 1 * 20, 4 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
 
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandKillsStatus, ChatColor.AQUA, String.valueOf(minutesLeft), attackerKillsNeeded, defenderKillsNeeded, 20);
-				ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandDesecrationStatus, ChatColor.AQUA, godTo, 0, desecration, 20);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandKillsStatus, ChatColor.AQUA, String.valueOf(minutesLeft), attackerKillsNeeded, defenderKillsNeeded, 20);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandDesecrationStatus, ChatColor.AQUA, godTo, 0, desecration, 20);
 				return;
 			}
 		}

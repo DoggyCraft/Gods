@@ -95,8 +95,8 @@ public class AltarListener implements Listener
 
 						ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
-						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerUnset, 2);
-						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerUnset, cursedPlayer.getUniqueId());
+						ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerUnset, 2);
+						ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerUnset, cursedPlayer.getUniqueId());
 					}
 					else
 					{
@@ -104,15 +104,15 @@ public class AltarListener implements Listener
 
 						ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
-						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerSet, 2);
-						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerSet, player.getUniqueId());
+						ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestCursedPlayerSet, 2);
+						ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversCursedPlayerSet, player.getUniqueId());
 
 						ctx.plugin().log(player.getName() + " asked " + godName + " for curses on " + cursedPlayer.getName());
 					}
 				}
 				else
 				{
-					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+					ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 				}
 
 				return;
@@ -132,9 +132,9 @@ public class AltarListener implements Listener
 
 						ctx.languageManager().setPlayerName(blessedPlayer.getDisplayName());
 
-						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerUnset, 2);
+						ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerUnset, 2);
 
-						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerUnset, player.getUniqueId());
+						ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerUnset, player.getUniqueId());
 					}
 					else
 					{
@@ -142,16 +142,16 @@ public class AltarListener implements Listener
 
 						ctx.languageManager().setPlayerName(blessedPlayer.getDisplayName());
 
-						ctx.godManager().GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerSet, 2);
+						ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPriestBlessedPlayerSet, 2);
 
-						ctx.godManager().GodSayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerSet, player.getUniqueId());
+						ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversBlessedPlayerSet, player.getUniqueId());
 
 						ctx.plugin().log(player.getName() + " asked " + godName + " for blessings on " + blessedPlayer.getName());
 					}
 				}
 				else
 				{
-					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+					ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BlessingsNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 				}
 				return;
 			}
@@ -167,7 +167,7 @@ public class AltarListener implements Listener
 
 		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.altar.pray")))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarPrayingNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarPrayingNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
@@ -183,7 +183,7 @@ public class AltarListener implements Listener
 
 		if (altarGodName.length() <= 1)
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
@@ -191,13 +191,13 @@ public class AltarListener implements Listener
 
 		if (!ctx.godListService().isAllowedGod(altarGodName))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 
 		if (!ctx.godManager().hasGodAccess(player.getUniqueId(), altarGodName))
 		{
-			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
 			return;
 		}
 

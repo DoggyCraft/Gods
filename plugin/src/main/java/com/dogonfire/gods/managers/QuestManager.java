@@ -10,8 +10,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
@@ -776,7 +776,7 @@ public class QuestManager
 		}
 
 		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName) - getQuestProgressForGod(godName));
-		ctx.godManager().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
 	}
 
 	private void godSayNewQuest(String godName)
@@ -790,15 +790,15 @@ public class QuestManager
 		}
 
 		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName));
-		ctx.godManager().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
 
 		switch (questType)
 		{
 		case PILGRIMAGE:
-			ctx.godManager().sendInfoToBelievers(godName, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
+			ctx.godSpeech().sendInfoToBelievers(godName, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
 			break;
 		case ITEMSACRIFICE:
-			ctx.godManager().sendInfoToBelievers(godName, LANGUAGESTRING.SacrificeHelp, ChatColor.AQUA, 150);
+			ctx.godSpeech().sendInfoToBelievers(godName, LANGUAGESTRING.SacrificeHelp, ChatColor.AQUA, 150);
 			break;
 		default:
 			break;
@@ -816,7 +816,7 @@ public class QuestManager
 		}
 
 		setQuestSpeechValues(godName, questType, getQuestAmountForGod(godName) - getQuestProgressForGod(godName));
-		ctx.godManager().godSayToBelievers(godName, message, 2 + this.random.nextInt(10));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(10));
 	}
 
 	public void godSayStatus(String godName)
@@ -838,12 +838,12 @@ public class QuestManager
 			// Quests with a place to find: remind now and then, and tell hunting believers how far they are
 			if (this.random.nextInt(6) == 0)
 			{
-				ctx.godManager().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
+				ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
 			}
 			sendQuestTargetHints(godName);
 			break;
 		default:
-			ctx.godManager().godSayToBelievers(godName, message, 2 + this.random.nextInt(100));
+			ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
 			break;
 		}
 	}
@@ -870,7 +870,7 @@ public class QuestManager
 			{
 				if (this.random.nextInt(10) == 0)
 				{
-					ctx.plugin().sendInfo(believerId, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0, "", 20);
+					ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0, "", 20);
 				}
 				continue;
 			}
@@ -882,7 +882,7 @@ public class QuestManager
 
 			int distance = (int) targetLocation.toVector().distance(player.getLocation().toVector());
 
-			ctx.plugin().sendInfo(believerId, LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, distance, "", 20);
+			ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, distance, "", 20);
 		}
 	}
 
@@ -895,7 +895,7 @@ public class QuestManager
 
 		if (addQuestProgressForGod(godName))
 		{
-			ctx.godManager().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, 2 + this.random.nextInt(10));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -923,7 +923,7 @@ public class QuestManager
 
 		if (addQuestProgressForGod(godName))
 		{
-			ctx.godManager().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, 2 + this.random.nextInt(10));
 
 			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
@@ -953,7 +953,7 @@ public class QuestManager
 		if (addQuestProgressForGod(godName))
 		{
 			ctx.languageManager().setPlayerName(playerName);
-			ctx.godManager().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
 			ctx.godManager().addMoodForGod(godName, 1.0F * ctx.godManager().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
@@ -982,7 +982,7 @@ public class QuestManager
 
 		if (addQuestProgressForGod(godName))
 		{
-			ctx.godManager().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, 2 + this.random.nextInt(10));
 
 			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
@@ -1020,7 +1020,7 @@ public class QuestManager
 			ctx.plugin().logDebug(ex.getMessage());
 		}
 
-		ctx.godManager().godSayToBelievers(questGod, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, 2);
+		ctx.godSpeech().sayToBelievers(questGod, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, 2);
 
 		ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
 		ctx.godManager().addBeliefAndRewardBelievers(godName);
@@ -1058,7 +1058,7 @@ public class QuestManager
 		if (addQuestPlayerProgressForGod(godName, playerId))
 		{
 			ctx.languageManager().setPlayerName((player != null) ? player.getDisplayName() : "");
-			ctx.godManager().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
 			ctx.godManager().addMoodForGod(godName, 1.0F * ctx.godManager().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
@@ -1093,7 +1093,7 @@ public class QuestManager
 		if (complete)
 		{
 			setQuestSpeechValues(godName, QUESTTYPE.GIVEITEMS, 0);
-			ctx.godManager().godSayToBelievers(godName, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, 2 + this.random.nextInt(10));
 
 			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
@@ -1133,7 +1133,7 @@ public class QuestManager
 		{
 			setQuestSpeechValues(godName, questType, 0);
 			ctx.languageManager().setPlayerName(player.getDisplayName());
-			ctx.godManager().godSayToBelievers(godName, questSpeech(questType, Phase.COMPLETED), 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, questSpeech(questType, Phase.COMPLETED), 2 + this.random.nextInt(10));
 
 			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);

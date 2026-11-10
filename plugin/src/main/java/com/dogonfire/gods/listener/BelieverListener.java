@@ -81,7 +81,7 @@ public class BelieverListener implements Listener
 			ctx.believerService().increasePrayerPower(killer.getUniqueId(), 2);
 			double powerAfter = ctx.believerService().getBelieverPower(killer.getUniqueId());
 
-			ctx.plugin().sendInfo(killer.getUniqueId(), message, ChatColor.AQUA, (int) (powerAfter - powerBefore), killerGodName, 20);
+			ctx.godSpeech().sendInfo(killer.getUniqueId(), message, ChatColor.AQUA, (int) (powerAfter - powerBefore), killerGodName, 20);
 		}
 	}
 }

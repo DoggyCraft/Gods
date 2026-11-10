@@ -16,6 +16,7 @@ import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.GodListService;
+import com.dogonfire.gods.service.GodSpeech;
 import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.storage.Storage;
@@ -48,6 +49,7 @@ public final class GodsContext
 	private final HolyPowerManager			holyPowerManager;
 	private final GodListService			godListService;
 	private final ChatManager				chatManager;
+	private final GodSpeech					godSpeech;
 
 	// Null when WorldGuard isn't installed; its classes must not be touched then
 	private final WorldGuardIntegration		worldGuard;
@@ -70,6 +72,7 @@ public final class GodsContext
 		this.holyPowerManager = new HolyPowerManager(this);
 		this.godListService = new GodListService(this, storage.whitelist(), storage.blacklist());
 		this.chatManager = new ChatManager(this);
+		this.godSpeech = new GodSpeech(this);
 
 		this.worldGuard = isEnabled(plugin.getServer().getPluginManager(), "WorldGuard") ? new WorldGuardIntegration() : null;
 	}
@@ -163,6 +166,12 @@ public final class GodsContext
 	public ChatManager chatManager()
 	{
 		return this.chatManager;
+	}
+
+	/** Gods speaking to players, and the info messages */
+	public GodSpeech godSpeech()
+	{
+		return this.godSpeech;
 	}
 
 	/** Null when WorldGuard is not installed */

@@ -265,7 +265,7 @@ public class BelieverService
 		believer.setPrayerPower(prayerPower);
 		changed();
 
-		ctx.plugin().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, prayerPower, "", 10);
+		ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, prayerPower, "", 10);
 	}
 
 	public void clearPrayerPower(UUID believerId)
@@ -277,7 +277,7 @@ public class BelieverService
 		}
 		changed();
 
-		ctx.plugin().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, 0, "", 10);
+		ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, 0, "", 10);
 	}
 
 	// ---------------------------------------------------------------------

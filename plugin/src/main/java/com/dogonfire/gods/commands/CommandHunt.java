@@ -56,7 +56,7 @@ public class CommandHunt extends GodsCommand
 		}
 		Vector vector = pilgrimageLocation.toVector().subtract(player.getLocation().toVector());
 		ctx.languageManager().setAmount((int) vector.length());
-		ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, (int) vector.length(), "", 20);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, (int) vector.length(), "", 20);
 
 	}
 
