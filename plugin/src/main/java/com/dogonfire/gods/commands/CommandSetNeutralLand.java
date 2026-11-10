@@ -35,15 +35,15 @@ public class CommandSetNeutralLand extends GodsCommand
 			return;
 		}
 		Player player = (Player) sender;
-		if (ctx.holyLandManager().isNeutralLandLocation(player.getLocation()))
+		if (ctx.holyLandService().isNeutralLandLocation(player.getLocation()))
 		{
-			ctx.holyLandManager().clearNeutralLand(player.getLocation());
+			ctx.holyLandService().clearNeutralLand(player.getLocation());
 			TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.DARK_GREEN + "Wilderness", ChatColor.WHITE + "");
 			sender.sendMessage(ChatColor.AQUA + "You set cleared the neutral land in this location.");
 		}
 		else
 		{
-			ctx.holyLandManager().setNeutralLand(player.getLocation());
+			ctx.holyLandService().setNeutralLand(player.getLocation());
 			TitleManager.sendTitle(player, 1*20, 3*20, 1*20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
 			sender.sendMessage(ChatColor.AQUA + "You set neutral land in this location.");
 		}

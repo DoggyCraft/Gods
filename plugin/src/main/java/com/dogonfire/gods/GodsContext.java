@@ -10,7 +10,6 @@ import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
-import com.dogonfire.gods.managers.HolyLandManager;
 import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.managers.MarriageManager;
@@ -18,6 +17,7 @@ import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.managers.WhitelistManager;
 import com.dogonfire.gods.service.BelieverService;
+import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.storage.Storage;
 
 /**
@@ -40,7 +40,7 @@ public final class GodsContext
 	private final BelieverService			believerService;
 	private final QuestManager				questManager;
 	private final AltarManager				altarManager;
-	private final HolyLandManager			holyLandManager;
+	private final HolyLandService			holyLandService;
 	private final HolyBookManager			holyBookManager;
 	private final MarriageManager			marriageManager;
 	private final HolyArtifactManager		holyArtifactManager;
@@ -62,7 +62,7 @@ public final class GodsContext
 		this.believerService = new BelieverService(this, storage.believers());
 		this.questManager = new QuestManager(this);
 		this.altarManager = new AltarManager(this);
-		this.holyLandManager = new HolyLandManager(this);
+		this.holyLandService = new HolyLandService(this, storage.holyLands());
 		this.holyBookManager = new HolyBookManager(this);
 		this.marriageManager = new MarriageManager(this);
 		this.holyArtifactManager = new HolyArtifactManager(this);
@@ -125,10 +125,10 @@ public final class GodsContext
 		return this.altarManager;
 	}
 
-	/** Its data is only loaded, and its listener only registered, while holy land is enabled */
-	public HolyLandManager holyLandManager()
+	/** Its data is only loaded, and its listener (HolyLandListener) only registered, while holy land is enabled */
+	public HolyLandService holyLandService()
 	{
-		return this.holyLandManager;
+		return this.holyLandService;
 	}
 
 	/** Its data is only loaded while bibles are enabled */

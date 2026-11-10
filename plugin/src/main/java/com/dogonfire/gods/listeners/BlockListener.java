@@ -59,55 +59,6 @@ public class BlockListener implements Listener
 		this.ctx = ctx;
 	}
 
-	private boolean isHolyLandActiveIn(World world)
-	{
-		return ctx.settings().holyLand().enabled() && world != null && ctx.plugin().isEnabledInWorld(world);
-	}
-
-	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-	public void OnBlockPlace(BlockPlaceEvent event)
-	{
-		Player player = event.getPlayer();
-		if (!isHolyLandActiveIn(player.getWorld()))
-		{
-			return;
-		}
-		if (player.isOp())
-		{
-			return;
-		}
-
-		if (!ctx.permissionsManager().hasPermission(player, "gods.holyland"))
-		{
-			ctx.plugin().logDebug(event.getPlayer().getName() + " does not have holyland permission");
-			return;
-		}
-
-		if (ctx.holyLandManager().isNeutralLandLocation(event.getBlock().getLocation()))
-		{
-			player.sendMessage(ChatColor.RED + "You cannot build in neutral land");
-
-			event.setCancelled(true);
-			return;
-		}
-
-		String godName = ctx.holyLandManager().getGodAtHolyLandLocation(event.getBlock().getLocation());
-
-		if (godName == null)
-		{
-			return;
-		}
-
-		String playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
-
-		if ((playerGod == null) || (!playerGod.equals(godName)))
-		{
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.YELLOW + godName);
-
-			event.setCancelled(true);
-		}
-	}
-
 	@EventHandler
 	public void OnEntityCombust(EntityCombustEvent event)
 	{
@@ -159,87 +110,6 @@ public class BlockListener implements Listener
 		ctx.godManager().handleSacrifice(godName, player, item.getItemStack().getType());
 	}
 
-	/** The entity really behind some damage: the shooter of a projectile, the igniter of TNT. */
-	private static Entity getResponsibleEntity(Entity damager)
-	{
-		if (damager instanceof Projectile)
-		{
-			ProjectileSource shooter = ((Projectile) damager).getShooter();
-
-			return (shooter instanceof Entity) ? (Entity) shooter : null;
-		}
-
-		if (damager instanceof TNTPrimed)
-		{
-			return ((TNTPrimed) damager).getSource();
-		}
-
-		return damager;
-	}
-
-	@EventHandler(ignoreCancelled = true)
-	public void OnEntityDamageByEntity(EntityDamageByEntityEvent event)
-	{
-		Location location = event.getEntity().getLocation();
-
-		if (!isHolyLandActiveIn(location.getWorld()))
-		{
-			return;
-		}
-
-		if (ctx.holyLandManager().isNeutralLandLocation(location))
-		{
-			event.setCancelled(true);
-			return;
-		}
-
-		String godName = ctx.holyLandManager().getGodAtHolyLandLocation(location);
-		if (godName == null)
-		{
-			return;
-		}
-
-		Entity attacker = getResponsibleEntity(event.getDamager());
-
-		if (attacker instanceof Player)
-		{
-			Player player = (Player) attacker;
-
-			String attackerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
-			if (attackerGodName == null)
-			{
-				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
-				{
-					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
-				}
-				event.setCancelled(true);
-
-				return;
-			}
-			if (!godName.equals(attackerGodName))
-			{
-				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
-				{
-					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
-				}
-				if (!ctx.godManager().hasWarRelation(godName, attackerGodName))
-				{
-					event.setCancelled(true);
-				}
-			}
-			else if ((event.getEntity() instanceof Player victim) && godName.equals(ctx.believerService().getGodForBeliever(victim.getUniqueId()))
-					&& (!ctx.godManager().getGodPvP(godName)))
-			{
-				// Believers fighting each other in their own god's holy land; intruders can always be fought off
-				event.setCancelled(true);
-			}
-		}
-		else if ((attacker instanceof LivingEntity) && (!ctx.godManager().getGodMobDamage(godName)))
-		{
-			event.setCancelled(true);
-		}
-	}
-
 	@EventHandler
 	public void OnEntityDeath(EntityDeathEvent event)
 	{
@@ -273,29 +143,6 @@ public class BlockListener implements Listener
 		}
 
 		ctx.godManager().handleKilled(player, godName, event.getEntityType().name());
-	}
-
-	/** Explosions don't destroy blocks in holy lands or neutral lands. */
-	private void protectBlocksFromExplosion(List<Block> blocks)
-	{
-		if (blocks.isEmpty() || !isHolyLandActiveIn(blocks.get(0).getWorld()))
-		{
-			return;
-		}
-
-		blocks.removeIf(block -> ctx.holyLandManager().isNeutralLandLocation(block.getLocation()) || ctx.holyLandManager().getGodAtHolyLandLocation(block.getLocation()) != null);
-	}
-
-	@EventHandler(ignoreCancelled = true)
-	public void onEntityExplode(EntityExplodeEvent event)
-	{
-		protectBlocksFromExplosion(event.blockList());
-	}
-
-	@EventHandler(ignoreCancelled = true)
-	public void onBlockExplode(BlockExplodeEvent event)
-	{
-		protectBlocksFromExplosion(event.blockList());
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -454,7 +301,7 @@ public class BlockListener implements Listener
 		}
 	}
 
-	/** Quest chests and holy land access. */
+	/** Quest chests (holy land access is HolyLandListener's). */
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
@@ -470,64 +317,6 @@ public class BlockListener implements Listener
 			{
 				event.setCancelled(true);
 			}
-		}
-
-		if (!ctx.settings().holyLand().enabled())
-		{
-			return;
-		}
-
-		if (!ctx.permissionsManager().hasPermission(event.getPlayer(), "gods.holyland"))
-		{
-			ctx.plugin().logDebug(event.getPlayer().getName() + " does not have holyland permission");
-			return;
-		}
-		if ((!player.isOp()) && (ctx.holyLandManager().isNeutralLandLocation(player.getLocation())))
-		{
-			if (!ctx.settings().holyLand().allowInteractionInNeutralLands())
-			{
-				event.setCancelled(true);
-			}
-			return;
-		}
-		if (event.getClickedBlock() == null)
-		{
-			return;
-		}
-		String blockGodName = ctx.holyLandManager().getGodAtHolyLandLocation(event.getClickedBlock().getLocation());
-		if (blockGodName == null)
-		{
-			return;
-		}
-		if ((ctx.settings().holyLand().breakableBlocks().contains(event.getClickedBlock().getType())) || (ctx.altarManager().isAltarBlock(event.getClickedBlock())))
-		{
-			return;
-		}
-		if (ctx.holyLandManager().isContestedLand(player.getLocation()))
-		{
-			player.sendMessage(ChatColor.RED + "This Holy Land is contested! Win the battle before you can access this Holy Land!");
-			event.setCancelled(true);
-			return;
-		}
-		String playerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
-		if (playerGodName == null)
-		{
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.GOLD + blockGodName);
-			event.setCancelled(true);
-			return;
-		}
-		if (!playerGodName.equals(blockGodName))
-		{
-			if (ctx.godManager().hasAllianceRelation(blockGodName, playerGodName))
-			{
-				return;
-			}
-			if (player.isOp())
-			{
-				return;
-			}
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.GOLD + blockGodName);
-			event.setCancelled(true);
 		}
 	}
 
@@ -751,11 +540,6 @@ public class BlockListener implements Listener
 		Player player = event.getPlayer();
 
 		this.lastEatTimes.remove(player.getUniqueId());
-
-		if (ctx.settings().holyLand().enabled())
-		{
-			ctx.holyLandManager().handleQuit(player.getUniqueId());
-		}
 
 		// The player still counts as online during this event
 		if (ctx.plugin().isEnabled())

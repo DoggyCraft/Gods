@@ -143,8 +143,8 @@ public class CommandInfo extends GodsCommand
 		
 		if(ctx.settings().holyLand().enabled())
 		{
-			int claimed = ctx.holyLandManager().getClaimedChunksForGod(godName);
-			int maxclaim = ctx.holyLandManager().getMaximumChunksForGod(godName);
+			int claimed = ctx.holyLandService().getClaimedChunksForGod(godName);
+			int maxclaim = ctx.holyLandService().getMaximumChunksForGod(godName);
 			sender.sendMessage(ChatColor.AQUA + "Holyland claimed: " + ChatColor.GOLD + claimed + "/" + maxclaim);					
 		}
 	}

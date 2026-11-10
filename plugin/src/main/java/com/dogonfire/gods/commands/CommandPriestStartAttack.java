@@ -53,8 +53,8 @@ public class CommandPriestStartAttack extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You are already attacking a Holy Land!");
 			return;
 		}
-		String otherGodName = ctx.holyLandManager().getGodAtHolyLandLocation(player.getLocation());
-		if (otherGodName == null || ctx.holyLandManager().isNeutralLandLocation(player.getLocation()))
+		String otherGodName = ctx.holyLandService().getGodAtHolyLandLocation(player.getLocation());
+		if (otherGodName == null || ctx.holyLandService().isNeutralLandLocation(player.getLocation()))
 		{
 			sender.sendMessage(ChatColor.RED + "You must stand in the Holy Land of an enemy religion to attack it");
 			return;
@@ -69,7 +69,7 @@ public class CommandPriestStartAttack extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You are not in war with " + ChatColor.GOLD + otherGodName + "!");
 			return;
 		}
-		if (ctx.holyLandManager().isUnderAttack(player.getLocation()))
+		if (ctx.holyLandService().isUnderAttack(player.getLocation()))
 		{
 			sender.sendMessage(ChatColor.RED + "This Holy Land is already under attack!");
 			return;

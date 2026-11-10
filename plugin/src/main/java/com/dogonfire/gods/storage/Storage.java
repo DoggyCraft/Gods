@@ -32,7 +32,7 @@ public final class Storage
 	private final DataFile			gods;
 	private final BelieverRepository	believers;
 	private final DataFile			quests;
-	private final DataFile			holyLands;
+	private final HolyLandRepository	holyLands;
 	private final DataFile			marriages;
 	private final DataFile			bibles;
 	private final DataFile			whitelist;
@@ -57,12 +57,12 @@ public final class Storage
 		this.gods = file(dataFolder, "gods.yml", UUID_TAGS);
 		this.believers = new BelieverRepository(file(dataFolder, "believers.yml", null), logger);
 		this.quests = file(dataFolder, "quests.yml", null);
-		this.holyLands = file(dataFolder, "holyland.yml", null);
+		this.holyLands = new HolyLandRepository(new DataFile(dataFolder.resolve("holyland.yml"), logger, writer, null, HolyLandRepository.format(logger)), logger);
 		this.marriages = file(dataFolder, "marriages.yml", null);
 		this.bibles = file(dataFolder, "bibles.yml", null);
 		this.whitelist = file(dataFolder, "whitelist.yml", null);
 		this.blacklist = file(dataFolder, "blacklist.yml", null);
-		this.files = List.of(this.gods, this.believers.file(), this.quests, this.holyLands, this.marriages, this.bibles, this.whitelist, this.blacklist);
+		this.files = List.of(this.gods, this.believers.file(), this.quests, this.holyLands.file(), this.marriages, this.bibles, this.whitelist, this.blacklist);
 	}
 
 	private DataFile file(Path dataFolder, String name, DataFile.Repair repair)
@@ -90,7 +90,7 @@ public final class Storage
 		return this.quests;
 	}
 
-	public DataFile holyLands()
+	public HolyLandRepository holyLands()
 	{
 		return this.holyLands;
 	}

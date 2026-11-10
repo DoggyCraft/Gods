@@ -881,7 +881,7 @@ public class GodManager
 			return null;
 		}
 		Location location = getContestedHolyLandAttackLocationForGod(godName);
-		if (!ctx.holyLandManager().isAttackingHolyLand(godName, location))
+		if (!ctx.holyLandService().isAttackingHolyLand(godName, location))
 		{
 			if (godsConfig().contains(godName + ".ContestedLand"))
 			{
@@ -889,7 +889,7 @@ public class GodManager
 			}
 			return null;
 		}
-		return ctx.holyLandManager().hashLocation(location);
+		return ctx.holyLandService().hashLocation(location);
 	}
 
 	public Player getCursedPlayerForGod(String godName)
@@ -1980,7 +1980,7 @@ public class GodManager
 
 			if ((ctx.settings().holyLand().enabled()) && (ctx.permissionsManager().hasPermission(player, "gods.holyland")))
 			{
-				ctx.holyLandManager().addPrayer(player, godName, altarBlock.getLocation());
+				ctx.holyLandService().addPrayer(player, godName, altarBlock.getLocation());
 			}
 
 			ctx.questManager().handlePrayer(godName, player.getUniqueId());
@@ -2986,7 +2986,7 @@ public class GodManager
 		// Love: Spawn luck/food/Health/Gold/
 		// Sea: Spawn fish in sea within radius
 		
-		ctx.holyLandManager().removeAbandonedLands();
+		ctx.holyLandService().removeAbandonedLands();
 	}
 	
 	private void manageLostBelievers(String godName)
@@ -3263,7 +3263,7 @@ public class GodManager
 
 		if (ctx.settings().holyLand().enabled())
 		{
-			ctx.holyLandManager().removeHolyLandsForGod(godName);
+			ctx.holyLandService().removeHolyLandsForGod(godName);
 		}
 
 		godsFile().save();
@@ -3337,14 +3337,14 @@ public class GodManager
 
 	public void setContestedHolyLandForGod(String godName, Location contestedLand)
 	{
-		setGodValue(godName, ".ContestedLand.Hash", Long.valueOf(ctx.holyLandManager().hashLocation(contestedLand)));
+		setGodValue(godName, ".ContestedLand.Hash", Long.valueOf(ctx.holyLandService().hashLocation(contestedLand)));
 
 		setGodValue(godName, ".ContestedLand" + ".X", Integer.valueOf(contestedLand.getBlockX()));
 		setGodValue(godName, ".ContestedLand" + ".Y", Integer.valueOf(contestedLand.getBlockY()));
 		setGodValue(godName, ".ContestedLand" + ".Z", Integer.valueOf(contestedLand.getBlockZ()));
 		setGodValue(godName, ".ContestedLand" + ".World", contestedLand.getWorld().getName());
 
-		ctx.holyLandManager().setContestedLand(contestedLand, godName);
+		ctx.holyLandService().setContestedLand(contestedLand, godName);
 
 		godsFile().markDirty();
 	}

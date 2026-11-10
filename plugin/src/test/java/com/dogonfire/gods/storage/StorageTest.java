@@ -192,12 +192,12 @@ class StorageTest
 	void nothingIsWrittenAfterClose() throws IOException
 	{
 		Storage storage = storage();
-		storage.holyLands().load();
+		storage.bibles().load();
 		storage.close();
 
-		storage.holyLands().yaml().set("Holylands.world.1.GodName", "Thor");
-		storage.holyLands().save();
-		assertTrue(storage.holyLands().isDirty());
+		storage.bibles().yaml().set("Thor.Title", "Book");
+		storage.bibles().save();
+		assertTrue(storage.bibles().isDirty());
 		assertEquals(List.of(), filesInDir());
 	}
 }

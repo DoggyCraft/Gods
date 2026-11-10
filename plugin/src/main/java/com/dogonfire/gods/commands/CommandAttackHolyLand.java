@@ -52,7 +52,7 @@ public class CommandAttackHolyLand extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "The Holy Land your religion is attacking is in a world that is not loaded");
 			return;
 		}
-		String otherGodName = ctx.holyLandManager().getGodAtHolyLandLocation(attackLocation);
+		String otherGodName = ctx.holyLandService().getGodAtHolyLandLocation(attackLocation);
 		player.teleport(attackLocation);
 		if (otherGodName == null)
 		{

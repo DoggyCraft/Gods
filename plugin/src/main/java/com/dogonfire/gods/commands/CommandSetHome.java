@@ -43,12 +43,12 @@ public class CommandSetHome extends GodsCommand
 		}
 		if (ctx.settings().holyLand().enabled())
 		{
-			if (ctx.holyLandManager().isNeutralLandLocation(player.getLocation()))
+			if (ctx.holyLandService().isNeutralLandLocation(player.getLocation()))
 			{
 				sender.sendMessage(ChatColor.RED + "You can only set religion home within your Holy Land");
 				return;
 			}
-			String locationGod = ctx.holyLandManager().getGodAtHolyLandLocation(player.getLocation());
+			String locationGod = ctx.holyLandService().getGodAtHolyLandLocation(player.getLocation());
 			if ((locationGod == null) || (!locationGod.equals(godName)))
 			{
 				sender.sendMessage(ChatColor.RED + "You can only set religion home within your Holy Land");
