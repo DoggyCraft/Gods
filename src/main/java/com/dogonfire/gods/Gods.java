@@ -29,7 +29,6 @@ public class Gods extends JavaPlugin
 {
 	private static Gods pluginInstance;
 
-	public boolean vaultEnabled	= false;
 
 	public static Gods instance()
 	{
@@ -111,17 +110,6 @@ public class Gods extends JavaPlugin
 		
 		PluginManager pm = getServer().getPluginManager();
 
-		// Check for Vault
-		if (pm.getPlugin("Vault") != null)
-		{
-			this.vaultEnabled = true;
-
-			log("Vault detected.");
-		}
-		else
-		{
-			log("Vault not found.");
-		}
 		// Check for PlaceholderAPI
 		if (pm.getPlugin("PlaceholderAPI") != null)
 		{

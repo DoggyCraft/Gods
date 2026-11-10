@@ -24,3 +24,6 @@ dependency-reduced-pom.xml
 .vscode/
 /.idea/
 *.iml
+
+# Claude Code agent worktrees
+.claude/worktrees/
