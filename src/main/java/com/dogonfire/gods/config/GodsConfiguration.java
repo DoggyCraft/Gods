@@ -154,7 +154,7 @@ public class GodsConfiguration
 	}
 
 	/**
-	 * @return how many minutes a player stays the blessed player of a god after a priest names them
+	 * @return how many seconds a player stays the blessed player of a god after a priest names them
 	 */
 	public final int getMaxBlessingTime()
 	{

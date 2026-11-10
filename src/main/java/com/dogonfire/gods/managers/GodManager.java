@@ -815,10 +815,10 @@ public class GodManager
 		}
 		Date thisDate = new Date();
 
-		// Blessing.MaxBlessingTime is in minutes, like Cursing.MaxCursingTime
-		long diffMinutes = (thisDate.getTime() - lastBlessedDate.getTime()) / 60000L;
+		// Blessing.MaxBlessingTime is in seconds (Cursing.MaxCursingTime is in minutes)
+		long diffSeconds = (thisDate.getTime() - lastBlessedDate.getTime()) / 1000L;
 		UUID blessedPlayer = parseUUID(this.godsConfig.getString(godName + ".BlessedPlayer"));
-		if (blessedPlayer == null || diffMinutes > GodsConfiguration.instance().getMaxBlessingTime())
+		if (blessedPlayer == null || diffSeconds > GodsConfiguration.instance().getMaxBlessingTime())
 		{
 			setBlessedPlayerForGod(godName, null);
 
@@ -914,7 +914,7 @@ public class GodManager
 		}
 		Date thisDate = new Date();
 
-		// Cursing.MaxCursingTime is in minutes, like Blessing.MaxBlessingTime
+		// Cursing.MaxCursingTime is in minutes (Blessing.MaxBlessingTime is in seconds)
 		long diffMinutes = (thisDate.getTime() - lastCursedDate.getTime()) / 60000L;
 		UUID cursedPlayer = parseUUID(this.godsConfig.getString(godName + ".CursedPlayer"));
 		if (cursedPlayer == null || diffMinutes > GodsConfiguration.instance().getMaxCursingTime())
