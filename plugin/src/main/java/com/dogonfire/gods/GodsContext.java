@@ -14,8 +14,8 @@ import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.managers.PermissionsManager;
 import com.dogonfire.gods.managers.QuestManager;
-import com.dogonfire.gods.managers.WhitelistManager;
 import com.dogonfire.gods.service.BelieverService;
+import com.dogonfire.gods.service.GodListService;
 import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.storage.Storage;
@@ -45,7 +45,7 @@ public final class GodsContext
 	private final MarriageService			marriageService;
 	private final HolyArtifactManager		holyArtifactManager;
 	private final HolyPowerManager			holyPowerManager;
-	private final WhitelistManager			whitelistManager;
+	private final GodListService			godListService;
 	private final ChatManager				chatManager;
 
 	// Null when WorldGuard isn't installed; its classes must not be touched then
@@ -67,7 +67,7 @@ public final class GodsContext
 		this.marriageService = new MarriageService(this, storage.marriages());
 		this.holyArtifactManager = new HolyArtifactManager(this);
 		this.holyPowerManager = new HolyPowerManager(this);
-		this.whitelistManager = new WhitelistManager(this);
+		this.godListService = new GodListService(this, storage.whitelist(), storage.blacklist());
 		this.chatManager = new ChatManager(this);
 
 		this.worldGuard = isEnabled(plugin.getServer().getPluginManager(), "WorldGuard") ? new WorldGuardIntegration() : null;
@@ -153,9 +153,10 @@ public final class GodsContext
 		return this.holyPowerManager;
 	}
 
-	public WhitelistManager whitelistManager()
+	/** The god whitelist and blacklist */
+	public GodListService godListService()
 	{
-		return this.whitelistManager;
+		return this.godListService;
 	}
 
 	public ChatManager chatManager()

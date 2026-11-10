@@ -277,7 +277,7 @@ public class AltarManager
 			return false;
 		}
 
-		if ((ctx.plugin().isBlacklistedGod(godName)) || (!ctx.plugin().isWhitelistedGod(godName)))
+		if (!ctx.godListService().isAllowedGod(godName))
 		{
 			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return false;

@@ -477,7 +477,7 @@ public class BlockListener implements Listener
 
 		altarGodName = ctx.godManager().formatGodName(altarGodName);
 
-		if ((ctx.plugin().isBlacklistedGod(altarGodName)) || (!ctx.plugin().isWhitelistedGod(altarGodName)))
+		if (!ctx.godListService().isAllowedGod(altarGodName))
 		{
 			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayToBlacklistedGodNotAllowed, ChatColor.DARK_RED, 0, "", 1);
 			return;

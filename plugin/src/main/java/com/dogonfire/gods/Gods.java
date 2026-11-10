@@ -210,7 +210,7 @@ public class Gods extends JavaPlugin
 		this.ctx.godManager().load();
 		this.ctx.questManager().load();
 		this.ctx.believerService().load();
-		this.ctx.whitelistManager().load();
+		this.ctx.godListService().load();
 	}
 
 	/** The features that can be switched on and off in config.yml */
@@ -288,24 +288,6 @@ public class Gods extends JavaPlugin
 		{
 			throw new VersionedYaml.LoadException("Could not read the bundled config.yml", e);
 		}
-	}
-
-	public boolean isBlacklistedGod(String godName)
-	{
-		if (this.settings.gods().blacklist())
-		{
-			return this.ctx.whitelistManager().isBlacklistedGod(godName);
-		}
-		return false;
-	}
-
-	public boolean isWhitelistedGod(String godName)
-	{
-		if (this.settings.gods().whitelist())
-		{
-			return this.ctx.whitelistManager().isWhitelistedGod(godName);
-		}
-		return true;
 	}
 
 	public boolean isEnabledInWorld(World world)

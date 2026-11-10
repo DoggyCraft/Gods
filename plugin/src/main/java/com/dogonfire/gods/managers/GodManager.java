@@ -1077,7 +1077,7 @@ public class GodManager
 
 		if (ctx.settings().gods().whitelist())
 		{
-			minGodPower = (int) ctx.whitelistManager().getMinGodPower(godName);
+			minGodPower = (int) ctx.godListService().getMinGodPower(godName);
 		}
 
 		for (UUID believerId : believers)

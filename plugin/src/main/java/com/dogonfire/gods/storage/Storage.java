@@ -35,8 +35,8 @@ public final class Storage
 	private final HolyLandRepository	holyLands;
 	private final MarriageRepository	marriages;
 	private final DataFile			bibles;
-	private final DataFile			whitelist;
-	private final DataFile			blacklist;
+	private final GodListRepository	whitelist;
+	private final GodListRepository	blacklist;
 	private final List<DataFile>	files;
 
 	/** The data files in {@code dataFolder}, written by a background thread of their own */
@@ -60,9 +60,9 @@ public final class Storage
 		this.holyLands = new HolyLandRepository(new DataFile(dataFolder.resolve("holyland.yml"), logger, writer, null, HolyLandRepository.format(logger)), logger);
 		this.marriages = new MarriageRepository(file(dataFolder, "marriages.yml", null), logger);
 		this.bibles = file(dataFolder, "bibles.yml", null);
-		this.whitelist = file(dataFolder, "whitelist.yml", null);
-		this.blacklist = file(dataFolder, "blacklist.yml", null);
-		this.files = List.of(this.gods, this.believers.file(), this.quests, this.holyLands.file(), this.marriages.file(), this.bibles, this.whitelist, this.blacklist);
+		this.whitelist = new GodListRepository(file(dataFolder, "whitelist.yml", null), logger, "whitelisted");
+		this.blacklist = new GodListRepository(file(dataFolder, "blacklist.yml", null), logger, "blacklisted");
+		this.files = List.of(this.gods, this.believers.file(), this.quests, this.holyLands.file(), this.marriages.file(), this.bibles, this.whitelist.file(), this.blacklist.file());
 	}
 
 	private DataFile file(Path dataFolder, String name, DataFile.Repair repair)
@@ -105,12 +105,12 @@ public final class Storage
 		return this.bibles;
 	}
 
-	public DataFile whitelist()
+	public GodListRepository whitelist()
 	{
 		return this.whitelist;
 	}
 
-	public DataFile blacklist()
+	public GodListRepository blacklist()
 	{
 		return this.blacklist;
 	}
