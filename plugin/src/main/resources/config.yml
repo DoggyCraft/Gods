@@ -122,8 +122,9 @@ curses:
   min-seconds-between-curses: 5
   # How long a player stays a god's cursed player after a priest names them, in minutes.
   cursed-minutes: 10
-  # The curses a god can use.
+  # Gods can strike cursed players with lightning.
   lightning: true
+  # Gods can send hostile mobs after cursed players.
   mobs: true
 
 item-blessings:

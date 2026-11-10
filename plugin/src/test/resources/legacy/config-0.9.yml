@@ -1,0 +1,116 @@
+# config.yml as Gods 0.9.x saveSettings() wrote it on a fresh install (Gods 0.9.2, Minecraft 1.14), with the
+# world list it filled in on the first start and a few values the admin changed.
+Settings:
+  Debug: false
+  DownloadLanguageFile: true
+  Language: english
+  Worlds:
+  - world
+  - world_nether
+  - world_the_end
+  UseWhitelist: false
+  UseBlacklist: true
+  BroadcastNewGods: true
+  MaxPriestPrayerTime: 72
+  MaxBelieverPrayerTime: 154
+  MinBelieverPrayerTime: 30
+  MinBelieversForPriest: 3
+  MaxPriestsPrGod: 1
+  NumberOfBelieversPrPriest: 3
+  GodVerbosity: 1.0
+  ServerName: Your Server
+  PriestAssignCommand: ''
+  PriestRemoveCommand: ''
+  OnlyPriestCanSetHome: false
+  LeaveReligionOnDeath: false
+  AllowMultipleGodsPrDivinePower: false
+  MoodFalloff: 0.03
+  DefaultPrivateReligions: false
+Altars:
+  BlockTypes:
+    FROST:
+    - SNOW_BLOCK
+    LOVE:
+    - DIAMOND_BLOCK
+    EVIL:
+    - OBSIDIAN
+    SEA:
+    - LAPIS_BLOCK
+    MOON:
+    - END_STONE
+    SUN:
+    - SANDSTONE
+    THUNDER:
+    - QUARTZ_BLOCK
+    PARTY:
+    - EMERALD_BLOCK
+    WAR:
+    - NETHERRACK
+    WEREWOLVES: []
+    CREATURES:
+    - OAK_LOG
+    WISDOM:
+    - BOOKSHELF
+    NATURE:
+    - MELON
+ItemBlessing:
+  Enabled: true
+  MinGodPowerItemBlessings: 5
+  GodPowerForLevel1Items: 10
+  MinItemBlessingTime: 10
+  GodPowerForLevel2Items: 50
+  GodPowerForLevel3Items: 100
+Blessing:
+  Enabled: true
+  Speed: true
+  Heal: true
+  Regeneration: true
+  IncreaseDamage: true
+  FastDigging: true
+  MaxBlessingTime: 180
+  MinBlessingTime: 600
+Cursing:
+  Enabled: true
+  LightningCurse: true
+  MobCurse: true
+  MaxCursingTime: 10
+  MinCursingTime: 5
+Quests:
+  Enabled: true
+  MinMinutesBetweenQuests: 180
+  GlobalQuestsPercentChance: 1
+  SlayQuests: true
+  SacrificeQuests: true
+  ConvertQuests: false
+  GiveItemsQuests: false
+  PilgrimageQuests: true
+  HolywarQuests: false
+Sacrifices:
+  Enabled: true
+Commandments:
+  Enabled: true
+  BroadcastFoodEaten: true
+  BroadcastMobSlain: true
+HolyLand:
+  Enabled: true
+  RadiusPrPower: 1.25
+  DefaultPvP: false
+  DefaultMobDamage: true
+  Lightning: false
+  AllowInteractionInNeutralLands: true
+  DeleteAbandonedHolyLandsAfterDays: 14
+  BreakableBlockTypes:
+  - SMOOTH_STONE
+ChatFormatting:
+  Enabled: false
+Bibles:
+  Enabled: true
+Prophecies:
+  Enabled: false
+HolyArtifacts:
+  Enabled: true
+Marriage:
+  Enabled: true
+  WeddingFireworks: true
+Prayers:
+  Enabled: true

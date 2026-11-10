@@ -1,0 +1,120 @@
+# config.yml as GodsConfiguration.saveSettings() wrote it before config-version (feat/26.3 up to the Settings
+# refactor). Every value differs from its default, so each moved key can be checked.
+Settings:
+  Debug: true
+  Language: danish
+  Worlds:
+  - world
+  - world_nether
+  UseWhitelist: true
+  UseBlacklist: false
+  UseGodTitles: false
+  BroadcastNewGods: false
+  MaxPriestPrayerTime: 48
+  MaxBelieverPrayerTime: 200
+  MinBelieverPrayerTime: 15
+  MinBelieversForPriest: 5
+  MinSecondsBetweenChangingGod: 600
+  MaxPriestsPrGod: 2
+  GodVerbosity: 0.5
+  ServerName: DoggyCraft
+  PriestAssignCommand: lp user $PlayerName parent add priest
+  PriestRemoveCommand: lp user $PlayerName parent remove priest
+  OnlyPriestCanSetHome: true
+  LeaveReligionOnDeath: true
+  MoodFalloff: 0.05
+  DefaultPrivateReligions: true
+Altars:
+  BlockTypes:
+    FROST:
+    - SNOW_BLOCK
+    - PACKED_ICE
+    LOVE:
+    - DIAMOND_BLOCK
+    EVIL:
+    - OBSIDIAN
+    SEA:
+    - LAPIS_BLOCK
+    MOON:
+    - END_STONE
+    SUN:
+    - SANDSTONE
+    THUNDER:
+    - QUARTZ_BLOCK
+    PARTY:
+    - EMERALD_BLOCK
+    WAR:
+    - NETHERRACK
+    WEREWOLVES: []
+    CREATURES:
+    - OAK_LOG
+    WISDOM:
+    - BOOKSHELF
+    NATURE:
+    - MELON
+ItemBlessing:
+  Enabled: false
+  MinGodPowerForItemBlessings: 7
+  GodPowerForLevel1Items: 15
+  MinItemBlessingTime: 20
+  GodPowerForLevel2Items: 60
+  GodPowerForLevel3Items: 120
+Blessing:
+  Enabled: false
+  Speed: false
+  Heal: false
+  Regeneration: false
+  IncreaseDamage: false
+  FastDigging: false
+  MaxBlessingTime: 240
+  MinBlessingTime: 900
+Cursing:
+  Enabled: false
+  LightningCurse: false
+  MobCurse: false
+  MaxCursingTime: 20
+  MinCursingTime: 30
+Quests:
+  Enabled: true
+  MinMinutesBetweenQuests: 60
+  RequiredBelieversForQuests: 4
+  SlayQuests: false
+  SacrificeQuests: false
+  GiveItemsQuests: true
+  PilgrimageQuests: false
+  RewardValues:
+    DIAMOND: 200
+    EMERALD: 150
+Sacrifices:
+  Enabled: false
+Commandments:
+  Enabled: false
+  BroadcastFoodEaten: false
+  BroadcastMobSlain: false
+HolyLand:
+  Enabled: true
+  DefaultPvP: true
+  DefaultMobDamage: false
+  Lightning: true
+  AllowInteractionInNeutralLands: false
+  DeleteAbandonedHolyLandsAfterDays: 30
+  BreakableBlockTypes:
+  - SMOOTH_STONE
+  - GRAVEL
+ChatFormatting:
+  Enabled: true
+Bibles:
+  Enabled: false
+  GiveBibleWhenJoinReligion: true
+HolyArtifacts:
+  Enabled: false
+  MinHolyArtifactBlessingTime: 720
+Marriage:
+  Enabled: false
+  WeddingFireworks: false
+Prayers:
+  Enabled: false
+  PrayerPowerForItem: 25
+  PrayerPowerForQuest: 55
+  PrayerPowerForBlessing: 15
+  PrayerPowerForHealth: 12
