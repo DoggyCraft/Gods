@@ -23,6 +23,11 @@ For a more faction flavor to use fringe to enforce power / believer / altar rati
 More effects on altar destruction
 * GLOBAL EVENT: Relic treasure hunt
 
+0.9.1
+-------------------------------
+* Leaving a religion also break up marrigages. Just like irl.
+* Dying gods will nullify any marriage in that religion
+
 0.6.0
 -------------------------------
 * MIRACLE: 1 bread becomes 5 bread

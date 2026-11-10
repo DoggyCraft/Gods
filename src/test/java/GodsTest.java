@@ -26,7 +26,7 @@ import com.dogonfire.gods.managers.WhitelistManager;
 
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("unused")
+
 public class GodsTest
 {
 	@Test

@@ -3006,20 +3006,11 @@ public class GodManager
 
 				switch (godMood)
 				{
-				case ANGRY:
-					manageBelieverForExaltedGod(godName, believer);
-					break;
-				case DISPLEASED:
-					manageBelieverForPleasedGod(godName, believer);
-					break;
-				case EXALTED:
-					manageBelieverForNeutralGod(godName, believer);
-					break;
-				case NEUTRAL:
-					manageBelieverForDispleasedGod(godName, believer);
-					break;
-				case PLEASED:
-					manageBelieverForAngryGod(godName, believer);
+					case EXALTED: manageBelieverForExaltedGod(godName, believer); break;
+					case PLEASED: manageBelieverForPleasedGod(godName, believer); break;
+					case NEUTRAL: manageBelieverForNeutralGod(godName, believer); break;
+					case DISPLEASED: manageBelieverForDispleasedGod(godName, believer); break;
+					case ANGRY: manageBelieverForAngryGod(godName, believer);
 				}
 
 				managedBelievers.add(believerId);

@@ -1363,5 +1363,4 @@ public class GodsConfiguration
 	{
 		this.worlds = worlds;
 	}
-
 }

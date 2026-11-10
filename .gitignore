@@ -11,6 +11,7 @@
 .classpath
 .project
 .settings
+.metadata
 
 # Maven build
 /target/

@@ -8,6 +8,7 @@ import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.MarriageManager;
 
+
 public class CommandDivorce extends GodsCommand
 {
 	protected CommandDivorce()
@@ -21,7 +22,7 @@ public class CommandDivorce extends GodsCommand
 	{
 		if (!GodsConfiguration.instance().isMarriageEnabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Marrige is not enabled on this server");
+			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
 			return;
 		}
 		if (!hasPermission(sender))

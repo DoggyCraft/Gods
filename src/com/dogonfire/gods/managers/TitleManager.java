@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 
 import com.dogonfire.gods.TitleSendEvent;
 
+
 public class TitleManager implements Listener
 {
 	public static void sendPacket(Player player, Object packet)

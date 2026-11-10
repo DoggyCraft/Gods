@@ -29,10 +29,11 @@ public class PermissionsManager
 	{
 		this.plugin = g;
 			
-		if (g.vaultEnabled) {
+		if (g.vaultEnabled)
+		{
 			RegisteredServiceProvider<Permission> permissionProvider = plugin.getServer().getServicesManager().getRegistration(Permission.class);
 
-			if(permissionProvider==null)
+			if (permissionProvider == null)
 			{
 				Gods.instance().log(ChatColor.RED + "Could not detect Vault plugin.");
 				return;
@@ -54,7 +55,8 @@ public class PermissionsManager
 
 	public boolean hasPermission(Player player, String node)
 	{
-		if (Gods.instance().vaultEnabled) {
+		if (Gods.instance().vaultEnabled)
+		{
 			return vaultPermission.has(player, node);
 		}
 		return false;
@@ -62,7 +64,8 @@ public class PermissionsManager
 
 	public String getGroup(String playerName)
 	{
-		if (Gods.instance().vaultEnabled) {
+		if (Gods.instance().vaultEnabled)
+		{
 			return getGroup(plugin.getServer().getPlayer(playerName).getUniqueId());
 		}
 		return "";
@@ -70,7 +73,8 @@ public class PermissionsManager
 
 	public String getGroup(UUID playerId)
 	{
-		if (Gods.instance().vaultEnabled) {
+		if (Gods.instance().vaultEnabled)
+		{
 			return vaultPermission.getPrimaryGroup(null, plugin.getServer().getPlayer(playerId));
 		}
 		return "";
@@ -78,7 +82,8 @@ public class PermissionsManager
 
 	public void setGroup(String playerName, String groupName)
 	{
-		if (Gods.instance().vaultEnabled) {
+		if (Gods.instance().vaultEnabled)
+		{
 			Player player = plugin.getServer().getPlayer(playerName);
 			setGroup(player.getUniqueId(), groupName);
 		}
@@ -86,7 +91,8 @@ public class PermissionsManager
 
 	public void setGroup(UUID playerId, String groupName)
 	{
-		if (Gods.instance().vaultEnabled) {
+		if (Gods.instance().vaultEnabled)
+		{
 			Player player = plugin.getServer().getPlayer(playerId);
 			vaultPermission.playerAddGroup(null, player, groupName);
 		}

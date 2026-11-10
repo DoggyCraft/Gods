@@ -63,7 +63,10 @@ public class MarriageManager
 	public static MarriageManager instance()
 	{
 		if (GodsConfiguration.instance().isMarriageEnabled() && instance == null)
+		{
 			instance = new MarriageManager();
+		}
+		
 		return instance;
 	}
 
@@ -95,6 +98,7 @@ public class MarriageManager
 				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, "DIVORCED", Gods.instance().getServer().getPlayer(UUID.fromString(partnerId)).getDisplayName(), 1);
 			}
 		}
+		
 		save();
 	}
 
@@ -466,5 +470,30 @@ public class MarriageManager
 		this.marriagesConfig.set(player2.toString() + ".Married.Partner", player1.toString());
 
 		save();
+	}
+	
+	public void removeMarriagesForGod(String godName)
+	{
+		Set<String> list = this.marriagesConfig.getKeys(false);
+
+		List<UUID> names = new ArrayList<UUID>();
+
+		for (String player : list)
+		{
+			UUID playerId = UUID.fromString(player);
+			UUID partnerId = getPartnerId(playerId);
+
+			if (partnerId == null)
+			{
+				continue;
+			}
+		
+			if(BelieverManager.instance().getGodForBeliever(playerId).equals(godName))
+			{
+				divorce(playerId);				
+				divorce(partnerId);				
+			}
+			
+		}		
 	}
 }

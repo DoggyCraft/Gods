@@ -21,6 +21,7 @@ permissions:
   gods.*: 
     children: 
       gods.listen: true
+      gods.leave: true
       gods.marriages: true
       gods.love: true
       gods.marry: true

@@ -23,13 +23,17 @@ public class CommandLeaveGod extends GodsCommand
 			sender.sendMessage(stringNoPermission);
 			return;
 		}
+		
 		if (sender instanceof Player == false)
 		{
 			sender.sendMessage(stringPlayerOnly);
 			return;
 		}
+		
 		Player player = (Player) sender;
+		
 		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		
 		if (GodManager.instance().believerLeaveGod(player.getUniqueId()))
 		{
 			sender.sendMessage(ChatColor.AQUA + "You left the religion of " + ChatColor.YELLOW + godName);

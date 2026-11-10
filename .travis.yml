@@ -1,15 +1,11 @@
 language: java
-deploy:
-  provider: releases
-  api_key: e92d036e275958c01d1a342f577ca959540f8014
-  file: Gods.jar
-  skip_cleanup: true
-  on:
-    tags: true
 jdk:
   - openjdk8  
+addons:
+  sonarcloud:
+    organization: "dogonfire"
+    token:
+      secure: $SONAR_TOKEN
+
 script:
- - mvn clean package
- - mvn cobertura:cobertura
-after_success:
-  - bash <(curl -s https://codecov.io/bash) -f target/site/cobertura/coverage.xml
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=DogOnFire_Gods

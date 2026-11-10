@@ -8,6 +8,8 @@ import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.HolyLandManager;
 import com.dogonfire.gods.managers.TitleManager;
 
+
+
 public class CommandSetNeutralLand extends GodsCommand
 {
 	public CommandSetNeutralLand()

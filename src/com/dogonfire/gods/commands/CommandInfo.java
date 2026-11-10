@@ -17,6 +17,7 @@ import com.dogonfire.gods.managers.HolyLandManager;
 import com.dogonfire.gods.managers.GodManager.GodMood;
 import com.dogonfire.gods.managers.LanguageManager;
 
+
 public class CommandInfo extends GodsCommand
 {
 	protected CommandInfo()
