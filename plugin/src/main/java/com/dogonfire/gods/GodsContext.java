@@ -6,7 +6,6 @@ import org.bukkit.plugin.PluginManager;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
 import com.dogonfire.gods.managers.ChatManager;
-import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyPowerManager;
@@ -52,7 +51,6 @@ public final class GodsContext
 	private final BlessingService			blessingService;
 	private final CommandmentService		commandmentService;
 	private final PrayerService				prayerService;
-	private final GodManager				godManager;
 	private final BelieverService			believerService;
 	private final QuestManager				questManager;
 	private final AltarService				altarService;
@@ -82,7 +80,6 @@ public final class GodsContext
 		this.blessingService = new BlessingService(this, storage.gods());
 		this.commandmentService = new CommandmentService(this, storage.gods());
 		this.prayerService = new PrayerService(this);
-		this.godManager = new GodManager(this);
 		this.believerService = new BelieverService(this, storage.believers());
 		this.questManager = new QuestManager(this);
 		this.altarService = new AltarService(this);
@@ -170,11 +167,6 @@ public final class GodsContext
 	public PrayerService prayerService()
 	{
 		return this.prayerService;
-	}
-
-	public GodManager godManager()
-	{
-		return this.godManager;
 	}
 
 	public BelieverService believerService()

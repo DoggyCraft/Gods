@@ -30,7 +30,8 @@ import com.dogonfire.gods.service.AltarSigns;
 /**
  * Altars: writing a new altar sign, right-clicking an altar sign (praying, or a priest setting the god's cursed or
  * blessed player), and sacrifices (an item dropped by a believer that burns). Always registered; the logic is in
- * {@link AltarService} and, for prayers, curses, blessings and sacrifices, still in GodManager and QuestManager.
+ * {@link AltarService}, {@code PrayerService} (prayers), {@code BlessingService} (blessed and cursed players),
+ * {@code CommandmentService} (sacrifices) and QuestManager.
  */
 public class AltarListener implements Listener
 {

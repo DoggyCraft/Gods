@@ -1,6 +1,5 @@
-package com.dogonfire.gods.managers;
+package com.dogonfire.gods.task;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -11,83 +10,33 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.model.God;
+import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.MarriedCouple;
-import com.dogonfire.gods.service.GodSpeech;
-import com.dogonfire.gods.storage.GodRepository;
-import com.dogonfire.gods.util.LegacyDates;
 
-public class GodManager
+/**
+ * The gods' update loop, run every {@link #PERIOD_TICKS} ticks for the life of the plugin (started by {@code Gods}).
+ * Each run one god with a believer online gets a turn: its mood falls off, it looks for or reminds priests, loses
+ * believers who stopped praying, acts on a few online believers as its mood says (blessings, items, healing, holy
+ * artifacts, curses, speech), runs its quests, blesses or curses its blessed or cursed player and changes what it
+ * wants sacrificed. Now and then dead offline gods, abandoned holy lands and dropped sacrifices are cleaned up. The
+ * effects themselves are the services'; this decides when. Main thread only.
+ */
+public final class GodUpdateTask implements Runnable
 {
+	/** How often a god gets its turn, in ticks (10 seconds) */
+	public static final long	PERIOD_TICKS	= 200L;
+	/** The first turn, in ticks after the plugin started */
+	public static final long	DELAY_TICKS		= 20L;
 
-	private Random				random			= new Random();
+	private final Random		random			= new Random();
+	private final GodsContext	ctx;
 
-	private final GodsContext ctx;
-
-	public GodManager(GodsContext ctx)
+	public GodUpdateTask(GodsContext ctx)
 	{
 		this.ctx = ctx;
 	}
-
-	/** gods.yml; see {@link GodRepository} */
-	private GodRepository gods()
-	{
-		return ctx.storage().gods();
-	}
-
-	/** The god with this name, or null */
-	private God god(String godName)
-	{
-		return gods().find(godName);
-	}
-
-	/**
-	 * The god to change, created if there is none (setting a value in gods.yml always did). Null for a null god name,
-	 * so a lookup for a player without a god can't create a god called "null".
-	 */
-	private God godToChange(String godName, String what)
-	{
-		if (godName == null)
-		{
-			ctx.plugin().logDebug("Not writing " + what + " for a null god name");
-			return null;
-		}
-		return gods().getOrCreate(godName);
-	}
-
-	private GodSpeech speech()
-	{
-		return ctx.godSpeech();
-	}
-
-	private static Instant now()
-	{
-		return LegacyDates.SECONDS.now();
-	}
-
-	/**
-	 * @return the UUID in this string, or null if it is missing or not a UUID (e.g. a player name from Gods 0.9.x)
-	 */
-	private static UUID parseUUID(String uuidString)
-	{
-		if (uuidString == null)
-		{
-			return null;
-		}
-		try
-		{
-			return UUID.fromString(uuidString);
-		}
-		catch (IllegalArgumentException ex)
-		{
-			return null;
-		}
-	}
-
-	
 
 	private boolean manageBelieverForAngryGod(String godName, Player believer)
 	{
@@ -109,7 +58,7 @@ public class GodManager
 			{
 				ctx.languageManager().setPlayerName(believer.getDisplayName());
 
-				speech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToBelieverCursedAngry, 2 + this.random.nextInt(10));
+				ctx.godSpeech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToBelieverCursedAngry, 2 + this.random.nextInt(10));
 
 				return true;
 			}
@@ -121,7 +70,7 @@ public class GodManager
 			{
 				return false;
 			}
-			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomAngrySpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomAngrySpeech);
 			return true;
 		}
 
@@ -151,7 +100,7 @@ public class GodManager
 			{
 				return false;
 			}
-			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomDispleasedSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomDispleasedSpeech);
 			return true;
 		}
 		if (this.random.nextInt(1 + 600 / ctx.godService().getVerbosityForGod(godName)) == 0)
@@ -244,9 +193,9 @@ public class GodManager
 			{
 				ctx.languageManager().setPlayerName(believer.getDisplayName());
 
-				speech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
+				ctx.godSpeech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
 
-				speech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, believer.getUniqueId());
+				ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, believer.getUniqueId());
 
 				return true;
 			}
@@ -260,7 +209,7 @@ public class GodManager
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
 				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
 		}
@@ -271,7 +220,7 @@ public class GodManager
 			{
 				return false;
 			}
-			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomExaltedSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomExaltedSpeech);
 			return true;
 		}
 
@@ -304,7 +253,7 @@ public class GodManager
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
 				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
 		}
@@ -314,7 +263,7 @@ public class GodManager
 			{
 				return false;
 			}
-			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomNeutralSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomNeutralSpeech);
 			return true;
 		}
 
@@ -390,7 +339,7 @@ public class GodManager
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
 				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
 				return true;
 			}
 		}
@@ -402,7 +351,7 @@ public class GodManager
 				return false;
 			}
 
-			speech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomPleasedSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomPleasedSpeech);
 
 			return true;
 		}
@@ -528,7 +477,9 @@ public class GodManager
 		ctx.altarService().clearDroppedItems();
 	}
 
-	public void update()
+	/** One god's turn (every 10 seconds); now and then, dead offline gods are removed */
+	@Override
+	public void run()
 	{
 		if (this.random.nextInt(50) == 0)
 		{

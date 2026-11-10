@@ -1148,7 +1148,7 @@ public class QuestManager
 		return true;
 	}
 
-	boolean hasExpiredQuest(String godName)
+	public boolean hasExpiredQuest(String godName)
 	{
 		Date thisDate = new Date();
 		Date questStartTime = getQuestCreatedTimeForGod(godName);

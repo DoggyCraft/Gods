@@ -15,7 +15,7 @@ import com.dogonfire.gods.model.GodType;
 /**
  * Believers dying: the dead believer may leave their religion (believers.leave-religion-on-death), and a believer who
  * killed a heathen (for a war god) or a believer of an enemy god earns prayers and prayer power. Always registered;
- * the logic is in {@code BelieverService} and GodManager.
+ * the logic is in {@code BelieverService} and {@code PrayerService}.
  */
 public class BelieverListener implements Listener
 {

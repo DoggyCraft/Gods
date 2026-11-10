@@ -38,6 +38,7 @@ import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.storage.Storage;
+import com.dogonfire.gods.task.GodUpdateTask;
 import com.dogonfire.gods.util.AtomicFiles;
 
 /**
@@ -120,7 +121,7 @@ public class Gods extends JavaPlugin
 		}
 
 		// Moods, priests, quests, holy land attacks and the like
-		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.godManager().update(), 20L, 200L));
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, new GodUpdateTask(this.ctx), GodUpdateTask.DELAY_TICKS, GodUpdateTask.PERIOD_TICKS));
 		// Writes the data files that changed (and on /g reload and disable)
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.storage.flush(), Storage.AUTOSAVE_TICKS, Storage.AUTOSAVE_TICKS));
 		// Priest status and the like change in places that don't notify the chat cache, so refresh it now and then
