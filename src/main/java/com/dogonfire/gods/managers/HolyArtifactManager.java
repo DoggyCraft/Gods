@@ -194,7 +194,10 @@ public class HolyArtifactManager
 			return;
 		}
 
-		HolyPowerManager.instance().activatePower(player, holyPower.power(), holyPower.value());
+		if (!HolyPowerManager.instance().activatePower(player, holyPower.power(), holyPower.value()))
+		{
+			return;
+		}
 
 		ItemMeta itemMeta = item.getItemMeta();
 		PersistentDataContainer data = itemMeta.getPersistentDataContainer();

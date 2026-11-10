@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -58,14 +60,57 @@ public class HolyPowerManager
 
 	private static final int	MAX_EFFECT_RADIUS	= 30;
 
+	// How long a player must wait between uses of a holy artifact
+	private static final long	DEFAULT_COOLDOWN_MILLIS		= 30 * 1000L;
+	private static final long	KNOWLEDGE_COOLDOWN_MILLIS	= 10 * 60 * 1000L;
+
 	private Random				random				= new Random();
+	// Player UUID -> power -> when it can be used again
+	private final Map<UUID, Map<HolyPower, Long>>	nextUseTimes	= new HashMap<>();
+	// World UUID -> until when a sun, moon or storm power is changing that world's time or weather
+	private final Map<UUID, Long>					worldBusyUntil	= new HashMap<>();
 
 	private HolyPowerManager()
 	{
 	}
 
-	public void activatePower(Player player, HolyPower powerType, int powerStrength)
+	/**
+	 * Uses a power, unless the player used it too recently or (for the sun, moon and storm powers) another one is
+	 * still changing the world. Tells the player why not and returns false in that case.
+	 */
+	public boolean activatePower(Player player, HolyPower powerType, int powerStrength)
 	{
+		long now = System.currentTimeMillis();
+
+		Map<HolyPower, Long> playerTimes = this.nextUseTimes.computeIfAbsent(player.getUniqueId(), id -> new HashMap<>());
+		long nextUse = playerTimes.getOrDefault(powerType, 0L);
+		if (now < nextUse)
+		{
+			player.sendMessage(ChatColor.RED + "Your holy artifact needs " + ((nextUse - now) / 1000L + 1) + " more seconds to regain its power.");
+			return false;
+		}
+
+		boolean changesWorld = powerType == HolyPower.CALLMOON || powerType == HolyPower.CALLSUN || powerType == HolyPower.LIGHTNING_STORM;
+		UUID worldId = player.getWorld().getUID();
+		if (changesWorld && now < this.worldBusyUntil.getOrDefault(worldId, 0L))
+		{
+			player.sendMessage(ChatColor.RED + "The heavens of this world are already being moved by a holy artifact.");
+			return false;
+		}
+
+		long cooldown = switch (powerType)
+		{
+		case KNOWLEDGE -> KNOWLEDGE_COOLDOWN_MILLIS;
+		case FIREBALL -> Math.max(1, powerStrength) * 1000L;
+		case CALLMOON, CALLSUN, LIGHTNING_STORM -> Math.max(DEFAULT_COOLDOWN_MILLIS, powerStrength * 60000L);
+		default -> DEFAULT_COOLDOWN_MILLIS;
+		};
+		playerTimes.put(powerType, now + cooldown);
+		if (changesWorld)
+		{
+			this.worldBusyUntil.put(worldId, now + powerStrength * 60000L);
+		}
+
 		switch (powerType)
 		{
 		case KNOWLEDGE -> boostKnowledge(player, powerStrength);
@@ -84,6 +129,7 @@ public class HolyPowerManager
 		case FIREWORK -> shootFirework(player, powerStrength);
 		case DRUNK -> drunk(player, powerStrength);
 		}
+		return true;
 	}
 
 	public void boostKnowledge(Player player, int powerValue)
