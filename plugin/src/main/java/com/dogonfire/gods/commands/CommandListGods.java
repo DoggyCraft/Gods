@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -40,7 +39,7 @@ public class CommandListGods extends GodsCommand
 		List<God> gods = new ArrayList<God>();
 		String playerGod = null;
 
-		Set<String> list = ctx.godManager().getTopGods();
+		List<String> list = ctx.godManager().getTopGods();
 		for (String godName : list)
 		{
 			int power = (int) ctx.godManager().getGodPower(godName);

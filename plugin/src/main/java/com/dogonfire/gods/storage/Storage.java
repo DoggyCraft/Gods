@@ -2,16 +2,18 @@ package com.dogonfire.gods.storage;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
  * Owns the data files in the plugin folder and the one writer thread they share (one thread, so writes land in the
- * order they were made). believers.yml, holyland.yml, marriages.yml, whitelist.yml and blacklist.yml are held as models
- * by a {@link Repository} each (loaded and changed by their service); the other files are still raw {@link DataFile}s
+ * order they were made). gods.yml, believers.yml, holyland.yml, marriages.yml, whitelist.yml and blacklist.yml are held
+ * as models by a {@link Repository} each (loaded and changed by their services); the other files are still raw {@link DataFile}s
  * that their manager loads ({@link DataFile#load()}) and changes. Either way a change marks the file dirty;
  * {@link #flush()} queues a write for every changed file (main thread: on the autosave timer, on /g reload and on
  * disable), and {@link #close()} flushes and waits for the writes.
@@ -31,7 +33,7 @@ public final class Storage
 
 	private final Logger			logger;
 	private final ExecutorService	writer;
-	private final DataFile			gods;
+	private final GodRepository		gods;
 	private final BelieverRepository	believers;
 	private final DataFile			quests;
 	private final HolyLandRepository	holyLands;
@@ -41,22 +43,33 @@ public final class Storage
 	private final GodListRepository	blacklist;
 	private final List<DataFile>	files;
 
-	/** The data files in {@code dataFolder}, written by a background thread of their own */
-	public Storage(Path dataFolder, Logger logger)
+	/**
+	 * The data files in {@code dataFolder}, written by a background thread of their own.
+	 *
+	 * @param playerIdByName the UUID of a player the server has seen, by name (any case), or null; upgrades priests
+	 *                       that old gods.yml files keep by name
+	 */
+	public Storage(Path dataFolder, Logger logger, Function<String, UUID> playerIdByName)
 	{
 		this(dataFolder, logger, Executors.newSingleThreadExecutor(runnable -> {
 			Thread thread = new Thread(runnable, "Gods-Storage");
 			thread.setDaemon(true);
 			return thread;
-		}));
+		}), playerIdByName);
+	}
+
+	/** Without a server: priests kept by name in an old gods.yml are dropped (and logged) */
+	public Storage(Path dataFolder, Logger logger, ExecutorService writer)
+	{
+		this(dataFolder, logger, writer, name -> null);
 	}
 
 	/** @param writer runs the file writes; must run them one at a time, in order */
-	public Storage(Path dataFolder, Logger logger, ExecutorService writer)
+	public Storage(Path dataFolder, Logger logger, ExecutorService writer, Function<String, UUID> playerIdByName)
 	{
 		this.logger = logger;
 		this.writer = writer;
-		this.gods = file(dataFolder, "gods.yml", UUID_TAGS);
+		this.gods = new GodRepository(new DataFile(dataFolder.resolve("gods.yml"), logger, writer, UUID_TAGS, GodRepository.format(logger, playerIdByName)), logger);
 		this.believers = new BelieverRepository(file(dataFolder, "believers.yml", null), logger);
 		this.quests = file(dataFolder, "quests.yml", null);
 		this.holyLands = new HolyLandRepository(new DataFile(dataFolder.resolve("holyland.yml"), logger, writer, null, HolyLandRepository.format(logger)), logger);
@@ -64,7 +77,7 @@ public final class Storage
 		this.bibles = file(dataFolder, "bibles.yml", null);
 		this.whitelist = new GodListRepository(file(dataFolder, "whitelist.yml", null), logger, "whitelisted");
 		this.blacklist = new GodListRepository(file(dataFolder, "blacklist.yml", null), logger, "blacklisted");
-		this.files = List.of(this.gods, this.believers.file(), this.quests, this.holyLands.file(), this.marriages.file(), this.bibles, this.whitelist.file(), this.blacklist.file());
+		this.files = List.of(this.gods.file(), this.believers.file(), this.quests, this.holyLands.file(), this.marriages.file(), this.bibles, this.whitelist.file(), this.blacklist.file());
 	}
 
 	private DataFile file(Path dataFolder, String name, DataFile.Repair repair)
@@ -77,7 +90,7 @@ public final class Storage
 		return text.replaceAll("!!java\\.util\\.UUID\\s+", "");
 	}
 
-	public DataFile gods()
+	public GodRepository gods()
 	{
 		return this.gods;
 	}

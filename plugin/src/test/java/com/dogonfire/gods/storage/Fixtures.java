@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
@@ -35,6 +37,12 @@ final class Fixtures
 	static Storage storage(Path dir)
 	{
 		return new Storage(dir, LOG, Executors.newSingleThreadExecutor());
+	}
+
+	/** A storage whose server knows these players (by lower case name) */
+	static Storage storage(Path dir, Map<String, UUID> knownPlayers)
+	{
+		return new Storage(dir, LOG, Executors.newSingleThreadExecutor(), name -> knownPlayers.get(name.toLowerCase()));
 	}
 
 	/** What the repository would write now */

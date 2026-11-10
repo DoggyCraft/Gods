@@ -1,0 +1,74 @@
+Thor:
+  Home:
+    X: 120.5
+    Y: 64.0
+    Z: -310.5
+    World: world
+  Gender: Male
+  DivineForce: THUNDER
+  PrivateAccess: false
+  Created: 10:00:00 01-01-2019
+  LanguageFileName: english_thunder_male.yml
+  Mood: 42.5
+  Seed: -4962768465676381896
+  Verbosity: 17
+  PriestName: Notch
+  Priests:
+  - jeb_
+  - 8667ba71-b85a-4004-af54-457a9734eed7
+  - Herobrine
+  - none
+  PendingPriest: 0b8d4f7e-3c1a-4bfa-9a3e-6f0f1c2d3e4f
+  PendingPriestTime: 21:15:03 14-03-2019
+  BlessedPlayer: !!java.util.UUID '8667ba71-b85a-4004-af54-457a9734eed7'
+  BlessedTime: 21:15:03 14-03-2019
+  CursedPlayer: !!java.util.UUID '0b8d4f7e-3c1a-4bfa-9a3e-6f0f1c2d3e4f'
+  CursedTime: 21:16:03 14-03-2019
+  EatFoodType: BREAD
+  NotEatFoodType: RAW_FISH
+  NotSlayMobType: PIG_ZOMBIE
+  SlayMobType: ZOMBIE
+  SacrificeValues:
+    GOLD_INGOT: 12.0
+    POPPY: -3.5
+    IRON_INGOT: 4
+  Allies:
+  - Odin
+  Enemies:
+  - Loki
+  Description: The god of thunder
+  PvP: true
+  MobSpawning: false
+  LastQuestTime: 20:00:00 14-03-2019
+  ContestedLand:
+    Hash: 4294967297
+    X: 130
+    Y: 70
+    Z: 140
+    World: world
+  ContestedKills: 3
+  Color: DARK_GRAY
+  QuestType: SLAY
+  InvitedPlayers:
+  - Dinnerbone
+Odin:
+  Home:
+    X: 0.0
+    Y: 70.0
+    Z: 0.0
+    World: world
+  Gender: Female
+  DivineForce: WISDOM
+  PrivateAccess: true
+  Created: 11:00:00 02-01-2019
+  LanguageFileName: english_wisdom_female.yml
+  Mood: -80.0
+  Allies:
+  - Thor
+Loki:
+  DivineForce: TRICKERY
+  Gender: Unknown
+  Created: 12:00:00 03-01-2019
+  PriestName: jeb_
+  Enemies:
+  - Thor

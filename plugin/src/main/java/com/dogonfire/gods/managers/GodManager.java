@@ -1,12 +1,9 @@
 package com.dogonfire.gods.managers;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +17,8 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
@@ -35,16 +29,20 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.model.ContestedLand;
+import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.MarriedCouple;
-import com.dogonfire.gods.storage.DataFile;
+import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
 import com.dogonfire.gods.tasks.TaskGiveItem;
 import com.dogonfire.gods.tasks.TaskGodSpeak;
 import com.dogonfire.gods.tasks.TaskHealPlayer;
 import com.dogonfire.gods.tasks.TaskSpawnHostileMobs;
+import com.dogonfire.gods.util.LegacyDates;
 
 public class GodManager
 {
@@ -79,8 +77,6 @@ public class GodManager
 
 	private Random				random			= new Random();
 	private List<String>		onlineGods		= new ArrayList<String>();
-	private String				pattern			= "HH:mm:ss dd-MM-yyyy";
-	DateFormat					formatter		= new SimpleDateFormat(this.pattern);
 
 	private final GodsContext ctx;
 
@@ -89,29 +85,35 @@ public class GodManager
 		this.ctx = ctx;
 	}
 
-	/** gods.yml; see {@link DataFile} */
-	private DataFile godsFile()
+	/** gods.yml; see {@link GodRepository} */
+	private GodRepository gods()
 	{
 		return ctx.storage().gods();
 	}
 
-	private YamlConfiguration godsConfig()
+	/** The god with this name, or null */
+	private God god(String godName)
 	{
-		return godsFile().yaml();
+		return gods().find(godName);
 	}
 
 	/**
-	 * Sets godName + key in gods.yml. Does nothing for a null god name, so a lookup for a player without a god can't
-	 * create a god called "null".
+	 * The god to change, created if there is none (setting a value in gods.yml always did). Null for a null god name,
+	 * so a lookup for a player without a god can't create a god called "null".
 	 */
-	private void setGodValue(String godName, String key, Object value)
+	private God godToChange(String godName, String what)
 	{
 		if (godName == null)
 		{
-			ctx.plugin().logDebug("Not writing " + key + " for a null god name");
-			return;
+			ctx.plugin().logDebug("Not writing " + what + " for a null god name");
+			return null;
 		}
-		godsConfig().set(godName + key, value);
+		return gods().getOrCreate(godName);
+	}
+
+	private static Instant now()
+	{
+		return LegacyDates.SECONDS.now();
 	}
 
 	/**
@@ -306,7 +308,13 @@ public class GodManager
 
 	public void addMoodForGod(String godName, float mood)
 	{
-		float godMood = (float) godsConfig().getDouble(godName + ".Mood");
+		God god = godToChange(godName, "Mood");
+		if (god == null)
+		{
+			return;
+		}
+
+		float godMood = god.mood();
 
 		godMood += mood;
 		if (godMood > 100.0F)
@@ -317,40 +325,47 @@ public class GodManager
 		{
 			godMood = -100.0F;
 		}
-		setGodValue(godName, ".Mood", Float.valueOf(godMood));
+		god.setMood(godMood);
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public boolean assignPriest(String godName, UUID playerId)
 	{
-		setGodValue(godName, ".PendingPriest", null);
+		God existing = god(godName);
+		if (existing != null)
+		{
+			existing.setPendingPriest(null);
+		}
 		ctx.believerService().clearPendingPriest(playerId);
 
 		Set<UUID> believers = ctx.believerService().getBelieversForGod(godName);
 		if (believers.contains(playerId))
 		{
-			List<String> priests = godsConfig().getStringList(godName + ".Priests");
+			God god = godToChange(godName, "Priests");
+			if (god == null)
+			{
+				return false;
+			}
 
-			if (priests.contains(playerId.toString()))
+			if (god.priests().contains(playerId))
 			{
 				ctx.plugin().log(playerId.toString() + " is already a priest of " + godName);
 			}
 			else
 			{
-				priests.add(playerId.toString());
+				god.priests().add(playerId);
 				dispatchPriestCommand(ctx.settings().priests().assignCommand(), playerId);
 			}
 
-			setGodValue(godName, ".Priests", priests);
 			ctx.chatManager().refresh(playerId);
 
-			setGodValue(godName, ".PendingPriest", null);
-			setGodValue(godName, ".PendingPriestTime", null);
+			god.setPendingPriest(null);
+			god.setPendingPriestTime(null);
 
 			ctx.believerService().setLastPrayerDate(playerId);
 
-			godsFile().markDirty();
+			gods().markDirty();
 			return true;
 		}
 		else
@@ -418,7 +433,7 @@ public class GodManager
 			if (pendingPriest.equals(believerId))
 			{
 				assignPriest(godName, believerId);
-				godsFile().markDirty();
+				gods().markDirty();
 
 				ctx.plugin().log(player.getName() + " accepted the offer from " + godName + " to be priest");
 
@@ -513,7 +528,7 @@ public class GodManager
 
 		if (pendingPriest.equals(believerId))
 		{
-			setGodValue(godName, ".PendingPriest", null);
+			god(godName).setPendingPriest(null);
 
 			ctx.believerService().clearPendingPriest(believerId);
 
@@ -521,7 +536,7 @@ public class GodManager
 
 			GodSay(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverPriestRejected, 2 + this.random.nextInt(20));
 
-			godsFile().markDirty();
+			gods().markDirty();
 		}
 	}
 
@@ -600,27 +615,29 @@ public class GodManager
 
 	public void clearContestedHolyLandForGod(String godName)
 	{
-		setGodValue(godName, ".ContestedLand", null);
-		setGodValue(godName, ".ContestedKills", null);
-		setGodValue(godName, ".ContestedDesecration", null);
+		God god = god(godName);
+		if (god != null)
+		{
+			GodRepository.clearContestedLand(god);
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void createGod(String godName, Location location, GodGender godGender, GodType godType)
 	{
-		Date thisDate = new Date();
-
-		DateFormat formatter = new SimpleDateFormat(this.pattern);
-
 		setHomeForGod(godName, location);
 		setGenderForGod(godName, godGender);
 		setDivineForceForGod(godName, godType);
 		setPrivateAccess(godName, ctx.settings().gods().privateByDefault());
 
-		setGodValue(godName, ".Created", formatter.format(thisDate));
+		God god = godToChange(godName, "Created");
+		if (god != null)
+		{
+			god.setCreated(now());
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public boolean cursePlayer(String godName, UUID playerId, float godPower)
@@ -735,16 +752,15 @@ public class GodManager
 		}
 	}
 
-	public Set<String> getAllGods()
+	public List<String> getAllGods()
 	{
-		Set<String> gods = godsConfig().getKeys(false);
-
-		return gods;
+		return gods().names();
 	}
 
 	public List<String> getAllianceRelations(String godName)
 	{
-		return godsConfig().getStringList(godName + ".Allies");
+		God god = god(godName);
+		return god != null ? new ArrayList<String>(god.allies()) : new ArrayList<String>();
 	}
 
 	public float getAngryModifierForGod(String godName)
@@ -771,16 +787,15 @@ public class GodManager
 
 	public UUID getBlessedPlayerForGod(String godName)
 	{
-		Date lastBlessedDate = getLastBlessedTimeForGod(godName);
-		if (lastBlessedDate == null)
+		God god = god(godName);
+		if (god == null || god.blessedTime() == null)
 		{
 			return null;
 		}
-		Date thisDate = new Date();
 
 		// Blessing.MaxBlessingTime is in seconds (Cursing.MaxCursingTime is in minutes)
-		long diffSeconds = (thisDate.getTime() - lastBlessedDate.getTime()) / 1000L;
-		UUID blessedPlayer = parseUUID(godsConfig().getString(godName + ".BlessedPlayer"));
+		long diffSeconds = (System.currentTimeMillis() - god.blessedTime().toEpochMilli()) / 1000L;
+		UUID blessedPlayer = god.blessedPlayer();
 		if (blessedPlayer == null || diffSeconds > ctx.settings().blessings().blessedSeconds())
 		{
 			setBlessedPlayerForGod(godName, null);
@@ -850,12 +865,14 @@ public class GodManager
 
 	public Location getContestedHolyLandAttackLocationForGod(String godName)
 	{
-		int x = godsConfig().getInt(godName + ".ContestedLand" + ".X");
-		int y = godsConfig().getInt(godName + ".ContestedLand" + ".Y");
-		int z = godsConfig().getInt(godName + ".ContestedLand" + ".Z");
-		String worldName = godsConfig().getString(godName + ".ContestedLand" + ".World");
+		God god = god(godName);
+		ContestedLand land = god != null ? god.contestedLand() : null;
+		if (land == null)
+		{
+			return new Location(null, 0, 0, 0);
+		}
 
-		return new Location(ctx.plugin().getServer().getWorld(worldName), x, y, z);
+		return new Location(ctx.plugin().getServer().getWorld(land.world()), land.x(), land.y(), land.z());
 	}
 
 	/**
@@ -864,17 +881,15 @@ public class GodManager
 	 */
 	public Long getContestedHolyLandForGod(String godName)
 	{
-		if (godName == null || !godsConfig().contains(godName + ".ContestedLand.World"))
+		God god = god(godName);
+		if (god == null || god.contestedLand() == null)
 		{
 			return null;
 		}
 		Location location = getContestedHolyLandAttackLocationForGod(godName);
 		if (!ctx.holyLandService().isAttackingHolyLand(godName, location))
 		{
-			if (godsConfig().contains(godName + ".ContestedLand"))
-			{
-				clearContestedHolyLandForGod(godName);
-			}
+			clearContestedHolyLandForGod(godName);
 			return null;
 		}
 		return ctx.holyLandService().hashLocation(location);
@@ -882,16 +897,15 @@ public class GodManager
 
 	public Player getCursedPlayerForGod(String godName)
 	{
-		Date lastCursedDate = getLastCursingTimeForGod(godName);
-		if (lastCursedDate == null)
+		God god = god(godName);
+		if (god == null || god.cursedTime() == null)
 		{
 			return null;
 		}
-		Date thisDate = new Date();
 
 		// Cursing.MaxCursingTime is in minutes (Blessing.MaxBlessingTime is in seconds)
-		long diffMinutes = (thisDate.getTime() - lastCursedDate.getTime()) / 60000L;
-		UUID cursedPlayer = parseUUID(godsConfig().getString(godName + ".CursedPlayer"));
+		long diffMinutes = (System.currentTimeMillis() - god.cursedTime().toEpochMilli()) / 60000L;
+		UUID cursedPlayer = god.cursedPlayer();
 		if (cursedPlayer == null || diffMinutes > ctx.settings().curses().cursedMinutes())
 		{
 			setCursedPlayerForGod(godName, null);
@@ -908,33 +922,33 @@ public class GodManager
 	 */
 	public GodType getDivineForceForGod(String godName)
 	{
-		if (godName == null || !godsConfig().isConfigurationSection(godName))
+		God god = god(godName);
+		if (god == null)
 		{
 			return null;
 		}
 
-		String typeName = godsConfig().getString(godName + ".DivineForce");
-		try
+		if (god.type() != null)
 		{
-			return GodType.valueOf(typeName);
+			return god.type();
 		}
-		catch (Exception ex)
+
+		Object typeName = god.extras().get("DivineForce");
+		ctx.plugin().log("Could not parse GodType " + typeName + " for the god '" + godName + "'. Assigning a random GodType.");
+		GodType type;
+		do
 		{
-			ctx.plugin().log("Could not parse GodType " + typeName + " for the god '" + godName + "'. Assigning a random GodType.");
-			GodType type;
-			do
-			{
-				type = GodType.values()[this.random.nextInt(GodType.values().length)];
-			}
-			while (type == GodType.WEREWOLVES);
-			setDivineForceForGod(godName, type);
-			return type;
+			type = GodType.values()[this.random.nextInt(GodType.values().length)];
 		}
+		while (type == GodType.WEREWOLVES);
+		setDivineForceForGod(godName, type);
+		return type;
 	}
 
 	public Material getHolyFoodTypeForGod(String godName)
 	{
-		String foodTypeString = godsConfig().getString(godName + ".EatFoodType");
+		God god = godToChange(godName, "EatFoodType");
+		String foodTypeString = god != null ? god.holyFood() : null;
 		
 		Material foodType = Material.AIR;
 		
@@ -968,9 +982,12 @@ public class GodManager
 			}
 			foodTypeString = foodType.name();
 
-			setGodValue(godName, ".EatFoodType", foodTypeString);
+			if (god != null)
+			{
+				god.setHolyFood(foodTypeString);
+			}
 
-			godsFile().markDirty();
+			gods().markDirty();
 		}
 		else
 		{
@@ -987,7 +1004,8 @@ public class GodManager
 
 	public float getExactMoodForGod(String godName)
 	{
-		return (float) godsConfig().getDouble(godName + ".Mood");
+		God god = god(godName);
+		return god != null ? god.mood() : 0.0F;
 	}
 
 	public float getFalloffModifierForGod(String godName)
@@ -1010,27 +1028,14 @@ public class GodManager
 
 	public GodGender getGenderForGod(String godName)
 	{
-		String genderString = godsConfig().getString(godName + ".Gender");
-		GodGender godGender = GodGender.None;
-
-		if (genderString != null)
-		{
-			try
-			{
-				godGender = GodGender.valueOf(genderString);
-			}
-			catch (Exception ex)
-			{
-				godGender = GodGender.None;
-			}
-		}
-
-		return godGender;
+		God god = god(godName);
+		return god != null && god.gender() != null ? god.gender() : GodGender.None;
 	}
 
 	public String getGodDescription(String godName)
 	{
-		String description = godsConfig().getString(godName + ".Description");
+		God god = god(godName);
+		String description = god != null ? god.description() : null;
 		if (description == null)
 		{
 			description = new String("No description :/");
@@ -1040,12 +1045,14 @@ public class GodManager
 
 	public boolean getGodMobDamage(String godName)
 	{
-		return godsConfig().getBoolean(godName + ".MobDamage", ctx.settings().holyLand().defaultMobDamage());
+		God god = god(godName);
+		return god != null && god.mobDamage() != null ? god.mobDamage() : ctx.settings().holyLand().defaultMobDamage();
 	}
 
 	public boolean getGodMobSpawning(String godName)
 	{
-		return godsConfig().getBoolean(godName + ".MobSpawning");
+		God god = god(godName);
+		return god != null && god.mobSpawning() != null && god.mobSpawning();
 	}
 
 	public float getGodPower(String godName)
@@ -1053,9 +1060,7 @@ public class GodManager
 		float godPower = 0.0F;
 		int minGodPower = 0;
 
-		String name = godsConfig().getString(godName);
-
-		if (name == null)
+		if (god(godName) == null)
 		{
 			return 0.0F;
 		}
@@ -1082,7 +1087,8 @@ public class GodManager
 
 	public boolean getGodPvP(String godName)
 	{
-		return godsConfig().getBoolean(godName + ".PvP", ctx.settings().holyLand().defaultPvp());
+		God god = god(godName);
+		return god != null && god.pvp() != null ? god.pvp() : ctx.settings().holyLand().defaultPvp();
 	}
 
 	public double getHealthNeed(String godName, Player player)
@@ -1109,7 +1115,8 @@ public class GodManager
 
 	public EntityType getHolyMobTypeForGod(String godName)
 	{
-		EntityType mobType = parseEntityType(godsConfig().getString(godName + ".NotSlayMobType"));
+		God god = godToChange(godName, "NotSlayMobType");
+		EntityType mobType = parseEntityType(god != null ? god.holyMob() : null);
 		if (mobType == null)
 		{
 			String unholyMobTypeString = getUnholyMobTypeForGod(godName).name();
@@ -1120,8 +1127,11 @@ public class GodManager
 			}
 			while (mobTypeString.equals(unholyMobTypeString));
 
-			setGodValue(godName, ".NotSlayMobType", mobTypeString);
-			godsFile().markDirty();
+			if (god != null)
+			{
+				god.setHolyMob(mobTypeString);
+			}
+			gods().markDirty();
 
 			mobType = EntityType.valueOf(mobTypeString);
 		}
@@ -1130,20 +1140,14 @@ public class GodManager
 
 	public Location getHomeForGod(String godName)
 	{
-		Location location = new Location(null, 0.0D, 0.0D, 0.0D);
-
-		String worldName = godsConfig().getString(godName + ".Home.World");
-		if (worldName == null)
+		God god = god(godName);
+		GodHome home = god != null ? god.home() : null;
+		if (home == null)
 		{
 			return null;
 		}
-		location.setWorld(ctx.plugin().getServer().getWorld(worldName));
 
-		location.setX(godsConfig().getDouble(godName + ".Home.X"));
-		location.setY(godsConfig().getDouble(godName + ".Home.Y"));
-		location.setZ(godsConfig().getDouble(godName + ".Home.Z"));
-
-		return location;
+		return new Location(ctx.plugin().getServer().getWorld(home.world()), home.x(), home.y(), home.z());
 	}
 
 	private ItemStack getItemNeed(String godName, Player player)
@@ -1201,75 +1205,23 @@ public class GodManager
 		return ctx.settings().general().language() + "_" + godType.name().toLowerCase() + "_" + godGender.name().toLowerCase() + ".yml";
 	}
 
-	public Date getLastBlessedTimeForGod(String godName)
-	{
-		String lastBlessedString = godsConfig().getString(godName + ".BlessedTime");
-		if (lastBlessedString == null)
-		{
-			return null;
-		}
-		DateFormat formatter = new SimpleDateFormat(this.pattern);
-		Date lastBlessedDate = null;
-		try
-		{
-			lastBlessedDate = formatter.parse(lastBlessedString);
-		}
-		catch (Exception ex)
-		{
-			lastBlessedDate = new Date();
-			lastBlessedDate.setTime(0L);
-		}
-		return lastBlessedDate;
-	}
-
-	public Date getLastCursingTimeForGod(String godName)
-	{
-		String lastCursedString = godsConfig().getString(godName + ".CursedTime");
-		if (lastCursedString == null)
-		{
-			return null;
-		}
-		DateFormat formatter = new SimpleDateFormat(this.pattern);
-		Date lastCursedDate = null;
-		try
-		{
-			lastCursedDate = formatter.parse(lastCursedString);
-		}
-		catch (Exception ex)
-		{
-			lastCursedDate = new Date();
-			lastCursedDate.setTime(0L);
-		}
-		return lastCursedDate;
-	}
-
 	/**
 	 * @return minutes since the god's last quest started, or Long.MAX_VALUE if it never had one
 	 */
 	public long getMinutesSinceLastQuest(String godName)
 	{
-		String lastQuestDateString = godsConfig().getString(godName + ".LastQuestTime");
-		if (lastQuestDateString == null)
+		God god = god(godName);
+		if (god == null || god.lastQuestTime() == null)
 		{
 			return Long.MAX_VALUE;
 		}
 
-		Date questDate;
-		try
-		{
-			questDate = formatter.parse(lastQuestDateString);
-		}
-		catch (Exception ex)
-		{
-			return Long.MAX_VALUE;
-		}
-
-		return (System.currentTimeMillis() - questDate.getTime()) / 60000L;
+		return (System.currentTimeMillis() - god.lastQuestTime().toEpochMilli()) / 60000L;
 	}
 
 	public GodMood getMoodForGod(String godName)
 	{
-		float godMood = (float) godsConfig().getDouble(godName + ".Mood");
+		float godMood = getExactMoodForGod(godName);
 		if (godMood < -70.0F)
 		{
 			return GodMood.ANGRY;
@@ -1346,7 +1298,8 @@ public class GodManager
 
 	public Material getUnholyFoodTypeForGod(String godName)
 	{
-		String foodTypeString = godsConfig().getString(godName + ".NotEatFoodType");
+		God god = godToChange(godName, "NotEatFoodType");
+		String foodTypeString = god != null ? god.unholyFood() : null;
 		Material foodType = Material.AIR;
 		if (foodTypeString == null)
 		{
@@ -1381,9 +1334,12 @@ public class GodManager
 			}
 			while (foodTypeString.equals(getHolyFoodTypeForGod(godName).name()));
 			
-			setGodValue(godName, ".NotEatFoodType", foodTypeString);
+			if (god != null)
+			{
+				god.setUnholyFood(foodTypeString);
+			}
 
-			godsFile().markDirty();
+			gods().markDirty();
 		}
 		else
 		{
@@ -1400,7 +1356,7 @@ public class GodManager
 
 	public List<String> getOfflineGods()
 	{
-		Set<String> allGods = godsConfig().getKeys(false);
+		List<String> allGods = getAllGods();
 		List<String> offlineGods = new ArrayList<String>();
 		for (String godName : allGods)
 		{
@@ -1424,7 +1380,8 @@ public class GodManager
 
 	public UUID getPendingPriest(String godName)
 	{
-		UUID believerId = parseUUID(godsConfig().getString(godName + ".PendingPriest"));
+		God god = god(godName);
+		UUID believerId = god != null ? god.pendingPriest() : null;
 
 		if (believerId == null)
 		{
@@ -1467,18 +1424,15 @@ public class GodManager
 
 	public List<UUID> getPriestsForGod(String godName)
 	{
-		List<String> names = godsConfig().getStringList(godName + ".Priests");
+		God god = god(godName);
 		List<UUID> list = new ArrayList<UUID>();
-
-		for (String name : names)
+		if (god == null)
 		{
-			// load() converts the player names Gods 0.9.x stored here; skip any it couldn't
-			UUID believerId = parseUUID(name);
-			if (believerId == null)
-			{
-				continue;
-			}
+			return list;
+		}
 
+		for (UUID believerId : new ArrayList<UUID>(god.priests()))
+		{
 			long diffHours = (System.currentTimeMillis() - ctx.believerService().getLastPrayerTime(believerId).getTime()) / 3600000L;
 			if (diffHours > ctx.settings().priests().maxHoursWithoutPrayer())
 			{
@@ -1501,16 +1455,17 @@ public class GodManager
 		Integer value = Integer.valueOf(0);
 		String sacrificeItemName = null;
 
-		ConfigurationSection configSection = godsConfig().getConfigurationSection(godName + ".SacrificeValues");
-		if ((configSection == null) || (configSection.getKeys(false).size() == 0))
+		God god = god(godName);
+		if ((god == null) || (god.sacrificeValues().size() == 0))
 		{
 			return null;
 		}
-		for (int i = 0; i < configSection.getKeys(false).size(); i++)
+		Map<String, Float> values = god.sacrificeValues();
+		for (int i = 0; i < values.size(); i++)
 		{
-			itemName = (String) configSection.getKeys(false).toArray()[this.random.nextInt(configSection.getKeys(false).size())];
+			itemName = (String) values.keySet().toArray()[this.random.nextInt(values.size())];
 
-			value = Integer.valueOf(godsConfig().getInt(godName + ".SacrificeValues." + itemName));
+			value = Integer.valueOf(values.get(itemName).intValue());
 			if (value.intValue() > 10)
 			{
 				sacrificeItemName = itemName;
@@ -1624,10 +1579,10 @@ public class GodManager
 	private Material getSacrificeUnwantedForGod(String godName)
 	{
 		List<Material> unwantedItems = new ArrayList<Material>();
-		ConfigurationSection configSection = godsConfig().getConfigurationSection(godName + ".SacrificeValues.");
-		if (configSection != null)
+		God god = god(godName);
+		if (god != null && !god.sacrificeValues().isEmpty())
 		{
-			for (String itemType : configSection.getKeys(false))
+			for (String itemType : god.sacrificeValues().keySet())
 			{
 				Material item = null;
 				try
@@ -1638,7 +1593,7 @@ public class GodManager
 				{
 					continue;
 				}
-				if (godsConfig().getDouble(godName + ".SacrificeValues." + itemType) <= 0.0D)
+				if (god.sacrificeValues().get(itemType) <= 0.0D)
 				{
 					unwantedItems.add(item);
 				}
@@ -1657,23 +1612,44 @@ public class GodManager
 
 	private float getSacrificeValueForGod(String godName, Material type)
 	{
-		if(!godsConfig().isSet(godName + ".SacrificeValues." + type.name()))
+		God god = god(godName);
+		Float value = god != null ? god.sacrificeValues().get(type.name()) : null;
+		return value != null ? value : 0;
+	}
+
+	/** Puts a sacrifice value; null removes it */
+	private void setSacrificeValueForGod(String godName, Material type, Float value)
+	{
+		if (value == null)
 		{
-			return 0;
+			God god = god(godName);
+			if (god != null)
+			{
+				god.sacrificeValues().remove(type.name());
+			}
+			return;
 		}
-						
-		return (float)godsConfig().getDouble(godName + ".SacrificeValues." + type.name());
+		God god = godToChange(godName, "SacrificeValues");
+		if (god != null)
+		{
+			god.sacrificeValues().put(type.name(), value);
+		}
 	}
 
 	public long getSeedForGod(String godName)
 	{
-		long seed = godsConfig().getLong(godName + ".Seed");
+		God god = god(godName);
+		long seed = god != null ? god.seed() : 0L;
 		if (seed == 0L)
 		{
 			seed = this.random.nextLong();
-			setGodValue(godName, ".Seed", Long.valueOf(seed));
+			god = godToChange(godName, "Seed");
+			if (god != null)
+			{
+				god.setSeed(seed);
+			}
 
-			godsFile().markDirty();
+			gods().markDirty();
 		}
 		return seed;
 	}
@@ -1726,22 +1702,24 @@ public class GodManager
 		return ctx.languageManager().getGodTypeName(godType, ctx.languageManager().getGodGenderName(this.getGenderForGod(godName)));
 	}
 
-	public Set<String> getTopGods()
+	public List<String> getTopGods()
 	{
-		Set<String> topGods = godsConfig().getKeys(false);
-
-		return topGods;
+		return getAllGods();
 	}
 
 	public EntityType getUnholyMobTypeForGod(String godName)
 	{
-		EntityType mobType = parseEntityType(godsConfig().getString(godName + ".SlayMobType"));
+		God god = godToChange(godName, "SlayMobType");
+		EntityType mobType = parseEntityType(god != null ? god.unholyMob() : null);
 		if (mobType == null)
 		{
 			String mobTypeString = generateUnholyMobTypeForGod();
 
-			setGodValue(godName, ".SlayMobType", mobTypeString);
-			godsFile().markDirty();
+			if (god != null)
+			{
+				god.setUnholyMob(mobTypeString);
+			}
+			gods().markDirty();
 
 			mobType = EntityType.valueOf(mobTypeString);
 		}
@@ -1750,14 +1728,19 @@ public class GodManager
 
 	private int getVerbosityForGod(String godName)
 	{
-		int verbosity = godsConfig().getInt(godName + ".Verbosity");
+		God god = god(godName);
+		int verbosity = god != null ? god.verbosity() : 0;
 		if (verbosity == 0)
 		{
 			verbosity = 1 + this.random.nextInt(50);
 
-			setGodValue(godName, ".Verbosity", Integer.valueOf(verbosity));
+			god = godToChange(godName, "Verbosity");
+			if (god != null)
+			{
+				god.setVerbosity(verbosity);
+			}
 
-			godsFile().save();
+			gods().save();
 		}
 		Random moodRandom = new Random(getSeedForGod(godName));
 
@@ -1770,7 +1753,8 @@ public class GodManager
 
 	public List<String> getWarRelations(String godName)
 	{
-		return godsConfig().getStringList(godName + ".Enemies");
+		God god = god(godName);
+		return god != null ? new ArrayList<String>(god.enemies()) : new ArrayList<String>();
 	}
 
 	public void giveHolyArtifact(String godName, GodType godType, Player player, boolean speak)
@@ -1790,12 +1774,8 @@ public class GodManager
 
 	public boolean godExist(String godName)
 	{
-		String name = godsConfig().getString(formatGodName(godName) + ".Created");
-		if (name == null)
-		{
-			return false;
-		}
-		return true;
+		God god = god(formatGodName(godName));
+		return god != null && god.created() != null;
 	}
 
 	public void GodSay(String godName, Player player, LanguageManager.LANGUAGESTRING message, int delay)
@@ -2213,9 +2193,9 @@ public class GodManager
 
 		value -= 1.0F;
 
-		setGodValue(godName, ".SacrificeValues." + type.name(), Float.valueOf(value));
+		setSacrificeValueForGod(godName, type, Float.valueOf(value));
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public boolean hasAllianceRelation(String godName, String otherGodName)
@@ -2379,7 +2359,7 @@ public class GodManager
 			return false;
 		}
 
-		Set<String> gods = getAllGods();
+		List<String> gods = getAllGods();
 
 		for (String godName : gods)
 		{
@@ -2411,111 +2391,17 @@ public class GodManager
 
 	public boolean isPrivateAccess(String godName)
 	{
-		Boolean access = Boolean.valueOf(godsConfig().getBoolean(godName + ".PrivateAccess"));
-		if (access != null)
-		{
-			return access.booleanValue();
-		}
-		return false;
+		God god = god(godName);
+		return god != null && god.privateAccess();
 	}
 
 	/**
-	 * Reads gods.yml and upgrades what older versions wrote (priests by name, LanguageFileName). If the file can't be
-	 * read, Storage keeps it untouched and nothing here changes it.
+	 * Reads gods.yml (an old one is upgraded first, see {@link com.dogonfire.gods.migration.GodsV1ToV2}). If the file
+	 * can't be read, Storage keeps it untouched and nothing here changes it.
 	 */
 	public void load()
 	{
-		godsFile().load();
-		if (godsFile().isReadOnly())
-		{
-			return;
-		}
-
-		boolean changed = false;
-
-		Map<String, UUID> playerIdsByName = null;
-
-		for (String godName : godsConfig().getKeys(false))
-		{
-			List<String> priests = godsConfig().getStringList(godName + ".Priests");
-			boolean priestsChanged = false;
-
-			// Gods 0.9.x kept a single priest by name in PriestName
-			String priestName = godsConfig().getString(godName + ".PriestName");
-			if (priestName != null)
-			{
-				if (!priests.contains(priestName))
-				{
-					priests.add(priestName);
-				}
-				godsConfig().set(godName + ".PriestName", null);
-				priestsChanged = true;
-			}
-
-			// Priests used to be stored by player name. Convert them to UUIDs, or drop them if the player is unknown.
-			List<String> priestIds = new ArrayList<String>();
-			for (String priest : priests)
-			{
-				UUID priestId = parseUUID(priest);
-				if (priestId == null && priest != null && !priest.equals("none"))
-				{
-					if (playerIdsByName == null)
-					{
-						playerIdsByName = getKnownPlayerIdsByName();
-					}
-					priestId = playerIdsByName.get(priest.toLowerCase());
-					if (priestId == null)
-					{
-						ctx.plugin().log("Removed unknown priest '" + priest + "' from " + godName);
-					}
-				}
-				if (priestId == null || priestIds.contains(priestId.toString()))
-				{
-					priestsChanged = true;
-					continue;
-				}
-				if (!priestId.toString().equals(priest))
-				{
-					priestsChanged = true;
-				}
-				priestIds.add(priestId.toString());
-			}
-			if (priestsChanged)
-			{
-				godsConfig().set(godName + ".Priests", priestIds);
-				changed = true;
-			}
-
-			// The language file is now chosen from Settings.Language and the god's type and gender
-			if (godsConfig().contains(godName + ".LanguageFileName"))
-			{
-				godsConfig().set(godName + ".LanguageFileName", null);
-				changed = true;
-			}
-		}
-
-		ctx.plugin().log("Loaded " + godsConfig().getKeys(false).size() + " gods.");
-
-		if (changed)
-		{
-			godsFile().save();
-		}
-	}
-
-	/**
-	 * @return the UUIDs of every player who has been on this server, by lower case name
-	 */
-	private Map<String, UUID> getKnownPlayerIdsByName()
-	{
-		Map<String, UUID> playerIds = new HashMap<String, UUID>();
-		for (OfflinePlayer player : ctx.plugin().getServer().getOfflinePlayers())
-		{
-			if (player.getName() != null)
-			{
-				playerIds.put(player.getName().toLowerCase(), player.getUniqueId());
-			}
-		}
-		return playerIds;
+		gods().load();
 	}
 
 	private boolean manageBelieverForAngryGod(String godName, Player believer)
@@ -3204,9 +3090,9 @@ public class GodManager
 		}
 		ctx.plugin().logDebug("Increasing wanted " + type.name() + " sacrifice need for " + godName + " to " + value);
 
-		setGodValue(godName, ".SacrificeValues." + type.name(), Float.valueOf(value));
+		setSacrificeValueForGod(godName, type, Float.valueOf(value));
 
-		godsFile().markDirty();
+		gods().markDirty();
 
 		type = getSacrificeUnwantedForGod(godName);
 		if (type != null)
@@ -3219,13 +3105,13 @@ public class GodManager
 			ctx.plugin().logDebug("Reducing unwanted " + type.name() + " sacrifice need for " + godName + " to " + value);
 			if (value == 0.0F)
 			{
-				setGodValue(godName, ".SacrificeValues." + type.name(), null);
+				setSacrificeValueForGod(godName, type, null);
 			}
 			else
 			{
-				setGodValue(godName, ".SacrificeValues." + type.name(), Float.valueOf(value));
+				setSacrificeValueForGod(godName, type, Float.valueOf(value));
 			}
-			godsFile().save();
+			gods().save();
 		}
 	}
 
@@ -3238,11 +3124,11 @@ public class GodManager
 
 		for (String otherGodName : getAllGods())
 		{
-			removeRelation(otherGodName, ".Allies", godName);
-			removeRelation(otherGodName, ".Enemies", godName);
+			removeRelation(otherGodName, true, godName);
+			removeRelation(otherGodName, false, godName);
 		}
 
-		godsConfig().set(godName, null);
+		gods().remove(godName);
 
 		if (ctx.settings().bibles().enabled())
 		{
@@ -3254,35 +3140,34 @@ public class GodManager
 			ctx.holyLandService().removeHolyLandsForGod(godName);
 		}
 
-		godsFile().save();
+		gods().save();
 	}
 
 	public void removePriest(String godName, UUID playerId)
 	{
-		List<String> priests = godsConfig().getStringList(godName + ".Priests");
+		God god = god(godName);
 
-		if (priests.remove(playerId.toString()))
+		if (god != null && god.priests().remove(playerId))
 		{
 			dispatchPriestCommand(ctx.settings().priests().removeCommand(), playerId);
 		}
 
-		setGodValue(godName, ".Priests", priests);
 		ctx.chatManager().refresh(playerId);
 
-		godsFile().markDirty();
+		gods().markDirty();
 
 		ctx.plugin().log(godName + " removed " + ctx.plugin().getServer().getOfflinePlayer(playerId).getName() + " as priest");
 	}
 
 	/**
-	 * Removes otherGodName from the relation list (".Allies" or ".Enemies") of godName.
+	 * Removes otherGodName from the allies (or enemies) of godName.
 	 */
-	private void removeRelation(String godName, String relation, String otherGodName)
+	private void removeRelation(String godName, boolean allies, String otherGodName)
 	{
-		List<String> gods = godsConfig().getStringList(godName + relation);
-		if (gods.remove(otherGodName))
+		God god = god(godName);
+		if (god != null)
 		{
-			setGodValue(godName, relation, gods);
+			(allies ? god.allies() : god.enemies()).remove(otherGodName);
 		}
 	}
 
@@ -3316,25 +3201,27 @@ public class GodManager
 	 */
 	public void setBlessedPlayerForGod(String godName, UUID believerId)
 	{
-		// Stored as a string: a UUID object is written with a !!java.util.UUID tag Bukkit can't load
-		setGodValue(godName, ".BlessedPlayer", believerId == null ? null : believerId.toString());
-		setGodValue(godName, ".BlessedTime", believerId == null ? null : formatter.format(new Date()));
+		God god = believerId == null ? god(godName) : godToChange(godName, "BlessedPlayer");
+		if (god != null)
+		{
+			god.setBlessed(believerId, believerId == null ? null : now());
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void setContestedHolyLandForGod(String godName, Location contestedLand)
 	{
-		setGodValue(godName, ".ContestedLand.Hash", Long.valueOf(ctx.holyLandService().hashLocation(contestedLand)));
-
-		setGodValue(godName, ".ContestedLand" + ".X", Integer.valueOf(contestedLand.getBlockX()));
-		setGodValue(godName, ".ContestedLand" + ".Y", Integer.valueOf(contestedLand.getBlockY()));
-		setGodValue(godName, ".ContestedLand" + ".Z", Integer.valueOf(contestedLand.getBlockZ()));
-		setGodValue(godName, ".ContestedLand" + ".World", contestedLand.getWorld().getName());
+		God god = godToChange(godName, "ContestedLand");
+		if (god != null)
+		{
+			god.setContestedLand(new ContestedLand(contestedLand.getWorld().getName(), contestedLand.getBlockX(), contestedLand.getBlockY(), contestedLand.getBlockZ(),
+					ctx.holyLandService().hashLocation(contestedLand)));
+		}
 
 		ctx.holyLandService().setContestedLand(contestedLand, godName);
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	/**
@@ -3342,49 +3229,68 @@ public class GodManager
 	 */
 	public void setCursedPlayerForGod(String godName, UUID believerId)
 	{
-		// Stored as a string: a UUID object is written with a !!java.util.UUID tag Bukkit can't load
-		setGodValue(godName, ".CursedPlayer", believerId == null ? null : believerId.toString());
-		setGodValue(godName, ".CursedTime", believerId == null ? null : formatter.format(new Date()));
+		God god = believerId == null ? god(godName) : godToChange(godName, "CursedPlayer");
+		if (god != null)
+		{
+			god.setCursed(believerId, believerId == null ? null : now());
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void setDivineForceForGod(String godName, GodType divineForce)
 	{
-		setGodValue(godName, ".DivineForce", divineForce.name().toUpperCase());
+		God god = godToChange(godName, "DivineForce");
+		if (god != null)
+		{
+			god.setType(divineForce);
+		}
 
-		godsFile().save();
+		gods().save();
 	}
 
 	public void setGenderForGod(String godName, GodGender godGender)
 	{
-		setGodValue(godName, ".Gender", godGender.name());
+		God god = godToChange(godName, "Gender");
+		if (god != null)
+		{
+			god.setGender(godGender);
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void setGodDescription(String godName, String description)
 	{
-		setGodValue(godName, ".Description", description);
+		God god = description == null ? god(godName) : godToChange(godName, "Description");
+		if (god != null)
+		{
+			god.setDescription(description);
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void setGodPvP(String godName, boolean pvp)
 	{
-		setGodValue(godName, ".PvP", Boolean.valueOf(pvp));
+		God god = godToChange(godName, "PvP");
+		if (god != null)
+		{
+			god.setPvp(pvp);
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void setHomeForGod(String godName, Location location)
 	{
-		setGodValue(godName, ".Home.X", Double.valueOf(location.getX()));
-		setGodValue(godName, ".Home.Y", Double.valueOf(location.getY()));
-		setGodValue(godName, ".Home.Z", Double.valueOf(location.getZ()));
-		setGodValue(godName, ".Home.World", location.getWorld().getName());
+		God god = godToChange(godName, "Home");
+		if (god != null)
+		{
+			god.setHome(new GodHome(location.getWorld().getName(), location.getX(), location.getY(), location.getZ()));
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public boolean setPendingPriest(String godName, UUID believerId)
@@ -3394,28 +3300,27 @@ public class GodManager
 			return false;
 		}
 
+		God god = godToChange(godName, "PendingPriest");
+		if (god == null)
+		{
+			return false;
+		}
+
 		// Offer the priesthood at most once every 3 minutes
-		String lastPriestTime = godsConfig().getString(godName + ".PendingPriestTime");
+		Instant lastPriestTime = god.pendingPriestTime();
 		if (lastPriestTime != null)
 		{
-			try
+			long diffMinutes = (System.currentTimeMillis() - lastPriestTime.toEpochMilli()) / 60000L;
+			if (diffMinutes < 3L)
 			{
-				long diffMinutes = (System.currentTimeMillis() - formatter.parse(lastPriestTime).getTime()) / 60000L;
-				if (diffMinutes < 3L)
-				{
-					return false;
-				}
-			}
-			catch (Exception ex)
-			{
-				ctx.plugin().logDebug("Could not parse PendingPriestTime '" + lastPriestTime + "' for " + godName);
+				return false;
 			}
 		}
 
-		setGodValue(godName, ".PendingPriest", believerId.toString());
-		setGodValue(godName, ".PendingPriestTime", formatter.format(new Date()));
+		god.setPendingPriest(believerId);
+		god.setPendingPriestTime(now());
 
-		godsFile().markDirty();
+		gods().markDirty();
 
 		ctx.believerService().setPendingPriest(believerId);
 
@@ -3424,16 +3329,24 @@ public class GodManager
 
 	public void setPrivateAccess(String godName, boolean privateAccess)
 	{
-		setGodValue(godName, ".PrivateAccess", Boolean.valueOf(privateAccess));
+		God god = godToChange(godName, "PrivateAccess");
+		if (god != null)
+		{
+			god.setPrivateAccess(privateAccess);
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void setTimeSinceLastQuest(String godName)
 	{
-		setGodValue(godName, ".LastQuestTime", formatter.format(new Date()));
+		God god = godToChange(godName, "LastQuestTime");
+		if (god != null)
+		{
+			god.setLastQuestTime(now());
+		}
 
-		godsFile().markDirty();
+		gods().markDirty();
 	}
 
 	public void spawnHostileMobs(String godName, Player player, EntityType mobType, int numberOfMobs)
@@ -3498,15 +3411,19 @@ public class GodManager
 	}
 
 	/**
-	 * Adds otherGodName to the relation list (".Allies" or ".Enemies") of godName.
+	 * Adds otherGodName to the allies (or enemies) of godName.
 	 */
-	private void addRelation(String godName, String relation, String otherGodName)
+	private void addRelation(String godName, boolean allies, String otherGodName)
 	{
-		List<String> gods = godsConfig().getStringList(godName + relation);
+		God god = godToChange(godName, allies ? "Allies" : "Enemies");
+		if (god == null)
+		{
+			return;
+		}
+		List<String> gods = allies ? god.allies() : god.enemies();
 		if (!gods.contains(otherGodName))
 		{
 			gods.add(otherGodName);
-			setGodValue(godName, relation, gods);
 		}
 	}
 
@@ -3519,18 +3436,18 @@ public class GodManager
 	{
 		if (!hasAllianceRelation(godName, allyGodName))
 		{
-			addRelation(godName, ".Allies", allyGodName);
-			addRelation(allyGodName, ".Allies", godName);
-			removeRelation(godName, ".Enemies", allyGodName);
-			removeRelation(allyGodName, ".Enemies", godName);
-			godsFile().markDirty();
+			addRelation(godName, true, allyGodName);
+			addRelation(allyGodName, true, godName);
+			removeRelation(godName, false, allyGodName);
+			removeRelation(allyGodName, false, godName);
+			gods().markDirty();
 
 			return true;
 		}
 
-		removeRelation(godName, ".Allies", allyGodName);
-		removeRelation(allyGodName, ".Allies", godName);
-		godsFile().save();
+		removeRelation(godName, true, allyGodName);
+		removeRelation(allyGodName, true, godName);
+		gods().save();
 
 		return false;
 	}
@@ -3544,18 +3461,18 @@ public class GodManager
 	{
 		if (!hasWarRelation(godName, enemyGodName))
 		{
-			addRelation(godName, ".Enemies", enemyGodName);
-			addRelation(enemyGodName, ".Enemies", godName);
-			removeRelation(godName, ".Allies", enemyGodName);
-			removeRelation(enemyGodName, ".Allies", godName);
-			godsFile().markDirty();
+			addRelation(godName, false, enemyGodName);
+			addRelation(enemyGodName, false, godName);
+			removeRelation(godName, true, enemyGodName);
+			removeRelation(enemyGodName, true, godName);
+			gods().markDirty();
 
 			return true;
 		}
 
-		removeRelation(godName, ".Enemies", enemyGodName);
-		removeRelation(enemyGodName, ".Enemies", godName);
-		godsFile().save();
+		removeRelation(godName, false, enemyGodName);
+		removeRelation(enemyGodName, false, godName);
+		gods().save();
 
 		return false;
 	}

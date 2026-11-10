@@ -6,11 +6,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -62,6 +65,8 @@ public class Gods extends JavaPlugin
 	private final List<BukkitTask>			tasks				= new ArrayList<BukkitTask>();
 	// Started by startFeatures, undone by stopFeatures
 	private final List<Listener>			featureListeners	= new ArrayList<Listener>();
+	// Players the server has seen, by lower case name; built when an old data file needs it, dropped after loading
+	private Map<String, UUID>				knownPlayerIds;
 
 	/**
 	 * The settings read from config.yml at the last (re)load. Read them through here (or {@link GodsContext#settings()})
@@ -87,7 +92,7 @@ public class Gods extends JavaPlugin
 			return;
 		}
 
-		this.storage = new Storage(getDataFolder().toPath(), getLogger());
+		this.storage = new Storage(getDataFolder().toPath(), getLogger(), this::knownPlayerId);
 		this.ctx = new GodsContext(this, this.storage);
 
 		loadData();
@@ -217,6 +222,25 @@ public class Gods extends JavaPlugin
 		this.ctx.questManager().load();
 		this.ctx.believerService().load();
 		this.ctx.godListService().load();
+
+		this.knownPlayerIds = null;
+	}
+
+	/** The UUID of a player the server has seen, by name (any case), or null; for upgrading old data files */
+	private UUID knownPlayerId(String name)
+	{
+		if (this.knownPlayerIds == null)
+		{
+			this.knownPlayerIds = new HashMap<String, UUID>();
+			for (OfflinePlayer player : getServer().getOfflinePlayers())
+			{
+				if (player.getName() != null)
+				{
+					this.knownPlayerIds.put(player.getName().toLowerCase(), player.getUniqueId());
+				}
+			}
+		}
+		return this.knownPlayerIds.get(name.toLowerCase());
 	}
 
 	/** The features that can be switched on and off in config.yml */

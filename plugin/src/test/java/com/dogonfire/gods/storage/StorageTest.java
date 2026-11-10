@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -59,16 +60,16 @@ class StorageTest
 	void savedDataLoadsBack()
 	{
 		Storage storage = storage();
-		storage.gods().load();
-		storage.gods().yaml().set("Thor.Power", 42.5);
-		storage.gods().yaml().set("Thor.Priests", List.of("8667ba71-b85a-4004-af54-457a9734eed7"));
-		storage.gods().markDirty();
+		storage.quests().load();
+		storage.quests().yaml().set("Thor.Power", 42.5);
+		storage.quests().yaml().set("Thor.Priests", List.of("8667ba71-b85a-4004-af54-457a9734eed7"));
+		storage.quests().markDirty();
 		storage.close();
 
 		Storage again = storage();
-		assertTrue(again.gods().load());
-		assertEquals(42.5, again.gods().yaml().getDouble("Thor.Power"));
-		assertEquals(List.of("8667ba71-b85a-4004-af54-457a9734eed7"), again.gods().yaml().getStringList("Thor.Priests"));
+		assertTrue(again.quests().load());
+		assertEquals(42.5, again.quests().yaml().getDouble("Thor.Power"));
+		assertEquals(List.of("8667ba71-b85a-4004-af54-457a9734eed7"), again.quests().yaml().getStringList("Thor.Priests"));
 		again.close();
 	}
 
@@ -114,23 +115,23 @@ class StorageTest
 	@Test
 	void brokenFileIsKeptAndNeverOverwritten() throws IOException
 	{
-		Path gods = this.dir.resolve("gods.yml");
-		Files.writeString(gods, BROKEN);
+		Path file = this.dir.resolve("quests.yml");
+		Files.writeString(file, BROKEN);
 
 		Storage storage = storage();
-		assertFalse(storage.gods().load());
-		assertTrue(storage.gods().isReadOnly());
-		assertTrue(storage.gods().yaml().getKeys(false).isEmpty());
+		assertFalse(storage.quests().load());
+		assertTrue(storage.quests().isReadOnly());
+		assertTrue(storage.quests().yaml().getKeys(false).isEmpty());
 
-		storage.gods().yaml().set("Odin.Power", 1);
-		storage.gods().save();
+		storage.quests().yaml().set("Odin.Power", 1);
+		storage.quests().save();
 		storage.close();
 
-		assertEquals(BROKEN, Files.readString(gods));
+		assertEquals(BROKEN, Files.readString(file));
 		List<String> files = filesInDir();
 		assertEquals(2, files.size());
-		assertEquals("gods.yml", files.get(0));
-		assertTrue(files.get(1).startsWith("gods.yml.broken-"), files.get(1));
+		assertEquals("quests.yml", files.get(0));
+		assertTrue(files.get(1).startsWith("quests.yml.broken-"), files.get(1));
 		assertEquals(BROKEN, Files.readString(this.dir.resolve(files.get(1))));
 	}
 
@@ -160,16 +161,17 @@ class StorageTest
 	@Test
 	void uuidTagsInGodsYmlAreRepaired() throws IOException
 	{
-		Files.writeString(this.dir.resolve("gods.yml"), "Thor:\n  BlessedPlayer: !!java.util.UUID '8667ba71-b85a-4004-af54-457a9734eed7'\n");
+		Files.writeString(this.dir.resolve("gods.yml"), "data-version: 2\nThor:\n  BlessedPlayer: !!java.util.UUID '8667ba71-b85a-4004-af54-457a9734eed7'\n");
 
 		Storage storage = storage();
 		assertTrue(storage.gods().load());
-		assertEquals("8667ba71-b85a-4004-af54-457a9734eed7", storage.gods().yaml().getString("Thor.BlessedPlayer"));
-		// Written back without the tags
-		assertTrue(storage.gods().isDirty());
+		assertEquals(UUID.fromString("8667ba71-b85a-4004-af54-457a9734eed7"), storage.gods().find("Thor").blessedPlayer());
 		storage.close();
 
-		assertFalse(Files.readString(this.dir.resolve("gods.yml")).contains("!!"));
+		// Written back without the tags
+		String written = Files.readString(this.dir.resolve("gods.yml"));
+		assertFalse(written.contains("!!"), written);
+		assertTrue(written.contains("8667ba71-b85a-4004-af54-457a9734eed7"), written);
 	}
 
 	@Test
@@ -205,21 +207,21 @@ class StorageTest
 	void reloadKeepsUnsavedChangesOfFilesNobodyEdited()
 	{
 		Storage storage = storage();
-		storage.gods().load();
-		storage.gods().yaml().set("Thor.Power", 1.0);
-		storage.gods().markDirty();
+		storage.quests().load();
+		storage.quests().yaml().set("Thor.Power", 1.0);
+		storage.quests().markDirty();
 
 		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
-		assertTrue(storage.gods().load());
+		assertTrue(storage.quests().load());
 		storage.finishReload();
 
-		assertTrue(storage.gods().lastLoadKept());
-		assertEquals(1.0, storage.gods().yaml().getDouble("Thor.Power"));
+		assertTrue(storage.quests().lastLoadKept());
+		assertEquals(1.0, storage.quests().yaml().getDouble("Thor.Power"));
 		storage.close();
 
 		Storage again = storage();
-		again.gods().load();
-		assertEquals(1.0, again.gods().yaml().getDouble("Thor.Power"));
+		again.quests().load();
+		assertEquals(1.0, again.quests().yaml().getDouble("Thor.Power"));
 		again.close();
 	}
 
@@ -227,29 +229,29 @@ class StorageTest
 	void reloadReadsFilesEditedOnDiskAndDropsUnsavedChanges() throws IOException
 	{
 		Storage storage = storage();
-		storage.gods().load();
-		storage.gods().yaml().set("Thor.Power", 1.0);
-		storage.gods().save();
+		storage.quests().load();
+		storage.quests().yaml().set("Thor.Power", 1.0);
+		storage.quests().save();
 		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
 
 		// A change that isn't saved yet, then an admin edits the file
-		storage.gods().yaml().set("Thor.Power", 2.0);
-		storage.gods().markDirty();
-		Path file = this.dir.resolve("gods.yml");
+		storage.quests().yaml().set("Thor.Power", 2.0);
+		storage.quests().markDirty();
+		Path file = this.dir.resolve("quests.yml");
 		Files.writeString(file, "Thor:\n  Power: 5.0\n");
 		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
 
 		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
-		assertTrue(storage.gods().load());
+		assertTrue(storage.quests().load());
 		storage.finishReload();
 
-		assertFalse(storage.gods().lastLoadKept());
-		assertEquals(5.0, storage.gods().yaml().getDouble("Thor.Power"));
+		assertFalse(storage.quests().lastLoadKept());
+		assertEquals(5.0, storage.quests().yaml().getDouble("Thor.Power"));
 		storage.close();
 
 		Storage again = storage();
-		again.gods().load();
-		assertEquals(5.0, again.gods().yaml().getDouble("Thor.Power"));
+		again.quests().load();
+		assertEquals(5.0, again.quests().yaml().getDouble("Thor.Power"));
 		again.close();
 	}
 

@@ -1,0 +1,43 @@
+Thor:
+  Home:
+    X: 120.5
+    Y: 64.0
+    Z: -310.5
+    World: world
+  Gender: Male
+  DivineForce: THUNDER
+  PrivateAccess: false
+  Created: 10:00:00 01-01-2025
+  Mood: 12.25
+  Seed: 8022347102378561
+  Verbosity: 5
+  Priests:
+  - 8667ba71-b85a-4004-af54-457a9734eed7
+  BlessedPlayer: 8667ba71-b85a-4004-af54-457a9734eed7
+  BlessedTime: 21:15:03 14-03-2025
+  EatFoodType: COOKED_BEEF
+  NotEatFoodType: APPLE
+  NotSlayMobType: COW
+  SlayMobType: SKELETON
+  SacrificeValues:
+    GOLD_INGOT: 11.0
+    CACTUS: 2.0
+  Enemies:
+  - Loki
+  PvP: false
+  MobDamage: true
+  ContestedLand:
+    Hash: -1
+    X: -5
+    Y: 64
+    Z: -5
+    World: world
+Loki:
+  Gender: None
+  DivineForce: EVIL
+  PrivateAccess: true
+  Created: 12:00:00 03-01-2025
+  Priests: []
+  Enemies:
+  - Thor
+  SomethingNewer: 7
