@@ -1,11 +1,9 @@
 package com.dogonfire.gods.managers;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -44,26 +42,6 @@ public class LanguageManager
 
 	private LanguageManager()
 	{
-	}
-
-	private void downloadLanguageFile(String fileName) throws IOException
-	{
-		BufferedInputStream in = new BufferedInputStream(new URL("https://raw.githubusercontent.com/DogOnFire/Gods/master/lang/" + fileName).openStream());
-
-		FileOutputStream fos = new FileOutputStream(Gods.instance().getDataFolder() + "/lang/" + fileName);
-
-		BufferedOutputStream bout = new BufferedOutputStream(fos, 1024);
-
-		byte[] data = new byte[1024];
-
-		int x = 0;
-		while ((x = in.read(data, 0, 1024)) >= 0)
-		{
-			bout.write(data, 0, x);
-		}
-		bout.close();
-
-		in.close();
 	}
 
 	public int getAmount()
@@ -192,98 +170,90 @@ public class LanguageManager
 		return this.type;
 	}
 
+	/**
+	 * Loads the general language file and one file per god type and gender from plugins/Gods/lang/, copying the
+	 * bundled file there first if it's missing. Keys missing from a file fall back to the bundled file of the same
+	 * name, then to the bundled english one.
+	 */
 	public void load()
 	{
-		this.generalLanguageFileName = (GodsConfiguration.instance().getLanguageIdentifier() + "_general.yml");
+		String language = GodsConfiguration.instance().getLanguageIdentifier();
+		this.generalLanguageFileName = language + "_general.yml";
+		this.languageConfigs.clear();
 
-		Gods.instance().logDebug("generalFileName is " + this.generalLanguageFileName);
-		Gods.instance().logDebug("GodsConfiguration.instance().language is " + GodsConfiguration.instance().getLanguageIdentifier());
+		loadLanguageFile(language, "general.yml");
 
-		File directory = new File(Gods.instance().getDataFolder() + "/lang");
-		if (!directory.exists())
-		{
-			System.out.println("Creating language file directory '/lang'...");
-
-			boolean result = directory.mkdir();
-			if (result)
-			{
-				Gods.instance().logDebug("Directory created");
-			}
-			else
-			{
-				Gods.instance().logDebug("Directory FAILED!");
-				return;
-			}
-		}
-		if (!loadLanguageFile(this.generalLanguageFileName))
-		{
-			Gods.instance().log("Could not load " + this.generalLanguageFileName + " from the /lang folder!");
-			if (GodsConfiguration.instance().isDownloadLanguageFile())
-			{
-				Gods.instance().log("Downloading " + this.generalLanguageFileName + " from DogOnFire...");
-				try
-				{
-					downloadLanguageFile(this.generalLanguageFileName);
-				}
-				catch (Exception ex)
-				{
-					Gods.instance().log("Could not download " + this.generalLanguageFileName + " language file from DogOnFire: " + ex.getMessage());
-					return;
-				}
-				if (loadLanguageFile(this.generalLanguageFileName))
-				{
-					Gods.instance().logDebug(this.generalLanguageFileName + " loaded.");
-				}
-			}
-			else
-			{
-				Gods.instance().log("Will NOT download from DogOnFire. Please place a valid language file in your /lang folder!");
-			}
-		}
-		
 		for (GodManager.GodType godType : GodManager.GodType.values())
 		{
 			for (GodManager.GodGender godGender : GodManager.GodGender.values())
 			{
 				if (godGender != GodManager.GodGender.None)
 				{
-					String fileName = GodsConfiguration.instance().getLanguageIdentifier() + "_" + godType.name().toLowerCase() + "_" + godGender.name().toLowerCase() + ".yml";
-					if (!loadLanguageFile(fileName))
-					{
-						Gods.instance().log("Could not load language file " + fileName + " from the /lang folder!");
-						Gods.instance().log("Downloading english files from doggycraft.dk...");
-						try
-						{
-							downloadLanguageFile(fileName);
-						}
-						catch (Exception ex)
-						{
-							Gods.instance().log("Could not download language file " + fileName + " from bukkit: " + ex.getMessage());
-							continue;
-						}
-						loadLanguageFile(fileName);
-					}
-					Gods.instance().log("Loaded " + fileName + ".");
+					loadLanguageFile(language, godType.name().toLowerCase() + "_" + godGender.name().toLowerCase() + ".yml");
 				}
 			}
 		}
 	}
 
-	private boolean loadLanguageFile(String fileName)
+	private YamlConfiguration loadBundledLanguageFile(String fileName)
 	{
-		File languageConfigFile = new File(Gods.instance().getDataFolder() + "/lang/" + fileName);
-		if (!languageConfigFile.exists())
+		InputStream stream = Gods.instance().getResource("lang/" + fileName);
+		if (stream == null)
 		{
-			Gods.instance().log("Could not load " + Gods.instance().getDataFolder() + "/lang/" + fileName);
-			return false;
+			return null;
 		}
-		FileConfiguration languageConfig = YamlConfiguration.loadConfiguration(languageConfigFile);
+		return YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
+	}
+
+	private void loadLanguageFile(String language, String suffix)
+	{
+		String fileName = language + "_" + suffix;
+
+		YamlConfiguration english = loadBundledLanguageFile("english_" + suffix);
+		YamlConfiguration bundled = language.equals("english") ? english : loadBundledLanguageFile(fileName);
+		if (bundled != null && bundled != english && english != null)
+		{
+			bundled.setDefaults(english);
+		}
+		YamlConfiguration defaults = bundled != null ? bundled : english;
+
+		File languageConfigFile = new File(Gods.instance().getDataFolder(), "lang/" + fileName);
+		if (!languageConfigFile.exists() && bundled != null)
+		{
+			Gods.instance().saveResource("lang/" + fileName, false);
+		}
+
+		FileConfiguration languageConfig;
+		if (languageConfigFile.exists())
+		{
+			languageConfig = new YamlConfiguration();
+			try
+			{
+				languageConfig.load(languageConfigFile);
+			}
+			catch (Exception ex)
+			{
+				Gods.instance().log("Could not load " + languageConfigFile + ": " + ex.getMessage());
+			}
+			if (defaults != null)
+			{
+				languageConfig.setDefaults(defaults);
+			}
+		}
+		else if (defaults != null)
+		{
+			Gods.instance().log("Language file " + fileName + " was not found. Using english.");
+			languageConfig = defaults;
+		}
+		else
+		{
+			Gods.instance().log("Language file " + fileName + " was not found, and there is no english one either!");
+			return;
+		}
 
 		this.languageConfigs.put(fileName, languageConfig);
 
-		Gods.instance().log("Loaded " + languageConfig.getString("Version.Name") + " by " + languageConfig.getString("Version.Author") + " version " + languageConfig.getString("Version.Version"));
-
-		return true;
+		Gods.instance().logDebug("Loaded " + fileName + ": " + languageConfig.getString("Version.Name") + " by " + languageConfig.getString("Version.Author") + " version " + languageConfig.getString("Version.Version"));
 	}
 
 	public String parseString(String id)
