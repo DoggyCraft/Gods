@@ -10,8 +10,10 @@ import java.util.logging.Logger;
 
 /**
  * Owns the data files in the plugin folder and the one writer thread they share (one thread, so writes land in the
- * order they were made). Each manager loads its own file ({@link DataFile#load()}) and marks it dirty when it changes
- * it; {@link #flush()} queues a write for every changed file (main thread: on the autosave timer, on /g reload and on
+ * order they were made). believers.yml, holyland.yml, marriages.yml, whitelist.yml and blacklist.yml are held as models
+ * by a {@link Repository} each (loaded and changed by their service); the other files are still raw {@link DataFile}s
+ * that their manager loads ({@link DataFile#load()}) and changes. Either way a change marks the file dirty;
+ * {@link #flush()} queues a write for every changed file (main thread: on the autosave timer, on /g reload and on
  * disable), and {@link #close()} flushes and waits for the writes.
  */
 public final class Storage

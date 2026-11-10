@@ -15,7 +15,7 @@ import com.dogonfire.gods.GodsContext;
  * (asynchronous) chat handler and PlaceholderAPI need. The managers keep their data in YAML
  * configurations that must only be touched on the main thread, so the chat
  * thread reads this cache instead. It is filled on the main thread: on join,
- * when a believer's god, prayer power or chat mode changes in BelieverService, and
+ * when a believer's god or chat mode changes in BelieverService, and
  * periodically for everyone online (see Gods#onEnable).
  */
 public class ChatManager

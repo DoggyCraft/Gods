@@ -22,10 +22,11 @@ import com.dogonfire.gods.storage.Storage;
 
 /**
  * The plugin's object graph, built once per enable by {@link Gods#onEnable()} and passed to the constructor of every
- * manager, listener, command and task. There is no static way to reach it.
+ * manager, service, listener, command and task. There is no static way to reach it.
  * <p>
- * The managers call each other in cycles, so each one keeps the context and asks it for the others when it needs them.
- * Constructors must not call other managers: the graph is still being built. Every manager lives until the plugin is
+ * The managers and services call each other in cycles, so each one keeps the context and asks it for the others when it
+ * needs them; a service gets its repository from {@link Storage} through its constructor. Constructors must not call
+ * other managers or services: the graph is still being built. Every manager and service lives until the plugin is
  * disabled, also the ones of features that are switched off (their data file is then simply not loaded), so /g reload
  * can switch features on and off.
  */

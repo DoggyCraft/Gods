@@ -18,8 +18,8 @@ import com.dogonfire.gods.util.LegacyDates;
 /**
  * Believers: which god each player believes in, their prayers and prayer power, chat mode, invitations, priest offers
  * and blessing cooldowns. Owns every change to believers.yml ({@link BelieverRepository}); the time rules are in
- * {@link BelieverRules}. A change to a believer's god, prayer power or chat mode refreshes the chat cache. Main thread
- * only.
+ * {@link BelieverRules}. A change to a believer's god or chat mode refreshes the chat cache (prayer power reaches it
+ * through its regular refresh). Main thread only.
  */
 public class BelieverService
 {
