@@ -35,6 +35,9 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.MarriedCouple;
 import com.dogonfire.gods.storage.DataFile;
 import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
@@ -45,22 +48,6 @@ import com.dogonfire.gods.tasks.TaskSpawnHostileMobs;
 
 public class GodManager
 {
-	public static enum GodGender {
-		None, Male, Female;
-	}
-
-	public static enum GodMood {
-		EXALTED, PLEASED, NEUTRAL, DISPLEASED, ANGRY;
-	}
-
-	public static enum GodRelation {
-		LOVERS, MARRIED, ENEMIES, FRIENDS, BFF, ROOMMATES;
-	}
-
-	public static enum GodType {
-		FROST, LOVE, EVIL, SEA, MOON, SUN, THUNDER, PARTY, WAR, WEREWOLVES, CREATURES, WISDOM, NATURE;
-	}
-
 	public class NewPriestComparator implements Comparator<Object>
 	{
 		public NewPriestComparator()

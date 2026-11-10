@@ -15,7 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 
-import com.dogonfire.gods.managers.GodManager.GodType;
+import com.dogonfire.gods.model.GodType;
 
 /**
  * Reads {@link Settings} from config.yml. The config must have the bundled config.yml as its defaults (Bukkit's

@@ -21,8 +21,9 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodType;
 
 /**
  * Altars: a block of an altar type with a torch on top and a wall sign on it. Recognizes altar blocks and signs, turns
@@ -125,7 +126,7 @@ public class AltarService
 		return type == Material.TORCH || type == Material.REDSTONE_TORCH;
 	}
 
-	public List<String> getAltarBlockTypesFromGodType(GodManager.GodType godType)
+	public List<String> getAltarBlockTypesFromGodType(GodType godType)
 	{
 		List<String> list = new ArrayList<String>();
 		for (Material blockMaterial : ctx.settings().altars().blocksFor(godType))
@@ -164,18 +165,18 @@ public class AltarService
 		return this.droppedItems.get(entityID);
 	}
 
-	public GodManager.GodGender getGodGenderFromAltarBlock(Block block)
+	public GodGender getGodGenderFromAltarBlock(Block block)
 	{
 		if (block.getRelative(BlockFace.UP).getType().equals(Material.REDSTONE_TORCH))
 		{
-			return GodManager.GodGender.Female;
+			return GodGender.Female;
 		}
-		return GodManager.GodGender.Male;
+		return GodGender.Male;
 	}
 
-	public GodManager.GodType getGodTypeForAltarBlockType(Material altarBlockType)
+	public GodType getGodTypeForAltarBlockType(Material altarBlockType)
 	{
-		List<GodManager.GodType> godTypes = ctx.settings().altars().godTypesFor(altarBlockType);
+		List<GodType> godTypes = ctx.settings().altars().godTypesFor(altarBlockType);
 		if (godTypes.isEmpty())
 		{
 			ctx.plugin().logDebug("No god types available for block type " + altarBlockType.name() + "!");

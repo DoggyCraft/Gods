@@ -16,6 +16,9 @@ import org.bukkit.entity.EntityType;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodType;
 
 public class LanguageManager
 {
@@ -42,17 +45,17 @@ public class LanguageManager
 		return this.amount;
 	}
 
-	public String getGodGenderName(GodManager.GodGender gender)
+	public String getGodGenderName(GodGender gender)
 	{
 		return this.languageConfigs.get(this.generalLanguageFileName).getString("GodGender." + gender.name());
 	}
 
-	public String getGodMoodName(GodManager.GodMood mood)
+	public String getGodMoodName(GodMood mood)
 	{
 		return this.languageConfigs.get(this.generalLanguageFileName).getString("GodMood." + mood.name());
 	}
 
-	public String getGodTypeName(GodManager.GodType type, String gender)
+	public String getGodTypeName(GodType type, String gender)
 	{
 		String typeName = this.languageConfigs.get(this.generalLanguageFileName).getString("GodTypes." + type.name());
 		if (typeName == null)
@@ -170,11 +173,11 @@ public class LanguageManager
 
 		loadLanguageFile(language, "general.yml");
 
-		for (GodManager.GodType godType : GodManager.GodType.values())
+		for (GodType godType : GodType.values())
 		{
-			for (GodManager.GodGender godGender : GodManager.GodGender.values())
+			for (GodGender godGender : GodGender.values())
 			{
-				if (godGender != GodManager.GodGender.None)
+				if (godGender != GodGender.None)
 				{
 					loadLanguageFile(language, godType.name().toLowerCase() + "_" + godGender.name().toLowerCase() + ".yml");
 				}

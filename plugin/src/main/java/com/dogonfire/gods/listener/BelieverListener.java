@@ -9,8 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.model.GodType;
 
 /**
  * Believers dying: the dead believer may leave their religion (believers.leave-religion-on-death), and a believer who
@@ -38,7 +38,7 @@ public class BelieverListener implements Listener
 
 		if (godName != null)
 		{
-			GodManager.GodType godType = ctx.godManager().getDivineForceForGod(godName);
+			GodType godType = ctx.godManager().getDivineForceForGod(godName);
 
 			ctx.godManager().handleKilledPlayer(player.getUniqueId(), godName, godType);
 		}
@@ -60,7 +60,7 @@ public class BelieverListener implements Listener
 		if (godName == null)
 		{
 			// War gods reward slaying heathens
-			if (ctx.godManager().getDivineForceForGod(killerGodName) == GodManager.GodType.WAR)
+			if (ctx.godManager().getDivineForceForGod(killerGodName) == GodType.WAR)
 			{
 				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingHeathen;
 			}

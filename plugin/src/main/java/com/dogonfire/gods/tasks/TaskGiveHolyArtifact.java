@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager.GodType;
 import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.model.GodType;
 
 public class TaskGiveHolyArtifact extends Task
 {

@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager.GodMood;
+import com.dogonfire.gods.model.GodMood;
 
 public class CommandInfo extends GodsCommand
 {

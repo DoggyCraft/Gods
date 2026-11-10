@@ -31,9 +31,9 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.managers.TitleManager;
+import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.service.HolyLandContest;
 import com.dogonfire.gods.service.HolyLandService;
@@ -353,7 +353,7 @@ public class HolyLandListener implements Listener
 		String godName = lands().getGodAtHolyLandLocation(event.getLocation());
 		if (godName != null)
 		{
-			if (ctx.godManager().getDivineForceForGod(godName) == GodManager.GodType.NATURE)
+			if (ctx.godManager().getDivineForceForGod(godName) == GodType.NATURE)
 			{
 				return;
 			}

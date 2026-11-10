@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.model.GodType;
 
 public class CommandHelp extends GodsCommand
 {
@@ -97,7 +97,7 @@ public class CommandHelp extends GodsCommand
 		sender.sendMessage(ChatColor.AQUA + "These are the block types you can use for making Gods:");
 		sender.sendMessage("");
 		
-		for (GodManager.GodType godType : GodManager.GodType.values())
+		for (GodType godType : GodType.values())
 		{
 			List<String> materials = ctx.altarService().getAltarBlockTypesFromGodType(godType);
 			if (materials != null)

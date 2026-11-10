@@ -22,7 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.TestConfigs;
-import com.dogonfire.gods.managers.GodManager.GodType;
+import com.dogonfire.gods.model.GodType;
 
 class ConfigV1ToV2Test
 {

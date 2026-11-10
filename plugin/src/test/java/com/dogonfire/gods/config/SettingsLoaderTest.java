@@ -11,7 +11,7 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
-import com.dogonfire.gods.managers.GodManager.GodType;
+import com.dogonfire.gods.model.GodType;
 
 class SettingsLoaderTest
 {

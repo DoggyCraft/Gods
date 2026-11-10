@@ -19,6 +19,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.model.GodType;
 
 //
 // Holy artifacts are items a God gives to a believer. Right-clicking one
@@ -53,7 +54,7 @@ public class HolyArtifactManager
 		this.nameKey = new NamespacedKey(ctx.plugin(), "holy_artifact_name");
 	}
 
-	private static ArtifactKind getArtifactKind(GodManager.GodType godType)
+	private static ArtifactKind getArtifactKind(GodType godType)
 	{
 		return switch (godType)
 		{
@@ -73,7 +74,7 @@ public class HolyArtifactManager
 		};
 	}
 
-	public Item createHolyArtifact(GodManager.GodType godType, String godName, Location location)
+	public Item createHolyArtifact(GodType godType, String godName, Location location)
 	{
 		if (godType == null)
 		{

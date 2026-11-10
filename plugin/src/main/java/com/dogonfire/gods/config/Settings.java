@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.bukkit.Material;
 
-import com.dogonfire.gods.managers.GodManager.GodType;
+import com.dogonfire.gods.model.GodType;
 
 /**
  * Everything in config.yml, read and checked once per (re)load by {@link SettingsLoader}; never changed afterwards.

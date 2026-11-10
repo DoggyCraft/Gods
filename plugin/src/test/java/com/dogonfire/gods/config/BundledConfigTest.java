@@ -15,7 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.managers.GodManager.GodType;
+import com.dogonfire.gods.model.GodType;
 
 class BundledConfigTest
 {
