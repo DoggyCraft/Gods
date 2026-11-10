@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyLandManager;
@@ -14,13 +15,18 @@ public class CommandAttackHolyLand extends GodsCommand
 	protected CommandAttackHolyLand()
 	{
 		super("attack");
-		this.permission = "gods.priest.attack";
-		this.description = "Join the attack on the enemy Holy Land";
+		this.permission = "gods.attack";
+		this.description = "Join the attack of your religion on an enemy Holy Land";
 	}
 
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
+		if (!GodsConfiguration.instance().isHolyLandEnabled())
+		{
+			sender.sendMessage(ChatColor.RED + "Holy Land is not enabled on this server");
+			return;
+		}
 		if (!hasPermission(sender))
 		{
 			sender.sendMessage(ChatColor.RED + "You do not have permission for that");
@@ -33,9 +39,31 @@ public class CommandAttackHolyLand extends GodsCommand
 		}
 		Player player = (Player) sender;
 		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		if (godName == null)
+		{
+			sender.sendMessage(stringNoGod);
+			return;
+		}
+		if (GodManager.instance().getContestedHolyLandForGod(godName) == null)
+		{
+			sender.sendMessage(ChatColor.RED + "Your religion is not attacking a Holy Land. Your priest can start an attack with " + ChatColor.WHITE + "/gods startattack");
+			return;
+		}
 		Location attackLocation = GodManager.instance().getContestedHolyLandAttackLocationForGod(godName);
-		player.teleport(attackLocation);
+		if (attackLocation == null || attackLocation.getWorld() == null)
+		{
+			sender.sendMessage(ChatColor.RED + "The Holy Land your religion is attacking is in a world that is not loaded");
+			return;
+		}
 		String otherGodName = HolyLandManager.instance().getGodAtHolyLandLocation(attackLocation);
-		sender.sendMessage(ChatColor.AQUA + "You joined the attack on the Holy Land of " + ChatColor.GOLD + otherGodName);
+		player.teleport(attackLocation);
+		if (otherGodName == null)
+		{
+			sender.sendMessage(ChatColor.AQUA + "You joined the attack on the enemy Holy Land");
+		}
+		else
+		{
+			sender.sendMessage(ChatColor.AQUA + "You joined the attack on the Holy Land of " + ChatColor.GOLD + otherGodName);
+		}
 	}
 }

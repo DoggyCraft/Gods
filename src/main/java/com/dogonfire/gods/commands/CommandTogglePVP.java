@@ -13,7 +13,8 @@ public class CommandTogglePVP extends GodsCommand
 	{
 		super("pvp");
 		this.permission = "gods.priest.pvp";
-		this.description = "Toggle pvp for your religon";
+		this.description = "Toggle PvP for your religion";
+		this.priestOnly = true;
 	}
 
 	public void onCommand(CommandSender sender, String command, String... args)

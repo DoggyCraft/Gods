@@ -13,6 +13,7 @@ public class CommandSetPriest extends GodsCommand
 	{
 		super("setpriest");
 		this.permission = "gods.setpriest";
+		this.parameters = "<god> <player>";
 		this.description = "Assign someone to be the priest";
 	}
 
@@ -37,7 +38,7 @@ public class CommandSetPriest extends GodsCommand
 			return;
 		}
 
-		Player otherPlayer = Gods.instance().getServer().getPlayer(args[2]);
+		Player otherPlayer = Gods.instance().getServer().getPlayerExact(args[2]);
 		if (otherPlayer == null)
 		{
 			sender.sendMessage(ChatColor.RED + "There is no such player online");

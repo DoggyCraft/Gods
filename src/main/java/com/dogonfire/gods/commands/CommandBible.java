@@ -14,8 +14,9 @@ public class CommandBible extends GodsCommand
 	protected CommandBible()
 	{
 		super("bible");
-		this.permission = "gods.bible";
-		this.description = "Produces the Holy Book for your religion";
+		this.permission = "gods.priest.bible";
+		this.description = "Produce a copy of the Holy Book of your religion";
+		this.priestOnly = true;
 	}
 
 	@Override

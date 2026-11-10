@@ -15,6 +15,7 @@ public class CommandDivorce extends GodsCommand
 	{
 		super("divorce");
 		this.permission = "gods.divorce";
+		this.description = "Divorce your partner";
 	}
 
 	@Override

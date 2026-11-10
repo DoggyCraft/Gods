@@ -18,6 +18,7 @@ public class CommandToggleWar extends GodsCommand
 		this.permission = "gods.priest.war";
 		this.parameters = "<god>";
 		this.description = "Toggle war with another religion";
+		this.priestOnly = true;
 	}
 
 	@Override
@@ -49,6 +50,11 @@ public class CommandToggleWar extends GodsCommand
 		if (!GodManager.instance().godExist(args[1]))
 		{
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
+			return;
+		}
+		if (enemyGodName.equals(godName))
+		{
+			player.sendMessage(ChatColor.RED + "You cannot go to war with your own God!");
 			return;
 		}
 		List<String> alliances = GodManager.instance().getAllianceRelations(godName);

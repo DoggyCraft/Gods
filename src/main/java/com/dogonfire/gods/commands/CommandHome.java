@@ -14,6 +14,7 @@ public class CommandHome extends GodsCommand
 	{
 		super("home");
 		this.permission = "gods.home";
+		this.description = "Teleport to the home of your religion";
 	}
 
 	@Override
@@ -38,8 +39,9 @@ public class CommandHome extends GodsCommand
 			return;
 		}
 		Location location = GodManager.instance().getHomeForGod(godName);
-		if (location == null)
+		if (location == null || location.getWorld() == null)
 		{
+			sender.sendMessage(ChatColor.RED + "Your religion does not have a home");
 			return;
 		}
 		player.teleport(location);

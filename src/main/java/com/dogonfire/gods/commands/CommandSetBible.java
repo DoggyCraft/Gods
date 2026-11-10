@@ -15,6 +15,8 @@ public class CommandSetBible extends GodsCommand
 	{
 		super("setbible");
 		this.permission = "gods.priest.setbible";
+		this.description = "Set the book in your hand as the Holy Book of your religion";
+		this.priestOnly = true;
 	}
 
 	@Override

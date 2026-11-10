@@ -15,6 +15,8 @@ public class CommandEditBible extends GodsCommand
 	{
 		super("editbible");
 		this.permission = "gods.priest.editbible";
+		this.description = "Get an editable copy of the Holy Book of your religion";
+		this.priestOnly = true;
 	}
 
 	@Override

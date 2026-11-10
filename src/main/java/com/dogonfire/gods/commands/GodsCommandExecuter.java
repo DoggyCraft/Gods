@@ -77,9 +77,14 @@ public class GodsCommandExecuter implements CommandExecutor
 		return Collections.unmodifiableCollection(commandList.values());
 	}
 
+	protected GodsCommand getCommand(String name)
+	{
+		return commandList.get(name.toLowerCase());
+	}
+
 	protected void registerCommand(GodsCommand command)
 	{
-		if (commandList.containsKey(command.name))
+		if (commandList.containsKey(command.name.toLowerCase()))
 			return;
 		commandList.put(command.name.toLowerCase(), command);
 	}
@@ -147,7 +152,7 @@ public class GodsCommandExecuter implements CommandExecutor
 			return true;
 		}
 
-		GodsCommand gCmd = commandList.get(args[0].toLowerCase());
+		GodsCommand gCmd = getCommand(args[0]);
 		
 		if (gCmd == null)
 		{

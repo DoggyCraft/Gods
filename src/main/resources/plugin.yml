@@ -5,11 +5,7 @@ api-version: '1.21'
 load: POSTWORLD
 website: "http://dev.bukkit.org/server-mods/gods"
 main: com.dogonfire.gods.Gods
-softdepend: 
-  - PermissionsBukkit
-  - PermissionsEx
-  - bPermissions
-  - GroupManager
+softdepend:
   - WorldGuard
   - PlaceholderAPI
 commands:
@@ -17,188 +13,184 @@ commands:
     description: "Controls the god system"
     usage: /<command>
     aliases: [gods]
-permissions: 
-  gods.*: 
-    children: 
-      gods.listen: true
-      gods.leave: true
-      gods.marriages: true
-      gods.love: true
-      gods.marry: true
-      gods.divorce: true
+permissions:
+  gods.*:
+    children:
       gods.accept: true
       gods.altar.build: true
       gods.altar.pray: true
       gods.altar.sacrifice: true
+      gods.attack: true
       gods.blessings: true
       gods.chat: true
       gods.check: true
       gods.commandments: true
       gods.curses: true
+      gods.divorce: true
       gods.followers: true
       gods.god.create: true
       gods.help: true
-      gods.home: true
-      gods.info: true
+      gods.holyartifact: true
       gods.holyland: true
-      gods.itemblessings: true
-      gods.list: true
+      gods.home: true
       gods.hunt: true
+      gods.info: true
+      gods.itemblessings: true
+      gods.leave: true
+      gods.list: true
       gods.listen: true
+      gods.love: true
+      gods.marriages: true
+      gods.marry: true
+      gods.pray: true
       gods.priest: true
-      gods.priest.invite: true
       gods.priest.access: true
       gods.priest.alliance: true
       gods.priest.bible: true
       gods.priest.description: true
       gods.priest.editbible: true
+      gods.priest.invite: true
       gods.priest.kick: true
       gods.priest.pvp: true
       gods.priest.setbible: true
-      gods.priest.setforce: true
+      gods.priest.startattack: true
       gods.priest.war: true
-      gods.pray: true
       gods.reject: true
       gods.reload: true
       gods.sethome: true
-      gods.setsafe: false
+      gods.setpriest: true
+      gods.setsafe: true
     default: false
     description: "Gives access to all Gods commands"
-  gods.pray: 
+  gods.pray:
     default: true
     description: "Player can pray directly to their Gods using /g prayfor command"
-  gods.listen: 
-    default: true
-    description: "Player can hear Gods speaking"
-  gods.updates: 
-    default: false
-    description: "Player gets notifications about updates to Gods plugin"
-  gods.marriages: 
-    default: true
-    description: "Allows the Player to list married couples"
-  gods.love: 
-    default: true
-    description: "Allows the Player to love his partner"
-  gods.marry: 
-    default: true
-    description: "Allows the Player to marry"
-  gods.divorce: 
-    default: true
-    description: "Allows the Player to marry"
-  gods.accept: 
-    default: true
-    description: "Allows the Player to accept a proposal from a God"
-  gods.altar.build: 
-    default: true
-    description: "Allows the Player to build an altar"
-  gods.altar.pray: 
-    default: true
-    description: "Allows the Player to pray at an altar"
-  gods.altar.sacrifice: 
-    default: true
-    description: "Allows the Player to sacrifice items using fire"
-  gods.blessings: 
-    default: true
-    description: "The Player can be blessed by a God"
-  gods.chat: 
-    default: true
-    description: "The Player use religion only chat"
-  gods.check: 
-    default: true
-    description: "Allows the Player to check religion for another player"
-  gods.commandments: 
-    default: true
-    description: "Allows the Player to receive commandments"
-  gods.curses: 
-    default: true
-    description: "The Player can be cursed by a God"
-  gods.followers: 
-    default: true
-    description: "The Player can see the list of followers of a God"
-  gods.god.create: 
-    default: true
-    description: "Allows the Player to create a new God"
-  gods.help: 
-    default: true
-    description: "Allows player to check the help page"
-  gods.holyland: 
-    default: true
-    description: "The Player is affected by holyland"
-  gods.home: 
-    default: true
-    description: "The Player can teleport to religion home"
-  gods.info: 
-    default: true
-    description: "Allows the Player to see details for a god"
-  gods.itemblessings: 
-    default: true
-    description: "The Player can be blessed with items by a God"
-  gods.list: 
-    default: true
-    description: "Allows the Player to see the list of gods"
-  gods.hunt: 
-    default: true
-    description: "Allows the Player to hunt during hunt quests"
   gods.listen:
     default: true
-    description: "Allows a player to hear the voice of the Gods"
-  gods.priest: 
+    description: "Player can hear Gods speaking"
+  gods.marriages:
+    default: true
+    description: "Allows the Player to list married couples"
+  gods.love:
+    default: true
+    description: "Allows the Player to love his partner"
+  gods.marry:
+    default: true
+    description: "Allows the Player to marry"
+  gods.divorce:
+    default: true
+    description: "Allows the Player to divorce"
+  gods.accept:
+    default: true
+    description: "Allows the Player to accept a proposal from a God"
+  gods.altar.build:
+    default: true
+    description: "Allows the Player to build an altar"
+  gods.altar.pray:
+    default: true
+    description: "Allows the Player to pray at an altar"
+  gods.altar.sacrifice:
+    default: true
+    description: "Allows the Player to sacrifice items using fire"
+  gods.attack:
+    default: true
+    description: "Allows the Player to join the attack of their religion on an enemy Holy Land"
+  gods.blessings:
+    default: true
+    description: "The Player can be blessed by a God"
+  gods.chat:
+    default: true
+    description: "The Player use religion only chat"
+  gods.check:
+    default: true
+    description: "Allows the Player to check religion for another player"
+  gods.commandments:
+    default: true
+    description: "Allows the Player to receive commandments"
+  gods.curses:
+    default: true
+    description: "The Player can be cursed by a God"
+  gods.followers:
+    default: true
+    description: "The Player can see the list of followers of a God"
+  gods.god.create:
+    default: true
+    description: "Allows the Player to create a new God"
+  gods.help:
+    default: true
+    description: "Allows player to check the help page"
+  gods.holyartifact:
+    default: op
+    description: "Allows the Player to get a Holy Artifact from their God with /g holyartifact"
+  gods.holyland:
+    default: true
+    description: "The Player is affected by holyland"
+  gods.home:
+    default: true
+    description: "The Player can teleport to religion home"
+  gods.info:
+    default: true
+    description: "Allows the Player to see details for a god"
+  gods.itemblessings:
+    default: true
+    description: "The Player can be blessed with items by a God"
+  gods.leave:
+    default: true
+    description: "Allows the Player to leave their religion"
+  gods.list:
+    default: true
+    description: "Allows the Player to see the list of gods"
+  gods.hunt:
+    default: true
+    description: "Allows the Player to hunt during hunt quests"
+  gods.priest:
     default: true
     description: "Allows the Player to become priest"
-  gods.priest.access: 
+  gods.priest.access:
     default: true
     description: "Allows priest to change access type for their religion"
-  gods.priest.invite: 
+  gods.priest.invite:
     default: true
     description: "Allows priest to invite a player into his religion"
-  gods.priest.alliance: 
+  gods.priest.alliance:
     default: true
     description: "Allows priest to declare alliance relations to another God"
-  gods.priest.bible: 
+  gods.priest.bible:
     default: true
     description: "Allows a priest to produce the Holy Book for his religion"
-  gods.priest.description: 
+  gods.priest.description:
     default: true
     description: "Allows priest to change the description for a religion"
-  gods.priest.editbible: 
+  gods.priest.editbible:
     default: true
     description: "Allows a priest to edit the Holy Book for his religion"
-  gods.priest.kick: 
+  gods.priest.kick:
     default: true
     description: "Allows priest to kick believers from their religion"
-  gods.priest.neutral: 
-    default: true
-    description: "Allows priest to declare neutral relations to another God"
-  gods.priest.pvp: 
+  gods.priest.pvp:
     default: true
     description: "Allows priest to change the pvp setting for their religion"
-  gods.priest.setbible: 
+  gods.priest.setbible:
     default: true
     description: "Allows a priest to set the Holy Book for his religion"
-  gods.priest.setforce: 
+  gods.priest.startattack:
     default: true
-    description: "Allows priest to change the divine force for their God"
-  gods.priest.name: 
-    default: true
-    description: "Allows priest to name their holyland"
-  gods.priest.war: 
+    description: "Allows priest to start an attack on the Holy Land of an enemy religion"
+  gods.priest.war:
     default: true
     description: "Allows priest to declare war relations to another God"
-  gods.quest.slay: 
-    default: true
-    description: "The Player can participate in slay quests"
-  gods.reject: 
+  gods.reject:
     default: true
     description: "Allows the Player to reject a proposal from a God"
-  gods.reload: 
+  gods.reload:
     default: false
     description: "Allows the Player to reload configuration for the Gods system"
-  gods.sethome: 
+  gods.sethome:
     default: true
     description: "The Player can set religion home"
-  gods.setpriest: 
+  gods.setpriest:
     default: false
     description: "Allows a player to set a priest for a religion"
-  gods.setsafe: 
-    default: true
+  gods.setsafe:
+    default: op
     description: "The Player can set safe or neutral lands"

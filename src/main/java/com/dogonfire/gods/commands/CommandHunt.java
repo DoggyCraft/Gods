@@ -17,6 +17,7 @@ public class CommandHunt extends GodsCommand
 	{
 		super("hunt");
 		this.permission = "gods.hunt";
+		this.description = "Show how far you are from the quest target";
 	}
 
 	@Override

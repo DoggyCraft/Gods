@@ -26,7 +26,8 @@ public class CommandMarry extends GodsCommand
 	{
 		if (!GodsConfiguration.instance().isMarriageEnabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Marrige is not enabled on this server");
+			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
+			return;
 		}
 		if (!hasPermission(sender))
 		{
@@ -53,16 +54,16 @@ public class CommandMarry extends GodsCommand
 		}
 
 		String otherPlayerName = args[1];
-		if (player.getName().equalsIgnoreCase(otherPlayerName))
+		Player otherPlayer = Gods.instance().getServer().getPlayerExact(otherPlayerName);
+		if (otherPlayer == null)
 		{
-			player.sendMessage(ChatColor.RED + "Marry yourself!? Think again...");
+			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.WHITE + otherPlayerName + ChatColor.RED + "' online.");
 			return;
 		}
 
-		Player otherPlayer = Gods.instance().getServer().getPlayer(otherPlayerName);
-		if (otherPlayer == null)
+		if (otherPlayer.getUniqueId().equals(player.getUniqueId()))
 		{
-			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.WHITE + otherPlayerName + ChatColor.RED + " online.");
+			player.sendMessage(ChatColor.RED + "Marry yourself!? Think again...");
 			return;
 		}
 
@@ -86,7 +87,7 @@ public class CommandMarry extends GodsCommand
 			player.sendMessage(ChatColor.WHITE + otherPlayerName + ChatColor.RED + " is already married to " + ChatColor.WHITE + partnerName + "!");
 			return;
 		}
-		partnerName = MarriageManager.instance().getPartnerName(otherPlayer.getUniqueId());
+		partnerName = MarriageManager.instance().getPartnerName(player.getUniqueId());
 		if (partnerName != null)
 		{
 			player.sendMessage(ChatColor.RED + "You are already married to " + ChatColor.WHITE + partnerName + "!");

@@ -14,8 +14,8 @@ public class CommandCheck extends GodsCommand
 	{
 		super("check");
 		this.permission = "gods.check";
-		this.parameters = "<god>";
-		this.description = "Show religion for a player";
+		this.parameters = "<player>";
+		this.description = "Show the religion of a player";
 	}
 
 	@Override
@@ -26,10 +26,15 @@ public class CommandCheck extends GodsCommand
 			sender.sendMessage(stringNoPermission);
 			return;
 		}
-		Player believer = Bukkit.getPlayer(args[1]);
+		if (args.length < 2)
+		{
+			sendUsage(sender);
+			return;
+		}
+		Player believer = Bukkit.getPlayerExact(args[1]);
 		if (believer == null)
 		{
-			sender.sendMessage(ChatColor.RED + "No such player with that name");
+			sender.sendMessage(ChatColor.RED + "There is no player online with that name");
 			return;
 		}
 

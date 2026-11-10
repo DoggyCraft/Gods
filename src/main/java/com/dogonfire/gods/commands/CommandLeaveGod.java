@@ -13,6 +13,7 @@ public class CommandLeaveGod extends GodsCommand
 	{
 		super("leave");
 		this.permission = "gods.leave";
+		this.description = "Leave your religion";
 	}
 
 	@Override

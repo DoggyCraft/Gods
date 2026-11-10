@@ -17,6 +17,7 @@ public class CommandLove extends GodsCommand
 	{
 		super("love");
 		this.permission = "gods.love";
+		this.description = "Show your love to your partner";
 	}
 
 	@Override

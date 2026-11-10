@@ -11,12 +11,18 @@ public abstract class GodsCommand
 	// These are the Strings that will be used for common responses to player
 	// commands
 	protected static final String	stringNoPermission	= ChatColor.RED + "You do not have permission to perform this command.";
-	protected static final String	stringNoGod			= ChatColor.RED + "You are believing in a God.";
+	protected static final String	stringNoGod			= ChatColor.RED + "You do not believe in a God.";
 	protected static final String	stringPlayerOnly	= ChatColor.RED + "This is a Player-Only command.";
 	protected static final String	stringPreistOnly	= ChatColor.RED + "This is a Priest-Only command.";
 
 	protected final String			name;
 	protected String				permission, parameters, description;
+
+	/**
+	 * True for commands only priests can use. Help and tab completion show
+	 * them to priests only.
+	 */
+	protected boolean				priestOnly			= false;
 
 	protected GodsCommand(String name)
 	{
@@ -25,13 +31,12 @@ public abstract class GodsCommand
 
 	protected void sendUsage(CommandSender sender)
 	{
-		if (parameters != null && parameters.length() > 0)
-			sender.sendMessage(String.format("%gUsage: /gods %g %s", ChatColor.GREEN.toString(), name, parameters == null ? "" : parameters));
+		sender.sendMessage(String.format("%sUsage: /gods %s %s", ChatColor.GREEN.toString(), name, parameters == null ? "" : parameters).trim());
 	}
 
 	/**
 	 * Checks if a command is the same as the one in the provided string
-	 * 
+	 *
 	 * @param key
 	 *            a string the represents a command
 	 * @return true if the string represents this command, false otherwise
@@ -43,7 +48,7 @@ public abstract class GodsCommand
 
 	/**
 	 * Determines if someone has permission to use a command
-	 * 
+	 *
 	 * @param sender
 	 *            the person you would like to check the permissions of
 	 * @return true if they have permission, false otherwise
@@ -62,9 +67,19 @@ public abstract class GodsCommand
 	}
 
 	/**
+	 * Determines if help and tab completion should offer this command to
+	 * someone: they have its permission, and are a priest if it is a priest
+	 * command.
+	 */
+	protected final boolean isAvailableTo(CommandSender sender, boolean isPriest)
+	{
+		return hasPermission(sender) && (!priestOnly || isPriest);
+	}
+
+	/**
 	 * The onCommand method for the Command classes. This is to be called when
 	 * you want a command to attempt execution
-	 * 
+	 *
 	 * @param sender
 	 *            the user issuing the command
 	 * @param command

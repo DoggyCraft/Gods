@@ -12,6 +12,7 @@ public class CommandReject extends GodsCommand
 	{
 		super("no");
 		this.permission = "gods.reject";
+		this.description = "Reject a proposal from your God";
 	}
 
 	@Override

@@ -13,6 +13,7 @@ public class CommandAccept extends GodsCommand
 	{
 		super("yes");
 		this.permission = "gods.accept";
+		this.description = "Accept a proposal from your God";
 	}
 
 	@Override

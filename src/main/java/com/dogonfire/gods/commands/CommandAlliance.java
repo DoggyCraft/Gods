@@ -17,6 +17,7 @@ public class CommandAlliance extends GodsCommand {
 		this.permission = "gods.priest.alliance";
 		this.parameters = "<god>";
 		this.description = "Toggle alliance with another religion";
+		this.priestOnly = true;
 	}
 
 	@Override
@@ -36,13 +37,17 @@ public class CommandAlliance extends GodsCommand {
 		}
 		Player player = (Player) sender;
 		if (!GodManager.instance().isPriest(player.getUniqueId())) {
-			sender.sendMessage(ChatColor.RED + "Only priests can declare religous wars");
+			sender.sendMessage(ChatColor.RED + "Only priests can declare alliances");
 			return;
 		}
 		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
 		String allyGodName = GodManager.instance().formatGodName(args[1]);
 		if (!GodManager.instance().godExist(args[1])) {
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
+			return;
+		}
+		if (allyGodName.equals(godName)) {
+			player.sendMessage(ChatColor.RED + "You cannot ally with your own God!");
 			return;
 		}
 		List<?> wars = GodManager.instance().getWarRelations(godName);

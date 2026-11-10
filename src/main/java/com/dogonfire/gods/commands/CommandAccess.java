@@ -16,6 +16,7 @@ public class CommandAccess extends GodsCommand
 		this.permission = "gods.priest.access";
 		this.parameters = "[open/close]";
 		this.description = "Set your religion as open or invite only";
+		this.priestOnly = true;
 	}
 
 	@Override
@@ -24,8 +25,9 @@ public class CommandAccess extends GodsCommand
 		if (!hasPermission(sender))
 		{
 			sender.sendMessage(ChatColor.RED + "You do not have permission for that");
+			return;
 		}
-		
+
 		if (sender instanceof Player == false)
 		{
 			sender.sendMessage(stringPlayerOnly);
@@ -41,14 +43,20 @@ public class CommandAccess extends GodsCommand
 		}
 		
 		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		
-		if (!GodManager.instance().godExist(godName))
+
+		if (godName == null || !GodManager.instance().godExist(godName))
 		{
 			player.sendMessage(ChatColor.RED + "That God does not exist");
 			return;
 		}
-		
-		String access = args[0];
+
+		if (args.length < 2)
+		{
+			sendUsage(sender);
+			return;
+		}
+
+		String access = args[1];
 		
 		if (access.equalsIgnoreCase("open"))
 		{

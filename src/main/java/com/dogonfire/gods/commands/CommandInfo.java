@@ -24,6 +24,7 @@ public class CommandInfo extends GodsCommand
 	{
 		super("info");
 		this.permission = "gods.info";
+		this.parameters = "[god]";
 		this.description = "Show info about your/a God";
 	}
 

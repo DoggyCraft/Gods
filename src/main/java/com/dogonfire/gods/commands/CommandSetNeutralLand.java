@@ -16,6 +16,7 @@ public class CommandSetNeutralLand extends GodsCommand
 	{
 		super("setsafe");
 		this.permission = "gods.setsafe";
+		this.description = "Set or clear neutral land at your location";
 	}
 
 	@Override

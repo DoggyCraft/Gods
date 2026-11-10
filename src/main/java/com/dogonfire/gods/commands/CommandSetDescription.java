@@ -13,6 +13,9 @@ public class CommandSetDescription extends GodsCommand
 	{
 		super("desc");
 		this.permission = "gods.priest.description";
+		this.parameters = "<text>";
+		this.description = "Set the description of your religion";
+		this.priestOnly = true;
 	}
 
 	@Override
@@ -35,14 +38,12 @@ public class CommandSetDescription extends GodsCommand
 			return;
 		}
 		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		String description = "";
-		for (String arg : args)
+		if (args.length < 2)
 		{
-			if (!arg.equals(args[0]))
-			{
-				description = description + " " + arg;
-			}
+			sendUsage(sender);
+			return;
 		}
+		String description = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
 		GodManager.instance().setGodDescription(godName, description);
 		sender.sendMessage(ChatColor.AQUA + "You set your religion description to " + ChatColor.YELLOW + GodManager.instance().getGodDescription(godName));
 	}

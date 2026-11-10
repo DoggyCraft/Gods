@@ -16,6 +16,7 @@ public class CommandSetHome extends GodsCommand
 	{
 		super("sethome");
 		this.permission = "gods.sethome";
+		this.description = "Set the home of your religion";
 	}
 
 	@Override

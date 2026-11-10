@@ -15,6 +15,9 @@ public class CommandInvite extends GodsCommand
 	{
 		super("invite");
 		this.permission = "gods.priest.invite";
+		this.parameters = "<player>";
+		this.description = "Invite a player to your religion";
+		this.priestOnly = true;
 	}
 
 	@Override
@@ -43,11 +46,16 @@ public class CommandInvite extends GodsCommand
 			player.sendMessage(ChatColor.RED + "You dont believe in a god");
 			return;
 		}
+		if (args.length < 2)
+		{
+			sendUsage(sender);
+			return;
+		}
 		String playerName = args[1];
-		Player invitedPlayer = Gods.instance().getServer().getPlayer(playerName);
+		Player invitedPlayer = Gods.instance().getServer().getPlayerExact(playerName);
 		if (invitedPlayer == null)
 		{
-			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.YELLOW + playerName + ChatColor.RED + " online.");
+			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.YELLOW + playerName + ChatColor.RED + "' online.");
 			return;
 		}
 		String invitedPlayerGod = BelieverManager.instance().getGodForBeliever(invitedPlayer.getUniqueId());

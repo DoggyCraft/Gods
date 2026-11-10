@@ -22,7 +22,7 @@ public class CommandFollowers extends GodsCommand
 	{
 		super("followers");
 		this.permission = "gods.followers";
-		this.parameters = "<god>";
+		this.parameters = "[god]";
 		this.description = "Show the followers of your/a God";
 	}
 
@@ -169,6 +169,6 @@ class BelieversComparator implements Comparator<Object>
 		Believer b1 = (Believer) object1;
 		Believer b2 = (Believer) object2;
 
-		return (int) (b2.lastPrayer.getTime() - b1.lastPrayer.getTime());
+		return Long.compare(b2.lastPrayer.getTime(), b1.lastPrayer.getTime());
 	}
 }
