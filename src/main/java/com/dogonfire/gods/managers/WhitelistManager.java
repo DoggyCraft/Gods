@@ -98,21 +98,28 @@ public class WhitelistManager
 
 	public void save()
 	{
-		try
+		// Only the list that is in use has been loaded
+		if (this.whiteList != null && this.whiteListFile != null)
 		{
-			this.whiteList.save(this.whiteListFile);
+			try
+			{
+				this.whiteList.save(this.whiteListFile);
+			}
+			catch (Exception ex)
+			{
+				Gods.instance().log("Could not save whitelist to " + this.whiteListFile + ": " + ex.getMessage());
+			}
 		}
-		catch (Exception ex)
+		if (this.blackList != null && this.blackListFile != null)
 		{
-			Gods.instance().log("Could not save whitelist to " + this.whiteListFile + ": " + ex.getMessage());
-		}
-		try
-		{
-			this.blackList.save(this.blackListFile);
-		}
-		catch (Exception ex)
-		{
-			Gods.instance().log("Could not save blacklist to " + this.blackListFile + ": " + ex.getMessage());
+			try
+			{
+				this.blackList.save(this.blackListFile);
+			}
+			catch (Exception ex)
+			{
+				Gods.instance().log("Could not save blacklist to " + this.blackListFile + ": " + ex.getMessage());
+			}
 		}
 	}
 }

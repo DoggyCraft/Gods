@@ -9,10 +9,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.config.GodsConfiguration;
@@ -29,10 +29,16 @@ public class BelieverManager
 		return instance;
 	}
 
+	private static final long	SAVE_INTERVAL_MILLIS	= 180000L;
+	private static final long	SAVE_INTERVAL_TICKS		= SAVE_INTERVAL_MILLIS / 50L;
+
 	private FileConfiguration	believersConfig		= null;
 
 	private File				believersConfigFile	= null;
 	private long				lastSaveTime;
+	private boolean				dirty				= false;
+	private BukkitTask			flushTask			= null;
+	private final Set<String>	invalidKeys			= new HashSet<String>();
 
 	private BelieverManager()
 	{
@@ -85,32 +91,31 @@ public class BelieverManager
 		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
 
 		saveTimed();
+		ChatManager.instance().refresh(believerId);
 
 		return true;
 	}
 
 	public void believerLeave(String godName, UUID believerId)
 	{
+		if (godName == null || believerId == null)
+		{
+			return;
+		}
 		String believerGodName = this.believersConfig.getString(believerId + ".God");
-		if (!believerGodName.equals(godName))
+		if (!godName.equals(believerGodName))
 		{
 			return;
 		}
 		this.believersConfig.set(believerId + ".God", null);
 
 		saveTimed();
+		ChatManager.instance().refresh(believerId);
 	}
 
 	void clearChangingGod(UUID believerId)
 	{
 		this.believersConfig.set(believerId + ".ChangingGod", null);
-
-		saveTimed();
-	}
-
-	public void clearGodForBeliever(UUID believerId)
-	{
-		this.believersConfig.set(believerId.toString(), null);
 
 		saveTimed();
 	}
@@ -160,7 +165,11 @@ public class BelieverManager
 
 		for (String believer : allBelievers)
 		{
-			UUID believerId = UUID.fromString(believer);
+			UUID believerId = parseBelieverId(believer);
+			if (believerId == null)
+			{
+				continue;
+			}
 
 			String believerGod = getGodForBeliever(believerId);
 
@@ -252,53 +261,41 @@ public class BelieverManager
 		return lastPrayerDate;
 	}
 
-	public String getNearestBeliever(Location location)
-	{
-		Set<String> allBelievers = this.believersConfig.getKeys(false);
-
-		double minLength = 5.0D;
-		Player minPlayer = null;
-		for (String believer : allBelievers)
-		{
-			UUID believerId = UUID.fromString(believer);
-			Player player = Gods.instance().getServer().getPlayer(believerId);
-			if ((player != null) && (player.getWorld() == location.getWorld()))
-			{
-				double length = player.getLocation().subtract(location).length();
-				if (length < minLength)
-				{
-					minLength = length;
-					minPlayer = player;
-				}
-			}
-		}
-		if (minPlayer == null)
-		{
-			return null;
-		}
-		return minPlayer.getName();
-	}
-
 	public Set<UUID> getOnlineBelieversForGod(String godName)
 	{
-		Set<String> allBelievers = this.believersConfig.getKeys(false);
 		Set<UUID> believers = new HashSet<UUID>();
 
-		for (String believer : allBelievers)
+		for (Player player : Gods.instance().getServer().getOnlinePlayers())
 		{
-			UUID believerId = UUID.fromString(believer);
-
-			if (Gods.instance().getServer().getPlayer(believerId) != null)
+			String believerGod = getGodForBeliever(player.getUniqueId());
+			if ((believerGod != null) && (believerGod.equals(godName)))
 			{
-				String believerGod = getGodForBeliever(believerId);
-				if ((believerGod != null) && (believerGod.equals(godName)))
-				{
-					believers.add(believerId);
-				}
+				believers.add(player.getUniqueId());
 			}
 		}
 
 		return believers;
+	}
+
+	/**
+	 * Top-level keys in believers.yml are believer UUIDs. Very old files can
+	 * still hold entries keyed by player name; those are skipped (and logged
+	 * once) instead of breaking every lookup.
+	 */
+	private UUID parseBelieverId(String key)
+	{
+		try
+		{
+			return UUID.fromString(key);
+		}
+		catch (IllegalArgumentException ex)
+		{
+			if (this.invalidKeys.add(key))
+			{
+				Gods.instance().log("Ignoring believers.yml entry '" + key + "': it is not a player UUID");
+			}
+			return null;
+		}
 	}
 
 	public int getPrayerPower(UUID believerId)
@@ -520,6 +517,7 @@ public class BelieverManager
 		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
 
 		saveTimed();
+		ChatManager.instance().refresh(believerId);
 
 		return true;
 	}
@@ -562,6 +560,7 @@ public class BelieverManager
 		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
 
 		saveTimed();
+		ChatManager.instance().refresh(believerId);
 
 		return true;
 	}
@@ -605,24 +604,17 @@ public class BelieverManager
 			this.believersConfigFile = new File(Gods.instance().getDataFolder(), "believers.yml");
 		}
 		this.believersConfig = YamlConfiguration.loadConfiguration(this.believersConfigFile);
+		this.dirty = false;
+		this.invalidKeys.clear();
 
 		Gods.instance().log("Loaded " + this.believersConfig.getKeys(false).size() + " believers.");
-	}
 
-	public boolean reducePrayer(UUID believerId, int n)
-	{
-		int prayers = this.believersConfig.getInt(believerId + ".Prayers");
-
-		prayers -= n;
-		if (prayers < 0)
+		// saveTimed() writes at most every few minutes; this writes what it skipped
+		if (this.flushTask != null)
 		{
-			prayers = 0;
+			this.flushTask.cancel();
 		}
-		this.believersConfig.set(believerId + ".Prayers", Integer.valueOf(prayers));
-
-		saveTimed();
-
-		return true;
+		this.flushTask = Gods.instance().getServer().getScheduler().runTaskTimer(Gods.instance(), this::saveIfDirty, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
 	}
 
 	public void removeBeliever(String godName, UUID believerId)
@@ -641,20 +633,7 @@ public class BelieverManager
 		Gods.instance().log(godName + " lost " + believerId + " as believer");
 
 		saveTimed();
-	}
-
-	public void removeInvitation(UUID believerId)
-	{
-		this.believersConfig.set(believerId.toString() + ".LastInvitationTime", null);
-
-		saveTimed();
-	}
-
-	public void removePrayer(UUID believerId)
-	{
-		this.believersConfig.set(believerId + ".LastPrayer", null);
-
-		save();
+		ChatManager.instance().refresh(believerId);
 	}
 
 	public void save()
@@ -664,6 +643,7 @@ public class BelieverManager
 		{
 			return;
 		}
+		this.dirty = false;
 		try
 		{
 			this.believersConfig.save(this.believersConfigFile);
@@ -674,9 +654,21 @@ public class BelieverManager
 		}
 	}
 
+	/** Writes believers.yml if there are changes saveTimed() has not written yet. */
+	public void saveIfDirty()
+	{
+		if (this.dirty)
+		{
+			save();
+		}
+	}
+
+	/** Marks the data as changed and writes it at most every few minutes. */
 	public void saveTimed()
 	{
-		if (System.currentTimeMillis() - this.lastSaveTime < 180000L)
+		this.dirty = true;
+
+		if (System.currentTimeMillis() - this.lastSaveTime < SAVE_INTERVAL_MILLIS)
 		{
 			return;
 		}
@@ -747,17 +739,6 @@ public class BelieverManager
 		saveTimed();
 	}
 
-	public void setInvitationTime(UUID believerId)
-	{
-		String pattern = "HH:mm:ss dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-		Date thisDate = new Date();
-
-		this.believersConfig.set(believerId + ".LastInvitationTime", formatter.format(thisDate));
-
-		saveTimed();
-	}
-
 	public void setItemBlessingTime(UUID believerId)
 	{
 		String pattern = "HH:mm:ss dd-MM-yyyy";
@@ -776,6 +757,8 @@ public class BelieverManager
 		Date thisDate = new Date();
 
 		this.believersConfig.set(believerId + ".LastPrayer", formatter.format(thisDate));
+
+		saveTimed();
 	}
 
 	public void setPendingPriest(UUID believerId)
@@ -799,5 +782,6 @@ public class BelieverManager
 			this.believersConfig.set(believerId + ".ReligionChat", null);
 		}
 		saveTimed();
+		ChatManager.instance().refresh(believerId);
 	}
 }

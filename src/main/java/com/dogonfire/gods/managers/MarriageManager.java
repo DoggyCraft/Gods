@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -54,7 +55,8 @@ public class MarriageManager
 			MarriageManager.MarriedCouple b1 = object1;
 			MarriageManager.MarriedCouple b2 = object2;
 
-			return (int) (b2.lastLove.getTime() - b1.lastLove.getTime());
+			// Most recent love first
+			return Long.compare(b2.lastLove.getTime(), b1.lastLove.getTime());
 		}
 	}
 
@@ -78,6 +80,8 @@ public class MarriageManager
 
 	private Material			marriageTokenType	= Material.GOLD_NUGGET;
 
+	private final Set<String>	invalidIds			= new HashSet<String>();
+
 	private MarriageManager()
 	{
 	}
@@ -92,10 +96,14 @@ public class MarriageManager
 		{
 			this.marriagesConfig.set(partnerId, null);
 
-			Player partner = Gods.instance().getServer().getPlayer(UUID.fromString(partnerId));
+			Player partner = getOnlinePlayer(partnerId);
 			if (partner != null)
 			{
-				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, "DIVORCED", Gods.instance().getServer().getPlayer(UUID.fromString(partnerId)).getDisplayName(), 1);
+				// Tell the partner who divorced them
+				Player divorcer = Gods.instance().getServer().getPlayer(believerId);
+				String divorcerName = divorcer != null ? divorcer.getDisplayName() : Gods.instance().getServer().getOfflinePlayer(believerId).getName();
+
+				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.DivorcedYou, ChatColor.RED, divorcerName, "DIVORCED", 1);
 			}
 		}
 		
@@ -111,7 +119,34 @@ public class MarriageManager
 			return null;
 		}
 
-		return UUID.fromString(partnerId);
+		return parseId(partnerId);
+	}
+
+	/**
+	 * marriages.yml is keyed by player UUID. Very old files can still hold
+	 * entries keyed by player name; those are skipped (and logged once).
+	 */
+	private UUID parseId(String value)
+	{
+		try
+		{
+			return UUID.fromString(value);
+		}
+		catch (IllegalArgumentException ex)
+		{
+			if (this.invalidIds.add(value))
+			{
+				Gods.instance().log("Ignoring marriages.yml entry '" + value + "': it is not a player UUID");
+			}
+			return null;
+		}
+	}
+
+	private Player getOnlinePlayer(String playerId)
+	{
+		UUID id = parseId(playerId);
+
+		return id != null ? Gods.instance().getServer().getPlayer(id) : null;
 	}
 
 	public List<MarriedCouple> getMarriedCouples()
@@ -126,7 +161,12 @@ public class MarriageManager
 
 		for (String player : list)
 		{
-			UUID playerId = UUID.fromString(player);
+			UUID playerId = parseId(player);
+			if (playerId == null)
+			{
+				continue;
+			}
+
 			UUID partnerId = getPartnerId(playerId);
 
 			if (partnerId == null)
@@ -173,19 +213,19 @@ public class MarriageManager
 			return null;
 		}
 
-		return UUID.fromString(partner);
+		return parseId(partner);
 	}
 
 	public String getPartnerName(UUID playerId)
 	{
-		String partnerId = this.marriagesConfig.getString(playerId.toString() + ".Married.Partner");
+		UUID partnerId = getPartnerId(playerId);
 
 		if (partnerId == null)
 		{
 			return null;
 		}
 
-		return Gods.instance().getServer().getOfflinePlayer(UUID.fromString(partnerId)).getName();
+		return Gods.instance().getServer().getOfflinePlayer(partnerId).getName();
 	}
 
 	public UUID getProposal(UUID believerId)
@@ -194,6 +234,11 @@ public class MarriageManager
 		DateFormat formatter = new SimpleDateFormat(pattern);
 		Date thisDate = new Date();
 		Date offerDate = null;
+
+		if (!this.marriagesConfig.contains(believerId + ".MarriageProposal"))
+		{
+			return null;
+		}
 
 		String offerDateString = this.marriagesConfig.getString(believerId + ".MarriageProposal.Time");
 		try
@@ -221,7 +266,9 @@ public class MarriageManager
 			return null;
 		}
 
-		return UUID.fromString(this.marriagesConfig.getString(believerId.toString() + ".MarriageProposal.Partner"));
+		String partner = this.marriagesConfig.getString(believerId.toString() + ".MarriageProposal.Partner");
+
+		return partner != null ? parseId(partner) : null;
 	}
 
 	public void handleAcceptProposal(UUID playerId1, UUID playerId2, String godName)
@@ -332,7 +379,7 @@ public class MarriageManager
 	{
 		if (playerId == null)
 		{
-			Gods.instance().log("playerId==null");
+			return false;
 		}
 
 		if (this.marriagesConfig.getString(playerId.toString() + ".GettingMarried.HasPickupWeddingToken") == null)
@@ -365,15 +412,16 @@ public class MarriageManager
 		if (partnerId != null)
 		{
 			Player player = Gods.instance().getServer().getPlayer(playerId);
-			Player partner = Gods.instance().getServer().getPlayer(UUID.fromString(partnerId));
+			Player partner = getOnlinePlayer(partnerId);
 
-			this.marriagesConfig.set(player.getUniqueId().toString() + ".Married.LastLove", formatter.format(thisDate));
-			this.marriagesConfig.set(partner.getUniqueId().toString() + ".Married.LastLove", formatter.format(thisDate));
+			this.marriagesConfig.set(playerId.toString() + ".Married.LastLove", formatter.format(thisDate));
+			this.marriagesConfig.set(partnerId + ".Married.LastLove", formatter.format(thisDate));
 
-			Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskLove(player, partner), 1L);
-			if (partner != null)
+			if (player != null && partner != null)
 			{
-				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, Gods.instance().getServer().getPlayer(playerId).getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
+				Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskLove(player, partner), 1L);
+
+				Gods.instance().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, player.getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
 			}
 		}
 
@@ -434,25 +482,6 @@ public class MarriageManager
 		save();
 	}
 
-	public void setMarriageProposal(UUID player1, UUID player2)
-	{
-		String pattern = "HH:mm:ss dd-MM-yyyy";
-		DateFormat formatter = new SimpleDateFormat(pattern);
-		Date thisDate = new Date();
-
-		this.marriagesConfig.set(player1.toString() + ".Married", null);
-		this.marriagesConfig.set(player2.toString() + ".Married", null);
-		this.marriagesConfig.set(player1.toString() + ".GettingMarried", null);
-		this.marriagesConfig.set(player2.toString() + ".GettingMarried", null);
-
-		this.marriagesConfig.set(player1.toString() + ".MarriageProposal.Time", formatter.format(thisDate));
-		this.marriagesConfig.set(player1.toString() + ".MarriageProposal.Partner", player2.toString());
-		this.marriagesConfig.set(player2.toString() + ".MarriageProposal.Time", formatter.format(thisDate));
-		this.marriagesConfig.set(player2.toString() + ".MarriageProposal.Partner", player1.toString());
-
-		save();
-	}
-
 	public void setMarried(UUID player1, UUID player2)
 	{
 		String pattern = "HH:mm:ss dd-MM-yyyy";
@@ -470,30 +499,5 @@ public class MarriageManager
 		this.marriagesConfig.set(player2.toString() + ".Married.Partner", player1.toString());
 
 		save();
-	}
-	
-	public void removeMarriagesForGod(String godName)
-	{
-		Set<String> list = this.marriagesConfig.getKeys(false);
-
-		List<UUID> names = new ArrayList<UUID>();
-
-		for (String player : list)
-		{
-			UUID playerId = UUID.fromString(player);
-			UUID partnerId = getPartnerId(playerId);
-
-			if (partnerId == null)
-			{
-				continue;
-			}
-		
-			if(BelieverManager.instance().getGodForBeliever(playerId).equals(godName))
-			{
-				divorce(playerId);				
-				divorce(partnerId);				
-			}
-			
-		}		
 	}
 }
