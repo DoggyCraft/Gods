@@ -2,12 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.dogonfire</groupId>
-    <artifactId>gods</artifactId>
+    <artifactId>gods-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Gods</name>
+    <packaging>pom</packaging>
+    <name>Gods (parent)</name>
     <description>Gods in Minecraft!</description>
     <url>https://github.com/${github.repo}</url>
-    <packaging>jar</packaging>
+
+    <modules>
+        <!-- The plugin itself -->
+        <module>plugin</module>
+    </modules>
 
     <licenses>
         <license>
@@ -46,45 +51,9 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <!-- EngineHub (prior Sk89q) repo for WorldGuard -->
-        <repository>
-            <id>enginehub-repo</id>
-            <url>https://maven.enginehub.org/repo/</url>
-        </repository>
-        <!-- PlaceholderAPI -->
-        <repository>
-            <id>placeholderapi</id>
-            <url>https://repo.extendedclip.com/releases/</url>
-        </repository>
     </repositories>
 
     <dependencies>
-        <!-- WorldGuard -->
-        <dependency>
-            <groupId>com.sk89q.worldguard</groupId>
-            <artifactId>worldguard-bukkit</artifactId>
-            <version>7.0.21</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.spigotmc</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- PlaceholderAPI -->
-        <dependency>
-            <groupId>me.clip</groupId>
-            <artifactId>placeholderapi</artifactId>
-            <version>2.12.3</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- Tests (for the parts that don't need a running server) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -94,56 +63,8 @@
         </dependency>
     </dependencies>
 
-    <!-- The Bukkit API to compile against. Paper by default; -Pspigot compiles against Spigot instead, to catch
-         Paper-only API (Gods has to run on Spigot). CI does both. -->
-    <profiles>
-        <profile>
-            <id>paper</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>io.papermc.paper</groupId>
-                    <artifactId>paper-api</artifactId>
-                    <version>${paperAPIVersion}</version>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>spigot</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.spigotmc</groupId>
-                    <artifactId>spigot-api</artifactId>
-                    <version>${spigotAPIVersion}</version>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
     <build>
         <defaultGoal>clean package</defaultGoal>
-        <finalName>${project.name}-${project.version}</finalName>
-        <resources>
-            <!-- Only plugin.yml needs ${project.version}; the other files are left untouched -->
-            <resource>
-                <filtering>true</filtering>
-                <directory>${project.basedir}/src/main/resources</directory>
-                <includes>
-                    <include>plugin.yml</include>
-                </includes>
-            </resource>
-            <resource>
-                <filtering>false</filtering>
-                <directory>${project.basedir}/src/main/resources</directory>
-                <excludes>
-                    <exclude>plugin.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -165,6 +86,21 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.6.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.4.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.12.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

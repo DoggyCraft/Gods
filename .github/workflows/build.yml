@@ -27,12 +27,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Gods-${{ github.sha }}
-          path: target/Gods-*.jar
+          path: plugin/target/Gods-*.jar
           if-no-files-found: error
 
       # Gods has to run on Spigot, so it may not use Paper-only API
       - name: Compile against the Spigot API
-        run: mvn -B -Pspigot clean compile
+        run: mvn -B -Pspigot -pl plugin -am clean compile
 
   # Pushing a tag like v1.0.0 publishes a GitHub release with the jar attached.
   # The tag (without the "v") has to match <version> in pom.xml.
@@ -65,4 +65,4 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" target/Gods-*.jar --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" plugin/target/Gods-*.jar --title "$GITHUB_REF_NAME" --generate-notes

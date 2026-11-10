@@ -10,12 +10,12 @@ Gods is a Bukkit/Spigot plugin. Players build altars, pray to gods they name the
 
 ```bash
 nix develop                           # devshell with JDK 25 + Maven (flake.nix); or prefix commands with `nix develop -c`
-mvn clean package                     # default goal; tests and builds target/Gods-<version>.jar
-mvn test -Dtest=GodsTest              # one test class (append #method for one test)
-mvn -Pspigot clean compile            # compile against spigot-api instead: fails on any Paper-only API (CI runs this too)
+mvn clean package                     # default goal; tests and builds plugin/target/Gods-<version>.jar
+mvn test -pl plugin -am -Dtest=GodsTest -Dsurefire.failIfNoSpecifiedTests=false  # one test class (append #method for one test)
+mvn -Pspigot -pl plugin -am clean compile  # compile against spigot-api instead: fails on any Paper-only API (CI runs this too)
 ```
 
-- Standard Maven layout: `src/main/java`, `src/main/resources`, `src/test/java`. Only `plugin.yml` is Maven-filtered (for `${project.version}`).
+- A parent `pom.xml` (shared versions and repositories) with the `plugin/` module (`gods`), in the standard Maven layout: `plugin/src/main/java`, `plugin/src/main/resources`, `plugin/src/test/java`. Only `plugin.yml` is Maven-filtered (for `${project.version}`).
 - Java 25 (`maven.compiler.release`). CI (`.github/workflows/build.yml`) builds on JDK 25 for every push and PR. Pushing a tag `v<pom version>` (e.g. `v1.0.0`) publishes a GitHub release with the jar.
 - The test suite is close to a stub. Most behavior can only be checked by running the jar on a server.
 - `Biome`, `Sound` and other former enums are registry interfaces now: compare with `==`, never `switch` on them or call `valueOf`.
@@ -36,13 +36,13 @@ mvn -Pspigot clean compile            # compile against spigot-api instead: fail
 
 **Commands (`commands/`):** each subcommand extends `GodsCommand`: the constructor sets `name`, `permission`, `parameters`, `description` and `priestOnly`, and `onCommand(sender, command, args...)` gets `args[0]` = the subcommand name. `/g help` and tab completion are built from the registered commands. To add one:
 1. Register it in the `GodsCommandExecuter` constructor.
-2. Declare its permission node in `src/main/resources/plugin.yml` (and as a child of `gods.*`).
+2. Declare its permission node in `plugin/src/main/resources/plugin.yml` (and as a child of `gods.*`).
 
 **Language system:** `LanguageManager` uses the `LANGUAGESTRING` enum for keys. Text comes from `lang/*.yml`:
 - `english_general.yml` holds general strings.
 - `<lang>_<godtype>_<gender>.yml` holds a god's voice. The file is chosen per god from its type and gender.
 
-The files are bundled in the jar (`src/main/resources/lang/`) and copied to `plugins/Gods/lang/` when missing. A key missing from a server's copy falls back to the bundled file of the same name, then to the bundled `english_` file with the same suffix (never to another god type). A new god-voice key needs the enum entry plus a line in **all 26** `english_<type>_<gender>.yml` files; a new info key goes under `Info:` in `english_general.yml`.
+The files are bundled in the jar (`plugin/src/main/resources/lang/`) and copied to `plugins/Gods/lang/` when missing. A key missing from a server's copy falls back to the bundled file of the same name, then to the bundled `english_` file with the same suffix (never to another god type). A new god-voice key needs the enum entry plus a line in **all 26** `english_<type>_<gender>.yml` files; a new info key goes under `Info:` in `english_general.yml`.
 
 **Tasks (`tasks/`):** short delayed `Runnable`s scheduled through the Bukkit scheduler (divine effects, messages, mob spawns). Repeating ones must end on their own (a stop time, the player logging off).
 

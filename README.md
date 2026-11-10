@@ -24,7 +24,7 @@ Installation
 *	Run a [Paper](https://papermc.io/) or Spigot server on Minecraft 26.1 or newer, with Java 25.
 *	Download `Gods-<version>.jar` from the [releases](https://github.com/DoggyCraft/Gods/releases) and drop it into the `plugins` folder.
 *	Optional: [Vault](https://www.spigotmc.org/resources/vault.34315/), [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/).
-*	Start the server. Commands and permissions are listed in [plugin.yml](src/main/resources/plugin.yml).
+*	Start the server. Commands and permissions are listed in [plugin.yml](plugin/src/main/resources/plugin.yml).
 
 Links
 ---------
@@ -42,4 +42,4 @@ cd Gods
 mvn clean package        # or: nix develop -c mvn clean package
 ```
 
-The plugin jar ends up in `target/Gods-<version>.jar`.
+The plugin jar ends up in `plugin/target/Gods-<version>.jar`.
