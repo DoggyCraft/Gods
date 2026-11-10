@@ -5,7 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.config.GodsConfiguration;
+import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyLandManager;
@@ -22,7 +22,7 @@ public class CommandAttackHolyLand extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!GodsConfiguration.instance().isHolyLandEnabled())
+		if (!Gods.instance().settings().holyLand().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Holy Land is not enabled on this server");
 			return;

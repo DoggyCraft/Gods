@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.LanguageManager;
@@ -95,7 +94,7 @@ public class GodsCommandExecuter implements CommandExecutor
 		sender.sendMessage(ChatColor.AQUA + "By DogOnFire");
 		sender.sendMessage("" + ChatColor.AQUA);
 		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + GodManager.instance().getAllGods().size() + ChatColor.AQUA + " Gods and");
-		sender.sendMessage("" + ChatColor.WHITE + BelieverManager.instance().getBelievers().size() + ChatColor.AQUA + " believers in " + GodsConfiguration.instance().getServerName());
+		sender.sendMessage("" + ChatColor.WHITE + BelieverManager.instance().getBelievers().size() + ChatColor.AQUA + " believers in " + Gods.instance().settings().general().serverName());
 		sender.sendMessage("" + ChatColor.AQUA);
 		if (sender != null && sender instanceof Player)
 		{
@@ -113,7 +112,7 @@ public class GodsCommandExecuter implements CommandExecutor
 					sender.sendMessage(ChatColor.WHITE + "You are the priest of " + ChatColor.GOLD + godName);
 				}
 
-				if (GodsConfiguration.instance().isPrayersEnabled())
+				if (Gods.instance().settings().prayers().enabled())
 				{
 					sender.sendMessage(ChatColor.WHITE + "You have " + ChatColor.GOLD + BelieverManager.instance().getPrayerPower(player.getUniqueId()) + ChatColor.WHITE + " prayer power");
 				}
@@ -122,7 +121,7 @@ public class GodsCommandExecuter implements CommandExecutor
 			{
 				sender.sendMessage(ChatColor.RED + "You do not believe in any god");
 			}
-			if (GodsConfiguration.instance().isMarriageEnabled())
+			if (Gods.instance().settings().marriage().enabled())
 			{
 				String partnerName = MarriageManager.instance().getPartnerName(player.getUniqueId());
 				if (partnerName != null)
@@ -134,7 +133,7 @@ public class GodsCommandExecuter implements CommandExecutor
 			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodsHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help", 80);
 			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help altar", 160);
 
-			if (GodsConfiguration.instance().isPrayersEnabled())
+			if (Gods.instance().settings().prayers().enabled())
 			{
 				Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayForHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g prayfor", 240);
 			}

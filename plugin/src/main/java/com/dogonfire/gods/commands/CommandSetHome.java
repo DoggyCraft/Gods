@@ -4,7 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.config.GodsConfiguration;
+import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyLandManager;
@@ -39,12 +39,12 @@ public class CommandSetHome extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		if ((GodsConfiguration.instance().isOnlyPriestCanSetHome()) && (!GodManager.instance().isPriest(player.getUniqueId())))
+		if ((Gods.instance().settings().priests().onlyPriestsCanSetHome()) && (!GodManager.instance().isPriest(player.getUniqueId())))
 		{
 			sender.sendMessage(ChatColor.RED + "Only your priest can set the home for your religion");
 			return;
 		}
-		if (GodsConfiguration.instance().isHolyLandEnabled())
+		if (Gods.instance().settings().holyLand().enabled())
 		{
 			if (HolyLandManager.instance().isNeutralLandLocation(player.getLocation()))
 			{

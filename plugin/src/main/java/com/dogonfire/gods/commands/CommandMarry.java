@@ -5,7 +5,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.LanguageManager;
@@ -24,7 +23,7 @@ public class CommandMarry extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!GodsConfiguration.instance().isMarriageEnabled())
+		if (!Gods.instance().settings().marriage().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
 			return;

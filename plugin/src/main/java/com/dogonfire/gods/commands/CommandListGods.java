@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.LanguageManager;
@@ -56,12 +55,12 @@ public class CommandListGods extends GodsCommand
 
 		if (gods.size() == 0)
 		{
-			sender.sendMessage(ChatColor.GOLD + "There are no Gods in " + GodsConfiguration.instance().getServerName() + "!");
+			sender.sendMessage(ChatColor.GOLD + "There are no Gods in " + Gods.instance().settings().general().serverName() + "!");
 			return;
 		}
 
 		playerGod = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Gods of " + GodsConfiguration.instance().getServerName() + " ---------");
+		sender.sendMessage(ChatColor.YELLOW + "--------- The Gods of " + Gods.instance().settings().general().serverName() + " ---------");
 
 		Collections.sort(gods, new TopGodsComparator());
 

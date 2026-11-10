@@ -43,7 +43,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.AltarManager;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
@@ -62,7 +61,7 @@ public class BlockListener implements Listener
 
 	private static boolean isHolyLandActiveIn(World world)
 	{
-		return GodsConfiguration.instance().isHolyLandEnabled() && world != null && Gods.instance().isEnabledInWorld(world);
+		return Gods.instance().settings().holyLand().enabled() && world != null && Gods.instance().isEnabledInWorld(world);
 	}
 
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -112,7 +111,7 @@ public class BlockListener implements Listener
 	@EventHandler
 	public void OnEntityCombust(EntityCombustEvent event)
 	{
-		if (!GodsConfiguration.instance().isSacrificesEnabled())
+		if (!Gods.instance().settings().sacrifices().enabled())
 		{
 			return;
 		}
@@ -209,7 +208,7 @@ public class BlockListener implements Listener
 			String attackerGodName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
 			if (attackerGodName == null)
 			{
-				if ((GodsConfiguration.instance().isHolyLandLightning()) && ((event.getEntity() instanceof Player)))
+				if ((Gods.instance().settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
 					GodManager.instance().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
@@ -219,7 +218,7 @@ public class BlockListener implements Listener
 			}
 			if (!godName.equals(attackerGodName))
 			{
-				if ((GodsConfiguration.instance().isHolyLandLightning()) && ((event.getEntity() instanceof Player)))
+				if ((Gods.instance().settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
 					GodManager.instance().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
@@ -263,7 +262,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (GodsConfiguration.instance().isQuestsEnabled())
+		if (Gods.instance().settings().quests().enabled())
 		{
 			QuestManager.instance().handleKilledMob(godName, event.getEntityType().name());
 		}
@@ -317,14 +316,14 @@ public class BlockListener implements Listener
 			long currentTime = System.currentTimeMillis();
 			if ((lastEatTime == null) || (currentTime - lastEatTime.longValue() > 10000L))
 			{
-				if ((GodsConfiguration.instance().isCommandmentsEnabled()) && (player.getHealth() != player.getAttribute(Attribute.MAX_HEALTH).getValue()))
+				if ((Gods.instance().settings().commandments().enabled()) && (player.getHealth() != player.getAttribute(Attribute.MAX_HEALTH).getValue()))
 				{
 					if ((player.isOp()) || (PermissionsManager.instance().hasPermission(player, "gods.commandments")))
 					{
 						GodManager.instance().handleEat(player, godName, type.name());
 					}
 				}
-				if (GodsConfiguration.instance().isQuestsEnabled())
+				if (Gods.instance().settings().quests().enabled())
 				{
 					QuestManager.instance().handleEat(player.getName(), godName, type.name());
 				}
@@ -420,7 +419,7 @@ public class BlockListener implements Listener
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onHolyBookUse(PlayerInteractEvent event)
 	{
-		if (!GodsConfiguration.instance().isBiblesEnabled() || event.useItemInHand() == Event.Result.DENY || event.getHand() != EquipmentSlot.HAND)
+		if (!Gods.instance().settings().bibles().enabled() || event.useItemInHand() == Event.Result.DENY || event.getHand() != EquipmentSlot.HAND)
 		{
 			return;
 		}
@@ -465,7 +464,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (GodsConfiguration.instance().isQuestsEnabled())
+		if (Gods.instance().settings().quests().enabled())
 		{
 			if (event.getClickedBlock() != null && QuestManager.instance().handleOpenChest(event.getPlayer().getUniqueId(), event.getClickedBlock().getLocation()))
 			{
@@ -473,7 +472,7 @@ public class BlockListener implements Listener
 			}
 		}
 
-		if (!GodsConfiguration.instance().isHolyLandEnabled())
+		if (!Gods.instance().settings().holyLand().enabled())
 		{
 			return;
 		}
@@ -485,7 +484,7 @@ public class BlockListener implements Listener
 		}
 		if ((!player.isOp()) && (HolyLandManager.instance().isNeutralLandLocation(player.getLocation())))
 		{
-			if (!GodsConfiguration.instance().isAllowInteractionInNeutralLands())
+			if (!Gods.instance().settings().holyLand().allowInteractionInNeutralLands())
 			{
 				event.setCancelled(true);
 			}
@@ -500,7 +499,7 @@ public class BlockListener implements Listener
 		{
 			return;
 		}
-		if ((GodsConfiguration.instance().getHolylandBreakableBlockTypes().contains(event.getClickedBlock().getType())) || (AltarManager.instance().isAltarBlock(event.getClickedBlock())))
+		if ((Gods.instance().settings().holyLand().breakableBlocks().contains(event.getClickedBlock().getType())) || (AltarManager.instance().isAltarBlock(event.getClickedBlock())))
 		{
 			return;
 		}
@@ -547,7 +546,7 @@ public class BlockListener implements Listener
 		if ((event.getAction() == Action.RIGHT_CLICK_AIR) || (event.getAction() == Action.RIGHT_CLICK_BLOCK))
 		{
 			Material type = player.getInventory().getItemInMainHand().getType();
-			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null) && (GodsConfiguration.instance().isHolyArtifactsEnabled()))
+			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null) && (Gods.instance().settings().holyArtifacts().enabled()))
 			{
 				HolyArtifactManager.instance().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
 			}
@@ -580,7 +579,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (GodsConfiguration.instance().isCursingEnabled())
+		if (Gods.instance().settings().curses().enabled())
 		{
 			Player cursedPlayer = AltarManager.instance().getCursedPlayerFromAltar(block, lines);
 
@@ -618,7 +617,7 @@ public class BlockListener implements Listener
 				return;
 			}
 		}
-		if (GodsConfiguration.instance().isBlessingEnabled())
+		if (Gods.instance().settings().blessings().enabled())
 		{
 			Player blessedPlayer = AltarManager.instance().getBlessedPlayerFromAltarSign(block, lines);
 			if (blessedPlayer != null)
@@ -727,7 +726,7 @@ public class BlockListener implements Listener
 			return;
 		}
 
-		if (GodsConfiguration.instance().isHolyArtifactsEnabled())
+		if (Gods.instance().settings().holyArtifacts().enabled())
 		{
 			if (HolyArtifactManager.instance().isHolyArtifact(event.getItem().getItemStack()))
 			{
@@ -739,7 +738,7 @@ public class BlockListener implements Listener
 			}
 		}
 
-		if (GodsConfiguration.instance().isMarriageEnabled())
+		if (Gods.instance().settings().marriage().enabled())
 		{
 			MarriageManager.instance().handlePickupItem(player, event.getItem(), event.getItem().getLocation());
 		}
@@ -753,7 +752,7 @@ public class BlockListener implements Listener
 
 		this.lastEatTimes.remove(player.getUniqueId());
 
-		if (GodsConfiguration.instance().isHolyLandEnabled())
+		if (Gods.instance().settings().holyLand().enabled())
 		{
 			HolyLandManager.instance().handleQuit(player.getUniqueId());
 		}
@@ -797,11 +796,11 @@ public class BlockListener implements Listener
 
 		boolean created;
 
-		if ((GodsConfiguration.instance().isCursingEnabled()) && (AltarManager.instance().isCursingAltar(block, event.getLines())))
+		if ((Gods.instance().settings().curses().enabled()) && (AltarManager.instance().isCursingAltar(block, event.getLines())))
 		{
 			created = AltarManager.instance().handleNewCursingAltar(event);
 		}
-		else if ((GodsConfiguration.instance().isBlessingEnabled()) && (AltarManager.instance().isBlessingAltar(block, event.getLines())))
+		else if ((Gods.instance().settings().blessings().enabled()) && (AltarManager.instance().isBlessingAltar(block, event.getLines())))
 		{
 			created = AltarManager.instance().handleNewBlessingAltar(event);
 		}

@@ -10,7 +10,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.ChatManager;
 
 public class ChatListener implements Listener
@@ -46,7 +45,7 @@ public class ChatListener implements Listener
 		ChatManager.ChatInfo info = ChatManager.instance().getChatInfo(player.getUniqueId());
 		String godName = info.godName;
 
-		if (GodsConfiguration.instance().isChatFormattingEnabled())
+		if (Gods.instance().settings().chat().formatting())
 		{
 			event.setFormat(ChatManager.instance().formatChat(player, godName, event.getFormat()));
 		}

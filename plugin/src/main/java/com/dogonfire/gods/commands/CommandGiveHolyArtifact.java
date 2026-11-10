@@ -4,7 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.config.GodsConfiguration;
+import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyArtifactManager;
@@ -21,7 +21,7 @@ public class CommandGiveHolyArtifact extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!GodsConfiguration.instance().isHolyArtifactsEnabled())
+		if (!Gods.instance().settings().holyArtifacts().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Holy Artifacts are not enabled on this server");
 			return;

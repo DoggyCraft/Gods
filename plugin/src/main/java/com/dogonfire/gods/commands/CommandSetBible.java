@@ -4,7 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.dogonfire.gods.config.GodsConfiguration;
+import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyBookManager;
@@ -22,7 +22,7 @@ public class CommandSetBible extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!GodsConfiguration.instance().isBiblesEnabled())
+		if (!Gods.instance().settings().bibles().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Bibles are not enabled on this server");
 			return;

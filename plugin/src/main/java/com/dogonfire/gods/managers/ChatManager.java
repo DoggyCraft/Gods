@@ -118,9 +118,4 @@ public class ChatManager
 	{
 		this.chatInfos.remove(playerId);
 	}
-
-	public void load()
-	{
-		// Nothing to load; kept because GodsConfiguration calls it
-	}
 }

@@ -23,7 +23,11 @@ public class CommandReload extends GodsCommand
 			return;
 		}
 
-		Gods.instance().reloadSettings();
+		if (!Gods.instance().reloadSettings())
+		{
+			sender.sendMessage(ChatColor.RED + "Could not reload config.yml; the old settings are kept. See the server log.");
+			return;
+		}
 		sender.sendMessage(ChatColor.YELLOW + Gods.instance().getDescription().getFullName() + ": " + ChatColor.WHITE + "Reloaded configuration.");
 		Gods.instance().log(sender.getName() + " /gods reload");
 	}

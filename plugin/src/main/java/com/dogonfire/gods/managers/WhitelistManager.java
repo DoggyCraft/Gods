@@ -6,7 +6,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 
 public class WhitelistManager
 {
@@ -52,7 +51,7 @@ public class WhitelistManager
 
 	public void load()
 	{
-		if (GodsConfiguration.instance().isUseWhitelist())
+		if (Gods.instance().settings().gods().whitelist())
 		{
 			if (this.whiteListFile == null)
 			{
@@ -70,12 +69,10 @@ public class WhitelistManager
 				save();
 			}
 
-			GodsConfiguration.instance().setUseBlacklist(false);
-
 			Gods.instance().log("Using whitelist");
 		}
 
-		if (GodsConfiguration.instance().isUseBlacklist())
+		if (Gods.instance().settings().gods().blacklist())
 		{
 			if (this.blackListFile == null)
 			{
@@ -90,7 +87,6 @@ public class WhitelistManager
 
 				save();
 			}
-			GodsConfiguration.instance().setUseWhitelist(false);
 
 			Gods.instance().log("Using blacklist");
 		}

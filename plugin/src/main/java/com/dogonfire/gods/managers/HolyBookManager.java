@@ -14,7 +14,6 @@ import org.bukkit.inventory.PlayerInventory;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.HolyBook;
-import com.dogonfire.gods.config.GodsConfiguration;
 
 public class HolyBookManager
 {
@@ -22,7 +21,7 @@ public class HolyBookManager
 
 	public static HolyBookManager instance()
 	{
-		if (GodsConfiguration.instance().isBiblesEnabled() && instance == null)
+		if (Gods.instance().settings().bibles().enabled() && instance == null)
 			instance = new HolyBookManager();
 		return instance;
 	}

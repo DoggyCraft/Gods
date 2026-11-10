@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 
 public class BelieverManager
@@ -74,7 +73,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastPrayerDate.getTime();
 
 		long diffMinutes = diff / 60000L;
-		if (diffMinutes < GodsConfiguration.instance().getMinBelieverPrayerTime())
+		if (diffMinutes < Gods.instance().settings().prayers().minMinutesBetweenPrayers())
 		{
 			return false;
 		}
@@ -334,7 +333,7 @@ public class BelieverManager
 			lastPrayerDate = new Date();
 			lastPrayerDate.setTime(0L);
 		}
-		long diff = GodsConfiguration.instance().getMinBelieverPrayerTime() * 60 * 1000 + lastPrayerDate.getTime() - thisDate.getTime();
+		long diff = Gods.instance().settings().prayers().minMinutesBetweenPrayers() * 60 * 1000 + lastPrayerDate.getTime() - thisDate.getTime();
 		long diffSeconds = diff / 1000L;
 		int diffMinutes = (int) (diffSeconds / 60L);
 
@@ -362,7 +361,7 @@ public class BelieverManager
 
 		long diffSeconds = diff / 1000L;
 
-		return diffSeconds < GodsConfiguration.instance().getMinBlessingTime();
+		return diffSeconds < Gods.instance().settings().blessings().minSecondsBetweenBlessings();
 	}
 
 	public boolean hasRecentCursing(UUID believerId)
@@ -385,7 +384,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastItemBlessingDate.getTime();
 		long diffSeconds = diff / 1000L;
 
-		return diffSeconds < GodsConfiguration.instance().getMinCursingTime();
+		return diffSeconds < Gods.instance().settings().curses().minSecondsBetweenCurses();
 	}
 
 	boolean hasRecentGodChange(UUID believerId)
@@ -405,7 +404,7 @@ public class BelieverManager
 			long diff = thisDate.getTime() - joinedGodDate.getTime();
 			long diffSeconds = diff / 1000L;
 
-			joinedRecently = diffSeconds <= GodsConfiguration.instance().getMinSecondsBetweenChangingGod();
+			joinedRecently = diffSeconds <= Gods.instance().settings().believers().minSecondsBetweenChangingGod();
 		}
 		catch (Exception ex)
 		{
@@ -435,7 +434,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastItemBlessingDate.getTime();
 		long diffMinutes = diff / 60000L;
 
-		return diffMinutes < GodsConfiguration.instance().getMinHolyArtifactBlessingTime();
+		return diffMinutes < Gods.instance().settings().holyArtifacts().minMinutesBetweenBlessings();
 	}
 
 	public boolean hasRecentItemBlessing(UUID believerId)
@@ -458,7 +457,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastItemBlessingDate.getTime();
 		long diffMinutes = diff / 60000L;
 
-		return diffMinutes < GodsConfiguration.instance().getMinItemBlessingTime();
+		return diffMinutes < Gods.instance().settings().itemBlessings().minMinutesBetweenBlessings();
 	}
 
 	public boolean hasRecentPrayer(UUID believerId)
@@ -481,7 +480,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastPrayerDate.getTime();
 		long diffMinutes = diff / 60000L;
 
-		return diffMinutes <= GodsConfiguration.instance().getMinBelieverPrayerTime();
+		return diffMinutes <= Gods.instance().settings().prayers().minMinutesBetweenPrayers();
 	}
 
 	public boolean hasRecentPriestOffer(UUID believerId)
@@ -549,7 +548,7 @@ public class BelieverManager
 		long diff = thisDate.getTime() - lastPrayerDate.getTime();
 
 		long diffMinutes = diff / 60000L;
-		if (diffMinutes < GodsConfiguration.instance().getMinBelieverPrayerTime())
+		if (diffMinutes < Gods.instance().settings().prayers().minMinutesBetweenPrayers())
 		{
 			return false;
 		}

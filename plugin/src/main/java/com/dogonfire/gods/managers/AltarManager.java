@@ -21,7 +21,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.GodManager.GodType;
 
 public class AltarManager
@@ -37,7 +36,6 @@ public class AltarManager
 
 	private Random							random			= new Random();
 	private Map<Integer, UUID>			droppedItems	= new HashMap<Integer, UUID>();
-	private Map<Material, List<GodType>>	altarBlockTypes	= new HashMap<Material, List<GodType>>();
 
 	private AltarManager()
 	{
@@ -129,12 +127,9 @@ public class AltarManager
 	public List<String> getAltarBlockTypesFromGodType(GodManager.GodType godType)
 	{
 		List<String> list = new ArrayList<String>();
-		for (Material blockMaterial : this.altarBlockTypes.keySet())
+		for (Material blockMaterial : Gods.instance().settings().altars().blocksFor(godType))
 		{
-			if (this.altarBlockTypes.containsKey(blockMaterial) && this.altarBlockTypes.get(blockMaterial).contains(godType))
-			{
-				list.add(blockMaterial.name());
-			}
+			list.add(blockMaterial.name());
 		}
 		return list;
 	}
@@ -188,8 +183,8 @@ public class AltarManager
 
 	public GodManager.GodType getGodTypeForAltarBlockType(Material altarBlockType)
 	{
-		List<GodManager.GodType> godTypes = this.altarBlockTypes.get(altarBlockType);
-		if ((godTypes == null) || (godTypes.size() == 0))
+		List<GodManager.GodType> godTypes = Gods.instance().settings().altars().godTypesFor(altarBlockType);
+		if (godTypes.isEmpty())
 		{
 			Gods.instance().logDebug("No god types available for block type " + altarBlockType.name() + "!");
 			return null;
@@ -316,7 +311,7 @@ public class AltarManager
 		
 		if (GodManager.instance().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
 		{
-			if ((GodsConfiguration.instance().isHolyLandEnabled()) && (PermissionsManager.instance().hasPermission(player, "gods.holyland")))
+			if ((Gods.instance().settings().holyLand().enabled()) && (PermissionsManager.instance().hasPermission(player, "gods.holyland")))
 			{
 				HolyLandManager.instance().addAltar(player, godName, altarBlock.getLocation());
 			}
@@ -407,112 +402,5 @@ public class AltarManager
 	public boolean isPrayingAltar(Block block)
 	{
 		return isAltarSign(block);
-	}
-
-	public void clearAltarBlockTypes()
-	{
-		this.altarBlockTypes.clear();
-	}
-
-	public void resetAltarBlockTypes()
-	{
-		this.altarBlockTypes.clear();
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.MOON);
-			this.altarBlockTypes.put(Material.END_STONE, list);
-		}
-
-		{
-			ArrayList<GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.EVIL);
-			this.altarBlockTypes.put(Material.OBSIDIAN, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.FROST);
-			this.altarBlockTypes.put(Material.SNOW_BLOCK, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.CREATURES);
-			this.altarBlockTypes.put(Material.OAK_LOG, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.NATURE);
-			this.altarBlockTypes.put(Material.MELON, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.WISDOM);
-			this.altarBlockTypes.put(Material.BOOKSHELF, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.LOVE);
-			this.altarBlockTypes.put(Material.DIAMOND_BLOCK, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.THUNDER);
-			this.altarBlockTypes.put(Material.QUARTZ_BLOCK, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.SUN);
-			this.altarBlockTypes.put(Material.SANDSTONE, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.PARTY);
-			this.altarBlockTypes.put(Material.EMERALD_BLOCK, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.WAR);
-			this.altarBlockTypes.put(Material.NETHERRACK, list);
-		}
-
-		{
-			ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-			list.add(GodManager.GodType.SEA);
-			this.altarBlockTypes.put(Material.LAPIS_BLOCK, list);
-		}
-	}
-
-	public void setAltarBlockTypeForGodType(GodType godType, Material blockMaterial)
-	{
-		if(blockMaterial==null)
-		{
-			Gods.instance().log("setAltarBlockTypeForGodType blockMaterial==null for godType " + godType.name());
-			return;
-		}
-		
-		List<GodType> godTypes = new ArrayList<GodType>();
-		
-		if (!this.altarBlockTypes.containsKey(blockMaterial))
-		{
-			altarBlockTypes.put(blockMaterial, new ArrayList<GodType>());
-		}
-				
-		godTypes = this.altarBlockTypes.get(blockMaterial);
-		
-		if (!godTypes.contains(godType))
-		{
-			godTypes.add(godType);
-		}
-		
-		this.altarBlockTypes.put(blockMaterial, godTypes);
 	}
 }

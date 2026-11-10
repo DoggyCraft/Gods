@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.MarriageManager;
 
 public class CommandMarriages extends GodsCommand
@@ -23,7 +22,7 @@ public class CommandMarriages extends GodsCommand
 	@Override
 	public void onCommand(CommandSender sender, String command, String... args)
 	{
-		if (!GodsConfiguration.instance().isMarriageEnabled())
+		if (!Gods.instance().settings().marriage().enabled())
 		{
 			sender.sendMessage(ChatColor.RED + "Marriages are not enabled on this server");
 			return;
@@ -45,7 +44,7 @@ public class CommandMarriages extends GodsCommand
 			sender.sendMessage("There are no married couples yet!");
 			return;
 		}
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Married Couples in " + GodsConfiguration.instance().getServerName() + " ---------");
+		sender.sendMessage(ChatColor.YELLOW + "--------- The Married Couples in " + Gods.instance().settings().general().serverName() + " ---------");
 		int l = couples.size();
 
 		List<MarriageManager.MarriedCouple> couplesList = couples;

@@ -15,7 +15,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 
 public class LanguageManager
 {
@@ -170,7 +169,7 @@ public class LanguageManager
 	 */
 	public void load()
 	{
-		String language = GodsConfiguration.instance().getLanguageIdentifier();
+		String language = Gods.instance().settings().general().language();
 		this.generalLanguageFileName = language + "_general.yml";
 		this.languageConfigs.clear();
 
@@ -254,7 +253,7 @@ public class LanguageManager
 		String string = id;
 		if (string.contains("$ServerName"))
 		{
-			string = string.replace("$ServerName", ChatColor.GOLD + GodsConfiguration.instance().getServerName() + ChatColor.WHITE + ChatColor.BOLD);
+			string = string.replace("$ServerName", ChatColor.GOLD + Gods.instance().settings().general().serverName() + ChatColor.WHITE + ChatColor.BOLD);
 		}
 		if (string.contains("$PlayerName"))
 		{
@@ -276,7 +275,7 @@ public class LanguageManager
 		String string = id;
 		if (string.contains("$ServerName"))
 		{
-			string = string.replace("$ServerName", ChatColor.GOLD + GodsConfiguration.instance().getServerName() + defaultColor);
+			string = string.replace("$ServerName", ChatColor.GOLD + Gods.instance().settings().general().serverName() + defaultColor);
 		}
 		if (string.contains("$PlayerName"))
 		{
@@ -298,7 +297,7 @@ public class LanguageManager
 		String string = id;
 		if (string.contains("$ServerName"))
 		{
-			string = string.replace("$ServerName", GodsConfiguration.instance().getServerName());
+			string = string.replace("$ServerName", Gods.instance().settings().general().serverName());
 		}
 		if (string.contains("$PlayerName"))
 		{

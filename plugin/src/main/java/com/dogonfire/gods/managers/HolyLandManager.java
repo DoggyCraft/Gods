@@ -34,7 +34,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 
 /**
  * Holy lands: 128x128 block regions claimed by a god when a believer builds or
@@ -354,7 +353,7 @@ public class HolyLandManager implements Listener
 		long timeBefore = System.currentTimeMillis();
 
 		Date thisDate = new Date();
-		long maxMinutes = GodsConfiguration.instance().getNumberOfDaysForAbandonedHolyLands() * 24L * 60L;
+		long maxMinutes = Gods.instance().settings().holyLand().deleteAbandonedAfterDays() * 24L * 60L;
 		List<String> paths = getAllLandPaths();
 		int removed = 0;
 
@@ -631,7 +630,7 @@ public class HolyLandManager implements Listener
 
 	private boolean isActiveIn(World world)
 	{
-		return GodsConfiguration.instance().isHolyLandEnabled() && world != null && Gods.instance().isEnabledInWorld(world);
+		return Gods.instance().settings().holyLand().enabled() && world != null && Gods.instance().isEnabledInWorld(world);
 	}
 
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -668,7 +667,7 @@ public class HolyLandManager implements Listener
 			return;
 		}
 
-		if (GodsConfiguration.instance().getHolylandBreakableBlockTypes().contains(event.getBlock().getType()))
+		if (Gods.instance().settings().holyLand().breakableBlocks().contains(event.getBlock().getType()))
 		{
 			return;
 		}

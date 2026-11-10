@@ -22,7 +22,6 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.tasks.TaskLove;
 
 public class MarriageManager
@@ -64,7 +63,7 @@ public class MarriageManager
 
 	public static MarriageManager instance()
 	{
-		if (GodsConfiguration.instance().isMarriageEnabled() && instance == null)
+		if (Gods.instance().settings().marriage().enabled() && instance == null)
 		{
 			instance = new MarriageManager();
 		}
@@ -357,7 +356,7 @@ public class MarriageManager
 
 				Gods.instance().log(player.getDisplayName() + " just married " + partner.getDisplayName() + " in the name of " + godName);
 				Gods.instance().getServer().broadcastMessage(ChatColor.WHITE + player.getDisplayName() + ChatColor.AQUA + " just married " + ChatColor.WHITE + partner.getDisplayName() + ChatColor.AQUA + " in the name of " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
-				if ((GodsConfiguration.instance().isHolyArtifactsEnabled()) && (GodsConfiguration.instance().isMarriageFireworksEnabled()))
+				if ((Gods.instance().settings().holyArtifacts().enabled()) && (Gods.instance().settings().marriage().weddingFireworks()))
 				{
 					HolyPowerManager.instance().shootFirework(player, 16);
 					HolyPowerManager.instance().shootFirework(partner, 16);

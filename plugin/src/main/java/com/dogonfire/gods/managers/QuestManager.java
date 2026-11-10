@@ -35,7 +35,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -128,7 +127,6 @@ public class QuestManager
 
 	private Random						random				= new Random();
 
-	private HashMap<Material, Integer>	rewardValues		= new HashMap<Material, Integer>();
 
 	private QuestManager()
 	{
@@ -327,19 +325,19 @@ public class QuestManager
 
 		List<QUESTTYPE> questTypes = new ArrayList<QUESTTYPE>();
 
-		if (GodsConfiguration.instance().isPilgrimageQuestsEnabled())
+		if (Gods.instance().settings().quests().pilgrimage())
 		{
 			questTypes.add(QUESTTYPE.PILGRIMAGE);
 		}
-		if (GodsConfiguration.instance().isSlayQuestsEnabled())
+		if (Gods.instance().settings().quests().slay())
 		{
 			questTypes.add(QUESTTYPE.SLAY);
 		}
-		if (GodsConfiguration.instance().isSacrificeQuestsEnabled() && GodsConfiguration.instance().isSacrificesEnabled())
+		if (Gods.instance().settings().quests().sacrifice() && Gods.instance().settings().sacrifices().enabled())
 		{
 			questTypes.add(QUESTTYPE.ITEMSACRIFICE);
 		}
-		if (GodsConfiguration.instance().isGiveItemsQuestsEnabled() && GodsConfiguration.instance().isBiblesEnabled())
+		if (Gods.instance().settings().quests().giveItems() && Gods.instance().settings().bibles().enabled())
 		{
 			questTypes.add(QUESTTYPE.GIVEITEMS);
 		}
@@ -752,13 +750,8 @@ public class QuestManager
 	{
 		List<ItemStack> rewards = new ArrayList<ItemStack>();
 
-		if (this.rewardValues.isEmpty())
-		{
-			resetItemRewardValues();
-		}
-
 		List<Map.Entry<Material, Integer>> rewardItems = new ArrayList<Map.Entry<Material, Integer>>();
-		for (Map.Entry<Material, Integer> entry : this.rewardValues.entrySet())
+		for (Map.Entry<Material, Integer> entry : Gods.instance().settings().quests().rewardValues().entrySet())
 		{
 			if (entry.getKey() != null && entry.getKey().isItem() && entry.getValue() != null && entry.getValue() > 0)
 			{
@@ -1357,35 +1350,6 @@ public class QuestManager
 		save();
 	}
 
-	public void clearItemRewardValues()
-	{
-		this.rewardValues.clear();
-	}
-
-	public void resetItemRewardValues()
-	{
-		this.rewardValues.clear();
-		this.rewardValues.put(Material.NETHER_WART, 33);
-		this.rewardValues.put(Material.GLOWSTONE, 50);
-		this.rewardValues.put(Material.COAL, 5);
-		this.rewardValues.put(Material.IRON_INGOT, 10);
-		this.rewardValues.put(Material.GOLD_INGOT, 50);
-		this.rewardValues.put(Material.DIAMOND, 100);
-		this.rewardValues.put(Material.PLAYER_HEAD, 75);
-		this.rewardValues.put(Material.ENCHANTED_BOOK, 75);
-		this.rewardValues.put(Material.POTION, 75);
-		this.rewardValues.put(Material.COCOA, 30);
-		this.rewardValues.put(Material.BLAZE_ROD, 50);
-		this.rewardValues.put(Material.BOOK, 30);
-		this.rewardValues.put(Material.COMPASS, 50);
-		this.rewardValues.put(Material.PAPER, 20);
-		this.rewardValues.put(Material.SUGAR_CANE, 25);
-		this.rewardValues.put(Material.MELON_SEEDS, 5);
-		this.rewardValues.put(Material.PUMPKIN_SEEDS, 5);
-		this.rewardValues.put(Material.POPPY, 1);
-		this.rewardValues.put(Material.SUNFLOWER, 1);
-	}
-
 	public void save()
 	{
 		if ((this.questsConfig == null) || (this.questsConfigFile == null))
@@ -1400,11 +1364,6 @@ public class QuestManager
 		{
 			Gods.instance().log("Could not save config to " + this.questsConfigFile.getName() + ": " + ex.getMessage());
 		}
-	}
-
-	public void setItemRewardValue(Material item, int value)
-	{
-		this.rewardValues.put(item, Integer.valueOf(value));
 	}
 
 	void setQuestTarget(String godName, Location location)

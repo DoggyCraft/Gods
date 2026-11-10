@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
 import com.dogonfire.gods.managers.HolyLandManager;
@@ -121,7 +120,7 @@ public class CommandInfo extends GodsCommand
 
 		sender.sendMessage(ChatColor.AQUA + "Believers: " + ChatColor.YELLOW + BelieverManager.instance().getBelieversForGod(godName).size());
 		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + GodManager.instance().getGodPower(godName));
-		if (GodsConfiguration.instance().isCommandmentsEnabled())
+		if (Gods.instance().settings().commandments().enabled())
 		{
 			sender.sendMessage(ChatColor.AQUA + "Holy food: " + ChatColor.YELLOW + LanguageManager.instance().getItemTypeName(GodManager.instance().getHolyFoodTypeForGod(godName)));
 			sender.sendMessage(ChatColor.AQUA + "Unholy food: " + ChatColor.YELLOW + LanguageManager.instance().getItemTypeName(GodManager.instance().getUnholyFoodTypeForGod(godName)));
@@ -147,7 +146,7 @@ public class CommandInfo extends GodsCommand
 			}
 		}
 		
-		if(GodsConfiguration.instance().isHolyLandEnabled())
+		if(Gods.instance().settings().holyLand().enabled())
 		{
 			int claimed = HolyLandManager.instance().getClaimedChunksForGod(godName);
 			int maxclaim = HolyLandManager.instance().getMaximumChunksForGod(godName);

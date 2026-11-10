@@ -41,7 +41,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.Gods;
-import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
 import com.dogonfire.gods.tasks.TaskGiveItem;
 import com.dogonfire.gods.tasks.TaskGodSpeak;
@@ -251,14 +250,14 @@ public class GodManager
 
 		if (oldGodName == null || !oldGodName.equals(godName))
 		{
-			if (GodsConfiguration.instance().isMarriageEnabled())
+			if (Gods.instance().settings().marriage().enabled())
 			{
 				MarriageManager.instance().divorce(player.getUniqueId());
 			}
 			
 			QuestManager.instance().handleJoinReligion(player.getName(), godName);
 
-			if (GodsConfiguration.instance().isBiblesEnabled() && GodsConfiguration.instance().isGiveBibleWhenJoinReligion())
+			if (Gods.instance().settings().bibles().enabled() && Gods.instance().settings().bibles().giveOnJoin())
 			{
 				HolyBookManager.instance().giveBible(godName, player.getName());
 			}
@@ -311,7 +310,7 @@ public class GodManager
 
 			createGod(godName, player.getLocation(), godGender, godType);
 
-			if (GodsConfiguration.instance().isBroadcastNewGods())
+			if (Gods.instance().settings().gods().broadcastNewGods())
 			{
 				Gods.instance().getServer().broadcastMessage(ChatColor.WHITE + player.getName() + ChatColor.AQUA + " started to believe in the " + LanguageManager.instance().getGodGenderName(getGenderForGod(godName)) + " " + ChatColor.GOLD + godName);
 			}
@@ -357,7 +356,7 @@ public class GodManager
 			else
 			{
 				priests.add(playerId.toString());
-				dispatchPriestCommand(GodsConfiguration.instance().getPriestAssignCommand(), playerId);
+				dispatchPriestCommand(Gods.instance().settings().priests().assignCommand(), playerId);
 			}
 
 			setGodValue(godName, ".Priests", priests);
@@ -389,7 +388,7 @@ public class GodManager
 		}
 
 		LanguageManager.instance().setPlayerName(player.getName());
-		if (GodsConfiguration.instance().isMarriageEnabled())
+		if (Gods.instance().settings().marriage().enabled())
 		{
 			UUID pendingMarriagePartner = MarriageManager.instance().getProposal(believerId);
 
@@ -444,7 +443,7 @@ public class GodManager
 				Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.FollowersHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods followers", ChatColor.WHITE + "/gods followers", 200);
 				Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.DescriptionHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods desc", ChatColor.WHITE + "/gods desc", 300);
 
-				if (GodsConfiguration.instance().isHolyArtifactsEnabled())
+				if (Gods.instance().settings().holyArtifacts().enabled())
 				{
 					Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AttackHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods startattack", ChatColor.WHITE + "/gods startattack", 300);
 				}
@@ -481,7 +480,7 @@ public class GodManager
 
 		LanguageManager.instance().setPlayerName(Gods.instance().getServer().getPlayer(believerId).getDisplayName());
 
-		if (GodsConfiguration.instance().isMarriageEnabled())
+		if (Gods.instance().settings().marriage().enabled())
 		{
 			MarriageManager.instance().divorce(believerId);
 		}
@@ -567,8 +566,8 @@ public class GodManager
 			blessingType = this.random.nextInt(5);
 			t++;
 		}
-		while ((t < 50) && (((blessingType == 0) && (!GodsConfiguration.instance().isFastDiggingBlessingEnabled())) || ((blessingType == 1) && (!GodsConfiguration.instance().isHealBlessingEnabled())) || ((blessingType == 2) && (!GodsConfiguration.instance().isRegenerationBlessingEnabled()))
-				|| ((blessingType == 3) && (!GodsConfiguration.instance().isSpeedBlessingEnabled())) || ((blessingType == 4) && (!GodsConfiguration.instance().isIncreaseDamageBlessingEnabled()))));
+		while ((t < 50) && (((blessingType == 0) && (!Gods.instance().settings().blessings().fastDigging())) || ((blessingType == 1) && (!Gods.instance().settings().blessings().heal())) || ((blessingType == 2) && (!Gods.instance().settings().blessings().regeneration()))
+				|| ((blessingType == 3) && (!Gods.instance().settings().blessings().speed())) || ((blessingType == 4) && (!Gods.instance().settings().blessings().increaseDamage()))));
 
 		switch (blessingType)
 		{
@@ -634,7 +633,7 @@ public class GodManager
 		setHomeForGod(godName, location);
 		setGenderForGod(godName, godGender);
 		setDivineForceForGod(godName, godType);
-		setPrivateAccess(godName, GodsConfiguration.instance().isDefaultPrivateReligions());
+		setPrivateAccess(godName, Gods.instance().settings().gods().privateByDefault());
 
 		setGodValue(godName, ".Created", formatter.format(thisDate));
 
@@ -663,7 +662,7 @@ public class GodManager
 			curseType = this.random.nextInt(7);
 			t++;
 		}
-		while ((t < 50) && (((curseType == 5) && (!GodsConfiguration.instance().isLightningCurseEnabled())) || ((curseType == 6) && (!GodsConfiguration.instance().isMobCurseEnabled()))));
+		while ((t < 50) && (((curseType == 5) && (!Gods.instance().settings().curses().lightning())) || ((curseType == 6) && (!Gods.instance().settings().curses().mobs()))));
 
 		float cursePower = 1.0F + godPower / 100.0F;
 
@@ -772,15 +771,15 @@ public class GodManager
 
 	private Material getAxeBlessing(String godName)
 	{
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel3Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel3Items())
 		{
 			return Material.DIAMOND_AXE;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel2Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel2Items())
 		{
 			return Material.IRON_AXE;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel1Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel1Items())
 		{
 			return Material.STONE_AXE;
 		}
@@ -799,7 +798,7 @@ public class GodManager
 		// Blessing.MaxBlessingTime is in seconds (Cursing.MaxCursingTime is in minutes)
 		long diffSeconds = (thisDate.getTime() - lastBlessedDate.getTime()) / 1000L;
 		UUID blessedPlayer = parseUUID(this.godsConfig.getString(godName + ".BlessedPlayer"));
-		if (blessedPlayer == null || diffSeconds > GodsConfiguration.instance().getMaxBlessingTime())
+		if (blessedPlayer == null || diffSeconds > Gods.instance().settings().blessings().blessedSeconds())
 		{
 			setBlessedPlayerForGod(godName, null);
 
@@ -910,7 +909,7 @@ public class GodManager
 		// Cursing.MaxCursingTime is in minutes (Blessing.MaxBlessingTime is in seconds)
 		long diffMinutes = (thisDate.getTime() - lastCursedDate.getTime()) / 60000L;
 		UUID cursedPlayer = parseUUID(this.godsConfig.getString(godName + ".CursedPlayer"));
-		if (cursedPlayer == null || diffMinutes > GodsConfiguration.instance().getMaxCursingTime())
+		if (cursedPlayer == null || diffMinutes > Gods.instance().settings().curses().cursedMinutes())
 		{
 			setCursedPlayerForGod(godName, null);
 
@@ -1019,7 +1018,7 @@ public class GodManager
 
 		float baseFalloff = (1 + moodRandom.nextInt(40)) / 20.0F;
 
-		double falloffValue = -GodsConfiguration.instance().getMoodFalloff() * (1.0F + baseFalloff * BelieverManager.instance().getOnlineBelieversForGod(godName).size()) * (1.0D + Math.sin(System.currentTimeMillis() / 1500000.0F));
+		double falloffValue = -Gods.instance().settings().gods().moodFalloff() * (1.0F + baseFalloff * BelieverManager.instance().getOnlineBelieversForGod(godName).size()) * (1.0D + Math.sin(System.currentTimeMillis() / 1500000.0F));
 
 		Gods.instance().logDebug(godName + " mood falloff is " + falloffValue);
 
@@ -1063,7 +1062,7 @@ public class GodManager
 
 	public boolean getGodMobDamage(String godName)
 	{
-		return this.godsConfig.getBoolean(godName + ".MobDamage", GodsConfiguration.instance().isHolyLandDefaultMobDamage());
+		return this.godsConfig.getBoolean(godName + ".MobDamage", Gods.instance().settings().holyLand().defaultMobDamage());
 	}
 
 	public boolean getGodMobSpawning(String godName)
@@ -1085,7 +1084,7 @@ public class GodManager
 
 		Set<UUID> believers = BelieverManager.instance().getBelieversForGod(godName);
 
-		if (GodsConfiguration.instance().isUseWhitelist())
+		if (Gods.instance().settings().gods().whitelist())
 		{
 			minGodPower = (int) WhitelistManager.instance().getMinGodPower(godName);
 		}
@@ -1105,20 +1104,20 @@ public class GodManager
 
 	public boolean getGodPvP(String godName)
 	{
-		return this.godsConfig.getBoolean(godName + ".PvP", GodsConfiguration.instance().isHolyLandDefaultPvP());
+		return this.godsConfig.getBoolean(godName + ".PvP", Gods.instance().settings().holyLand().defaultPvp());
 	}
 
 	public int getHealthBlessing(String godName)
 	{
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel3Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel3Items())
 		{
 			return 3;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel2Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel2Items())
 		{
 			return 2;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel1Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel1Items())
 		{
 			return 1;
 		}
@@ -1132,15 +1131,15 @@ public class GodManager
 
 	private Material getHoeBlessing(String godName)
 	{
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel3Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel3Items())
 		{
 			return Material.DIAMOND_HOE;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel2Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel2Items())
 		{
 			return Material.IRON_HOE;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel1Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel1Items())
 		{
 			return Material.STONE_HOE;
 		}
@@ -1238,7 +1237,7 @@ public class GodManager
 			}
 		}
 
-		return GodsConfiguration.instance().getLanguageIdentifier() + "_" + godType.name().toLowerCase() + "_" + godGender.name().toLowerCase() + ".yml";
+		return Gods.instance().settings().general().language() + "_" + godType.name().toLowerCase() + "_" + godGender.name().toLowerCase() + ".yml";
 	}
 
 	public Date getLastBlessedTimeForGod(String godName)
@@ -1483,15 +1482,15 @@ public class GodManager
 
 	private Material getPickAxeBlessing(String godName)
 	{
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel3Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel3Items())
 		{
 			return Material.DIAMOND_PICKAXE;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel2Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel2Items())
 		{
 			return Material.IRON_PICKAXE;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel1Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel1Items())
 		{
 			return Material.STONE_PICKAXE;
 		}
@@ -1520,7 +1519,7 @@ public class GodManager
 			}
 
 			long diffHours = (System.currentTimeMillis() - BelieverManager.instance().getLastPrayerTime(believerId).getTime()) / 3600000L;
-			if (diffHours > GodsConfiguration.instance().getMaxPriestPrayerTime())
+			if (diffHours > Gods.instance().settings().priests().maxHoursWithoutPrayer())
 			{
 				String priestName = Gods.instance().getServer().getOfflinePlayer(believerId).getName();
 				LanguageManager.instance().setPlayerName(priestName != null ? priestName : "our priest");
@@ -1720,15 +1719,15 @@ public class GodManager
 
 	private Material getSpadeBlessing(String godName)
 	{
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel3Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel3Items())
 		{
 			return Material.DIAMOND_SHOVEL;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel2Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel2Items())
 		{
 			return Material.IRON_SHOVEL;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel1Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel1Items())
 		{
 			return Material.STONE_SHOVEL;
 		}
@@ -1737,15 +1736,15 @@ public class GodManager
 
 	private Material getSwordBlessing(String godName)
 	{
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel3Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel3Items())
 		{
 			return Material.DIAMOND_SWORD;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel2Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel2Items())
 		{
 			return Material.IRON_SWORD;
 		}
-		if (getGodPower(godName) > GodsConfiguration.instance().getGodPowerForLevel1Items())
+		if (getGodPower(godName) > Gods.instance().settings().itemBlessings().godPowerForLevel1Items())
 		{
 			return Material.STONE_SWORD;
 		}
@@ -1754,7 +1753,7 @@ public class GodManager
 
 	public String getTitleForGod(String godName)
 	{
-		if (!GodsConfiguration.instance().isUseGodTitles())
+		if (!Gods.instance().settings().gods().titles())
 		{
 			return "";
 		}
@@ -1805,7 +1804,7 @@ public class GodManager
 
 		double godVerbosity = getGodPower(godName) / 100.0F + verbosity;
 
-		return (int) (1.0D + variation * (GodsConfiguration.instance().getGodVerbosity() * godVerbosity));
+		return (int) (1.0D + variation * (Gods.instance().settings().gods().verbosity() * godVerbosity));
 	}
 
 	public List<String> getWarRelations(String godName)
@@ -1867,7 +1866,7 @@ public class GodManager
 	
 	private boolean godSayNeededSacrificeToBeliever(String godName, UUID believerId)
 	{
-		if (GodsConfiguration.instance().isSacrificesEnabled())
+		if (Gods.instance().settings().sacrifices().enabled())
 		{
 			Material itemType = getSacrificeItemTypeForGod(godName);
 			if (itemType != null)
@@ -2006,7 +2005,7 @@ public class GodManager
 
 			addMoodForGod(godName, getPleasedModifierForGod(godName));
 
-			if ((GodsConfiguration.instance().isHolyLandEnabled()) && (PermissionsManager.instance().hasPermission(player, "gods.holyland")))
+			if ((Gods.instance().settings().holyLand().enabled()) && (PermissionsManager.instance().hasPermission(player, "gods.holyland")))
 			{
 				HolyLandManager.instance().addPrayer(player, godName, altarBlock.getLocation());
 			}
@@ -2046,7 +2045,7 @@ public class GodManager
 				
 				LanguageManager.instance().setPlayerName(player.getDisplayName());
 				
-				if (GodsConfiguration.instance().isCommandmentsBroadcastFoodEaten())
+				if (Gods.instance().settings().commandments().broadcastFoodEaten())
 				{
 					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing, 2 + this.random.nextInt(20));
 				}
@@ -2074,7 +2073,7 @@ public class GodManager
 
 				LanguageManager.instance().setPlayerName(player.getDisplayName().toUpperCase());
 
-				if (GodsConfiguration.instance().isCommandmentsBroadcastFoodEaten())
+				if (Gods.instance().settings().commandments().broadcastFoodEaten())
 				{
 					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing, 2 + this.random.nextInt(10));
 				}
@@ -2088,7 +2087,7 @@ public class GodManager
 
 	public void handleKilled(Player player, String godName, String mobType)
 	{
-		if ((!GodsConfiguration.instance().isCommandmentsEnabled()) || (mobType == null))
+		if ((!Gods.instance().settings().commandments().enabled()) || (mobType == null))
 		{
 			return;
 		}
@@ -2109,7 +2108,7 @@ public class GodManager
 				{
 					Gods.instance().logDebug(ex.getMessage());
 				}
-				if (GodsConfiguration.instance().isCommandmentsBroadcastMobSlain())
+				if (Gods.instance().settings().commandments().broadcastMobSlain())
 				{
 					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing, 2 + this.random.nextInt(20));
 				}
@@ -2136,7 +2135,7 @@ public class GodManager
 					Gods.instance().logDebug(ex.getMessage());
 				}
 				
-				if (GodsConfiguration.instance().isCommandmentsBroadcastMobSlain())
+				if (Gods.instance().settings().commandments().broadcastMobSlain())
 				{
 					godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing, 2 + this.random.nextInt(10));
 				}
@@ -2154,7 +2153,7 @@ public class GodManager
 		{
 			return;
 		}
-		if (GodsConfiguration.instance().isLeaveReligionOnDeath())
+		if (Gods.instance().settings().believers().leaveReligionOnDeath())
 		{
 			if (isPriestForGod(playerId, godName))
 			{
@@ -2203,7 +2202,7 @@ public class GodManager
 
 			LanguageManager.instance().setPlayerName(believer.getDisplayName());
 
-			if (GodsConfiguration.instance().isCommandmentsBroadcastFoodEaten())
+			if (Gods.instance().settings().commandments().broadcastFoodEaten())
 			{
 				godSayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice, 2 + this.random.nextInt(10));
 			}
@@ -2681,11 +2680,11 @@ public class GodManager
 		{
 			if (!BelieverManager.instance().hasRecentItemBlessing(believer.getUniqueId()))
 			{
-				if (GodsConfiguration.instance().isItemBlessingEnabled())
+				if (Gods.instance().settings().itemBlessings().enabled())
 				{
 					float power = getGodPower(godName);
 
-					if (power >= GodsConfiguration.instance().getMinGodPowerForItemBlessings() && this.random.nextInt((int) (1.0F + 50.0F / power)) == 0)
+					if (power >= Gods.instance().settings().itemBlessings().minGodPower() && this.random.nextInt((int) (1.0F + 50.0F / power)) == 0)
 					{
 						double healing = getHealthNeed(godName, believer);
 
@@ -2720,13 +2719,13 @@ public class GodManager
 				}
 			}
 
-			if (GodsConfiguration.instance().isHolyArtifactsEnabled())
+			if (Gods.instance().settings().holyArtifacts().enabled())
 			{
 				if (!BelieverManager.instance().hasRecentHolyArtifactBlessing(believer.getUniqueId()))
 				{
 					float power = getGodPower(godName);
 
-					if ((power >= GodsConfiguration.instance().getMinGodPowerForItemBlessings()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
+					if ((power >= Gods.instance().settings().itemBlessings().minGodPower()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
 					{
 						blessPlayerWithHolyArtifact(godName, believer);
 
@@ -2753,7 +2752,7 @@ public class GodManager
 			}
 		}
 
-		if (GodsConfiguration.instance().isMarriageEnabled() && this.random.nextInt(501) == 0)
+		if (Gods.instance().settings().marriage().enabled() && this.random.nextInt(501) == 0)
 		{
 			List<MarriageManager.MarriedCouple> marriedCouples = MarriageManager.instance().getMarriedCouples();
 			if (marriedCouples.size() > 0)
@@ -2797,7 +2796,7 @@ public class GodManager
 		{
 			return false;
 		}
-		if ((GodsConfiguration.instance().isMarriageEnabled()) && (this.random.nextInt(501) == 0))
+		if ((Gods.instance().settings().marriage().enabled()) && (this.random.nextInt(501) == 0))
 		{
 			List<MarriageManager.MarriedCouple> marriedCouples = MarriageManager.instance().getMarriedCouples();
 			if (marriedCouples.size() > 0)
@@ -2845,10 +2844,10 @@ public class GodManager
 		{
 			if (!BelieverManager.instance().hasRecentItemBlessing(believer.getUniqueId()))
 			{
-				if (GodsConfiguration.instance().isItemBlessingEnabled())
+				if (Gods.instance().settings().itemBlessings().enabled())
 				{
 					float power = getGodPower(godName);
-					if ((power >= GodsConfiguration.instance().getMinGodPowerForItemBlessings()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
+					if ((power >= Gods.instance().settings().itemBlessings().minGodPower()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
 					{
 						double healing = getHealthNeed(godName, believer);
 						if ((healing > 1.0D) && (this.random.nextInt(2) == 0))
@@ -2882,7 +2881,7 @@ public class GodManager
 			}
 		}
 
-		if ((GodsConfiguration.instance().isMarriageEnabled()) && (this.random.nextInt(501) == 0))
+		if ((Gods.instance().settings().marriage().enabled()) && (this.random.nextInt(501) == 0))
 		{
 			List<MarriageManager.MarriedCouple> marriedCouples = MarriageManager.instance().getMarriedCouples();
 
@@ -2961,7 +2960,7 @@ public class GodManager
 
 	private void manageBlessings(String godName)
 	{
-		if (!GodsConfiguration.instance().isBlessingEnabled())
+		if (!Gods.instance().settings().blessings().enabled())
 		{
 			return;
 		}
@@ -2995,7 +2994,7 @@ public class GodManager
 
 	private void manageCurses(String godName)
 	{
-		if (!GodsConfiguration.instance().isCursingEnabled())
+		if (!Gods.instance().settings().curses().enabled())
 		{
 			return;
 		}
@@ -3029,7 +3028,7 @@ public class GodManager
 
 	private void manageHolyLands()
 	{
-		if (!GodsConfiguration.instance().isHolyLandEnabled())
+		if (!Gods.instance().settings().holyLand().enabled())
 		{
 			return;
 		}
@@ -3075,7 +3074,7 @@ public class GodManager
 			{
 				long timeDiff = System.currentTimeMillis() - BelieverManager.instance().getLastPrayerTime(believerId).getTime();
 
-				if (timeDiff > 3600000L * GodsConfiguration.instance().getMaxBelieverPrayerTime())
+				if (timeDiff > 3600000L * Gods.instance().settings().believers().maxHoursWithoutPrayer())
 				{
 					String believerName = Gods.instance().getServer().getOfflinePlayer(believerId).getName();
 					if (believerName != null)
@@ -3113,12 +3112,12 @@ public class GodManager
 			priestNames = new ArrayList<UUID>();
 		}
 
-		if (numberOfBelievers < GodsConfiguration.instance().getMinBelieversForPriest() + 6 * priestNames.size())
+		if (numberOfBelievers < Gods.instance().settings().priests().minBelievers() + 6 * priestNames.size())
 		{
 			return false;
 		}
 
-		if (priestNames.size() < GodsConfiguration.instance().getMaxPriestsPrGod())
+		if (priestNames.size() < Gods.instance().settings().priests().maxPerGod())
 		{
 			if (this.random.nextInt(3) == 0)
 			{
@@ -3161,7 +3160,7 @@ public class GodManager
 					LanguageManager.instance().setPlayerName(player.getDisplayName());
 
 					// Remind the priests of a commandment, or of the holy book when bibles are on
-					int r = GodsConfiguration.instance().isBiblesEnabled() ? this.random.nextInt(2) : 0;
+					int r = Gods.instance().settings().bibles().enabled() ? this.random.nextInt(2) : 0;
 
 					try
 					{
@@ -3205,7 +3204,7 @@ public class GodManager
 
 	private void manageQuests(String godName)
 	{
-		if (!GodsConfiguration.instance().isQuestsEnabled())
+		if (!Gods.instance().settings().quests().enabled())
 		{
 			return;
 		}
@@ -3214,7 +3213,7 @@ public class GodManager
 
 		if (!QuestManager.instance().hasQuest(godName))
 		{
-			if (numberOfBelievers < GodsConfiguration.instance().getRequiredBelieversForQuests() || this.getMinutesSinceLastQuest(godName) < GodsConfiguration.instance().getMinMinutesBetweenQuests())
+			if (numberOfBelievers < Gods.instance().settings().quests().requiredBelievers() || this.getMinutesSinceLastQuest(godName) < Gods.instance().settings().quests().minMinutesBetweenQuests())
 			{
 				return;
 			}
@@ -3237,7 +3236,7 @@ public class GodManager
 
 	private void manageSacrifices()
 	{
-		if (!GodsConfiguration.instance().isSacrificesEnabled())
+		if (!Gods.instance().settings().sacrifices().enabled())
 		{
 			return;
 		}
@@ -3252,7 +3251,7 @@ public class GodManager
 
 	private void manageSacrifices(String godName)
 	{
-		if (!GodsConfiguration.instance().isSacrificesEnabled())
+		if (!Gods.instance().settings().sacrifices().enabled())
 		{
 			return;
 		}
@@ -3318,12 +3317,12 @@ public class GodManager
 
 		this.godsConfig.set(godName, null);
 
-		if (GodsConfiguration.instance().isBiblesEnabled())
+		if (Gods.instance().settings().bibles().enabled())
 		{
 			HolyBookManager.instance().clearBible(godName);
 		}
 
-		if (GodsConfiguration.instance().isHolyLandEnabled())
+		if (Gods.instance().settings().holyLand().enabled())
 		{
 			HolyLandManager.instance().removeHolyLandsForGod(godName);
 		}
@@ -3337,7 +3336,7 @@ public class GodManager
 
 		if (priests.remove(playerId.toString()))
 		{
-			dispatchPriestCommand(GodsConfiguration.instance().getPriestRemoveCommand(), playerId);
+			dispatchPriestCommand(Gods.instance().settings().priests().removeCommand(), playerId);
 		}
 
 		setGodValue(godName, ".Priests", priests);
