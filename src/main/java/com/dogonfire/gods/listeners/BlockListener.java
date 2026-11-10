@@ -228,9 +228,10 @@ public class BlockListener implements Listener
 					event.setCancelled(true);
 				}
 			}
-			else if ((event.getEntity() instanceof Player) && (!GodManager.instance().getGodPvP(godName)))
+			else if ((event.getEntity() instanceof Player victim) && godName.equals(BelieverManager.instance().getGodForBeliever(victim.getUniqueId()))
+					&& (!GodManager.instance().getGodPvP(godName)))
 			{
-				// Believers fighting each other in their own god's holy land
+				// Believers fighting each other in their own god's holy land; intruders can always be fought off
 				event.setCancelled(true);
 			}
 		}
@@ -656,6 +657,14 @@ public class BlockListener implements Listener
 			}
 		}
 
+		// Only a finished "Altar / of / <god>" sign is a praying altar. A curse or blessing sign whose player
+		// is offline (or with cursing/blessing off), or any other sign on an altar block, does nothing
+		String firstLine = ChatColor.stripColor(lines[0]).trim();
+		if (!firstLine.equals("Altar") || !AltarManager.instance().isFormattedAltarSign(block))
+		{
+			return;
+		}
+
 		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.pray")))
 		{
 			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarPrayingNotAllowed, ChatColor.DARK_RED, 0, "", 1);
@@ -798,6 +807,19 @@ public class BlockListener implements Listener
 		}
 		else
 		{
+			// A praying altar is a sign with only the god's name on it; leave other signs alone
+			int writtenLines = 0;
+			for (String text : event.getLines())
+			{
+				if ((text != null) && !ChatColor.stripColor(text).isBlank())
+				{
+					writtenLines++;
+				}
+			}
+			if (writtenLines != 1)
+			{
+				return;
+			}
 			created = AltarManager.instance().handleNewPrayingAltar(event);
 		}
 
