@@ -43,7 +43,7 @@ public class CommandSetDescription extends GodsCommand
 			return;
 		}
 		String description = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
-		ctx.godManager().setGodDescription(godName, description);
-		sender.sendMessage(ChatColor.AQUA + "You set your religion description to " + ChatColor.YELLOW + ctx.godManager().getGodDescription(godName));
+		ctx.godService().setGodDescription(godName, description);
+		sender.sendMessage(ChatColor.AQUA + "You set your religion description to " + ChatColor.YELLOW + ctx.godService().getGodDescription(godName));
 	}
 }

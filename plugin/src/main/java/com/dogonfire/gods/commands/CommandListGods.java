@@ -39,10 +39,10 @@ public class CommandListGods extends GodsCommand
 		List<God> gods = new ArrayList<God>();
 		String playerGod = null;
 
-		List<String> list = ctx.godManager().getTopGods();
+		List<String> list = ctx.godService().getAllGods();
 		for (String godName : list)
 		{
-			int power = (int) ctx.godManager().getGodPower(godName);
+			int power = (int) ctx.godService().getGodPower(godName);
 
 			int believers = ctx.believerService().getBelieversForGod(godName).size();
 			if (believers > 0)
@@ -75,7 +75,7 @@ public class CommandListGods extends GodsCommand
 
 		for (God god : topGods)
 		{
-			String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godManager().getTitleForGod(god.name) });
+			String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godService().getTitleForGod(god.name) });
 			if (sender != null)
 			{
 				if ((playerGod != null) && (god.name.equals(playerGod)))
@@ -93,7 +93,7 @@ public class CommandListGods extends GodsCommand
 			}
 			else
 			{
-				ctx.plugin().log(String.format("%2d", new Object[] { Integer.valueOf(n) }) + " - " + fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Mood ").append(ctx.godManager().getExactMoodForGod(god.name)).toString())
+				ctx.plugin().log(String.format("%2d", new Object[] { Integer.valueOf(n) }) + " - " + fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Mood ").append(ctx.moodService().getExactMoodForGod(god.name)).toString())
 						+ String.format("%-2s", new StringBuilder().append(" Power ").append(god.power).toString()) + String.format("%-2s", new StringBuilder().append(" Believers ").append(god.believers).toString()));
 			}
 			n++;
@@ -105,7 +105,7 @@ public class CommandListGods extends GodsCommand
 		{
 			for (God god : gods)
 			{
-				String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godManager().getTitleForGod(god.name) });
+				String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godService().getTitleForGod(god.name) });
 				if ((playerGod != null) && (god.name.equals(playerGod)))
 				{
 					playerGodShown = true;

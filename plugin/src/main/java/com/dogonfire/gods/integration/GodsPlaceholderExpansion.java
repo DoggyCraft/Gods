@@ -71,7 +71,7 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 		{
 			god = this.ctx.believerService().getGodForBeliever(player.getUniqueId());
 			prayerPower = this.ctx.believerService().getPrayerPower(player.getUniqueId());
-			godColor = (god != null) ? this.ctx.godManager().getColorForGod(god) : ChatColor.WHITE;
+			godColor = (god != null) ? this.ctx.godService().getColorForGod(god) : ChatColor.WHITE;
 		}
 		else
 		{

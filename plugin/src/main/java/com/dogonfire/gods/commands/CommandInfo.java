@@ -35,7 +35,7 @@ public class CommandInfo extends GodsCommand
 
 		if (args.length == 2)
 		{
-			godName = ctx.godManager().formatGodName(args[1]);
+			godName = ctx.godService().formatGodName(args[1]);
 		}
 
 		if (godName == null)
@@ -49,7 +49,7 @@ public class CommandInfo extends GodsCommand
 			}
 		}
 
-		if (!ctx.godManager().godExist(godName))
+		if (!ctx.godService().godExist(godName))
 		{
 			sender.sendMessage(ChatColor.RED + "There is no God with such name.");
 			return;
@@ -62,12 +62,12 @@ public class CommandInfo extends GodsCommand
 			priests = new ArrayList<UUID>();
 		}
 
-		sender.sendMessage(ChatColor.YELLOW + "--------- " + godName + " " + ctx.godManager().getColorForGod(godName) + ctx.godManager().getTitleForGod(godName) + ChatColor.YELLOW + " ---------");
+		sender.sendMessage(ChatColor.YELLOW + "--------- " + godName + " " + ctx.godService().getColorForGod(godName) + ctx.godService().getTitleForGod(godName) + ChatColor.YELLOW + " ---------");
 
-		sender.sendMessage("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + ctx.godManager().getGodDescription(godName));
+		sender.sendMessage("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + ctx.godService().getGodDescription(godName));
 
 		ChatColor moodColor = ChatColor.AQUA;
-		GodMood godMood = ctx.godManager().getMoodForGod(godName);
+		GodMood godMood = ctx.moodService().getMoodForGod(godName);
 
 		switch (godMood)
 		{
@@ -114,7 +114,7 @@ public class CommandInfo extends GodsCommand
 		}
 
 		sender.sendMessage(ChatColor.AQUA + "Believers: " + ChatColor.YELLOW + ctx.believerService().getBelieversForGod(godName).size());
-		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + ctx.godManager().getGodPower(godName));
+		sender.sendMessage(ChatColor.AQUA + "Exact power: " + ChatColor.YELLOW + ctx.godService().getGodPower(godName));
 		if (ctx.settings().commandments().enabled())
 		{
 			sender.sendMessage(ChatColor.AQUA + "Holy food: " + ChatColor.YELLOW + ctx.languageManager().getItemTypeName(ctx.godManager().getHolyFoodTypeForGod(godName)));
@@ -124,17 +124,17 @@ public class CommandInfo extends GodsCommand
 			sender.sendMessage(ChatColor.AQUA + "Unholy creature: " + ChatColor.YELLOW + ctx.languageManager().getMobTypeName(ctx.godManager().getUnholyMobTypeForGod(godName)));
 		}
 
-		List<String> allyRelations = ctx.godManager().getAllianceRelations(godName);
-		Object warRelations = ctx.godManager().getWarRelations(godName);
+		List<String> allyRelations = ctx.relationService().getAllianceRelations(godName);
+		Object warRelations = ctx.relationService().getWarRelations(godName);
 
 		if ((((List<?>) warRelations).size() > 0) || (allyRelations.size() > 0))
 		{
 			sender.sendMessage(ChatColor.AQUA + "Religious relations: ");
-			for (String ally : ctx.godManager().getAllianceRelations(godName))
+			for (String ally : ctx.relationService().getAllianceRelations(godName))
 			{
 				sender.sendMessage(ChatColor.GREEN + " Alliance with " + ChatColor.GOLD + ally);
 			}
-			List<String> enemies = ctx.godManager().getWarRelations(godName);
+			List<String> enemies = ctx.relationService().getWarRelations(godName);
 			for (String enemy : enemies)
 			{
 				sender.sendMessage(ChatColor.RED + " War with " + ChatColor.GOLD + enemy);

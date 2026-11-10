@@ -187,7 +187,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		altarGodName = ctx.godManager().formatGodName(altarGodName);
+		altarGodName = ctx.godService().formatGodName(altarGodName);
 
 		if (!ctx.godListService().isAllowedGod(altarGodName))
 		{
@@ -195,7 +195,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		if (!ctx.godManager().hasGodAccess(player.getUniqueId(), altarGodName))
+		if (!ctx.godService().hasGodAccess(player.getUniqueId(), altarGodName))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
 			return;

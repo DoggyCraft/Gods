@@ -244,7 +244,7 @@ public class AltarService
 		}
 
 		String godName = nameLine.godName().trim();
-		godName = ctx.godManager().formatGodName(godName);
+		godName = ctx.godService().formatGodName(godName);
 
 		if ((godName.length() <= 1) || (godName.contains(" ")))
 		{
@@ -258,7 +258,7 @@ public class AltarService
 			return false;
 		}
 
-		if (!ctx.godManager().hasGodAccess(player.getUniqueId(), godName))
+		if (!ctx.godService().hasGodAccess(player.getUniqueId(), godName))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrivateGodNoAccess, ChatColor.DARK_RED, 0, "", 1);
 			return false;

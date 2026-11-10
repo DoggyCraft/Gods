@@ -41,12 +41,12 @@ public class CommandAttackHolyLand extends GodsCommand
 			sender.sendMessage(stringNoGod);
 			return;
 		}
-		if (ctx.godManager().getContestedHolyLandForGod(godName) == null)
+		if (ctx.relationService().getContestedHolyLandForGod(godName) == null)
 		{
 			sender.sendMessage(ChatColor.RED + "Your religion is not attacking a Holy Land. Your priest can start an attack with " + ChatColor.WHITE + "/gods startattack");
 			return;
 		}
-		Location attackLocation = ctx.godManager().getContestedHolyLandAttackLocationForGod(godName);
+		Location attackLocation = ctx.relationService().getContestedHolyLandAttackLocationForGod(godName);
 		if (attackLocation == null || attackLocation.getWorld() == null)
 		{
 			sender.sendMessage(ChatColor.RED + "The Holy Land your religion is attacking is in a world that is not loaded");

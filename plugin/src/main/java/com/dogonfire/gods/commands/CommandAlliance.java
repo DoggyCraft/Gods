@@ -40,8 +40,8 @@ public class CommandAlliance extends GodsCommand {
 			return;
 		}
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
-		String allyGodName = ctx.godManager().formatGodName(args[1]);
-		if (!ctx.godManager().godExist(args[1])) {
+		String allyGodName = ctx.godService().formatGodName(args[1]);
+		if (!ctx.godService().godExist(args[1])) {
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
 			return;
 		}
@@ -49,12 +49,12 @@ public class CommandAlliance extends GodsCommand {
 			player.sendMessage(ChatColor.RED + "You cannot ally with your own God!");
 			return;
 		}
-		List<?> wars = ctx.godManager().getWarRelations(godName);
+		List<?> wars = ctx.relationService().getWarRelations(godName);
 		if (wars.contains(allyGodName)) {
 			player.sendMessage(ChatColor.RED + "You are in WAR with " + ChatColor.GOLD + args[1] + ChatColor.RED + "!");
 			return;
 		}
-		if (ctx.godManager().toggleAllianceRelationForGod(godName, allyGodName)) {
+		if (ctx.relationService().toggleAllianceRelationForGod(godName, allyGodName)) {
 			ctx.languageManager().setPlayerName(godName);
 			ctx.godSpeech().sayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
 			ctx.languageManager().setPlayerName(allyGodName);

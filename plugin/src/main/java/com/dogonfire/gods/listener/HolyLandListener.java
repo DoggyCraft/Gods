@@ -213,7 +213,7 @@ public class HolyLandListener implements Listener
 		}
 		if (!playerGodName.equals(blockGodName))
 		{
-			if (ctx.godManager().hasAllianceRelation(blockGodName, playerGodName))
+			if (ctx.relationService().hasAllianceRelation(blockGodName, playerGodName))
 			{
 				return;
 			}
@@ -290,19 +290,19 @@ public class HolyLandListener implements Listener
 				{
 					ctx.godManager().strikePlayerWithLightning(player.getUniqueId(), 3);
 				}
-				if (!ctx.godManager().hasWarRelation(godName, attackerGodName))
+				if (!ctx.relationService().hasWarRelation(godName, attackerGodName))
 				{
 					event.setCancelled(true);
 				}
 			}
 			else if ((event.getEntity() instanceof Player victim) && godName.equals(ctx.believerService().getGodForBeliever(victim.getUniqueId()))
-					&& (!ctx.godManager().getGodPvP(godName)))
+					&& (!ctx.godService().getGodPvP(godName)))
 			{
 				// Believers fighting each other in their own god's holy land; intruders can always be fought off
 				event.setCancelled(true);
 			}
 		}
-		else if ((attacker instanceof LivingEntity) && (!ctx.godManager().getGodMobDamage(godName)))
+		else if ((attacker instanceof LivingEntity) && (!ctx.godService().getGodMobDamage(godName)))
 		{
 			event.setCancelled(true);
 		}
@@ -353,7 +353,7 @@ public class HolyLandListener implements Listener
 		String godName = lands().getGodAtHolyLandLocation(event.getLocation());
 		if (godName != null)
 		{
-			if (ctx.godManager().getDivineForceForGod(godName) == GodType.NATURE)
+			if (ctx.godService().getDivineForceForGod(godName) == GodType.NATURE)
 			{
 				return;
 			}
@@ -370,7 +370,7 @@ public class HolyLandListener implements Listener
 				return;
 			}
 
-			if (ctx.godManager().getGodMobSpawning(godName))
+			if (ctx.godService().getGodMobSpawning(godName))
 			{
 				return;
 			}
@@ -540,7 +540,7 @@ public class HolyLandListener implements Listener
 			}
 			else
 			{
-				TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(ctx.godManager().getGodDescription(godTo)));
+				TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(ctx.godService().getGodDescription(godTo)));
 			}
 		}
 		else if ((godFrom != null) && (godTo == null))
@@ -571,7 +571,7 @@ public class HolyLandListener implements Listener
 
 		if (godName != null)
 		{
-			TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(ctx.godManager().getGodDescription(godName)));
+			TitleManager.sendTitle(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(ctx.godService().getGodDescription(godName)));
 		}
 		else
 		{

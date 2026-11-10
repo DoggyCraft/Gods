@@ -104,7 +104,7 @@ public class CommandHelp extends GodsCommand
 			{
 				for (String blockMaterial : materials)
 				{
-					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + ctx.godManager().getColorForGodType(godType) + ctx.languageManager().getGodTypeName(godType, "God"));
+					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + ctx.godService().getColorForGodType(godType) + ctx.languageManager().getGodTypeName(godType, "God"));
 				}
 			}
 		}

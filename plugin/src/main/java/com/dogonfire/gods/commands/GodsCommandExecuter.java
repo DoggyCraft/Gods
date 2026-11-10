@@ -83,7 +83,7 @@ public class GodsCommandExecuter implements CommandExecutor
 		sender.sendMessage(ChatColor.YELLOW + "------------------ " + ctx.plugin().getDescription().getFullName() + " ------------------");
 		sender.sendMessage(ChatColor.AQUA + "By DogOnFire");
 		sender.sendMessage("" + ChatColor.AQUA);
-		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + ctx.godManager().getAllGods().size() + ChatColor.AQUA + " Gods and");
+		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + ctx.godService().getAllGods().size() + ChatColor.AQUA + " Gods and");
 		sender.sendMessage("" + ChatColor.WHITE + ctx.believerService().getBelieverCount() + ChatColor.AQUA + " believers in " + ctx.settings().general().serverName());
 		sender.sendMessage("" + ChatColor.AQUA);
 		if (sender != null && sender instanceof Player)

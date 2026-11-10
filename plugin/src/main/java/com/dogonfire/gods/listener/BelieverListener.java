@@ -38,7 +38,7 @@ public class BelieverListener implements Listener
 
 		if (godName != null)
 		{
-			GodType godType = ctx.godManager().getDivineForceForGod(godName);
+			GodType godType = ctx.godService().getDivineForceForGod(godName);
 
 			ctx.godManager().handleKilledPlayer(player.getUniqueId(), godName, godType);
 		}
@@ -60,14 +60,14 @@ public class BelieverListener implements Listener
 		if (godName == null)
 		{
 			// War gods reward slaying heathens
-			if (ctx.godManager().getDivineForceForGod(killerGodName) == GodType.WAR)
+			if (ctx.godService().getDivineForceForGod(killerGodName) == GodType.WAR)
 			{
 				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingHeathen;
 			}
 		}
 		else
 		{
-			List<String> warRelations = ctx.godManager().getWarRelations(killerGodName);
+			List<String> warRelations = ctx.relationService().getWarRelations(killerGodName);
 			if ((warRelations != null) && (warRelations.contains(godName)))
 			{
 				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingEnemy;

@@ -107,6 +107,15 @@ public final class GodRepository extends Repository
 		return this.gods.computeIfAbsent(name, God::new);
 	}
 
+	/**
+	 * The god to change, created if there is none (setting a value in gods.yml always created the god), or null for a
+	 * null name, so a lookup for a player without a god can't create a god called "null"
+	 */
+	public God forChange(String name)
+	{
+		return name != null ? getOrCreate(name) : null;
+	}
+
 	public void remove(String name)
 	{
 		this.gods.remove(name);

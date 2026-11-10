@@ -35,16 +35,16 @@ public class CommandTogglePVP extends GodsCommand
 			return;
 		}
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
-		boolean pvp = ctx.godManager().getGodPvP(godName);
+		boolean pvp = ctx.godService().getGodPvP(godName);
 		if (pvp)
 		{
 			sender.sendMessage(ChatColor.AQUA + "You set PvP for your religion to " + ChatColor.YELLOW + " disabled");
-			ctx.godManager().setGodPvP(godName, false);
+			ctx.godService().setGodPvP(godName, false);
 		}
 		else
 		{
 			sender.sendMessage(ChatColor.AQUA + "You set PvP for your religion to " + ChatColor.YELLOW + " enabled");
-			ctx.godManager().setGodPvP(godName, true);
+			ctx.godService().setGodPvP(godName, true);
 		}
 	}
 

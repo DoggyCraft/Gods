@@ -97,7 +97,7 @@ public class ChatManager
 		List<UUID> priests = ctx.godManager().getPriestsForGod(godName);
 		boolean priest = priests != null && priests.contains(playerId);
 
-		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godManager().getColorForGod(godName), ctx.believerService().getPrayerPower(playerId)));
+		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godService().getColorForGod(godName), ctx.believerService().getPrayerPower(playerId)));
 	}
 
 	/** Main thread only: refreshes everyone online. */

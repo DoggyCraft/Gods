@@ -30,8 +30,8 @@ public class CommandSetPriest extends GodsCommand
 			sender.sendMessage(stringNoPermission);
 			return;
 		}
-		String godName = ctx.godManager().formatGodName(args[1]);
-		if (!ctx.godManager().godExist(godName))
+		String godName = ctx.godService().formatGodName(args[1]);
+		if (!ctx.godService().godExist(godName))
 		{
 			sender.sendMessage(ChatColor.RED + "There is no god called '" + ChatColor.GOLD + godName + ChatColor.AQUA + "'");
 			return;

@@ -44,7 +44,7 @@ public class CommandFollowers extends GodsCommand
 		String godName = "";
 		if (args.length >= 2)
 		{
-			godName = ctx.godManager().formatGodName(args[1]);
+			godName = ctx.godService().formatGodName(args[1]);
 		}
 		else
 		{

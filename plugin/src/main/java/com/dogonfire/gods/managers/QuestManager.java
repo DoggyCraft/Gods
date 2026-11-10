@@ -355,7 +355,7 @@ public class QuestManager
 			}
 		}
 
-		ctx.godManager().setTimeSinceLastQuest(godName);
+		ctx.godService().setTimeSinceLastQuest(godName);
 
 		if (newQuest)
 		{
@@ -746,7 +746,7 @@ public class QuestManager
 
 	public List<ItemStack> getRewardsForQuestCompletion(String godName)
 	{
-		return getRewardsForQuestCompletion((int) ctx.godManager().getGodPower(godName));
+		return getRewardsForQuestCompletion((int) ctx.godService().getGodPower(godName));
 	}
 
 	// Sets $Amount and $Type for a quest message. LanguageManager is shared, so call it right before speaking.
@@ -925,7 +925,7 @@ public class QuestManager
 		{
 			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, 2 + this.random.nextInt(10));
 
-			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
+			ctx.moodService().addMoodForGod(godName, 2.0F * ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -955,7 +955,7 @@ public class QuestManager
 			ctx.languageManager().setPlayerName(playerName);
 			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
-			ctx.godManager().addMoodForGod(godName, 1.0F * ctx.godManager().getPleasedModifierForGod(godName));
+			ctx.moodService().addMoodForGod(godName, 1.0F * ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -984,7 +984,7 @@ public class QuestManager
 		{
 			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, 2 + this.random.nextInt(10));
 
-			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
+			ctx.moodService().addMoodForGod(godName, 2.0F * ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -1022,7 +1022,7 @@ public class QuestManager
 
 		ctx.godSpeech().sayToBelievers(questGod, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, 2);
 
-		ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
+		ctx.moodService().addMoodForGod(godName, 2.0F * ctx.moodService().getPleasedModifierForGod(godName));
 		ctx.godManager().addBeliefAndRewardBelievers(godName);
 		ctx.believerService().increasePrayerPower(playerId, 1);
 
@@ -1060,7 +1060,7 @@ public class QuestManager
 			ctx.languageManager().setPlayerName((player != null) ? player.getDisplayName() : "");
 			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
 
-			ctx.godManager().addMoodForGod(godName, 1.0F * ctx.godManager().getPleasedModifierForGod(godName));
+			ctx.moodService().addMoodForGod(godName, 1.0F * ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -1095,7 +1095,7 @@ public class QuestManager
 			setQuestSpeechValues(godName, QUESTTYPE.GIVEITEMS, 0);
 			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, 2 + this.random.nextInt(10));
 
-			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
+			ctx.moodService().addMoodForGod(godName, 2.0F * ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -1135,7 +1135,7 @@ public class QuestManager
 			ctx.languageManager().setPlayerName(player.getDisplayName());
 			ctx.godSpeech().sayToBelievers(godName, questSpeech(questType, Phase.COMPLETED), 2 + this.random.nextInt(10));
 
-			ctx.godManager().addMoodForGod(godName, 2.0F * ctx.godManager().getPleasedModifierForGod(godName));
+			ctx.moodService().addMoodForGod(godName, 2.0F * ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.godManager().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);

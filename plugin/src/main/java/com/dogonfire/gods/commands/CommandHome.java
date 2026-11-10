@@ -37,7 +37,7 @@ public class CommandHome extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		Location location = ctx.godManager().getHomeForGod(godName);
+		Location location = ctx.godService().getHomeForGod(godName);
 		if (location == null || location.getWorld() == null)
 		{
 			sender.sendMessage(ChatColor.RED + "Your religion does not have a home");

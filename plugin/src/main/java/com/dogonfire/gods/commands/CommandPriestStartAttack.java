@@ -48,7 +48,7 @@ public class CommandPriestStartAttack extends GodsCommand
 			return;
 		}
 
-		if (ctx.godManager().getContestedHolyLandForGod(godName) != null)
+		if (ctx.relationService().getContestedHolyLandForGod(godName) != null)
 		{
 			sender.sendMessage(ChatColor.RED + "You are already attacking a Holy Land!");
 			return;
@@ -64,7 +64,7 @@ public class CommandPriestStartAttack extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You cannot attack your own Holy Land!");
 			return;
 		}
-		if (!ctx.godManager().hasWarRelation(godName, otherGodName))
+		if (!ctx.relationService().hasWarRelation(godName, otherGodName))
 		{
 			sender.sendMessage(ChatColor.RED + "You are not in war with " + ChatColor.GOLD + otherGodName + "!");
 			return;
@@ -74,7 +74,7 @@ public class CommandPriestStartAttack extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "This Holy Land is already under attack!");
 			return;
 		}
-		ctx.godManager().setContestedHolyLandForGod(godName, player.getLocation());
+		ctx.relationService().setContestedHolyLandForGod(godName, player.getLocation());
 		sender.sendMessage(ChatColor.AQUA + "You started an attack on the Holy Land of " + ChatColor.GOLD + otherGodName);
 		ctx.godSpeech().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.AttackingHolyLandsHelp, ChatColor.AQUA, 80);
 		ctx.languageManager().setPlayerName(otherGodName);

@@ -255,7 +255,7 @@ public class HolyLandService
 
 	public int getMaximumChunksForGod(String godName)
 	{
-		return (int) (ctx.godManager().getGodPower(godName) / 10 + 3);
+		return (int) (ctx.godService().getGodPower(godName) / 10 + 3);
 	}
 
 	/** A believer built an altar here: claim the land for the god if it's free. */
@@ -503,7 +503,7 @@ public class HolyLandService
 		// Only the attacker's attack ends; the defender may be attacking a land of its own
 		if (attackingGodName != null)
 		{
-			ctx.godManager().clearContestedHolyLandForGod(attackingGodName);
+			ctx.relationService().clearContestedHolyLandForGod(attackingGodName);
 		}
 	}
 }

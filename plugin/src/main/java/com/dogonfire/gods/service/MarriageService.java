@@ -363,7 +363,7 @@ public class MarriageService
 		{
 			setMarried(player.getUniqueId(), gettingMarriedPartnerId);
 
-			float godPower = ctx.godManager().getGodPower(godName);
+			float godPower = ctx.godService().getGodPower(godName);
 
 			ctx.godManager().blessPlayer(godName, player.getUniqueId(), godPower);
 			ctx.godManager().blessPlayer(godName, gettingMarriedPartnerId, godPower);

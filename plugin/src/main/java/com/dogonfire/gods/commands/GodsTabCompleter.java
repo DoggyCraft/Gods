@@ -77,7 +77,7 @@ public class GodsTabCompleter implements TabCompleter
 			case "war":
 			case "followers":
 			case "info":
-				options.addAll(ctx.godManager().getAllGods());
+				options.addAll(ctx.godService().getAllGods());
 				break;
 			case "setpriest":
 				if (args.length == 3)
@@ -85,7 +85,7 @@ public class GodsTabCompleter implements TabCompleter
 					// Player names
 					return null;
 				}
-				options.addAll(ctx.godManager().getAllGods());
+				options.addAll(ctx.godService().getAllGods());
 				break;
 			case "marry":
 			case "invite":

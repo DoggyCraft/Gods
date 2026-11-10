@@ -95,7 +95,7 @@ public class LanguageManager
 
 	private String getLanguageFileForGod(String godName)
 	{
-		return ctx.godManager().getLanguageFileForGod(godName);
+		return ctx.godService().getLanguageFileForGod(godName);
 	}
 
 	public String getLanguageString(String godName, LANGUAGESTRING type)

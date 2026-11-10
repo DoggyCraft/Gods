@@ -16,9 +16,12 @@ import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.GodListService;
+import com.dogonfire.gods.service.GodService;
 import com.dogonfire.gods.service.GodSpeech;
 import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.service.MarriageService;
+import com.dogonfire.gods.service.MoodService;
+import com.dogonfire.gods.service.RelationService;
 import com.dogonfire.gods.storage.Storage;
 
 /**
@@ -38,6 +41,9 @@ public final class GodsContext
 
 	private final LanguageManager			languageManager;
 	private final PermissionsManager		permissionsManager;
+	private final GodService				godService;
+	private final MoodService				moodService;
+	private final RelationService			relationService;
 	private final GodManager				godManager;
 	private final BelieverService			believerService;
 	private final QuestManager				questManager;
@@ -61,6 +67,9 @@ public final class GodsContext
 
 		this.languageManager = new LanguageManager(this);
 		this.permissionsManager = new PermissionsManager();
+		this.godService = new GodService(this, storage.gods());
+		this.moodService = new MoodService(this, storage.gods());
+		this.relationService = new RelationService(this, storage.gods());
 		this.godManager = new GodManager(this);
 		this.believerService = new BelieverService(this, storage.believers());
 		this.questManager = new QuestManager(this);
@@ -107,6 +116,24 @@ public final class GodsContext
 	public PermissionsManager permissionsManager()
 	{
 		return this.permissionsManager;
+	}
+
+	/** Gods: which exist and are online, what they are, their power and what their priests set; loads gods.yml */
+	public GodService godService()
+	{
+		return this.godService;
+	}
+
+	/** Gods' moods */
+	public MoodService moodService()
+	{
+		return this.moodService;
+	}
+
+	/** Alliances, wars and the holy land a god attacks */
+	public RelationService relationService()
+	{
+		return this.relationService;
 	}
 
 	public GodManager godManager()

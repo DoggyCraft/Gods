@@ -45,8 +45,8 @@ public class CommandToggleWar extends GodsCommand
 			return;
 		}
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
-		String enemyGodName = ctx.godManager().formatGodName(args[1]);
-		if (!ctx.godManager().godExist(args[1]))
+		String enemyGodName = ctx.godService().formatGodName(args[1]);
+		if (!ctx.godService().godExist(args[1]))
 		{
 			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
 			return;
@@ -56,13 +56,13 @@ public class CommandToggleWar extends GodsCommand
 			player.sendMessage(ChatColor.RED + "You cannot go to war with your own God!");
 			return;
 		}
-		List<String> alliances = ctx.godManager().getAllianceRelations(godName);
+		List<String> alliances = ctx.relationService().getAllianceRelations(godName);
 		if (alliances.contains(enemyGodName))
 		{
 			player.sendMessage(ChatColor.RED + "You are ALLIED with " + ChatColor.GOLD + args[1] + ChatColor.RED + "!");
 			return;
 		}
-		if (ctx.godManager().toggleWarRelationForGod(godName, enemyGodName))
+		if (ctx.relationService().toggleWarRelationForGod(godName, enemyGodName))
 		{
 			ctx.languageManager().setPlayerName(godName);
 			ctx.godSpeech().sayToBelievers(enemyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversWar, 10);

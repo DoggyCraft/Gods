@@ -196,7 +196,7 @@ public class GodQuestListener implements Listener
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		ctx.godManager().updateOnlineGods();
+		ctx.godService().updateOnlineGods();
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -236,7 +236,7 @@ public class GodQuestListener implements Listener
 		// The player still counts as online during this event
 		if (ctx.plugin().isEnabled())
 		{
-			ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> ctx.godManager().updateOnlineGods());
+			ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> ctx.godService().updateOnlineGods());
 		}
 	}
 }

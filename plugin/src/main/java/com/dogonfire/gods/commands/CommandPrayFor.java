@@ -95,7 +95,7 @@ public class CommandPrayFor extends GodsCommand
 			return;
 		}
 		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForBlessing, ChatColor.AQUA, ctx.settings().prayers().blessingCost(), godName, 1);
-		if (!ctx.godManager().blessPlayer(godName, player.getUniqueId(), ctx.godManager().getGodPower(godName)))
+		if (!ctx.godManager().blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
 		{
 			ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverPrayerTooSoon);
 		}

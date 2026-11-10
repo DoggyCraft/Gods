@@ -42,7 +42,7 @@ public class CommandAccess extends GodsCommand
 		
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
-		if (godName == null || !ctx.godManager().godExist(godName))
+		if (godName == null || !ctx.godService().godExist(godName))
 		{
 			player.sendMessage(ChatColor.RED + "That God does not exist");
 			return;
@@ -58,14 +58,14 @@ public class CommandAccess extends GodsCommand
 		
 		if (access.equalsIgnoreCase("open"))
 		{
-			ctx.godManager().setPrivateAccess(godName, false);
+			ctx.godService().setPrivateAccess(godName, false);
 			ctx.plugin().log(player.getName() + " /gods open");
 			player.sendMessage(ChatColor.AQUA + "You set the religion access to " + ChatColor.YELLOW + "open" + ChatColor.AQUA + ".");
 			player.sendMessage(ChatColor.AQUA + "Players can join religion by praying at altars.");
 		}
 		else if (access.equalsIgnoreCase("close"))
 		{
-			ctx.godManager().setPrivateAccess(godName, true);
+			ctx.godService().setPrivateAccess(godName, true);
 			ctx.plugin().log(player.getName() + " /gods close");
 			player.sendMessage(ChatColor.AQUA + "You set the religion access to " + ChatColor.RED + "closed" + ChatColor.AQUA + ".");
 			player.sendMessage(ChatColor.AQUA + "Players can now only pray to this religion by invitation.");
