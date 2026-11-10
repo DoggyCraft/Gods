@@ -1,10 +1,6 @@
 package com.dogonfire.gods.listener;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -15,29 +11,26 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
 
 /**
- * What is left of the old BlockListener once believers, altars, holy lands and marriages got their own listeners:
- * gods (commandments on killing and eating, the online gods list on join/quit), quests (mob kills, meals, quest
- * chests, reading holy books) and holy artifacts (using one, picking up a second). Phases B3 (gods) and B4 (quests,
- * holy books, holy artifacts) split it further. Always registered.
+ * What is left of the old BlockListener once believers, altars, holy lands, marriages and gods got their own
+ * listeners: quests (mob kills, meals, quest chests, reading holy books), holy books and holy artifacts (using one,
+ * picking up a second). Phase B4 splits it by area. Always registered, after {@link GodListener}, with which it shares
+ * the meal {@link ActionCooldown} (reading a holy book uses it too).
  */
-public class GodQuestListener implements Listener
+public class QuestAndHolyItemListener implements Listener
 {
-	/** Last time a player ate or read a holy book, to rate-limit those effects. */
-	private final HashMap<UUID, Long> lastEatTimes = new HashMap<UUID, Long>();
+	private final GodsContext		ctx;
+	private final ActionCooldown	cooldown;
 
-	private final GodsContext ctx;
-
-	public GodQuestListener(GodsContext ctx)
+	public QuestAndHolyItemListener(GodsContext ctx, ActionCooldown cooldown)
 	{
 		this.ctx = ctx;
+		this.cooldown = cooldown;
 	}
 
 	@EventHandler
@@ -66,13 +59,6 @@ public class GodQuestListener implements Listener
 		{
 			ctx.questManager().handleKilledMob(godName, event.getEntityType().name());
 		}
-
-		if ((!player.isOp()) && (!ctx.permissionsManager().hasPermission(player, "gods.commandments")))
-		{
-			return;
-		}
-
-		ctx.commandmentService().handleKilled(player, godName, event.getEntityType().name());
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -87,24 +73,11 @@ public class GodQuestListener implements Listener
 
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		Material type = event.getItem().getType();
-		if (godName != null)
+		if (godName != null && this.cooldown.ready(player.getUniqueId(), event))
 		{
-			Long lastEatTime = this.lastEatTimes.get(player.getUniqueId());
-			long currentTime = System.currentTimeMillis();
-			if ((lastEatTime == null) || (currentTime - lastEatTime.longValue() > 10000L))
+			if (ctx.settings().quests().enabled())
 			{
-				if ((ctx.settings().commandments().enabled()) && (player.getHealth() != player.getAttribute(Attribute.MAX_HEALTH).getValue()))
-				{
-					if ((player.isOp()) || (ctx.permissionsManager().hasPermission(player, "gods.commandments")))
-					{
-						ctx.commandmentService().handleEat(player, godName, type.name());
-					}
-				}
-				if (ctx.settings().quests().enabled())
-				{
-					ctx.questManager().handleEat(player.getName(), godName, type.name());
-				}
-				this.lastEatTimes.put(player.getUniqueId(), currentTime);
+				ctx.questManager().handleEat(player.getName(), godName, type.name());
 			}
 		}
 	}
@@ -141,12 +114,9 @@ public class GodQuestListener implements Listener
 			String godName = ctx.holyBookManager().getGodForBible(book);
 			if (godName != null)
 			{
-				Long lastReadTime = this.lastEatTimes.get(player.getUniqueId());
-				long currentTime = System.currentTimeMillis();
-				if ((lastReadTime == null) || (currentTime - lastReadTime.longValue() > 10000L))
+				if (this.cooldown.ready(player.getUniqueId(), event))
 				{
 					ctx.questManager().handleReadBible(godName, player.getUniqueId());
-					this.lastEatTimes.put(player.getUniqueId(), currentTime);
 				}
 			}
 		}
@@ -193,12 +163,6 @@ public class GodQuestListener implements Listener
 		}
 	}
 
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event)
-	{
-		ctx.godService().updateOnlineGods();
-	}
-
 	@EventHandler(ignoreCancelled = true)
 	public void onHolyArtifactPickup(EntityPickupItemEvent event)
 	{
@@ -223,20 +187,6 @@ public class GodQuestListener implements Listener
 					return;
 				}
 			}
-		}
-	}
-
-	@EventHandler
-	public void onPlayerQuit(PlayerQuitEvent event)
-	{
-		Player player = event.getPlayer();
-
-		this.lastEatTimes.remove(player.getUniqueId());
-
-		// The player still counts as online during this event
-		if (ctx.plugin().isEnabled())
-		{
-			ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> ctx.godService().updateOnlineGods());
 		}
 	}
 }

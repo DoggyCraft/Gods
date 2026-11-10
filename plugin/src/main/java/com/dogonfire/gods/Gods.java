@@ -28,12 +28,14 @@ import com.dogonfire.gods.config.ConfigDefaults;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
+import com.dogonfire.gods.listener.ActionCooldown;
 import com.dogonfire.gods.listener.AltarListener;
 import com.dogonfire.gods.listener.BelieverListener;
 import com.dogonfire.gods.listener.ChatListener;
-import com.dogonfire.gods.listener.GodQuestListener;
+import com.dogonfire.gods.listener.GodListener;
 import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
+import com.dogonfire.gods.listener.QuestAndHolyItemListener;
 import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
@@ -104,7 +106,10 @@ public class Gods extends JavaPlugin
 		}
 
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvents(new GodQuestListener(this.ctx), this);
+		// Both handle meals; they share the cooldown
+		ActionCooldown mealCooldown = new ActionCooldown();
+		pm.registerEvents(new GodListener(this.ctx, mealCooldown), this);
+		pm.registerEvents(new QuestAndHolyItemListener(this.ctx, mealCooldown), this);
 		pm.registerEvents(new BelieverListener(this.ctx), this);
 		pm.registerEvents(new AltarListener(this.ctx), this);
 		pm.registerEvents(new ChatListener(this.ctx), this);
