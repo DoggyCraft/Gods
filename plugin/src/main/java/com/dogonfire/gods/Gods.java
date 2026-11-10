@@ -27,10 +27,12 @@ import com.dogonfire.gods.config.ConfigDefaults;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
+import com.dogonfire.gods.listener.AltarListener;
+import com.dogonfire.gods.listener.BelieverListener;
+import com.dogonfire.gods.listener.ChatListener;
+import com.dogonfire.gods.listener.GodQuestListener;
 import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
-import com.dogonfire.gods.listeners.BlockListener;
-import com.dogonfire.gods.listeners.ChatListener;
 import com.dogonfire.gods.managers.ChatManager;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
@@ -100,7 +102,9 @@ public class Gods extends JavaPlugin
 		}
 
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvents(new BlockListener(this.ctx), this);
+		pm.registerEvents(new GodQuestListener(this.ctx), this);
+		pm.registerEvents(new BelieverListener(this.ctx), this);
+		pm.registerEvents(new AltarListener(this.ctx), this);
 		pm.registerEvents(new ChatListener(this.ctx), this);
 
 		if (pm.getPlugin("PlaceholderAPI") != null)

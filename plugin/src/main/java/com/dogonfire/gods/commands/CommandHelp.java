@@ -99,7 +99,7 @@ public class CommandHelp extends GodsCommand
 		
 		for (GodManager.GodType godType : GodManager.GodType.values())
 		{
-			List<String> materials = ctx.altarManager().getAltarBlockTypesFromGodType(godType);
+			List<String> materials = ctx.altarService().getAltarBlockTypesFromGodType(godType);
 			if (materials != null)
 			{
 				for (String blockMaterial : materials)

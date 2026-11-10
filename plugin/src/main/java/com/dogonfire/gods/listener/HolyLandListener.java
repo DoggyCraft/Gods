@@ -194,7 +194,7 @@ public class HolyLandListener implements Listener
 		{
 			return;
 		}
-		if ((ctx.settings().holyLand().breakableBlocks().contains(event.getClickedBlock().getType())) || (ctx.altarManager().isAltarBlock(event.getClickedBlock())))
+		if ((ctx.settings().holyLand().breakableBlocks().contains(event.getClickedBlock().getType())) || (ctx.altarService().isAltarBlock(event.getClickedBlock())))
 		{
 			return;
 		}

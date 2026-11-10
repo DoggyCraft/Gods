@@ -1,4 +1,4 @@
-package com.dogonfire.gods.listeners;
+package com.dogonfire.gods.listener;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

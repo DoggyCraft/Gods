@@ -294,13 +294,13 @@ public class GodManager
 				return false;
 			}
 
-			Block altarBlock = ctx.altarManager().getAltarBlockFromSign(prayerLocation.getBlock());
+			Block altarBlock = ctx.altarService().getAltarBlockFromSign(prayerLocation.getBlock());
 
-			GodGender godGender = ctx.altarManager().getGodGenderFromAltarBlock(altarBlock);
+			GodGender godGender = ctx.altarService().getGodGenderFromAltarBlock(altarBlock);
 
 			ctx.plugin().logDebug("Altar is " + altarBlock.getType().name());
 
-			GodType godType = ctx.altarManager().getGodTypeForAltarBlockType(altarBlock.getType());
+			GodType godType = ctx.altarService().getGodTypeForAltarBlockType(altarBlock.getType());
 
 			ctx.plugin().logDebug("God divine force is " + godType);
 
@@ -1958,11 +1958,11 @@ public class GodManager
 
 		if (addBeliefByAltar(player, godName, location, ctx.believerService().getChangingGod(player.getUniqueId())))
 		{
-			Block altarBlock = ctx.altarManager().getAltarBlockFromSign(player.getWorld().getBlockAt(location));
+			Block altarBlock = ctx.altarService().getAltarBlockFromSign(player.getWorld().getBlockAt(location));
 
 			if (this.getGenderForGod(godName) == GodGender.None)
 			{
-				GodGender godGender = ctx.altarManager().getGodGenderFromAltarBlock(altarBlock);
+				GodGender godGender = ctx.altarService().getGodGenderFromAltarBlock(altarBlock);
 
 				ctx.plugin().logDebug("God did not have a gender, setting gender to " + godGender);
 
@@ -1970,7 +1970,7 @@ public class GodManager
 			}
 			if (this.getDivineForceForGod(godName) == null)
 			{
-				GodType godType = ctx.altarManager().getGodTypeForAltarBlockType(altarBlock.getType());
+				GodType godType = ctx.altarService().getGodTypeForAltarBlockType(altarBlock.getType());
 
 				ctx.plugin().logDebug("God did not have a divine force, setting divine force to " + godType);
 
@@ -3186,7 +3186,7 @@ public class GodManager
 			return;
 		}
 
-		ctx.altarManager().clearDroppedItems();
+		ctx.altarService().clearDroppedItems();
 	}
 
 	private void manageSacrifices(String godName)

@@ -1,4 +1,4 @@
-package com.dogonfire.gods.managers;
+package com.dogonfire.gods.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,16 +21,23 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.GodManager.GodType;
+import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.managers.LanguageManager;
 
-public class AltarManager
+/**
+ * Altars: a block of an altar type with a torch on top and a wall sign on it. Recognizes altar blocks and signs, turns
+ * newly written signs into praying, cursing and blessing altars (the text rules are in {@link AltarSigns}), and
+ * remembers who dropped which item, for sacrifices. Has no data file. The events are handled by
+ * {@code listener/AltarListener}. Main thread only.
+ */
+public class AltarService
 {
 	private Random							random			= new Random();
 	private Map<Integer, UUID>			droppedItems	= new HashMap<Integer, UUID>();
 
 	private final GodsContext ctx;
 
-	public AltarManager(GodsContext ctx)
+	public AltarService(GodsContext ctx)
 	{
 		this.ctx = ctx;
 	}
@@ -141,24 +148,15 @@ public class AltarManager
 	/** The online player named on line 3 of a sign whose first line is the given keyword. */
 	private Player getPlayerFromAltarSign(Block block, String[] lines, String keyword)
 	{
-		if (!isWallSign(block) || lines == null || lines.length < 3 || lines[0] == null)
+		if (!isWallSign(block))
 		{
 			return null;
 		}
 
-		if (!ChatColor.stripColor(lines[0]).trim().equalsIgnoreCase(keyword))
-		{
-			return null;
-		}
-
-		String playerName = lines[2];
-		if ((playerName == null) || (playerName.trim().length() < 1))
-		{
-			return null;
-		}
+		String playerName = AltarSigns.namedPlayer(lines, keyword);
 
 		// Exact name: getPlayer(String) would also match name prefixes
-		return ctx.plugin().getServer().getPlayerExact(ChatColor.stripColor(playerName).trim());
+		return playerName != null ? ctx.plugin().getServer().getPlayerExact(playerName) : null;
 	}
 
 	public UUID getDroppedItemPlayer(int entityID)
@@ -232,43 +230,19 @@ public class AltarManager
 		}
 
 		// The god's name is the one line the player wrote on the sign
-		String godName = "";
-		int line = 0;
-		int otherline = 0;
-		while ((godName.isEmpty()) && (line < 4))
+		AltarSigns.GodNameLine nameLine = AltarSigns.godNameOnNewSign(event.getLines());
+		if (nameLine.problem() == AltarSigns.Problem.INVALID_SIGN)
 		{
-			String text = event.getLine(line++);
-			godName = (text != null) ? text : "";
+			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidAltarSign, ChatColor.DARK_RED, 0, "", 10);
+			return false;
 		}
-
-		line--;
-
-		while (otherline < 4)
-		{
-			if (otherline == line)
-			{
-				otherline++;
-			}
-			else
-			{
-				String text = event.getLine(otherline);
-
-				if ((text != null) && (text.length() > 0))
-				{
-					ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidAltarSign, ChatColor.DARK_RED, 0, "", 10);
-					return false;
-				}
-				otherline++;
-			}
-		}
-
-		if (godName.length() <= 1)
+		if (nameLine.problem() == AltarSigns.Problem.INVALID_GOD_NAME)
 		{
 			ctx.plugin().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InvalidGodName, ChatColor.DARK_RED, 0, "", 20);
 			return false;
 		}
 
-		godName = godName.trim();
+		String godName = nameLine.godName().trim();
 		godName = ctx.godManager().formatGodName(godName);
 
 		if ((godName.length() <= 1) || (godName.contains(" ")))
@@ -363,16 +337,7 @@ public class AltarManager
 	/** True if the front of this sign already shows a finished altar ("Altar of ...", "Curses On ...", "Blessings On ..."). */
 	public boolean isFormattedAltarSign(Block block)
 	{
-		String[] lines = getSignLines(block);
-		if (lines == null || lines.length < 2)
-		{
-			return false;
-		}
-
-		String first = ChatColor.stripColor(lines[0]).trim();
-		String second = ChatColor.stripColor(lines[1]).trim();
-
-		return (first.equals("Altar") && second.equals("of")) || ((first.equals("Curses") || first.equals("Blessings")) && second.equals("On"));
+		return AltarSigns.isFormatted(getSignLines(block));
 	}
 
 	public boolean isBlessingAltar(Block block, String[] lines)
