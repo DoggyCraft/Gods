@@ -1,0 +1,215 @@
+# Gods configuration
+#
+# Gods never rewrites this file, so your comments and layout stay. When a newer version of Gods adds a setting, it is
+# added to this file with its default. Use /g reload to apply changes without restarting.
+#
+# Configs from Gods 0.9.x (with CamelCase keys like Settings.Debug) are upgraded automatically on start; the old file
+# is kept as config.yml.v1.bak.
+
+# The version of this file's layout. Gods uses it to upgrade old configs; don't change it.
+config-version: 2
+
+general:
+  # Log extra information to the console, for finding problems.
+  debug: false
+  # The language of Gods' messages: the prefix of the files in plugins/Gods/lang/ (e.g. english_general.yml).
+  language: english
+  # The name of your server, used in some messages.
+  server-name: Your Server
+  # The worlds Gods is active in. Leave it empty ([]) for every world the server has when Gods starts.
+  worlds: []
+
+gods:
+  # Tell everyone online when a new god is created.
+  broadcast-new-gods: true
+  # Whether new religions are private (invite only) until their priest opens them.
+  private-by-default: false
+  # Show a god's title (like "God of Frost") next to its name in /g info and /g list.
+  titles: true
+  # How chatty gods are. 1.0 is normal, 0.5 half as much, 2.0 twice as much.
+  verbosity: 1.0
+  # How fast a god's mood falls back towards neutral on each update. 0 turns it off.
+  mood-falloff: 0.03
+  # Only allow gods listed in whitelist.yml. When both lists are on, only the whitelist is used.
+  whitelist: false
+  # Never allow gods listed in blacklist.yml.
+  blacklist: false
+
+believers:
+  # Players lose their religion when they die.
+  leave-religion-on-death: false
+  # How long a player must wait after joining a religion before they can change to another god, in seconds.
+  min-seconds-between-changing-god: 300
+  # Believers who haven't prayed for this many hours leave their religion.
+  max-hours-without-prayer: 154
+
+priests:
+  # A god needs this many believers to choose a priest. Each further priest needs 6 more believers.
+  min-believers: 3
+  # The most priests a god can have.
+  max-per-god: 1
+  # Priests who haven't prayed for this many hours stop being priests.
+  max-hours-without-prayer: 72
+  # Only priests can set their religion's home with /g sethome.
+  only-priests-can-set-home: false
+  # A console command to run when a player becomes a priest, e.g. "lp user $PlayerName parent add priest". Empty for none.
+  assign-command: ""
+  # A console command to run when a priest is removed, e.g. "lp user $PlayerName parent remove priest". Empty for none.
+  remove-command: ""
+
+altars:
+  # The block an altar is built on decides the type of god it makes. For each god type, the blocks that make it
+  # (Minecraft ids, e.g. end_stone). A block listed for several god types makes one of them at random.
+  # A god type with no blocks (like werewolves) can't be made from an altar.
+  block-types:
+    frost: [snow_block]
+    love: [diamond_block]
+    evil: [obsidian]
+    sea: [lapis_block]
+    moon: [end_stone]
+    sun: [sandstone]
+    thunder: [quartz_block]
+    party: [emerald_block]
+    war: [netherrack]
+    werewolves: []
+    creatures: [oak_log]
+    wisdom: [bookshelf]
+    nature: [melon]
+
+prayers:
+  # Players can pray for things with /g pray (an item, health, a blessing or a quest), paid with prayer power.
+  enabled: true
+  # How long a player must wait between two prayers at an altar, in minutes.
+  min-minutes-between-prayers: 30
+  # The prayer power each kind of /g pray costs.
+  power-cost:
+    item: 20
+    health: 10
+    blessing: 10
+    quest: 50
+
+sacrifices:
+  # Players can sacrifice items to their god by burning them.
+  enabled: true
+
+commandments:
+  # Gods have holy foods and holy mobs they want eaten and killed, or forbidden.
+  enabled: true
+  # Tell the religion when a believer eats a holy or forbidden food.
+  broadcast-food-eaten: true
+  # Tell the religion when a believer kills a holy or forbidden mob.
+  broadcast-mob-slain: true
+
+blessings:
+  # Priests can bless players with a blessing altar sign, and gods bless their believers.
+  enabled: true
+  # How long a player must wait between two blessings, in seconds.
+  min-seconds-between-blessings: 600
+  # How long a player stays a god's blessed player after a priest names them, in seconds.
+  blessed-seconds: 180
+  # The effects a blessing can give.
+  effects:
+    speed: true
+    regeneration: true
+    heal: true
+    fast-digging: true
+    increase-damage: true
+
+curses:
+  # Priests can curse players with a cursing altar sign.
+  enabled: true
+  # How long a player must wait between two curses, in seconds.
+  min-seconds-between-curses: 5
+  # How long a player stays a god's cursed player after a priest names them, in minutes.
+  cursed-minutes: 10
+  # The curses a god can use.
+  lightning: true
+  mobs: true
+
+item-blessings:
+  # Gods give their believers items (tools, weapons, armor) when they are pleased.
+  enabled: true
+  # How long a player must wait between two item blessings, in minutes.
+  min-minutes-between-blessings: 10
+  # The god power a god needs to bless items at all.
+  min-god-power: 3
+  # The god power a god needs for better tools and weapons: above level 1 they are stone, above level 2 iron and
+  # above level 3 diamond (wooden below that).
+  god-power-for-level-1-items: 10
+  god-power-for-level-2-items: 50
+  god-power-for-level-3-items: 100
+
+holy-artifacts:
+  # Gods give their believers holy artifacts: weapons with divine powers.
+  enabled: true
+  # How long a player must wait between two holy artifacts, in minutes.
+  min-minutes-between-blessings: 1440
+
+quests:
+  # Gods give their religions quests.
+  enabled: false
+  # How long a god waits between two quests, in minutes.
+  min-minutes-between-quests: 180
+  # How many believers a god needs before it gives quests.
+  required-believers: 1
+  # The kinds of quest gods give.
+  types:
+    slay: true
+    sacrifice: true
+    pilgrimage: true
+    give-items: false
+  # Quest rewards: items (Minecraft ids) and what each is worth. A completed quest gives random items worth about the
+  # god's power in total. Items worth 0 are never given. If no entry is valid, these defaults are used.
+  reward-values:
+    nether_wart: 33
+    glowstone: 50
+    coal: 5
+    iron_ingot: 10
+    gold_ingot: 50
+    diamond: 100
+    player_head: 75
+    enchanted_book: 75
+    potion: 75
+    cocoa: 30
+    blaze_rod: 50
+    book: 30
+    compass: 50
+    paper: 20
+    sugar_cane: 25
+    melon_seeds: 5
+    pumpkin_seeds: 5
+    poppy: 1
+    sunflower: 1
+
+holy-land:
+  # Religions claim the land around their altars as holy land, protected from other players.
+  enabled: false
+  # Whether players can fight each other in a new god's holy land.
+  default-pvp: false
+  # Whether mobs can hurt players in a new god's holy land.
+  default-mob-damage: true
+  # Gods strike players who attack their believers in holy land with lightning.
+  lightning: false
+  # Whether players (other than ops) can use blocks in neutral land (set with /g setneutralland).
+  allow-interaction-in-neutral-lands: true
+  # Holy land nobody has prayed in for this many days is removed.
+  delete-abandoned-after-days: 14
+  # Blocks (Minecraft ids) anyone can break and use in holy land. Altar blocks can always be used.
+  breakable-blocks:
+    - smooth_stone
+
+marriage:
+  # Believers of the same god can marry with /g marry.
+  enabled: true
+  # Fireworks at weddings (only when holy artifacts are enabled too).
+  wedding-fireworks: true
+
+bibles:
+  # Religions have a holy book that priests can write (/g editbible, /g setbible).
+  enabled: true
+  # Give a new believer a copy of their religion's holy book.
+  give-on-join: false
+
+chat:
+  # Put the player's god in front of their chat messages.
+  formatting: false
