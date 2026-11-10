@@ -9,12 +9,16 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.config.GodsConfiguration;
@@ -50,9 +54,50 @@ public class AltarManager
 		this.droppedItems.clear();
 	}
 
+	/** Any wooden wall sign (oak, spruce, ..., bamboo, crimson, warped) can be an altar sign. */
+	public static boolean isWallSign(Block block)
+	{
+		return block != null && Tag.WALL_SIGNS.isTagged(block.getType());
+	}
+
+	/** The sign item that a wall sign block drops, e.g. SPRUCE_SIGN for SPRUCE_WALL_SIGN. */
+	public static ItemStack getSignItem(Material wallSignType)
+	{
+		Material item = Material.getMaterial(wallSignType.name().replace("_WALL_SIGN", "_SIGN"));
+
+		return new ItemStack((item != null && item.isItem()) ? item : Material.OAK_SIGN, 1);
+	}
+
+	/** The lines on the front of a sign block (the side altars are written on), or null if it is not a sign. */
+	public static String[] getSignLines(Block block)
+	{
+		if (block == null || !(block.getState() instanceof Sign))
+		{
+			return null;
+		}
+
+		return ((Sign) block.getState()).getSide(Side.FRONT).getLines();
+	}
+
+	/**
+	 * Waxes the sign of a new altar one tick later (after the text from the
+	 * sign editor has been applied), so players can't open the sign editor on it.
+	 */
+	public void waxAltarSignLater(Block signBlock)
+	{
+		Gods.instance().getServer().getScheduler().runTask(Gods.instance(), () -> {
+			if (signBlock.getState() instanceof Sign)
+			{
+				Sign sign = (Sign) signBlock.getState();
+				sign.setWaxed(true);
+				sign.update();
+			}
+		});
+	}
+
 	public Block getAltarBlockFromSign(Block block)
 	{
-		if ((block == null) || (block.getType() != Material.OAK_WALL_SIGN))
+		if (!isWallSign(block))
 		{
 			return null;
 		}
@@ -69,11 +114,16 @@ public class AltarManager
 		{
 			return null;
 		}
-		if ((!altarBlock.getRelative(BlockFace.UP).getType().equals(Material.TORCH)) && (!altarBlock.getRelative(BlockFace.UP).getType().equals(Material.REDSTONE_TORCH)))
+		if (!isAltarTorch(altarBlock.getRelative(BlockFace.UP).getType()))
 		{
 			return null;
 		}
 		return altarBlock;
+	}
+
+	private static boolean isAltarTorch(Material type)
+	{
+		return type == Material.TORCH || type == Material.REDSTONE_TORCH;
 	}
 
 	public List<String> getAltarBlockTypesFromGodType(GodManager.GodType godType)
@@ -91,68 +141,35 @@ public class AltarManager
 
 	public Player getBlessedPlayerFromAltarSign(Block block, String[] lines)
 	{
-		if ((block == null) || (block.getType() != Material.OAK_WALL_SIGN))
-		{
-			return null;
-		}
-		String cursesName = lines[0].trim();
-		if (!cursesName.equalsIgnoreCase("blessings"))
-		{
-			return null;
-		}
-
-		String playerName = lines[2];
-
-		if ((playerName == null) || (playerName.length() < 1))
-		{
-			return null;
-		}
-
-		return Gods.instance().getServer().getPlayer(playerName);
+		return getPlayerFromAltarSign(block, lines, "blessings");
 	}
 
 	public Player getCursedPlayerFromAltar(Block block, String[] lines)
 	{
-		if ((block == null) || (block.getType() != Material.OAK_WALL_SIGN))
-		{
-			return null;
-		}
-
-		String cursesName = lines[0].trim();
-		if (!cursesName.equalsIgnoreCase("curses"))
-		{
-			return null;
-		}
-
-		String playerName = lines[2];
-		if ((playerName == null) || (playerName.length() < 1))
-		{
-			return null;
-		}
-
-		return Gods.instance().getServer().getPlayer(playerName);
+		return getPlayerFromAltarSign(block, lines, "curses");
 	}
-	
-	public Player getRitualFromAltar(Block block, String[] lines)
+
+	/** The online player named on line 3 of a sign whose first line is the given keyword. */
+	private Player getPlayerFromAltarSign(Block block, String[] lines, String keyword)
 	{
-		if ((block == null) || (block.getType() != Material.OAK_WALL_SIGN))
+		if (!isWallSign(block) || lines == null || lines.length < 3 || lines[0] == null)
 		{
 			return null;
 		}
 
-		String cursesName = lines[0].trim();
-		if (!cursesName.equalsIgnoreCase("ritual"))
+		if (!ChatColor.stripColor(lines[0]).trim().equalsIgnoreCase(keyword))
 		{
 			return null;
 		}
 
 		String playerName = lines[2];
-		if ((playerName == null) || (playerName.length() < 1))
+		if ((playerName == null) || (playerName.trim().length() < 1))
 		{
 			return null;
 		}
 
-		return Gods.instance().getServer().getPlayer(playerName);
+		// Exact name: getPlayer(String) would also match name prefixes
+		return Gods.instance().getServer().getPlayerExact(ChatColor.stripColor(playerName).trim());
 	}
 
 	public UUID getDroppedItemPlayer(int entityID)
@@ -216,27 +233,6 @@ public class AltarManager
 		return true;
 	}
 
-	public boolean handleNewRitualAltar(SignChangeEvent event)
-	{
-		Player player = event.getPlayer();
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.build")))
-		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
-			return false;
-		}
-		
-		String godName = BelieverManager.instance().getGodForBeliever(event.getPlayer().getUniqueId());
-
-		event.setLine(0, "Ritual");
-		event.setLine(1, "of");
-		event.setLine(2, godName);
-		event.setLine(3, "");
-
-		Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CursesHelp, ChatColor.AQUA, 0, "", 20);
-
-		return true;
-	}
-
 	public boolean handleNewPrayingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
@@ -246,12 +242,14 @@ public class AltarManager
 			return false;
 		}
 
+		// The god's name is the one line the player wrote on the sign
 		String godName = "";
 		int line = 0;
 		int otherline = 0;
 		while ((godName.isEmpty()) && (line < 4))
 		{
-			godName = event.getLine(line++);
+			String text = event.getLine(line++);
+			godName = (text != null) ? text : "";
 		}
 
 		line--;
@@ -345,100 +343,47 @@ public class AltarManager
 		return true;
 	}
 
-	public boolean handleNewSacrificingAltar(SignChangeEvent event)
-	{
-		Player player = event.getPlayer();
-		if ((!player.isOp()) && (!PermissionsManager.instance().hasPermission(player, "gods.altar.build")))
-		{
-			Gods.instance().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.BuildAltarNotAllowed, ChatColor.DARK_RED, 0, "", 10);
-			return false;
-		}
-		return false;
-	}
-
 	public boolean isAltarBlock(Block block)
 	{
 		if ((block == null) || (getGodTypeForAltarBlockType(block.getType()) == null))
 		{
 			return false;
 		}
-		if ((block.getRelative(BlockFace.UP).getType() != Material.TORCH) && (block.getRelative(BlockFace.UP).getType() != Material.REDSTONE_TORCH))
+		if (!isAltarTorch(block.getRelative(BlockFace.UP).getType()))
 		{
 			return false;
 		}
-		
+
 		for (BlockFace face : new BlockFace[] { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST })
 		{
-			if (block.getRelative(face).getType() == Material.OAK_WALL_SIGN)
+			if (isWallSign(block.getRelative(face)))
 			{
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
+	/** A wall sign on an altar block (a block with an altar type and a torch on top). */
 	public boolean isAltarSign(Block block)
 	{
-		if ((block == null) || (block.getType() != Material.OAK_WALL_SIGN))
-		{
-			return false;
-		}
-		BlockData bd = block.getBlockData();
-		if (!(bd instanceof Directional)) {
-			return false;
-		}
-		Directional directional = (Directional) bd;
-
-		Block altarBlock = block.getRelative(directional.getFacing().getOppositeFace());
-
-		Gods.instance().logDebug("isAltarSign(): AltarBlock block is " + altarBlock.getType().name());
-		if (getGodTypeForAltarBlockType(altarBlock.getType()) == null)
-		{
-			return false;
-		}
-		
-		if ((!altarBlock.getRelative(BlockFace.UP).getType().equals(Material.TORCH)) && (!altarBlock.getRelative(BlockFace.UP).getType().equals(Material.REDSTONE_TORCH)))
-		{
-			return false;
-		}
-		return true;
+		return getAltarBlockFromSign(block) != null;
 	}
 
-	public boolean isAltarTorch(Block block)
+	/** True if the front of this sign already shows a finished altar ("Altar of ...", "Curses On ...", "Blessings On ..."). */
+	public boolean isFormattedAltarSign(Block block)
 	{
-		if (block == null)
+		String[] lines = getSignLines(block);
+		if (lines == null || lines.length < 2)
 		{
 			return false;
 		}
-		if ((block.getType() != Material.TORCH) && (block.getType() != Material.REDSTONE_TORCH))
-		{
-			return false;
-		}
-		Block altarBlock = block.getRelative(BlockFace.DOWN);
 
-		Gods.instance().logDebug("isAltarTorch(): AltarBlock block is " + altarBlock.getType().name());
-		if (getGodTypeForAltarBlockType(altarBlock.getType()) == null)
-		{
-			return false;
-		}
-		if (altarBlock.getRelative(BlockFace.EAST).getType() == Material.OAK_WALL_SIGN)
-		{
-			return true;
-		}
-		if (altarBlock.getRelative(BlockFace.WEST).getType() == Material.OAK_WALL_SIGN)
-		{
-			return true;
-		}
-		if (altarBlock.getRelative(BlockFace.NORTH).getType() == Material.OAK_WALL_SIGN)
-		{
-			return true;
-		}
-		if (altarBlock.getRelative(BlockFace.SOUTH).getType() == Material.OAK_WALL_SIGN)
-		{
-			return true;
-		}
-		return false;
+		String first = ChatColor.stripColor(lines[0]).trim();
+		String second = ChatColor.stripColor(lines[1]).trim();
+
+		return (first.equals("Altar") && second.equals("of")) || ((first.equals("Curses") || first.equals("Blessings")) && second.equals("On"));
 	}
 
 	public boolean isBlessingAltar(Block block, String[] lines)
@@ -457,15 +402,6 @@ public class AltarManager
 			return false;
 		}
 		return getCursedPlayerFromAltar(block, lines) != null;
-	}
-
-	public boolean isRitualAltar(Block block, String[] lines)
-	{
-		if (!isAltarSign(block))
-		{
-			return false;
-		}
-		return getRitualFromAltar(block, lines) != null;
 	}
 
 	public boolean isPrayingAltar(Block block)
@@ -548,13 +484,6 @@ public class AltarManager
 			list.add(GodManager.GodType.SEA);
 			this.altarBlockTypes.put(Material.LAPIS_BLOCK, list);
 		}
-
-		//if (GodsConfiguration.instance().isWerewolfEnabled())
-		//{
-		//	ArrayList<GodManager.GodType> list = new ArrayList<GodType>();
-		//	list.add(GodManager.GodType.WEREWOLVES);
-		//	this.altarBlockTypes.put(Material., list);
-		//}
 	}
 
 	public void setAltarBlockTypeForGodType(GodType godType, Material blockMaterial)
