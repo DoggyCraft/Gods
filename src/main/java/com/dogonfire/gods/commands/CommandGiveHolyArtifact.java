@@ -7,12 +7,15 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.config.GodsConfiguration;
 import com.dogonfire.gods.managers.BelieverManager;
 import com.dogonfire.gods.managers.GodManager;
+import com.dogonfire.gods.managers.HolyArtifactManager;
 
 public class CommandGiveHolyArtifact extends GodsCommand
 {
 	protected CommandGiveHolyArtifact()
 	{
 		super("holyartifact");
+		this.permission = "gods.holyartifact";
+		this.description = "Let your God give you a Holy Artifact";
 	}
 
 	@Override
@@ -35,6 +38,16 @@ public class CommandGiveHolyArtifact extends GodsCommand
 		}
 		Player player = (Player) sender;
 		String godName = BelieverManager.instance().getGodForBeliever(player.getUniqueId());
+		if (godName == null)
+		{
+			sender.sendMessage(stringNoGod);
+			return;
+		}
+		if (HolyArtifactManager.instance().hasHolyArtifact(player))
+		{
+			sender.sendMessage(ChatColor.RED + "You already carry a Holy Artifact");
+			return;
+		}
 		GodManager.instance().blessPlayerWithHolyArtifact(godName, player);
 		sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " gave " + player.getName() + ChatColor.AQUA + " a Holy artifact!");
 	}
