@@ -4,33 +4,48 @@ import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 
+/**
+ * Heals up to maxPlayers other players within 20 blocks.
+ */
 public class TaskHealRadius extends Task {
 	private Player player;
+	private long maxPlayers;
 
-	public TaskHealRadius(Player player, long amount) {
+	public TaskHealRadius(Player player, long maxPlayers) {
 		this.player = player;
+		this.maxPlayers = maxPlayers;
 	}
 
 	@Override
 	public void run() {
+		if (!this.player.isOnline()) {
+			return;
+		}
+
 		this.player.playSound(this.player.getLocation(), Sound.AMBIENT_CAVE, 1.0F, 0.1F);
 
-		Entity[] entities = HolyPowerManager.instance().getNearbyLivingEntities(this.player.getLocation(), 20.0D);
 		int n = 0;
-		for (Entity entity : entities) {
-			if (this.player.getEntityId() != entity.getEntityId()) {
-				LivingEntity targetEntity = (LivingEntity) entity;
-				targetEntity.setHealth(targetEntity.getAttribute(Attribute.MAX_HEALTH).getValue());
-				targetEntity.getWorld().playEffect(targetEntity.getLocation(), Effect.ENDER_SIGNAL, 0);
-				n++;
+		for (Entity entity : HolyPowerManager.instance().getNearbyLivingEntities(this.player.getLocation(), 20.0D)) {
+			if (n >= this.maxPlayers) {
+				break;
 			}
+			if (!(entity instanceof Player target) || target.equals(this.player) || target.isDead()) {
+				continue;
+			}
+			AttributeInstance maxHealth = target.getAttribute(Attribute.MAX_HEALTH);
+			if (maxHealth == null) {
+				continue;
+			}
+			target.setHealth(maxHealth.getValue());
+			target.getWorld().playEffect(target.getLocation(), Effect.ENDER_SIGNAL, 0);
+			n++;
 		}
 		getPlugin().sendInfo(this.player.getUniqueId(), LANGUAGESTRING.YouHealedBeings, ChatColor.AQUA, n, "", 20);
 	}

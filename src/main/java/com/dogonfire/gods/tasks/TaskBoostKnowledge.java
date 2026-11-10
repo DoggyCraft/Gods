@@ -14,8 +14,13 @@ public class TaskBoostKnowledge extends Task {
 
 	@Override
 	public void run() {
+		if (!this.player.isOnline()) {
+			return;
+		}
+
 		this.player.playSound(this.player.getLocation(), Sound.AMBIENT_CAVE, 1.0F, 0.1F);
 
-		this.player.setExp(this.player.getExp() + this.amount);
+		// setExp() takes the 0..1 progress of the current level, so give whole levels instead
+		this.player.giveExpLevels((int) this.amount);
 	}
 }

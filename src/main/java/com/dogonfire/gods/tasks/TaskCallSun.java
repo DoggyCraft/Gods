@@ -1,29 +1,48 @@
 package com.dogonfire.gods.tasks;
 
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+/**
+ * Speeds time up until day breaks, then keeps it day until stopTime (System.currentTimeMillis()).
+ */
 public class TaskCallSun extends Task
 {
-	private long	stopTime;
-	private Player	player;
+	private static final long	DAY_END	= 12000L;
+
+	private long				stopTime;
+	private Player				player;
+	private World				world;
 
 	public TaskCallSun(Player player, long stopTime)
 	{
 		this.stopTime = stopTime;
 		this.player = player;
+		this.world = player.getWorld();
 	}
 
 	@Override
 	public void run()
 	{
-		long time = this.player.getWorld().getFullTime() % 24000L;
-		
-		if ((time > 13000L) || (time < 1000L))
+		if (!this.player.isOnline() || System.currentTimeMillis() >= this.stopTime)
+		{
+			return;
+		}
+
+		long time = this.world.getFullTime() % 24000L;
+
+		if (time >= DAY_END)
 		{
 			this.player.playSound(this.player.getLocation(), Sound.BLOCK_STONE_STEP, 1.0F, 0.1F);
-			this.player.getWorld().setFullTime(this.player.getWorld().getFullTime() + 1000L);
-			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new TaskCallSun(this.player, this.stopTime), 20L);
+			this.world.setFullTime(this.world.getFullTime() + Math.min(1000L, 24000L - time));
 		}
+		else if (time >= DAY_END - 1000L)
+		{
+			// Hold the day: turn the clock back before sunset
+			this.world.setFullTime(this.world.getFullTime() - 1000L);
+		}
+
+		getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), this, 20L);
 	}
 }

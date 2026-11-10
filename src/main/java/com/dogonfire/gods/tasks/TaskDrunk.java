@@ -1,32 +1,29 @@
 package com.dogonfire.gods.tasks;
 
-import org.bukkit.Effect;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-
-import com.dogonfire.gods.managers.HolyPowerManager;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class TaskDrunk extends Task {
 	private Player player;
+	private long seconds;
 
-	public TaskDrunk(Player player, long amount) {
+	public TaskDrunk(Player player, long seconds) {
 		this.player = player;
+		this.seconds = seconds;
 	}
 
 	@Override
 	public void run() {
-		this.player.playSound(this.player.getLocation(), Sound.AMBIENT_CAVE, 1.0F, 0.1F);
-
-		Entity[] entities = HolyPowerManager.instance().getNearbyLivingEntities(this.player.getLocation(), 20.0D);
-		for (Entity entity : entities) {
-			if (this.player.getEntityId() != entity.getEntityId()) {
-				LivingEntity targetEntity = (LivingEntity) entity;
-				targetEntity.setHealth(targetEntity.getAttribute(Attribute.MAX_HEALTH).getValue());
-				targetEntity.getWorld().playEffect(targetEntity.getLocation(), Effect.ENDER_SIGNAL, 0);
-			}
+		if (!this.player.isOnline()) {
+			return;
 		}
+
+		int ticks = (int) Math.max(1L, Math.min(this.seconds, 3600L)) * 20;
+
+		this.player.playSound(this.player.getLocation(), Sound.ENTITY_GENERIC_DRINK, 1.0F, 0.5F);
+		this.player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, ticks, 0));
+		this.player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, ticks, 0));
 	}
 }

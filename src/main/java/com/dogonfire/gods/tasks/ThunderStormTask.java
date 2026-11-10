@@ -20,28 +20,23 @@ public class ThunderStormTask extends Task {
 
 	@Override
 	public void run() {
+		if (!this.player.isOnline() || System.currentTimeMillis() >= this.stopTime) {
+			this.player.getWorld().setStorm(false);
+			return;
+		}
+
 		this.player.getWorld().setStorm(true);
 
 		Entity[] entities = HolyPowerManager.instance().getNearbyLivingEntities(this.player.getLocation(), 20.0D);
 
-		Entity targetEntity = entities[this.random.nextInt(entities.length)];
-		if (targetEntity != this.player) {
-			Location strikeLocation = targetEntity.getLocation();
-			strikeLocation = strikeLocation.getWorld().getHighestBlockAt(strikeLocation).getLocation();
-			this.player.getWorld().strikeLightning(strikeLocation);
+		if (entities.length > 0) {
+			Entity targetEntity = entities[this.random.nextInt(entities.length)];
+			if (targetEntity != this.player) {
+				Location strikeLocation = targetEntity.getWorld().getHighestBlockAt(targetEntity.getLocation()).getLocation();
+				targetEntity.getWorld().strikeLightning(strikeLocation);
+			}
 		}
-		if (System.currentTimeMillis() < this.stopTime) {
-			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new ThunderStormTask(this.player, this.stopTime), 20 + this.random.nextInt(100));
-		} else {
-			this.player.getWorld().setStorm(false);
-		}
+
+		getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), this, 20 + this.random.nextInt(100));
 	}
 }
-
-/*
- * Location: C:\temp\Gods.jar
- * 
- * Qualified Name: com.dogonfire.gods.tasks.ThunderStormTask
- * 
- * JD-Core Version: 0.7.0.1
- */

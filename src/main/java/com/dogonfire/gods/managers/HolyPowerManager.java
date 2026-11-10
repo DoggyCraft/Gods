@@ -1,9 +1,12 @@
 package com.dogonfire.gods.managers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,11 +15,12 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
@@ -52,7 +56,9 @@ public class HolyPowerManager
 		return instance;
 	}
 
-	private Random random = new Random();
+	private static final int	MAX_EFFECT_RADIUS	= 30;
+
+	private Random				random				= new Random();
 
 	private HolyPowerManager()
 	{
@@ -89,16 +95,16 @@ public class HolyPowerManager
 
 	public void callMoon(Player player, int powerValue)
 	{
-		Gods.instance().logDebug("Starting call moon " + powerValue + " ");
+		Gods.instance().logDebug("Calling the moon for " + powerValue + " minutes");
 
-		Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskCallMoon(player, powerValue), 1L);
+		Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskCallMoon(player, System.currentTimeMillis() + powerValue * 60000L), 1L);
 	}
 
 	public void callSun(Player player, int powerValue)
 	{
-		Gods.instance().logDebug("Starting call sun " + powerValue + " rockets");
+		Gods.instance().logDebug("Calling the sun for " + powerValue + " minutes");
 
-		Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskCallSun(player, powerValue), 1L);
+		Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskCallSun(player, System.currentTimeMillis() + powerValue * 60000L), 1L);
 	}
 
 	private boolean checkBlock(double x1, double y1, double z1, double w1, double h1, double d1, double x2, double y2, double z2, double w2, double h2, double d2)
@@ -154,7 +160,7 @@ public class HolyPowerManager
 
 	public void drunk(Player player, int powerValue)
 	{
-		Gods.instance().logDebug("Drunking " + powerValue + " creatures");
+		Gods.instance().logDebug("Getting " + player.getName() + " drunk for " + powerValue + " seconds");
 
 		Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new TaskDrunk(player, powerValue), 1L);
 	}
@@ -236,20 +242,28 @@ public class HolyPowerManager
 	public void freeze(Player player, int power)
 	{
 		player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1.0F, 0.1F);
-		for (int x = -10 * power; x < 10 * power; x++)
+		int radius = effectRadius(power);
+		Block center = player.getLocation().getBlock();
+		for (int x = -radius; x <= radius; x++)
 		{
 			for (int y = -10; y < 2; y++)
 			{
-				for (int z = -10 * power; z < 10 * power; z++)
+				for (int z = -radius; z <= radius; z++)
 				{
-					Location location = player.getLocation().add(x, y, z);
-					if (location.getBlock().getType() == Material.WATER)
+					Block block = center.getRelative(x, y, z);
+					if (block.getType() == Material.WATER)
 					{
-						location.getBlock().setType(Material.ICE);
+						block.setType(Material.ICE);
 					}
 				}
 			}
 		}
+	}
+
+	// Freeze and nature work on 10 blocks per power point, capped so one use can't touch hundreds of thousands of blocks
+	private static int effectRadius(int power)
+	{
+		return Math.max(1, Math.min(10 * power, MAX_EFFECT_RADIUS));
 	}
 
 	public record PowerDescription(HolyPower power, int value)
@@ -296,113 +310,117 @@ public class HolyPowerManager
 		location.getWorld().playSound(location, data.getSoundGroup().getBreakSound(), 1.0F, 1.0F);
 	}
 
+	/**
+	 * Entities within radius of l, except those standing in the block at l itself.
+	 */
 	public Entity[] getNearbyEntities(Location l, double radius)
 	{
-		int iRadius = (int) radius;
-		int chunkRadius = iRadius < 16 ? 1 : (iRadius - iRadius % 16) / 16;
-		HashSet<Entity> radiusEntities = new HashSet<Entity>();
-		for (int chX = 0 - chunkRadius; chX <= chunkRadius; chX++)
-		{
-			for (int chZ = 0 - chunkRadius; chZ <= chunkRadius; chZ++)
-			{
-				int x = (int) l.getX();
-				int y = (int) l.getY();
-				int z = (int) l.getZ();
-				for (Entity e : new Location(l.getWorld(), x + chX * 16, y, z + chZ * 16).getChunk().getEntities())
-				{
-					if ((e.getLocation().distance(l) <= radius) && (e.getLocation().getBlock() != l.getBlock()))
-					{
-						radiusEntities.add(e);
-					}
-				}
-			}
-		}
-		return radiusEntities.toArray(new Entity[radiusEntities.size()]);
+		return getNearbyEntities(l, radius, e -> true);
 	}
 
+	/**
+	 * Living entities within radius of l, except those standing in the block at l itself.
+	 */
 	public Entity[] getNearbyLivingEntities(Location l, double radius)
 	{
-		int iRadius = (int) radius;
-		int chunkRadius = iRadius < 16 ? 1 : (iRadius - iRadius % 16) / 16;
-		HashSet<Entity> radiusEntities = new HashSet<Entity>();
-		for (int chX = 0 - chunkRadius; chX <= chunkRadius; chX++)
+		return getNearbyEntities(l, radius, e -> e instanceof LivingEntity);
+	}
+
+	private Entity[] getNearbyEntities(Location center, double radius, Predicate<Entity> filter)
+	{
+		World world = center.getWorld();
+		if (world == null)
 		{
-			for (int chZ = 0 - chunkRadius; chZ <= chunkRadius; chZ++)
-			{
-				int x = (int) l.getX();
-				int y = (int) l.getY();
-				int z = (int) l.getZ();
-				for (Entity e : new Location(l.getWorld(), x + chX * 16, y, z + chZ * 16).getChunk().getEntities())
-				{
-					if ((e instanceof LivingEntity))
-					{
-						if ((e.getLocation().distance(l) <= radius) && (e.getLocation().getBlock() != l.getBlock()))
-						{
-							radiusEntities.add(e);
-						}
-					}
-				}
-			}
+			return new Entity[0];
 		}
-		return radiusEntities.toArray(new Entity[radiusEntities.size()]);
+		double radiusSquared = radius * radius;
+		return world.getNearbyEntities(center, radius, radius, radius, e -> filter.test(e) && e.getLocation().distanceSquared(center) <= radiusSquared && !isSameBlock(e.getLocation(), center)).toArray(new Entity[0]);
+	}
+
+	private static boolean isSameBlock(Location a, Location b)
+	{
+		return a.getBlockX() == b.getBlockX() && a.getBlockY() == b.getBlockY() && a.getBlockZ() == b.getBlockZ();
 	}
 
 	public void growNature(Player player, int power)
 	{
 		player.playSound(player.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, 1.0F, 0.1F);
-		for (int x = -10 * power; x < 10 * power; x++)
+		int radius = effectRadius(power);
+		Block center = player.getLocation().getBlock();
+		for (int x = -radius; x <= radius; x++)
 		{
 			for (int y = -10; y < 20; y++)
 			{
-				for (int z = -10 * power; z < 10 * power; z++)
+				for (int z = -radius; z <= radius; z++)
 				{
-					Location location = player.getLocation().add(x, y, z);
-					if (location.getBlock().getType() == Material.DIRT)
+					Block block = center.getRelative(x, y, z);
+					if (block.getType() == Material.DIRT)
 					{
-						if (location.getBlock().getRelative(BlockFace.UP).getType() == Material.AIR)
+						if (block.getRelative(BlockFace.UP).getType() == Material.AIR)
 						{
-							location.getBlock().setType(Material.GRASS_BLOCK);
+							block.setType(Material.GRASS_BLOCK);
 						}
 					}
-					if ((location.getBlock().getType() == Material.STONE) || (location.getBlock().getType() == Material.COBBLESTONE))
+					if ((block.getType() == Material.STONE) || (block.getType() == Material.COBBLESTONE))
 					{
-						if (location.getBlock().getRelative(BlockFace.WEST).getType() == Material.AIR)
+						if (block.getRelative(BlockFace.WEST).getType() == Material.AIR)
 						{
-							location.getBlock().getRelative(BlockFace.WEST).setType(Material.VINE, false);
+							block.getRelative(BlockFace.WEST).setType(Material.VINE, false);
 						}
-						if (location.getBlock().getRelative(BlockFace.EAST).getType() == Material.AIR)
+						if (block.getRelative(BlockFace.EAST).getType() == Material.AIR)
 						{
-							location.getBlock().getRelative(BlockFace.EAST).setType(Material.VINE, false);
+							block.getRelative(BlockFace.EAST).setType(Material.VINE, false);
 						}
-						if (location.getBlock().getRelative(BlockFace.NORTH).getType() == Material.AIR)
+						if (block.getRelative(BlockFace.NORTH).getType() == Material.AIR)
 						{
-							location.getBlock().getRelative(BlockFace.NORTH).setType(Material.VINE, false);
+							block.getRelative(BlockFace.NORTH).setType(Material.VINE, false);
 						}
-						if (location.getBlock().getRelative(BlockFace.SOUTH).getType() == Material.AIR)
+						if (block.getRelative(BlockFace.SOUTH).getType() == Material.AIR)
 						{
-							location.getBlock().getRelative(BlockFace.SOUTH).setType(Material.VINE, false);
+							block.getRelative(BlockFace.SOUTH).setType(Material.VINE, false);
 						}
 					}
-					if ((location.getBlock().getType() == Material.GRASS_BLOCK) && (location.getBlock().getRelative(BlockFace.UP).getType() == Material.AIR))
+					if ((block.getType() == Material.GRASS_BLOCK) && (block.getRelative(BlockFace.UP).getType() == Material.AIR))
 					{
+						Block above = block.getRelative(BlockFace.UP);
 						switch (this.random.nextInt(5))
 						{
 						case 0:
-							location.getBlock().getRelative(BlockFace.UP).setType(Material.POPPY);
+							above.setType(Material.POPPY);
 							break;
 						case 1:
-							location.getBlock().getRelative(BlockFace.UP).setType(Material.TALL_GRASS);
+							placeTallPlant(above, Material.TALL_GRASS);
 							break;
 						case 2:
-							location.getBlock().getRelative(BlockFace.UP).setType(Material.SUNFLOWER);
+							placeTallPlant(above, Material.SUNFLOWER);
 							break;
 						case 3:
-							location.getBlock().getRelative(BlockFace.UP).setType(Material.SHORT_GRASS);
+							above.setType(Material.SHORT_GRASS);
+							break;
+						default:
+							break;
 						}
 					}
 				}
 			}
 		}
+	}
+
+	// Two-block plants need both halves, or the lower half pops off as an item
+	private static void placeTallPlant(Block lower, Material plant)
+	{
+		Block upper = lower.getRelative(BlockFace.UP);
+		if (!upper.getType().isAir())
+		{
+			lower.setType(Material.SHORT_GRASS);
+			return;
+		}
+		Bisected bottom = (Bisected) plant.createBlockData();
+		bottom.setHalf(Bisected.Half.BOTTOM);
+		Bisected top = (Bisected) plant.createBlockData();
+		top.setHalf(Bisected.Half.TOP);
+		lower.setBlockData(bottom, false);
+		upper.setBlockData(top, false);
 	}
 
 	public void healing(Player player, int powerValue)
@@ -468,11 +486,18 @@ public class HolyPowerManager
 				{
 					block.remove();
 
-					block.getLocation().getBlock().setType(Material.AIR);
+					// A landed falling block turns into an ice block; remove only that
+					Block landed = block.getLocation().getBlock();
+					if (landed.getType() == Material.ICE)
+					{
+						landed.setType(Material.AIR);
+					}
 
 					cancel();
 
-					final HashMap<Location, Material> changedBlocks = new HashMap<Location, Material>();
+					// Encase the target in ice for a few seconds, then put back what was there
+					final List<Block> changedBlocks = new ArrayList<Block>();
+					final Map<Block, BlockData> originalData = new HashMap<Block, BlockData>();
 
 					for (int x = -1; x < 2; x++)
 					{
@@ -480,23 +505,23 @@ public class HolyPowerManager
 						{
 							for (int z = -1; z < 2; z++)
 							{
-								loc = block.getLocation().add(x, y, z);
+								Block b = landed.getRelative(x, y, z);
+								Material type = b.getType();
 
-								Block b = world.getBlockAt(loc);
-
-								if (!b.getType().isSolid())
+								if (type.isAir() || (Tag.REPLACEABLE.isTagged(type) && type != Material.LAVA))
 								{
-									changedBlocks.put(b.getLocation(), b.getType());
-									b.setType(Material.ICE);
+									originalData.put(b, b.getBlockData());
+									changedBlocks.add(b);
+									b.setType(Material.ICE, false);
 								}
 							}
 						}
 					}
 
+					Collections.shuffle(changedBlocks);
+
 					new BukkitRunnable()
 					{
-						Random random = new Random();
-
 						@Override
 						public void run()
 						{
@@ -508,17 +533,15 @@ public class HolyPowerManager
 									return;
 								}
 
-								int index = this.random.nextInt(changedBlocks.size());
-								long data = ((Long) changedBlocks.values().toArray()[index]).longValue();
-								Location position = (Location) changedBlocks.keySet().toArray()[index];
-								changedBlocks.remove(position);
-								Block c = position.getBlock();
-								playBlockBreakEffect(position, c);
-								//c.setType((int) (data & 0xFFFF));
-								//c.setData((byte) (int) (data >> 16));
+								Block c = changedBlocks.remove(changedBlocks.size() - 1);
+								if (c.getType() == Material.ICE)
+								{
+									playBlockBreakEffect(c.getLocation(), c);
+									c.setBlockData(originalData.get(c), false);
+								}
 							}
 						}
-					}.runTaskTimer(Gods.instance(), 80 + new Random().nextInt(40), 3L);
+					}.runTaskTimer(Gods.instance(), 80 + HolyPowerManager.this.random.nextInt(40), 3L);
 				}
 			}
 		};
@@ -527,16 +550,15 @@ public class HolyPowerManager
 
 	void lightning(Player player, int powerStrength)
 	{
-		int maxStrikes = 10;
 		int strikes = 0;
-		for (Entity entity : getNearbyEntities(player.getLocation(), 10.0D))
+		for (Entity entity : getNearbyLivingEntities(player.getLocation(), 10.0D))
 		{
+			if (strikes >= powerStrength)
+			{
+				break;
+			}
 			if (entity.getEntityId() != player.getEntityId())
 			{
-				if (strikes >= maxStrikes)
-				{
-					break;
-				}
 				entity.getWorld().strikeLightning(entity.getLocation());
 
 				strikes++;
@@ -553,12 +575,6 @@ public class HolyPowerManager
 		Gods.instance().logDebug("Starting thunderstorm for " + powerValue + " minutes");
 
 		Gods.instance().getServer().getScheduler().scheduleSyncDelayedTask(Gods.instance(), new ThunderStormTask(player, System.currentTimeMillis() + powerValue * 60000), 60L);
-	}
-
-	public void magicArrow(Player player, int powerStrength)
-	{
-		player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0F, 1.0F);
-		player.launchProjectile(Arrow.class);
 	}
 
 	public void shootFirework(Player player, int powerValue)
