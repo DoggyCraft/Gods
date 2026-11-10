@@ -489,14 +489,14 @@ public class HolyArtifactManager
 		{
 			return;
 		}
-		HolyPowerManager.HolyPower holyPower = HolyPowerManager.instance().getHolyPowerFromDescription(item.getItemMeta().getLore().get(2).substring(2));
+		HolyPowerManager.PowerDescription holyPower = HolyPowerManager.instance().getHolyPowerFromDescription(ChatColor.stripColor(item.getItemMeta().getLore().get(2)));
 
 		Player player = Gods.instance().getServer().getPlayer(playerName);
-		if (player == null)
+		if (player == null || holyPower == null)
 		{
 			return;
 		}
-		HolyPowerManager.instance().activatePower(player, holyPower, 1);
+		HolyPowerManager.instance().activatePower(player, holyPower.power(), holyPower.value());
 		
 
 		// item.setDurability((short) (item.getDurability() - 1));

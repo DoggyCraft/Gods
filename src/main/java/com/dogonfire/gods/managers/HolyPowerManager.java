@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -45,67 +47,36 @@ public class HolyPowerManager
 
 	public static HolyPowerManager instance()
 	{
+		if (instance == null)
+			instance = new HolyPowerManager();
 		return instance;
 	}
 
 	private Random random = new Random();
 
-	private HolyPowerManager(Gods plugin)
+	private HolyPowerManager()
 	{
-		
 	}
 
 	public void activatePower(Player player, HolyPower powerType, int powerStrength)
 	{
 		switch (powerType)
 		{
-		case EARTHQUAKE:
-			healing(player, powerStrength);
-			break;
-		case CALLSUN:
-			callMoon(player, powerStrength);
-			break;
-		case DRUNK:
-			callSun(player, powerStrength);
-			break;
-		case CALLMOON:
-			boostKnowledge(player, powerStrength);
-			break;
-		case TAME:
-			shootFirework(player, powerStrength);
-			break;
-		case NATURE:
-			growNature(player, powerStrength);
-			break;
-		case LIGHTNING_STORM:
-			earthQuake(player, powerStrength);
-			break;
-		case HEALING:
-			teleport(player, powerStrength);
-			break;
-		case FIREBALL:
-			tame(player, powerStrength);
-			break;
-		case FREEZE:
-			lightningStorm(player, powerStrength);
-			break;
-		case FIREWORK:
-			lightning(player, powerStrength);
-			break;
-		case LIGHTNING:
-			fireBall(player, powerStrength);
-			break;
-		case KNOWLEDGE:
-			ice(player, powerStrength);
-			break;
-		case ICE:
-			freeze(player, powerStrength);
-			break;
-		case TELEPORT:
-			drunk(player, powerStrength);
-			break;
-		default:
-			Gods.instance().log("Unknown holy power");
+		case KNOWLEDGE -> boostKnowledge(player, powerStrength);
+		case CALLMOON -> callMoon(player, powerStrength);
+		case CALLSUN -> callSun(player, powerStrength);
+		case HEALING -> healing(player, powerStrength);
+		case TAME -> tame(player, powerStrength);
+		case LIGHTNING -> lightning(player, powerStrength);
+		case LIGHTNING_STORM -> lightningStorm(player, powerStrength);
+		case TELEPORT -> teleport(player, powerStrength);
+		case FREEZE -> freeze(player, powerStrength);
+		case ICE -> ice(player, powerStrength);
+		case FIREBALL -> fireBall(player, powerStrength);
+		case EARTHQUAKE -> earthQuake(player, powerStrength);
+		case NATURE -> growNature(player, powerStrength);
+		case FIREWORK -> shootFirework(player, powerStrength);
+		case DRUNK -> drunk(player, powerStrength);
 		}
 	}
 
@@ -161,55 +132,24 @@ public class HolyPowerManager
 
 	public String describe(HolyPower power, int value)
 	{
-		String descriptionText = "";
-		switch (power)
+		return switch (power)
 		{
-		case CALLMOON:
-			descriptionText = "Boosts " + value + " levels of xp";
-			break;
-		case EARTHQUAKE:
-			descriptionText = "Heals up to " + value + " other players";
-			break;
-		case CALLSUN:
-			descriptionText = "Calls the moon for " + value + " min";
-			break;
-		case DRUNK:
-			descriptionText = "Calls the sun for " + value + " min";
-			break;
-		case TAME:
-			descriptionText = "Shoots " + value + " firework rockets";
-			break;
-		case NATURE:
-			descriptionText = "Grows nature in a radius of " + value + " blocks";
-			break;
-		case LIGHTNING_STORM:
-			descriptionText = "Earthquake in " + value + " block radius";
-			break;
-		case FIREBALL:
-			descriptionText = "Tame all beasts within " + 2 * value + " blocks";
-			break;
-		case FIREWORK:
-			descriptionText = "Lightning strikes up to " + value + " enemies";
-			break;
-		case FREEZE:
-			descriptionText = "Creates a thunderstorm lasting " + value + " minutes";
-			break;
-		case HEALING:
-			descriptionText = "Teleport up to " + value + " blocks";
-			break;
-		case KNOWLEDGE:
-			descriptionText = "Shoots ice spike which freezes a target on hit";
-			break;
-		case ICE:
-			descriptionText = "Freezes all water within a " + value + " block radius";
-			break;
-		case LIGHTNING:
-			descriptionText = "Fires a fireball with a " + value + " seconds cooldown";
-			break;
-		case TELEPORT:
-			descriptionText = "Gets you drunk for " + value + " seconds!";
-		}
-		return descriptionText;
+		case KNOWLEDGE -> "Boosts " + value + " levels of xp";
+		case CALLMOON -> "Calls the moon for " + value + " min";
+		case CALLSUN -> "Calls the sun for " + value + " min";
+		case HEALING -> "Heals up to " + value + " other players";
+		case TAME -> "Tame all beasts within " + 2 * value + " blocks";
+		case LIGHTNING -> "Lightning strikes up to " + value + " enemies";
+		case LIGHTNING_STORM -> "Creates a thunderstorm lasting " + value + " minutes";
+		case TELEPORT -> "Teleport up to " + value + " blocks";
+		case FREEZE -> "Freezes all water within a " + value + " block radius";
+		case ICE -> "Shoots ice spike which freezes a target on hit";
+		case FIREBALL -> "Fires a fireball with a " + value + " seconds cooldown";
+		case EARTHQUAKE -> "Earthquake in " + value + " block radius";
+		case NATURE -> "Grows nature in a radius of " + value + " blocks";
+		case FIREWORK -> "Shoots " + value + " firework rockets";
+		case DRUNK -> "Gets you drunk for " + value + " seconds!";
+		};
 	}
 
 	public void drunk(Player player, int powerValue)
@@ -312,41 +252,36 @@ public class HolyPowerManager
 		}
 	}
 
-	public HolyPower getHolyPowerFromDescription(String description)
+	public record PowerDescription(HolyPower power, int value)
 	{
-		HolyPower holyPower = null;
-		String[] text = description.split(" ");
+	}
 
-		Gods.instance().logDebug(description);
-		if (text[0].equals("Boosts"))
+	/**
+	 * Reads a power and its value back from text made by {@link #describe}, or returns null.
+	 */
+	public PowerDescription getHolyPowerFromDescription(String description)
+	{
+		final int marker = 1234567;
+		for (HolyPower power : HolyPower.values())
 		{
-			holyPower = HolyPower.KNOWLEDGE;
+			String template = describe(power, marker);
+			String regex = Pattern.quote(template).replace(String.valueOf(2 * marker), "\\E(\\d+)\\Q").replace(String.valueOf(marker), "\\E(\\d+)\\Q");
+			Matcher matcher = Pattern.compile(regex).matcher(description);
+			if (matcher.matches())
+			{
+				int value = 1;
+				if (matcher.groupCount() > 0)
+				{
+					value = Integer.parseInt(matcher.group(1));
+					if (power == HolyPower.TAME)
+					{
+						value = Math.max(1, value / 2);
+					}
+				}
+				return new PowerDescription(power, value);
+			}
 		}
-		else if (text[0].equals("Heals"))
-		{
-			holyPower = HolyPower.HEALING;
-		}
-		else if ((text[0].equals("Shoots")) && (text[1].equals("1")))
-		{
-			holyPower = HolyPower.FIREWORK;
-		}
-		else if (text[0].equals("Gets"))
-		{
-			holyPower = HolyPower.DRUNK;
-		}
-		else if (text[0].equals("Freezes"))
-		{
-			holyPower = HolyPower.FREEZE;
-		}
-		else if ((text[0].equals("Shoots")) && (text[1].equals("ice")))
-		{
-			holyPower = HolyPower.ICE;
-		}
-		else if ((text[0].equals("Fires")) && (text[1].equals("a")))
-		{
-			holyPower = HolyPower.FIREBALL;
-		}
-		return holyPower;
+		return null;
 	}
 
 	// Block break particles and sound, as the removed Effect.STEP_SOUND did
