@@ -25,7 +25,7 @@ With Holy Lands, players can easily protect their lands from grief by simply bui
 
 Installation
 ---------
-*	Run a [Paper](https://papermc.io/) or Spigot server on Minecraft 26.1 or newer, with Java 25.
+*	Run a [Paper](https://papermc.io/) or Spigot server on Minecraft 1.21.3 or newer (including 26.x), with Java 21 or newer.
 *	Download `Gods-<version>.jar` from the [releases](https://github.com/DoggyCraft/Gods/releases) and drop it into the `plugins` folder.
 *	Optional: [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/).
 *	Start the server. Commands and permissions are listed in [plugin.yml](plugin/src/main/resources/plugin.yml).

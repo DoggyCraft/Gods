@@ -1,7 +1,7 @@
 1.0.0
 -------------------------------
 Requirements
-* Minecraft 26.1 or newer (Spigot or Paper), Java 25. Servers on older versions can keep using 0.9.x.
+* Minecraft 1.21.3 or newer, including 26.x (Spigot or Paper), and Java 21 or newer. Servers on older versions can keep using 0.9.x.
 * Vault is no longer used. Permissions go through Bukkit (LuckPerms and the like work as usual).
 
 Upgrading from 0.9.x (back up your plugins/Gods folder first)

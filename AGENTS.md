@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents working with code in this reposi
 
 ## Project
 
-Gods is a Bukkit/Spigot plugin. Players build altars, pray to gods they name themselves, and gain powers, quests, holy lands (land protection), marriages, holy books and so on. It runs on Spigot and Paper 26.1+ with Java 25 (`api-version: '1.21'` in `plugin.yml`). It compiles against `paper-api` 26.3 but **must keep running on Spigot**: use only Bukkit/Spigot API, and reach Paper-only API behind a runtime check. WorldGuard and PlaceholderAPI are optional (softdepend).
+Gods is a Bukkit/Spigot plugin. Players build altars, pray to gods they name themselves, and gain powers, quests, holy lands (land protection), marriages, holy books and so on. It runs on Spigot and Paper 1.21.3+ (including 26.x) with Java 21+ (`api-version: '1.21'` in `plugin.yml`). It compiles against `paper-api` 26.3 but **must keep running on Spigot 1.21.3**: use only Bukkit/Spigot API that 1.21.3 has (the `-Pspigot` compile against spigot-api 1.21.3 checks this), and reach Paper-only API behind a runtime check. WorldGuard and PlaceholderAPI are optional (softdepend).
 
 ## Build & test
 
@@ -16,9 +16,9 @@ mvn -Pspigot -pl plugin -am clean compile  # compile against spigot-api instead:
 ```
 
 - A parent `pom.xml` (shared versions and repositories) with two modules, in the standard Maven layout:
-  - `api/` (`gods-api`): the public API, `com.dogonfire.gods.api` (see "API"). It is compiled against `spigot-api` 26.1 only, with sources and javadoc jars (doclint on: `mvn -pl api javadoc:jar` must pass), and published through JitPack (`jitpack.yml` fetches JDK 25 itself) from release tags as `com.github.DoggyCraft.Gods:gods-api:<tag>`.
+  - `api/` (`gods-api`): the public API, `com.dogonfire.gods.api` (see "API"). It is compiled against `spigot-api` 1.21.3 only, with sources and javadoc jars (doclint on: `mvn -pl api javadoc:jar` must pass), and published through JitPack (`jitpack.yml` fetches JDK 25 itself) from release tags as `com.github.DoggyCraft.Gods:gods-api:<tag>`.
   - `plugin/` (`gods`): everything else (`plugin/src/main/java`, `plugin/src/main/resources`, `plugin/src/test/java`). It depends on `gods-api` and bundles it, not relocated. Only `plugin.yml` is Maven-filtered (for `${project.version}`).
-- Java 25 (`maven.compiler.release`). CI (`.github/workflows/build.yml`) builds on JDK 25 for every push and PR. Pushing a tag `v<pom version>` (e.g. `v1.0.0`) publishes a GitHub release with the plugin and API jars.
+- Java 21 bytecode (`maven.compiler.release`), so it runs on 1.21.x servers; it is built with JDK 25 (the flake, CI, JitPack). Don't use Java APIs or language features newer than 21. CI (`.github/workflows/build.yml`) builds on JDK 25 for every push and PR. Pushing a tag `v<pom version>` (e.g. `v1.0.0`) publishes a GitHub release with the plugin and API jars.
 - JUnit tests (`plugin/src/test/java`, no server needed) cover config loading and migration, the data file storage, the repositories (each reads a realistic old file from `plugin/src/test/resources/legacy/`, saves it and reads it back unchanged), the data migrations and the message files (`LegacyText`, `LegacyLangFiles`: the old bundled files convert to exactly the new ones and customized ones keep their changes; `MessageKeysTest`; `MessagesTest`), the pure rules of the services (`BelieverRules`, `GodRules`, `MoodRules`, `RelationRules`, `PriestRules`, `BlessingRules`, `SacrificeRules`, `QuestRules`, `HolyPowerRules`, `PowerCooldowns`, `HolyArtifactRules`, `HolyLandContest`, `HolyLandRules`, `DroppedItems`, `AltarSigns`, `RegionKey`, `ActionCooldown`) the command router (`CommandRouterTest`, `PluginYmlTest`, `PrayForCommandTest`) and the API (`ApiSnapshotsTest`, `GodsApiServiceTest`; `ApiSurfaceTest` in `api/`); test fixtures are in `plugin/src/test/resources`. Most game behavior can only be checked by running the jar on a server.
 - `Biome`, `Sound` and other former enums are registry interfaces now: compare with `==`, never `switch` on them or call `valueOf`.
 
