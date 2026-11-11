@@ -168,17 +168,12 @@ public class HolyBookService
 		}
 	}
 
-	public boolean giveBible(String godName, String playerName)
+	/** Gives the player a copy of the god's Holy Book; false if the god has none */
+	public boolean giveBible(String godName, Player player)
 	{
 		ItemStack bible = getBible(godName);
 		if (bible == null)
 		{
-			return false;
-		}
-		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
-		if (player == null)
-		{
-			ctx.plugin().logDebug("ERROR: Could not give bible to offline player '" + playerName);
 			return false;
 		}
 		giveBook(player, bible);
@@ -186,17 +181,12 @@ public class HolyBookService
 		return true;
 	}
 
-	public boolean giveEditBible(String godName, String playerName)
+	/** Gives the player a book and quill of the god's Holy Book to edit; false if the god has none */
+	public boolean giveEditBible(String godName, Player player)
 	{
 		ItemStack bible = getEditBible(godName);
 		if (bible == null)
 		{
-			return false;
-		}
-		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
-		if (player == null)
-		{
-			ctx.plugin().logDebug("ERROR: Could not give editable bible to offline player '" + playerName);
 			return false;
 		}
 		giveBook(player, bible);
@@ -253,13 +243,8 @@ public class HolyBookService
 	 * Makes the book in the priest's main hand the Holy Book of their God. A signed book keeps its title. A book and
 	 * quill keeps the current title, and the priest gets a signed copy of the new Holy Book in its place.
 	 */
-	public boolean setBible(String godName, String priestName)
+	public boolean setBible(String godName, Player player)
 	{
-		Player player = ctx.plugin().getServer().getPlayerExact(priestName);
-		if (player == null)
-		{
-			return false;
-		}
 		ItemStack item = player.getInventory().getItemInMainHand();
 		if ((item.getType() != Material.WRITTEN_BOOK) && (item.getType() != Material.WRITABLE_BOOK))
 		{

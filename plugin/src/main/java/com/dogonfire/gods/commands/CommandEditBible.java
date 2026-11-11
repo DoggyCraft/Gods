@@ -46,7 +46,7 @@ public class CommandEditBible extends GodsCommand
 			send(sender, "command.editbible.not-priest");
 			return;
 		}
-		if (!ctx.holyBookService().giveEditBible(godName, player.getName()))
+		if (!ctx.holyBookService().giveEditBible(godName, player))
 		{
 			send(sender, "command.editbible.failed", Messages.god(godName));
 			return;

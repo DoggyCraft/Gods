@@ -121,7 +121,7 @@ public class PrayerService
 
 			if (ctx.settings().bibles().enabled() && ctx.settings().bibles().giveOnJoin())
 			{
-				ctx.holyBookService().giveBible(godName, player.getName());
+				ctx.holyBookService().giveBible(godName, player);
 			}
 		}
 
