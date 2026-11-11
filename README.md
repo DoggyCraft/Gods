@@ -57,7 +57,7 @@ frost:
     dye: blue
     glowing: false
 werewolves:
-  altar-blocks: [mossy_cobblestone]   # werewolf gods can't be made at an altar unless you add blocks
+  altar-blocks: {add: [dark_oak_wood]}   # dark oak wood makes werewolf altars too
 ```
 
 Gods that already picked a holy or unholy mob or food keep it. `altars.block-types` in config.yml still works: a god type listed there uses exactly those blocks instead of its theme's. The sign texts are `altar.sign.*` in `lang/<language>/messages.yml`. Use `/g reload` after a change.

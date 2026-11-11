@@ -175,8 +175,7 @@ war:
     dye: red
     glowing: true
 
-# The pack: wolves are holy, prey is hunted and eaten raw. No altar block makes a werewolf god (as before); add some
-# in plugins/Gods/themes.yml or config.yml if you want them
+# The pack: wolves are holy, prey is hunted and eaten raw. Altars of the taiga, where the wolves live
 werewolves:
   holy-mobs: [wolf, fox]
   unholy-mobs: [sheep, rabbit, chicken, pig, cow, goat]
@@ -184,7 +183,7 @@ werewolves:
   unholy-foods: [bread, baked_potato, carrot, apple, melon_slice, beetroot, pumpkin_pie, sweet_berries]
   sacrifice-needs: [bone, beef, mutton, porkchop, rabbit_hide, rabbit_foot, leather, rotten_flesh, spruce_log, feather, chicken]
   slay-targets: [sheep, rabbit, pig, cow, chicken]
-  altar-blocks: []
+  altar-blocks: [podzol, coarse_dirt, spruce_wood, stripped_spruce_wood, stripped_spruce_log]
   sign:
     messages: werewolves
     dye: gray

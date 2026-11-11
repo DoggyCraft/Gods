@@ -113,7 +113,7 @@ class ThemesLoaderTest
 			assertTrue(foods.size() > 1, type + " foods");
 			assertEquals(ThemesLoader.sectionName(type), theme.sign().messages());
 			// As before, no altar makes a werewolf god
-			assertEquals(type == GodType.WEREWOLVES, theme.altarBlocks().isEmpty(), type + " altar blocks");
+			assertFalse(theme.altarBlocks().isEmpty(), type + " altar blocks");
 		}
 		assertFalse(themes.of(null).holyMobs().isEmpty());
 		assertEquals(Theme.SignStyle.PLAIN, themes.of(null).sign());

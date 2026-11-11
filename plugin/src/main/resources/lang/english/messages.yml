@@ -435,6 +435,11 @@ names:
     WIND_CHARGE: wind charge
     WITHER_ROSE: wither rose
     WRITABLE_BOOK: book and quill
+    COARSE_DIRT: coarse dirt
+    PODZOL: podzol
+    SPRUCE_WOOD: spruce wood
+    STRIPPED_SPRUCE_WOOD: stripped spruce wood
+    STRIPPED_SPRUCE_LOG: stripped spruce log
   mob:
     CHICKEN: chicken
     CREEPER: creeper
