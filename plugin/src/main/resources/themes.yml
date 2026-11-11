@@ -14,6 +14,8 @@
 #                    them for the god types it lists)
 #   sign             how altar signs look: messages (the texts under altar.sign.<messages> in messages.yml), dye (the
 #                    sign's dye color) and glowing (glowing text)
+#   ranks            what the gods' ranks are called (config.yml's ranks section): spirit, recognized, descended,
+#                    exalted and greater, each a name (shown in /g info, /g list, above altars and by PlaceholderAPI)
 #   effects          how the gods' effects look and sound (config.yml's effects section switches them): symbol (text that
 #                    floats up at prayers), and pleased, neutral and angry, each with particles (particle ids),
 #                    sounds (sound ids like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB", for dust
@@ -45,6 +47,12 @@ default:
     messages: default
     dye: black
     glowing: false
+  ranks:
+    spirit: Spirit
+    recognized: Recognized
+    descended: Descended
+    exalted: Exalted
+    greater: Greater God
   effects:
     symbol: "✦"
     pleased:
@@ -89,6 +97,12 @@ frost:
     messages: frost
     dye: light_blue
     glowing: true
+  ranks:
+    spirit: Snowflake
+    recognized: Hoarfrost
+    descended: Glacier
+    exalted: Avalanche
+    greater: Eternal Winter
   effects:
     symbol: "❄"
     pleased:
@@ -128,6 +142,12 @@ love:
     messages: love
     dye: pink
     glowing: true
+  ranks:
+    spirit: Spark
+    recognized: Sweetheart
+    descended: Beloved
+    exalted: Adored
+    greater: Heart of the World
   effects:
     symbol: "♥"
     pleased:
@@ -164,6 +184,12 @@ evil:
     messages: evil
     dye: purple
     glowing: true
+  ranks:
+    spirit: Whisper
+    recognized: Shadow
+    descended: Dread
+    exalted: Scourge
+    greater: Endless Night
   effects:
     symbol: "☠"
     pleased:
@@ -202,6 +228,12 @@ sea:
     messages: sea
     dye: cyan
     glowing: true
+  ranks:
+    spirit: Tide
+    recognized: Current
+    descended: Breaker
+    exalted: Maelstrom
+    greater: Leviathan
   effects:
     symbol: "≈"
     pleased:
@@ -241,6 +273,12 @@ moon:
     messages: moon
     dye: light_gray
     glowing: true
+  ranks:
+    spirit: Glimmer
+    recognized: Crescent
+    descended: Half Moon
+    exalted: Full Moon
+    greater: Eclipse
   effects:
     symbol: "☾"
     pleased:
@@ -285,6 +323,12 @@ sun:
     messages: sun
     dye: orange
     glowing: true
+  ranks:
+    spirit: Dawn
+    recognized: Morning Sun
+    descended: High Noon
+    exalted: Blazing Sun
+    greater: Eternal Sun
   effects:
     symbol: "☀"
     pleased:
@@ -326,6 +370,12 @@ thunder:
     messages: thunder
     dye: yellow
     glowing: true
+  ranks:
+    spirit: Rumble
+    recognized: Thunderclap
+    descended: Bolt
+    exalted: Thunderstorm
+    greater: Wrath of the Heavens
   effects:
     symbol: "⚡"
     pleased:
@@ -362,6 +412,12 @@ party:
     messages: party
     dye: lime
     glowing: true
+  ranks:
+    spirit: Giggle
+    recognized: Merrymaker
+    descended: Life of the Party
+    exalted: Grand Festival
+    greater: Eternal Feast
   effects:
     symbol: "♫"
     pleased:
@@ -392,6 +448,12 @@ war:
     messages: war
     dye: red
     glowing: true
+  ranks:
+    spirit: Skirmish
+    recognized: Battlecry
+    descended: Warhost
+    exalted: Conqueror
+    greater: Eternal War
   effects:
     symbol: "⚔"
     pleased:
@@ -426,6 +488,12 @@ werewolves:
     messages: werewolves
     dye: gray
     glowing: true
+  ranks:
+    spirit: Whelp
+    recognized: Howl
+    descended: Pack
+    exalted: Alpha
+    greater: Great Wolf
   effects:
     symbol: "☽"
     pleased:
@@ -466,6 +534,12 @@ creatures:
     messages: creatures
     dye: brown
     glowing: true
+  ranks:
+    spirit: Hatchling
+    recognized: Nest
+    descended: Herd
+    exalted: Wild Host
+    greater: Beast Eternal
   effects:
     symbol: "❦"
     pleased:
@@ -495,6 +569,12 @@ wisdom:
     messages: wisdom
     dye: blue
     glowing: true
+  ranks:
+    spirit: Notion
+    recognized: Scholar
+    descended: Sage
+    exalted: Oracle
+    greater: Omniscience
   effects:
     symbol: "✧"
     pleased:
@@ -530,6 +610,12 @@ nature:
     messages: nature
     dye: green
     glowing: true
+  ranks:
+    spirit: Seed
+    recognized: Sprout
+    descended: Sapling
+    exalted: Old Oak
+    greater: World Tree
   effects:
     symbol: "❀"
     pleased:

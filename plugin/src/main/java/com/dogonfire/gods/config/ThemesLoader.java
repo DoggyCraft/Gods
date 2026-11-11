@@ -26,6 +26,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
 import com.dogonfire.gods.integration.npc.SkinTextures;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
 
@@ -78,6 +79,9 @@ public final class ThemesLoader
 	public static final List<String>	SKIN_ENTRIES	= List.of(SKIN_GOD, SKIN_GODDESS, SKIN_DEITY);
 	/** What a skin in themes.yml must be, for the warnings */
 	public static final String			SKIN_HINT		= "needs the value and signature of a signed texture, e.g. from mineskin.org, or use /g godskin in game";
+
+	/** The names of the ranks: {@code ranks.<rank>} ({@link GodRank#key()}), each a text */
+	public static final String			RANKS			= "ranks";
 
 	public static final String			EFFECTS			= "effects";
 	public static final String			SYMBOL			= "symbol";
@@ -226,7 +230,7 @@ public final class ThemesLoader
 	 * ({@link #SKIN_ENTRIES}; only valid signed textures; a section's skins don't take the default section's, that
 	 * fallback is {@code GodNpcRules.skin}'s)
 	 */
-	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, RawSkin> npc)
+	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, RawSkin> npc, Map<String, String> ranks)
 	{
 	}
 
@@ -329,7 +333,9 @@ public final class ThemesLoader
 			sign.putAll(own.sign());
 			Map<String, String> symbol = new LinkedHashMap<>(defaults.symbol());
 			symbol.putAll(own.symbol());
-			merged.put(name, new RawTheme(lists, sign, symbol, own.npc()));
+			Map<String, String> ranks = new LinkedHashMap<>(defaults.ranks());
+			ranks.putAll(own.ranks());
+			merged.put(name, new RawTheme(lists, sign, symbol, own.npc(), ranks));
 		}
 		return merged;
 	}
@@ -375,7 +381,12 @@ public final class ThemesLoader
 			readSign(section, sign);
 			readSymbol(section, symbol);
 		}
-		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, name, logger, Map.of()) : Map.of());
+		Map<String, String> ranks = new LinkedHashMap<>();
+		if (section != null)
+		{
+			readRanks(section, ranks, name, logger);
+		}
+		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, name, logger, Map.of()) : Map.of(), ranks);
 	}
 
 	private static void readSign(ConfigurationSection section, Map<String, String> sign)
@@ -389,6 +400,41 @@ public final class ThemesLoader
 				{
 					sign.put(key, String.valueOf(signSection.get(key)));
 				}
+			}
+		}
+	}
+
+	/**
+	 * The {@code ranks} section: a name per rank ({@code spirit}, {@code recognized}, ...). An unknown rank or a name
+	 * that isn't text is warned about and skipped.
+	 */
+	private static void readRanks(ConfigurationSection section, Map<String, String> ranks, String name, Logger logger)
+	{
+		if (!section.isSet(RANKS))
+		{
+			return;
+		}
+		ConfigurationSection names = section.getConfigurationSection(RANKS);
+		if (names == null)
+		{
+			logger.warning("themes.yml " + name + ".ranks must be a section with a name per rank (spirit, recognized, descended, exalted, greater), ignoring it.");
+			return;
+		}
+		for (String key : names.getKeys(false))
+		{
+			GodRank rank = GodRank.byKey(key);
+			Object value = names.get(key);
+			if (rank == null)
+			{
+				logger.warning("Unknown rank '" + key + "' in themes.yml " + name + ".ranks (spirit, recognized, descended, exalted, greater), ignoring it.");
+			}
+			else if (!(value instanceof String text) || text.isBlank())
+			{
+				logger.warning("themes.yml " + name + ".ranks." + key + " must be a name, ignoring it.");
+			}
+			else
+			{
+				ranks.put(rank.key(), text.trim());
 			}
 		}
 	}
@@ -531,8 +577,14 @@ public final class ThemesLoader
 		Map<String, String> sign = new LinkedHashMap<>(base.sign());
 		Map<String, String> symbol = new LinkedHashMap<>(base.symbol());
 		Map<String, RawSkin> npc = base.npc();
+		Map<String, String> ranks = new LinkedHashMap<>(base.ranks());
 		for (String key : override.getKeys(false))
 		{
+			if (key.equals(RANKS))
+			{
+				readRanks(override, ranks, name, logger);
+				continue;
+			}
 			if (key.equals(NPC))
 			{
 				// Replaces the gender entries it has
@@ -568,7 +620,7 @@ public final class ThemesLoader
 			}
 			applyList(override, key, lists, fallback, name, logger);
 		}
-		return new RawTheme(lists, sign, symbol, npc);
+		return new RawTheme(lists, sign, symbol, npc, ranks);
 	}
 
 	/** The admin's changes to the effects: {@code symbol}, and a section per mood with the effect lists */
@@ -666,7 +718,20 @@ public final class ThemesLoader
 						dye(section, sign.get("dye")),
 						glowing(section, sign.get("glowing"))),
 				effects(section, raw, bundledNames),
-				npcSkins(raw.npc()));
+				npcSkins(raw.npc()),
+				rankNames(raw.ranks()));
+	}
+
+	/** The rank names of a theme: its own, else the default section's, else the rank's key with a capital */
+	private static Theme.RankNames rankNames(Map<String, String> ranks)
+	{
+		Map<GodRank, String> names = new java.util.EnumMap<>(GodRank.class);
+		for (GodRank rank : GodRank.values())
+		{
+			String name = ranks.get(rank.key());
+			names.put(rank, name != null ? name : Theme.RankNames.fallback(rank));
+		}
+		return new Theme.RankNames(java.util.Collections.unmodifiableMap(names));
 	}
 
 	/** The NPC skins of a theme (checked when read) */

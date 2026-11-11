@@ -1,6 +1,8 @@
 package com.dogonfire.gods.config;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -8,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.NpcSkin;
 
 /**
@@ -27,6 +30,7 @@ import com.dogonfire.gods.model.NpcSkin;
  * @param effects        how the effects of these gods look and sound (prayers, sacrifices, blessings, curses)
  * @param npcSkins       the skins of these gods' NPCs at their main altars, per gender (a god's own skin, set with
  *                       /g godskin, comes first; see {@code GodNpcRules.skin} for the whole order)
+ * @param rankNames      what these gods' ranks are called
  */
 public record Theme(
 		List<EntityType> holyMobs,
@@ -38,8 +42,31 @@ public record Theme(
 		List<Material> altarBlocks,
 		SignStyle sign,
 		Effects effects,
-		NpcSkins npcSkins)
+		NpcSkins npcSkins,
+		RankNames rankNames)
 {
+	/**
+	 * What a theme's ranks are called ({@code ranks} in themes.yml): a name for every rank.
+	 *
+	 * @param names the name of each rank (every rank has one)
+	 */
+	public record RankNames(Map<GodRank, String> names)
+	{
+		/** The name of a rank */
+		public String of(GodRank rank)
+		{
+			String name = this.names.get(rank);
+			return name != null ? name : fallback(rank);
+		}
+
+		/** A rank's key with a capital, for a rank no section names */
+		public static String fallback(GodRank rank)
+		{
+			String key = rank.key();
+			return key.substring(0, 1).toUpperCase(Locale.ROOT) + key.substring(1);
+		}
+	}
+
 	/**
 	 * The skins of a theme's god NPCs ({@code npc.skin} in themes.yml), one per gender, each a texture Mojang signed or
 	 * null. Which one a god wears is {@code GodNpcRules.skin}'s.

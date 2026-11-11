@@ -13,6 +13,7 @@ import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodStats;
+import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.storage.CleanupGuard;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.util.LegacyDates;
@@ -48,6 +49,19 @@ public class RankService
 	{
 		God god = god(godName);
 		return god != null && god.rank() != null ? god.rank() : GodRank.SPIRIT;
+	}
+
+	/** What the god's rank is called (its god type's name for it, themes.yml's {@code ranks}) */
+	public String getRankName(String godName)
+	{
+		return rankName(godName, getRank(godName));
+	}
+
+	/** What a rank is called for this god (its god type's name for it; the default theme's for a god without one) */
+	public String rankName(String godName, GodRank rank)
+	{
+		GodType type = godName != null && ctx.godService().godExist(godName) ? ctx.godService().getDivineForceForGod(godName) : null;
+		return ctx.themes().of(type).rankNames().of(rank);
 	}
 
 	/** When the god reached its rank, or null */

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.integration.npc.SkinTextures;
 import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.service.GodNpcRules;
@@ -262,6 +264,54 @@ class ThemesLoaderTest
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("holy-mob")));
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sky")));
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("colour")));
+	}
+
+	/** Every god type names every rank its own way; gods without a type have the generic names */
+	@Test
+	void everyGodTypeNamesItsRanks() throws Exception
+	{
+		Themes themes = load("");
+		Theme.RankNames generic = themes.of(null).rankNames();
+		assertEquals(List.of("Spirit", "Recognized", "Descended", "Exalted", "Greater God"), Arrays.stream(GodRank.values()).map(generic::of).toList());
+		for (GodType type : GodType.values())
+		{
+			Theme.RankNames names = themes.of(type).rankNames();
+			Set<String> distinct = new HashSet<>();
+			for (GodRank rank : GodRank.values())
+			{
+				String name = names.of(rank);
+				assertFalse(name.isBlank(), type + " " + rank);
+				assertTrue(distinct.add(name), type + " names two ranks " + name);
+				assertFalse(name.equals(generic.of(rank)), type + " has the generic name for " + rank);
+			}
+		}
+		assertEquals("Leviathan", themes.of(GodType.SEA).rankNames().of(GodRank.GREATER));
+		assertEquals("Tide", themes.of(GodType.SEA).rankNames().of(GodRank.SPIRIT));
+	}
+
+	/** An admin's names replace Gods' one by one; odd ones are mentioned */
+	@Test
+	void ranksAreRenamedOneByOne() throws Exception
+	{
+		Themes themes = load("""
+				default:
+				  ranks:
+				    greater: Mighty One
+				frost:
+				  ranks:
+				    greater: Ice Queen
+				    godlike: Too much
+				    exalted: ''
+				sun: { ranks: bright }
+				""");
+		assertEquals("Ice Queen", themes.of(GodType.FROST).rankNames().of(GodRank.GREATER));
+		assertEquals("Snowflake", themes.of(GodType.FROST).rankNames().of(GodRank.SPIRIT));
+		assertEquals("Avalanche", themes.of(GodType.FROST).rankNames().of(GodRank.EXALTED));
+		assertEquals("Mighty One", themes.of(null).rankNames().of(GodRank.GREATER));
+		assertEquals("Eternal Sun", themes.of(GodType.SUN).rankNames().of(GodRank.GREATER));
+		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("godlike")), "Warnings: " + this.log.warnings());
+		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("frost.ranks.exalted")));
+		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sun.ranks")));
 	}
 
 	/** The bundled skins: signed textures that decode to a skin URL, where Gods' themes have them, and only there */

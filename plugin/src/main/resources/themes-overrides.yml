@@ -19,6 +19,8 @@
 #                      messages  the texts under altar.sign.<messages> in lang/<language>/messages.yml
 #                      dye       the sign's dye color (black, white, red, light_blue, ...)
 #                      glowing   true or false
+#   ranks            what the ranks are called (config.yml's ranks section): spirit, recognized, descended, exalted
+#                    and/or greater, each a name; yours replaces Gods' name of each one you list
 #   effects          how the effects look and sound:
 #                      symbol    text that floats up at prayers (like ❄), "" for none
 #                      pleased, neutral, angry: each with particles (particle ids like end_rod), sounds (sound ids
@@ -53,6 +55,8 @@
 #   sign:
 #     dye: blue
 #     glowing: false
+#   ranks:
+#     greater: Ice Queen
 #   effects:
 #     pleased:
 #       sounds: [block.bell.use]
