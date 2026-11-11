@@ -27,7 +27,7 @@ public class GodCreateEvent extends GodEvent implements Cancellable
 	 * @param creator  the player who prays to it first
 	 * @param type     its divine force, from the altar block
 	 * @param gender   its gender, from the altar
-	 * @param location where it is created; it becomes the god's home
+	 * @param location where it is created (where the creator stands at its altar, which becomes its main altar and home)
 	 */
 	public GodCreateEvent(String godName, Player creator, GodType type, GodGender gender, Location location)
 	{
@@ -56,7 +56,7 @@ public class GodCreateEvent extends GodEvent implements Cancellable
 		return this.gender;
 	}
 
-	/** Where the god is created, which becomes its home (a copy) */
+	/** Where the god is created: where the creator stands at its altar, which becomes its main altar and home (a copy) */
 	public Location getLocation()
 	{
 		return this.location.clone();

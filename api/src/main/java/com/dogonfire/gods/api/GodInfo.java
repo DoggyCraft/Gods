@@ -22,13 +22,16 @@ import org.bukkit.Location;
  * @param allies         the gods this god is allied with
  * @param enemies        the gods this god is at war with
  * @param description    what its priests wrote about it, or null if they wrote nothing
- * @param home           where the god lives (its first altar, or where a priest set it), or null if that world isn't
- *                       loaded
+ * @param home           the home of the religion, where /g home leads: the spot in front of its main altar's sign,
+ *                       facing the altar; for a god without a main altar, the home stored by Gods before main altars
+ *                       (where it was founded or a priest set it with /g sethome), if it has one; null if it has none or
+ *                       that world isn't loaded
  * @param holyLandClaims how many regions of holy land the god has claimed (0 when holy land is switched off)
  * @param quest          the god's current quest, or null if it has none
  * @param created        when the god was created, or null if that isn't known
- * @param mainAltar      the altar block of the god's main altar (chosen by a priest with /g setaltar), or null if it
- *                       has none or that world isn't loaded
+ * @param mainAltar      the altar block of the god's main altar (the altar it was founded at, else its oldest praying
+ *                       altar, or one a priest chose with /g setaltar), or null if it has
+ *                       none or that world isn't loaded
  * @param descended      when the god descended to its main altar, where it appears as an NPC (Gods' config,
  *                       {@code npc.descend}), or null if it hasn't (or ascended again)
  */

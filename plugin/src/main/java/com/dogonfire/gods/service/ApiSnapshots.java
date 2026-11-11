@@ -4,8 +4,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import com.dogonfire.gods.api.BelieverInfo;
 import com.dogonfire.gods.api.GodInfo;
@@ -88,6 +90,18 @@ public final class ApiSnapshots
 		Instant expires = (started != null && quest.maxDuration() != null) ? started.plus(Duration.ofMinutes(quest.maxDuration())) : null;
 		return new QuestInfo(quest.godName(), questType(quest.type()), quest.targetType(), quest.amountOrZero(), quest.progressOrZero(), started, expires,
 				location != null && location.getWorld() != null ? location : null);
+	}
+
+	/**
+	 * {@link GodInfo#home()}: the religion's home ({@link HomeRules#home}: in front of its main altar, facing it; else the
+	 * home stored before main altars) as a location, or null if it has none or its world isn't loaded
+	 *
+	 * @param worlds the loaded world of this name, or null
+	 */
+	public static Location home(HomeRules.Home home, Function<String, World> worlds)
+	{
+		World world = home != null ? worlds.apply(home.world()) : null;
+		return world != null ? new Location(world, home.x(), home.y(), home.z(), home.yaw(), 0.0F) : null;
 	}
 
 	/**

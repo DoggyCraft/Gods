@@ -31,7 +31,7 @@ import com.dogonfire.gods.util.LegacyDates;
 
 /**
  * Gods themselves: creating and removing them, which gods exist and which have believers online, and what a god is
- * (type, gender, color, title, language file, seed and verbosity) and what its priests set (description, home,
+ * (type, gender, color, title, language file, seed and verbosity) and what its priests set (description, main altar,
  * access, PvP and mobs in its holy land). Its power comes from its believers ({@link BelieverService}). Loads gods.yml
  * ({@link GodRepository}), which the other god services (moods, relations, priests, blessings, commandments) share.
  * The pure rules are in {@link GodRules}. Main thread only.
@@ -87,14 +87,13 @@ public class GodService
 
 	/**
 	 * Creates a god at its first altar, with its gender, type and seed (its personality, see {@link #getSeedForGod}).
-	 * That altar is its main altar (even when older altars of a god of this name, removed before, still stand).
+	 * That altar is its main altar and so its home (even when older altars of a god of this name, removed before, still
+	 * stand).
 	 *
 	 * @param altarSign the sign of the praying altar it was founded at
-	 * @param location  where the player stood
 	 */
-	public void createGod(String godName, Block altarSign, Location location, GodGender godGender, GodType godType, long seed)
+	public void createGod(String godName, Block altarSign, GodGender godGender, GodType godType, long seed)
 	{
-		setHomeForGod(godName, location);
 		setGenderForGod(godName, godGender);
 		setDivineForceForGod(godName, godType);
 		setPrivateAccess(godName, ctx.settings().gods().privateByDefault());
@@ -442,17 +441,18 @@ public class GodService
 		this.repository.markDirty();
 	}
 
-	/** Where the god lives (its first altar, or /g sethome), or null */
-	public Location getHomeForGod(String godName)
+	/**
+	 * The religion's home ({@link HomeRules#home}): in front of its main altar, else (a god without one) the home stored
+	 * before main altars, else null
+	 */
+	public HomeRules.Home getHome(String godName)
 	{
 		God god = god(godName);
-		GodHome home = god != null ? god.home() : null;
-		if (home == null)
+		if (god == null)
 		{
 			return null;
 		}
-
-		return new Location(ctx.plugin().getServer().getWorld(home.world()), home.x(), home.y(), home.z());
+		return HomeRules.home(ctx.altarRegistry().mainAltar(godName), god.home());
 	}
 
 	public void setHomeForGod(String godName, Location location)

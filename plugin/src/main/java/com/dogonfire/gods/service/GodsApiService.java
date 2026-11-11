@@ -72,7 +72,7 @@ public final class GodsApiService implements GodsApi
 			return null;
 		}
 		int claims = ctx.settings().holyLand().enabled() ? ctx.holyLandService().getClaimedChunksForGod(godName) : 0;
-		return ApiSnapshots.god(god, ctx.godService().getGodPower(godName), ctx.believerService().getBelieversForGod(godName), ctx.godService().getHomeForGod(godName),
+		return ApiSnapshots.god(god, ctx.godService().getGodPower(godName), ctx.believerService().getBelieversForGod(godName), ApiSnapshots.home(ctx.godService().getHome(godName), ctx.plugin().getServer()::getWorld),
 				claims, quest(godName), ctx.altarRegistry().mainAltarLocation(godName));
 	}
 

@@ -21,9 +21,13 @@ import org.junit.jupiter.api.Test;
 import com.dogonfire.gods.api.BelieverInfo;
 import com.dogonfire.gods.api.GodInfo;
 import com.dogonfire.gods.api.QuestInfo;
+import com.dogonfire.gods.model.Altar;
+import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.Believer;
+import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.Quest;
@@ -219,6 +223,27 @@ class ApiSnapshotsTest
 
 		BelieverInfo info = ApiSnapshots.believer(believer, true);
 		assertEquals(new BelieverInfo(BELIEVER, "Zeus", 7, 3, true, CREATED, CREATED.plusSeconds(60)), info);
+	}
+
+	/** GodInfo.home: in front of the main altar, facing it; without a main altar the home from before main altars */
+	@Test
+	void theHomeIsTheMainAltar()
+	{
+		// The sign hangs south of its altar block
+		Altar main = new Altar(new BlockPos("world", 10, 64, 11), new BlockPos("world", 10, 64, 10), AltarKind.PRAYING, "Zeus", null, null);
+		GodHome legacy = new GodHome("world", 100.5, 70, -3.25);
+
+		Location home = ApiSnapshots.home(HomeRules.home(main, legacy), name -> WORLD);
+		assertEquals(new Location(WORLD, 10.5, 64, 12.5, GodNpcRules.facingYaw(main), 0.0F), home);
+		// Looking north, at the altar
+		assertEquals(180.0F, Math.abs(home.getYaw()), 0.001F);
+
+		Location old = ApiSnapshots.home(HomeRules.home(null, legacy), name -> WORLD);
+		assertEquals(new Location(WORLD, 100.5, 70, -3.25), old);
+
+		assertNull(ApiSnapshots.home(HomeRules.home(null, null), name -> WORLD));
+		// Its world isn't loaded
+		assertNull(ApiSnapshots.home(HomeRules.home(main, legacy), name -> null));
 	}
 
 	private static List<String> names(Enum<?>[] values)

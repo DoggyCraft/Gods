@@ -8,7 +8,6 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.BlockIterator;
@@ -19,6 +18,7 @@ import com.dogonfire.gods.task.BoostKnowledgeTask;
 import com.dogonfire.gods.task.DrunkTask;
 import com.dogonfire.gods.task.FireworkTask;
 import com.dogonfire.gods.task.HealRadiusTask;
+import com.dogonfire.gods.util.SafeSpots;
 
 /** The powers that do something for the player or those around: knowledge, healing, fireworks, drink and teleporting */
 public final class GiftPowers
@@ -123,13 +123,11 @@ public final class GiftPowers
 				// The void
 				return null;
 			}
-			Block head = feet.getRelative(0, 1, 0);
-			boolean headFree = head.getY() < world.getMaxHeight() && isFree(head);
-			if (HolyPowerRules.isSafeSpot(ground.getType(), ground.getType().isSolid() && !isWet(ground), feet.getType(), isFree(feet), head.getType(), headFree))
+			if (SafeSpots.isSafe(world, feet))
 			{
 				return feet;
 			}
-			if (!isFree(ground))
+			if (!SafeSpots.isFree(ground))
 			{
 				// Ground that isn't safe: nothing lower in this column
 				return null;
@@ -140,11 +138,6 @@ public final class GiftPowers
 
 	private static boolean isFree(Block block)
 	{
-		return block.isPassable() && !block.isLiquid() && !isWet(block);
-	}
-
-	private static boolean isWet(Block block)
-	{
-		return block.getBlockData() instanceof Waterlogged waterlogged && waterlogged.isWaterlogged();
+		return SafeSpots.isFree(block);
 	}
 }

@@ -781,8 +781,10 @@ command:
     done: <gold><god><aqua> gave <player> a Holy artifact!
   home:
     parameters: ''
-    description: Teleport to the home of your religion
-    none: <red>Your religion does not have a home
+    description: Teleport to the home of your religion, its main altar
+    # <god> is the believer's God
+    none: <red><gold><god></gold> has no main altar to be its home. Build an altar to your God
+    unsafe: <red>There is no safe place to stand at the main altar of <gold><god>
   hunt:
     parameters: ''
     description: Show how far you are from the quest target
