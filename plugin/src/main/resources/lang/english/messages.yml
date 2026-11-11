@@ -9,7 +9,7 @@ messages-version: 2
 
 god:
   # How a god's words look. <god> is the god's name, <message> the line from its voice file.
-  speech: <gold>\<<god>>: <white><bold><message>
+  speech: '<gold>\<<god>>: <white><bold><message>'
   question-hint: <aqua>Use <white>/gods yes or /gods no</white> to answer the God
 
 # Hints sent a little while after something happens
@@ -149,7 +149,7 @@ names:
     WISDOM: <gender> of Wisdom
     WEREWOLVES: <gender> of Werewolves
     CREATURES: <gender> of Mobs
-    NATURE: '<gender> of Nature '
+    NATURE: <gender> of Nature
     none: <gender> of Nothing
   gender:
     None: God

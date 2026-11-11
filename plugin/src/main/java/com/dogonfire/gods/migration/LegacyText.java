@@ -70,7 +70,8 @@ public final class LegacyText
 		Converter converter = new Converter();
 		if (emitBase)
 		{
-			converter.codes(base);
+			// Written before the first text, unless the text starts with a color of its own
+			converter.pendingBase = base;
 		}
 		else
 		{
@@ -92,11 +93,12 @@ public final class LegacyText
 			}
 			if (match != null)
 			{
+				converter.flushBase();
 				converter.out.append(match.getValue());
 				// The old placeholders ended with the base codes, undoing the codes before them
 				if (converter.changed)
 				{
-					converter.codes(base);
+					converter.pendingBase = base;
 					converter.changed = false;
 				}
 				i += match.getKey().length();
@@ -129,6 +131,8 @@ public final class LegacyText
 		boolean				decorated;
 		// Whether a code was written since the start or the last placeholder
 		boolean				changed;
+		// The base style to switch back to before the next text, unless a color code comes first (which makes it moot)
+		String				pendingBase;
 
 		void codes(String codes)
 		{
@@ -141,6 +145,17 @@ public final class LegacyText
 		/** Converts the character (or color code) at i, returns the index after it */
 		int next(String text, int i)
 		{
+			if (this.pendingBase != null)
+			{
+				String base = this.pendingBase;
+				this.pendingBase = null;
+				if (!startsColor(text, i))
+				{
+					codes(base);
+					this.changed = false;
+				}
+			}
+
 			char c = text.charAt(i);
 			if ((c != '&' && c != '§') || i + 1 >= text.length())
 			{
@@ -177,6 +192,28 @@ public final class LegacyText
 			}
 			this.changed = true;
 			return i + 2;
+		}
+
+		/** Writes the base style that is waiting for the next text */
+		void flushBase()
+		{
+			if (this.pendingBase != null)
+			{
+				String base = this.pendingBase;
+				this.pendingBase = null;
+				codes(base);
+				this.changed = false;
+			}
+		}
+
+		private static boolean startsColor(String text, int i)
+		{
+			if ((text.charAt(i) != '&' && text.charAt(i) != '§') || i + 1 >= text.length())
+			{
+				return false;
+			}
+			char code = Character.toLowerCase(text.charAt(i + 1));
+			return COLORS.containsKey(code) || code == 'r' || (code == '#' && i + 8 <= text.length() && isHex(text.substring(i + 2, i + 8)));
 		}
 
 		private void color(String color)

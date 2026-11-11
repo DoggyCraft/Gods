@@ -2,7 +2,6 @@ package com.dogonfire.gods.message;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +13,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.dogonfire.gods.migration.VersionedYaml;
@@ -92,9 +92,11 @@ final class LangFiles
 			{
 				return null;
 			}
-			return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+			YamlConfiguration yaml = new YamlConfiguration();
+			yaml.loadFromString(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+			return yaml;
 		}
-		catch (IOException e)
+		catch (IOException | InvalidConfigurationException e)
 		{
 			this.log.warning("Could not read the bundled lang/" + language + "/" + path + ": " + e.getMessage());
 			return null;

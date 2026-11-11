@@ -1,0 +1,174 @@
+package com.dogonfire.gods.migration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Logger;
+
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
+
+class LegacyLangFilesTest
+{
+	private static final Logger	LOG	= Logger.getLogger("test");
+
+	@TempDir
+	Path						lang;
+
+	@Test
+	void voiceKeysAreTheOldNamesInKebabCase()
+	{
+		assertEquals("believers-slay-quest-started", LegacyLangFiles.voiceKey("GodToBelieversSlayQuestStarted"));
+		assertEquals("priest-eat-food-type", LegacyLangFiles.voiceKey("GodToPriestEatFoodType"));
+		assertEquals("default-bible-text-1", LegacyLangFiles.voiceKey("DefaultBibleText1"));
+		assertEquals("believers-pvp-revenge-quest-started", LegacyLangFiles.voiceKey("GodToBelieversPVPRevengeQuestStarted"));
+		assertEquals("prophecy-header-bible-text", LegacyLangFiles.voiceKey("ProphecyHeaderBibleText"));
+	}
+
+	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
+	@Test
+	void theOldBundledFilesConvertToTheNewBundledOnes() throws IOException
+	{
+		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("messages.yml"), LegacyLangFiles.convertGeneral(fixture("english_general.yml")), bundled("lang/english/messages.yml")));
+		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("sun_male.yml"), LegacyLangFiles.convertVoice(fixture("english_sun_male.yml")), bundled("lang/english/voices/sun_male.yml")));
+		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("creatures_female.yml"), LegacyLangFiles.convertVoice(fixture("english_creatures_female.yml")), bundled("lang/english/voices/creatures_female.yml")));
+	}
+
+	@Test
+	void everyOldVoiceKeyTheCodeUsesHasANewKey() throws IOException
+	{
+		Map<String, List<String>> converted = LegacyLangFiles.convertVoice(fixture("english_sun_male.yml"));
+		for (Voice voice : Voice.values())
+		{
+			assertTrue(converted.containsKey(voice.key()), voice.key());
+		}
+	}
+
+	@Test
+	void customizedFilesAreConvertedAndMoved() throws IOException
+	{
+		copy("customized_general.yml", "english_general.yml");
+		copy("customized_sun_male.yml", "english_sun_male.yml");
+		copy("customized_general.yml", "klingon_general.yml");
+		copy("english_creatures_female.yml", "english_creatures_female.yml");
+		Files.writeString(this.lang.resolve("notes.yml"), "mine: true\n");
+
+		LegacyLangFiles.migrate(this.lang, this::resource, LOG);
+
+		YamlConfiguration messages = YamlConfiguration.loadConfiguration(this.lang.resolve("english/messages.yml").toFile());
+		assertEquals(Messages.MESSAGES_VERSION, messages.getInt(Messages.VERSION_KEY));
+		// Changed by the admin
+		assertEquals("<yellow>Du hast jetzt <bold><hl><amount></hl><reset><yellow> Gebetskraft", messages.getString("prayer.power"));
+		assertEquals("<aqua>Type <white>/g info \\<godname></white> \\<now>", messages.getString("help.info-hint"));
+		assertEquals("Möhre", messages.getString("names.item.CARROT"));
+		assertEquals("<gender> der Sonne", messages.getString("names.god-type.SUN"));
+		// The same as Gods' own, or missing from the old file: Gods' own
+		assertEquals("<aqua>You prayed to <hl><god></hl> for a blessing!", messages.getString("prayer.prayed-for-blessing"));
+		assertEquals("<aqua>You healed <hl><amount></hl> beings", messages.getString("power.healed"));
+		assertFalse(messages.contains("names.item.STONE") && !messages.getString("names.item.STONE").equals("stone"));
+		// The bundled file's comments are kept
+		assertTrue(Files.readString(this.lang.resolve("english/messages.yml")).contains("# How a god's words look"));
+
+		YamlConfiguration sun = YamlConfiguration.loadConfiguration(this.lang.resolve("english/voices/sun_male.yml").toFile());
+		assertEquals(List.of("<reset><red>Kneel, <hl><player></hl><white><bold>!"), sun.getStringList("believer-praying"));
+		assertEquals(List.of("We are allied with <hl><player></hl> now"), sun.getStringList("believers-alliance"));
+		assertEquals(bundledYaml("lang/english/voices/sun_male.yml").getStringList("believers-war"), sun.getStringList("believers-war"));
+
+		// A language Gods doesn't have keeps only what its old file said
+		YamlConfiguration klingon = YamlConfiguration.loadConfiguration(this.lang.resolve("klingon/messages.yml").toFile());
+		assertEquals("Möhre", klingon.getString("names.item.CARROT"));
+		assertFalse(klingon.contains("power.healed"));
+
+		// The old files are kept in lang/old; other files are left alone
+		for (String name : List.of("english_general.yml", "english_sun_male.yml", "klingon_general.yml", "english_creatures_female.yml"))
+		{
+			assertFalse(Files.exists(this.lang.resolve(name)), name);
+			assertTrue(Files.exists(this.lang.resolve("old").resolve(name)), name);
+		}
+		assertTrue(Files.exists(this.lang.resolve("notes.yml")));
+	}
+
+	@Test
+	void anExistingNewFileIsNotOverwritten() throws IOException
+	{
+		Files.createDirectories(this.lang.resolve("english"));
+		Files.writeString(this.lang.resolve("english/messages.yml"), "messages-version: 2\nprayer:\n  power: mine\n");
+		copy("customized_general.yml", "english_general.yml");
+
+		LegacyLangFiles.migrate(this.lang, this::resource, LOG);
+
+		assertEquals("messages-version: 2\nprayer:\n  power: mine\n", Files.readString(this.lang.resolve("english/messages.yml")));
+		assertTrue(Files.exists(this.lang.resolve("old/english_general.yml")));
+	}
+
+	@Test
+	void aBrokenOldFileStaysWhereItIs() throws IOException
+	{
+		Files.writeString(this.lang.resolve("english_general.yml"), "Info: [unclosed\n");
+
+		LegacyLangFiles.migrate(this.lang, this::resource, LOG);
+
+		assertTrue(Files.exists(this.lang.resolve("english_general.yml")));
+		assertFalse(Files.exists(this.lang.resolve("english/messages.yml")));
+	}
+
+	/** After the upgrade, Messages shows the admin's text */
+	@Test
+	void messagesReadTheConvertedFiles() throws IOException
+	{
+		copy("customized_general.yml", "english_general.yml");
+		LegacyLangFiles.migrate(this.lang, this::resource, LOG);
+
+		Messages messages = new Messages(this.lang, this::resource, LOG);
+		messages.load("english", "Doggycraft");
+		assertEquals("§eDu hast jetzt §65§e Gebetskraft", messages.legacy("prayer.power", Messages.amount(5)));
+	}
+
+	private void copy(String fixture, String as) throws IOException
+	{
+		try (InputStream in = resource("legacy/lang/" + fixture))
+		{
+			Files.copy(Objects.requireNonNull(in, fixture), this.lang.resolve(as));
+		}
+	}
+
+	private YamlConfiguration fixture(String name) throws IOException
+	{
+		return bundledYaml("legacy/lang/" + name);
+	}
+
+	private InputStream resource(String path)
+	{
+		return getClass().getClassLoader().getResourceAsStream(path);
+	}
+
+	private String bundled(String path) throws IOException
+	{
+		try (InputStream in = resource(path))
+		{
+			return new String(Objects.requireNonNull(in, path).readAllBytes(), StandardCharsets.UTF_8);
+		}
+	}
+
+	private YamlConfiguration bundledYaml(String path) throws IOException
+	{
+		try (InputStream in = resource(path))
+		{
+			return YamlConfiguration.loadConfiguration(new InputStreamReader(Objects.requireNonNull(in, path), StandardCharsets.UTF_8));
+		}
+	}
+}

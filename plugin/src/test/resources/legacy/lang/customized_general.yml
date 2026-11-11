@@ -1,0 +1,14 @@
+Version:
+  Name: My general
+  Author: Admin
+  Version: 1
+Info:
+  YourPrayerPower: '&eDu hast jetzt &l$Amount&e Gebetskraft'
+  PrayedForBlessing: You prayed to $PlayerName for a blessing!
+  InfoHelp: Type $PlayerName <now>
+  NowHunting: You are hunting
+Items:
+  CARROT: Möhre
+  STONE: STONE
+GodTypes:
+  SUN: $Gender der Sonne

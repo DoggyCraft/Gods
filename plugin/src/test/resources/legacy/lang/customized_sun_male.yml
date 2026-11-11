@@ -1,0 +1,6 @@
+Version:
+  Name: Sun God
+GodToBelieverPraying:
+- '&cKneel, $PlayerName!'
+GodToBelieversAlliance:
+- We are allied with $PlayerName now
