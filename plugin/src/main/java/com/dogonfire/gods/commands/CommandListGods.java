@@ -1,16 +1,17 @@
 package com.dogonfire.gods.commands;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandListGods extends GodsCommand
 {
@@ -18,7 +19,6 @@ public class CommandListGods extends GodsCommand
 	{
 		super(ctx, "list");
 		this.permission = "gods.list";
-		this.description = "List the Gods of this server";
 	}
 
 	@Override
@@ -26,12 +26,12 @@ public class CommandListGods extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
@@ -52,12 +52,12 @@ public class CommandListGods extends GodsCommand
 
 		if (gods.size() == 0)
 		{
-			sender.sendMessage(ChatColor.GOLD + "There are no Gods in " + ctx.settings().general().serverName() + "!");
+			send(sender, "command.list.none");
 			return;
 		}
 
 		playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Gods of " + ctx.settings().general().serverName() + " ---------");
+		send(sender, "command.list.header");
 
 		Collections.sort(gods, new TopGodsComparator());
 
@@ -74,26 +74,15 @@ public class CommandListGods extends GodsCommand
 
 		for (God god : topGods)
 		{
-			String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godService().getTitleForGod(god.name) });
-			if (sender != null)
+			TagResolver row = row(god, String.format("%2d", n));
+			if ((playerGod != null) && (god.name.equals(playerGod)))
 			{
-				if ((playerGod != null) && (god.name.equals(playerGod)))
-				{
-					playerGodShown = true;
-					sender.sendMessage(ChatColor.GOLD + String.format("%2d", new Object[] { Integer.valueOf(n) }) + " - " +
-
-							fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Power ").append(god.power).toString()) + String.format("%-2s", new StringBuilder().append(" Believers ").append(god.believers).toString()));
-				}
-				else
-				{
-					sender.sendMessage(ChatColor.YELLOW + String.format("%2d", new Object[] { Integer.valueOf(n) }) + ChatColor.AQUA + " - " + fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Power ").append(god.power).toString())
-							+ String.format("%-2s", new StringBuilder().append(" Believers ").append(god.believers).toString()));
-				}
+				playerGodShown = true;
+				send(sender, "command.list.you", row);
 			}
 			else
 			{
-				ctx.plugin().log(String.format("%2d", new Object[] { Integer.valueOf(n) }) + " - " + fullGodName + ChatColor.GOLD + String.format("%-2s", new StringBuilder().append(" Mood ").append(ctx.moodService().getExactMoodForGod(god.name)).toString())
-						+ String.format("%-2s", new StringBuilder().append(" Power ").append(god.power).toString()) + String.format("%-2s", new StringBuilder().append(" Believers ").append(god.believers).toString()));
+				send(sender, "command.list.line", row);
 			}
 			n++;
 		}
@@ -104,11 +93,10 @@ public class CommandListGods extends GodsCommand
 		{
 			for (God god : gods)
 			{
-				String fullGodName = String.format("%-16s", new Object[] { god.name }) + "   " + String.format("%-16s", new Object[] { ctx.godService().getTitleForGod(god.name) });
 				if ((playerGod != null) && (god.name.equals(playerGod)))
 				{
 					playerGodShown = true;
-					sender.sendMessage("" + ChatColor.GOLD + n + " - " + fullGodName + String.format("%-2s", new StringBuilder().append(" Power ").append(god.power).toString()) + String.format("%-2s", new StringBuilder().append(" Believers ").append(god.believers).toString()));
+					send(sender, "command.list.you-below", row(god, String.valueOf(n)));
 				}
 				n++;
 			}
@@ -118,6 +106,13 @@ public class CommandListGods extends GodsCommand
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "help.info-hint", 80);
 		}
 
+	}
+
+	/** <rank>, <name> (the name and title, padded to line up), <power> and <believers> of a line of the list */
+	private TagResolver row(God god, String rank)
+	{
+		String fullGodName = String.format("%-16s", god.name) + "   " + String.format("%-16s", ctx.godService().getTitleForGod(god.name));
+		return TagResolver.resolver(Messages.text("rank", rank), Messages.legacyText("name", fullGodName), Messages.text("power", god.power), Messages.text("believers", god.believers));
 	}
 }
 

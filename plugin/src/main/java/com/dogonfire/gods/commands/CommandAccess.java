@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,8 +11,6 @@ public class CommandAccess extends GodsCommand
 	{
 		super(ctx, "access");
 		this.permission = "gods.priest.access";
-		this.parameters = "[open/close]";
-		this.description = "Set your religion as open or invite only";
 		this.priestOnly = true;
 	}
 
@@ -22,13 +19,13 @@ public class CommandAccess extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(ChatColor.RED + "You do not have permission for that");
+			send(sender, "command.not-allowed");
 			return;
 		}
 
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		
@@ -36,7 +33,7 @@ public class CommandAccess extends GodsCommand
 		
 		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
-			player.sendMessage(ChatColor.RED + "Only priests can set religion access");
+			send(player, "command.access.not-priest");
 			return;
 		}
 		
@@ -44,7 +41,7 @@ public class CommandAccess extends GodsCommand
 
 		if (godName == null || !ctx.godService().godExist(godName))
 		{
-			player.sendMessage(ChatColor.RED + "That God does not exist");
+			send(player, "command.access.no-god");
 			return;
 		}
 
@@ -60,19 +57,17 @@ public class CommandAccess extends GodsCommand
 		{
 			ctx.godService().setPrivateAccess(godName, false);
 			ctx.plugin().log(player.getName() + " /gods open");
-			player.sendMessage(ChatColor.AQUA + "You set the religion access to " + ChatColor.YELLOW + "open" + ChatColor.AQUA + ".");
-			player.sendMessage(ChatColor.AQUA + "Players can join religion by praying at altars.");
+			send(player, "command.access.opened");
 		}
 		else if (access.equalsIgnoreCase("close"))
 		{
 			ctx.godService().setPrivateAccess(godName, true);
 			ctx.plugin().log(player.getName() + " /gods close");
-			player.sendMessage(ChatColor.AQUA + "You set the religion access to " + ChatColor.RED + "closed" + ChatColor.AQUA + ".");
-			player.sendMessage(ChatColor.AQUA + "Players can now only pray to this religion by invitation.");
+			send(player, "command.access.closed");
 		}
 		else
 		{
-			player.sendMessage(ChatColor.RED + "That is not a valid command");
+			send(player, "command.access.invalid");
 		}
 	}
 }

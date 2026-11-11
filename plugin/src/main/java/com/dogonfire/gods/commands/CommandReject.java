@@ -11,7 +11,6 @@ public class CommandReject extends GodsCommand
 	{
 		super(ctx, "no");
 		this.permission = "gods.reject";
-		this.description = "Reject a proposal from your God";
 	}
 
 	@Override
@@ -19,18 +18,18 @@ public class CommandReject extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 
 		if (ctx.believerService().getGodForBeliever(((Player) sender).getUniqueId()) == null)
 		{
-			sender.sendMessage(stringNoGod);
+			send(sender, NO_GOD);
 			return;
 		}
 

@@ -71,6 +71,36 @@ class MessageKeysTest
 		assertTrue(missing.isEmpty(), "Missing from messages.yml: " + missing);
 	}
 
+	/** /gods help shows command.&lt;name&gt;.parameters and .description of every command */
+	@Test
+	void everyCommandHasParametersAndADescription() throws IOException
+	{
+		YamlConfiguration messages = bundled("lang/english/messages.yml");
+		Pattern command = Pattern.compile("super\\(ctx, \"([a-z]+)\"\\)");
+		List<String> missing = new ArrayList<>();
+		int commands = 0;
+		try (Stream<Path> files = Files.list(Path.of("src/main/java/com/dogonfire/gods/commands")))
+		{
+			for (Path file : files.toList())
+			{
+				Matcher matcher = command.matcher(Files.readString(file));
+				while (matcher.find())
+				{
+					commands++;
+					for (String part : List.of("parameters", "description"))
+					{
+						if (!messages.isString("command." + matcher.group(1) + "." + part))
+						{
+							missing.add("command." + matcher.group(1) + "." + part);
+						}
+					}
+				}
+			}
+		}
+		assertTrue(commands > 30);
+		assertTrue(missing.isEmpty(), "Missing from messages.yml: " + missing);
+	}
+
 	@Test
 	void everyVoiceKeyIsInEveryVoiceFile() throws IOException
 	{

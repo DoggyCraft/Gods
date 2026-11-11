@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -14,8 +13,6 @@ public class CommandPrayFor extends GodsCommand
 	{
 		super(ctx, "prayfor");
 		this.permission = "gods.pray";
-		this.parameters = "<Item/Health/Blessing/Quest>";
-		this.description = "Pray to your God for something specific";
 	}
 
 	@Override
@@ -23,22 +20,22 @@ public class CommandPrayFor extends GodsCommand
 	{
 		if (!ctx.settings().blessings().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Blessings are not enabled on this server");
+			send(sender, "command.disabled.blessings");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		if (ctx.believerService().getGodForBeliever(((Player) sender).getUniqueId()) == null)
 		{
-			sender.sendMessage(stringNoGod);
+			send(sender, NO_GOD);
 			return;
 		}
 		if (args.length < 2)
@@ -71,18 +68,12 @@ public class CommandPrayFor extends GodsCommand
 
 	private void prayForHelp(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "--------------- How to pray for things ---------------");
-		sender.sendMessage(ChatColor.AQUA + "Pray for something specific from your God:");
-		sender.sendMessage("");
-		sender.sendMessage(ChatColor.WHITE + "/g prayfor item - " + ChatColor.AQUA + " pray for an item");
-		sender.sendMessage(ChatColor.WHITE + "/g prayfor health - " + ChatColor.AQUA + " pray for health");
-		sender.sendMessage(ChatColor.WHITE + "/g prayfor blessing - " + ChatColor.AQUA + " pray for a magical blessing");
+		send(sender, "command.prayfor.help");
 		if (ctx.settings().quests().enabled())
 		{
-			sender.sendMessage(ChatColor.WHITE + "/g prayfor quest - " + ChatColor.AQUA + " pray for a quest");
+			send(sender, "command.prayfor.help-quest");
 		}
-		sender.sendMessage("");
-		sender.sendMessage(ChatColor.AQUA + "Note that you need prayer power to perform these prayers.");
+		send(sender, "command.prayfor.help-footer");
 	}
 
 	private void prayForBlessing(CommandSender sender)
@@ -124,7 +115,7 @@ public class CommandPrayFor extends GodsCommand
 		double healing = ctx.blessingService().getHealthNeed(godName, player);
 		if (healing <= 1.0D)
 		{
-			sender.sendMessage(ChatColor.AQUA + "You are already in good health.");
+			send(sender, "command.prayfor.healthy");
 			return;
 		}
 		ctx.godSpeech().sendInfo(player.getUniqueId(), "prayer.prayed-for-health", 1, Messages.amount(ctx.settings().prayers().healthCost()), Messages.god(godName));
@@ -172,7 +163,7 @@ public class CommandPrayFor extends GodsCommand
 		}
 		if (ctx.questService().hasQuest(godName))
 		{
-			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " already has given a quest!");
+			send(sender, "command.prayfor.has-quest", Messages.god(godName));
 			return;
 		}
 		ctx.godSpeech().sendInfo(player.getUniqueId(), "prayer.prayed-for-quest", 1, Messages.amount(ctx.settings().prayers().questCost()), Messages.god(godName));

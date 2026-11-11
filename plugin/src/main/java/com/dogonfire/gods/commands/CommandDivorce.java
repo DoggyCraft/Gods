@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandDivorce extends GodsCommand
 {
@@ -12,7 +12,6 @@ public class CommandDivorce extends GodsCommand
 	{
 		super(ctx, "divorce");
 		this.permission = "gods.divorce";
-		this.description = "Divorce your partner";
 	}
 
 	@Override
@@ -20,17 +19,17 @@ public class CommandDivorce extends GodsCommand
 	{
 		if (!ctx.settings().marriage().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
+			send(sender, "command.disabled.marriage");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
@@ -38,7 +37,7 @@ public class CommandDivorce extends GodsCommand
 
 		if (thisGodName == null)
 		{
-			player.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(player, "command.not-believer");
 			return;
 		}
 
@@ -46,12 +45,12 @@ public class CommandDivorce extends GodsCommand
 
 		if (partnerName == null)
 		{
-			player.sendMessage(ChatColor.RED + "You are not married, bozo!");
+			send(player, "command.not-married");
 			return;
 		}
 
 		ctx.marriageService().divorce(player.getUniqueId());
 
-		player.sendMessage(ChatColor.AQUA + "You divorced " + ChatColor.WHITE + partnerName + "!");
+		send(player, "command.divorce.done", Messages.player(partnerName));
 	}
 }

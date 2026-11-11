@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandChat extends GodsCommand
 {
@@ -12,7 +12,6 @@ public class CommandChat extends GodsCommand
 	{
 		super(ctx, "chat");
 		this.permission = "gods.chat";
-		this.description = "Chat only with believers within your religion";
 	}
 
 	@Override
@@ -20,12 +19,12 @@ public class CommandChat extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
@@ -33,19 +32,19 @@ public class CommandChat extends GodsCommand
 
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(sender, "command.not-believer");
 			return;
 		}
 
 		if (ctx.believerService().getReligionChat(player.getUniqueId()))
 		{
 			ctx.believerService().setReligionChat(player.getUniqueId(), false);
-			sender.sendMessage(ChatColor.AQUA + "You are now chatting public");
+			send(sender, "command.chat.public");
 		}
 		else
 		{
 			ctx.believerService().setReligionChat(player.getUniqueId(), true);
-			sender.sendMessage(ChatColor.AQUA + "You are now only chatting with the believers of " + ChatColor.YELLOW + godName);
+			send(sender, "command.chat.religion", Messages.god(godName));
 		}
 	}
 

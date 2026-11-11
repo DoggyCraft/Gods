@@ -7,13 +7,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class GodsCommandExecuter implements CommandExecutor
 {
@@ -78,12 +78,7 @@ public class GodsCommandExecuter implements CommandExecutor
 
 	private void CommandGods(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + ctx.plugin().getDescription().getFullName() + " ------------------");
-		sender.sendMessage(ChatColor.AQUA + "By DogOnFire");
-		sender.sendMessage("" + ChatColor.AQUA);
-		sender.sendMessage(ChatColor.AQUA + "There are currently " + ChatColor.WHITE + ctx.godService().getAllGods().size() + ChatColor.AQUA + " Gods and");
-		sender.sendMessage("" + ChatColor.WHITE + ctx.believerService().getBelieverCount() + ChatColor.AQUA + " believers in " + ctx.settings().general().serverName());
-		sender.sendMessage("" + ChatColor.AQUA);
+		ctx.messages().send(sender, "command.gods.header", Messages.text("plugin", ctx.plugin().getDescription().getFullName()), Messages.amount(ctx.godService().getAllGods().size()), Messages.text("believers", ctx.believerService().getBelieverCount()));
 		if (sender != null && sender instanceof Player)
 		{
 			Player player = (Player) sender;
@@ -93,31 +88,31 @@ public class GodsCommandExecuter implements CommandExecutor
 				List<UUID> priests = ctx.priestService().getPriestsForGod(godName);
 				if (priests == null || !priests.contains(player.getUniqueId()))
 				{
-					sender.sendMessage(ChatColor.WHITE + "You believe in " + ChatColor.GOLD + godName);
+					ctx.messages().send(sender, "command.gods.believer", Messages.god(godName));
 				}
 				else
 				{
-					sender.sendMessage(ChatColor.WHITE + "You are the priest of " + ChatColor.GOLD + godName);
+					ctx.messages().send(sender, "command.gods.priest", Messages.god(godName));
 				}
 
 				if (ctx.settings().prayers().enabled())
 				{
-					sender.sendMessage(ChatColor.WHITE + "You have " + ChatColor.GOLD + ctx.believerService().getPrayerPower(player.getUniqueId()) + ChatColor.WHITE + " prayer power");
+					ctx.messages().send(sender, "command.gods.prayer-power", Messages.amount(ctx.believerService().getPrayerPower(player.getUniqueId())));
 				}
 			}
 			else
 			{
-				sender.sendMessage(ChatColor.RED + "You do not believe in any god");
+				ctx.messages().send(sender, "command.gods.no-god");
 			}
 			if (ctx.settings().marriage().enabled())
 			{
 				String partnerName = ctx.marriageService().getPartnerName(player.getUniqueId());
 				if (partnerName != null)
 				{
-					sender.sendMessage(ChatColor.WHITE + "You are married to " + ChatColor.GOLD + partnerName);
+					ctx.messages().send(sender, "command.gods.married", Messages.player(partnerName));
 				}
 			}
-			sender.sendMessage("" + ChatColor.AQUA);
+			ctx.messages().send(sender, "command.gods.separator");
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "help.commands-hint", 80);
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "help.altar-hint", 160);
 
@@ -126,7 +121,7 @@ public class GodsCommandExecuter implements CommandExecutor
 				ctx.godSpeech().sendInfo(player.getUniqueId(), "help.prayfor-hint", 240);
 			}
 		}
-		sender.sendMessage(ChatColor.GREEN + "For the full command list, please use " + ChatColor.AQUA + "/gods help");
+		ctx.messages().send(sender, "command.gods.footer");
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
@@ -142,7 +137,7 @@ public class GodsCommandExecuter implements CommandExecutor
 		
 		if (gCmd == null)
 		{
-			sender.sendMessage(ChatColor.RED + "Invalid Gods command!");
+			ctx.messages().send(sender, "command.invalid");
 		}
 		else
 		{

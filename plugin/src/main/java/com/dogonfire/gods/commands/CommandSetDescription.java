@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandSetDescription extends GodsCommand
 {
@@ -12,8 +12,6 @@ public class CommandSetDescription extends GodsCommand
 	{
 		super(ctx, "desc");
 		this.permission = "gods.priest.description";
-		this.parameters = "<text>";
-		this.description = "Set the description of your religion";
 		this.priestOnly = true;
 	}
 
@@ -22,18 +20,18 @@ public class CommandSetDescription extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.RED + "Only priests can set religion info");
+			send(sender, "command.desc.not-priest");
 			return;
 		}
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
@@ -44,6 +42,6 @@ public class CommandSetDescription extends GodsCommand
 		}
 		String description = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
 		ctx.godService().setGodDescription(godName, description);
-		sender.sendMessage(ChatColor.AQUA + "You set your religion description to " + ChatColor.YELLOW + ctx.godService().getGodDescription(godName));
+		send(sender, "command.desc.done", Messages.text("description", ctx.godService().getGodDescription(godName)));
 	}
 }

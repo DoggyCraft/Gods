@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandLeaveGod extends GodsCommand
 {
@@ -12,7 +12,6 @@ public class CommandLeaveGod extends GodsCommand
 	{
 		super(ctx, "leave");
 		this.permission = "gods.leave";
-		this.description = "Leave your religion";
 	}
 
 	@Override
@@ -20,13 +19,13 @@ public class CommandLeaveGod extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		
@@ -36,11 +35,11 @@ public class CommandLeaveGod extends GodsCommand
 		
 		if (ctx.prayerService().believerLeaveGod(player.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.AQUA + "You left the religion of " + ChatColor.YELLOW + godName);
+			send(sender, "command.leave.done", Messages.god(godName));
 		}
 		else
 		{
-			sender.sendMessage(ChatColor.RED + "You are not part of any religion!");
+			send(sender, "command.leave.no-god");
 		}
 	}
 }

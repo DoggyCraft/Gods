@@ -1,11 +1,11 @@
 package com.dogonfire.gods.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandCheck extends GodsCommand
 {
@@ -13,8 +13,6 @@ public class CommandCheck extends GodsCommand
 	{
 		super(ctx, "check");
 		this.permission = "gods.check";
-		this.parameters = "<player>";
-		this.description = "Show the religion of a player";
 	}
 
 	@Override
@@ -22,7 +20,7 @@ public class CommandCheck extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (args.length < 2)
@@ -33,7 +31,7 @@ public class CommandCheck extends GodsCommand
 		Player believer = Bukkit.getPlayerExact(args[1]);
 		if (believer == null)
 		{
-			sender.sendMessage(ChatColor.RED + "There is no player online with that name");
+			send(sender, "command.check.no-player");
 			return;
 		}
 
@@ -41,15 +39,15 @@ public class CommandCheck extends GodsCommand
 
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " does not believe in a god");
+			send(sender, "command.check.no-god", Messages.displayName(believer.getDisplayName()));
 		}
 		else if (ctx.priestService().isPriest(believer.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " is the Priest of " + ChatColor.YELLOW + godName);
+			send(sender, "command.check.priest", Messages.displayName(believer.getDisplayName()), Messages.god(godName));
 		}
 		else
 		{
-			sender.sendMessage(ChatColor.AQUA + believer.getDisplayName() + " believes in " + ChatColor.YELLOW + godName);
+			send(sender, "command.check.believer", Messages.displayName(believer.getDisplayName()), Messages.god(godName));
 		}
 
 	}

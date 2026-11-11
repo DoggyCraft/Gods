@@ -64,6 +64,12 @@ believer:
   power-for-enemy-kill: <aqua>You earned <hl><amount></hl> power by slaying an enemy of <hl><god></hl>!
 
 holy-land:
+  # Titles on the screen when entering land; a title and its subtitle
+  title:
+    wilderness: <dark_green>Wilderness
+    wilderness-subtitle: ''
+    neutral: <white>Neutral Land
+    neutral-subtitle: <green>You are safe against mobs and PvP
   size: <aqua>You religion now has claimed <hl><claimed></hl>/<hl><max></hl> Holyland
   cannot-claim-more: <red>You cannot claim more Holyland
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
@@ -170,3 +176,331 @@ names:
 broadcast:
   # When config.yml's gods.broadcast-new-gods is on. <player>, <god>, <gender> ("God", "Goddess")
   new-god: <white><player><aqua> started to believe in the <gender> <gold><god>
+
+# The /gods command. Each command has its parameters and description (shown by /gods help) and its replies.
+command:
+  # <usage> is the command name and its parameters
+  usage: '<green>Usage: /gods <usage>'
+  no-permission: <red>You do not have permission to perform this command.
+  not-allowed: <red>You do not have permission for that
+  no-god: <red>You do not believe in a God.
+  not-believer: <red>You do not believe in a God
+  player-only: <red>This is a Player-Only command.
+  priest-only: <red>This is a Priest-Only command.
+  invalid: <red>Invalid Gods command!
+  # /gods without a command
+  gods:
+    # <plugin> is "Gods vX.Y", <amount> the number of gods, <believers> the number of believers
+    header:
+    - <yellow>------------------ <plugin> ------------------
+    - <aqua>By DogOnFire
+    - ''
+    - <aqua>There are currently <white><amount><aqua> Gods and
+    - <white><believers><aqua> believers in <server>
+    - ''
+    believer: <white>You believe in <gold><god>
+    priest: <white>You are the priest of <gold><god>
+    prayer-power: <white>You have <gold><amount><white> prayer power
+    no-god: <red>You do not believe in any god
+    # <player> is the partner
+    married: <white>You are married to <gold><player>
+    separator:
+    - ''
+    footer: <green>For the full command list, please use <aqua>/gods help
+  # <god> as typed
+  no-such-god: <red>There is no God with the name <gold><god>
+  not-married: <red>You are not married, bozo!
+  disabled:
+    holy-land: <red>Holy Land is not enabled on this server
+    bibles: <red>Bibles are not enabled on this server
+    marriage: <red>Marriage is not enabled on this server
+    marriages: <red>Marriages are not enabled on this server
+    holy-artifacts: <red>Holy Artifacts are not enabled on this server
+    blessings: <red>Blessings are not enabled on this server
+  access:
+    parameters: '[open/close]'
+    description: Set your religion as open or invite only
+    not-priest: <red>Only priests can set religion access
+    no-god: <red>That God does not exist
+    opened:
+    - <aqua>You set the religion access to <yellow>open</yellow>.
+    - <aqua>Players can join religion by praying at altars.
+    closed:
+    - <aqua>You set the religion access to <red>closed</red>.
+    - <aqua>Players can now only pray to this religion by invitation.
+    invalid: <red>That is not a valid command
+  ally:
+    parameters: \<god>
+    description: Toggle alliance with another religion
+    usage: <red>You need to specify a God to ally with! <yellow>/gods ally \<godname>
+    not-priest: <red>Only priests can declare alliances
+    own-god: <red>You cannot ally with your own God!
+    at-war: <red>You are in WAR with <gold><god></gold>!
+  attack:
+    parameters: ''
+    description: Join the attack of your religion on an enemy Holy Land
+    no-attack: <red>Your religion is not attacking a Holy Land. Your priest can start an attack with <white>/gods startattack
+    world-not-loaded: <red>The Holy Land your religion is attacking is in a world that is not loaded
+    joined: <aqua>You joined the attack on the enemy Holy Land
+    joined-god: <aqua>You joined the attack on the Holy Land of <gold><god>
+  bible:
+    parameters: ''
+    description: Produce a copy of the Holy Book of your religion
+    not-priest: <red>Only your priest can produce the Holy Book
+    failed: <red>Could not produce a Holy Book for <god>
+    # <title> of the holy book
+    produced: <aqua>You produced a copy of <gold><title></gold>!
+  chat:
+    parameters: ''
+    description: Chat only with believers within your religion
+    public: <aqua>You are now chatting public
+    religion: <aqua>You are now only chatting with the believers of <yellow><god>
+  check:
+    parameters: \<player>
+    description: Show the religion of a player
+    no-player: <red>There is no player online with that name
+    no-god: <aqua><player> does not believe in a god
+    priest: <aqua><player> is the Priest of <yellow><god>
+    believer: <aqua><player> believes in <yellow><god>
+  desc:
+    parameters: \<text>
+    description: Set the description of your religion
+    not-priest: <red>Only priests can set religion info
+    done: <aqua>You set your religion description to <yellow><description>
+  divorce:
+    parameters: ''
+    description: Divorce your partner
+    done: <aqua>You divorced <white><player>!
+  editbible:
+    parameters: ''
+    description: Get an editable copy of the Holy Book of your religion
+    not-priest: <red>Only your priest can edit your Holy Book
+    failed: <red>Could not produce a editable bible for <god>
+    hint: <aqua>After you have edited it, set this as your bible with <white>/g setbible</white>!
+  followers:
+    parameters: '[god]'
+    description: Show the followers of your/a God
+    none: <gold><god><aqua> has no believers!
+    header: <yellow>--------- The Followers of <god> ---------
+    # One per believer: <player> (padded to line up) and <when> they last prayed (time.*-ago)
+    line: <yellow><player><aqua> Prayed <gold><when>
+    # The line of the player using the command
+    you: <gold><player><aqua> Prayed <gold><when>
+    # Below the list, when the player isn't in it; <when> is the date
+    you-below: <gold><player> Prayed <when>
+  help:
+    parameters: '[altar/blocks]'
+    description: Show the list of Gods commands
+    # <plugin> is "Gods vX.Y"
+    header:
+    - <yellow>------------------ <plugin> ------------------
+    - <aqua>/gods<white> - Basic info
+    # One per command: <usage> and <description>
+    line: <aqua>/gods <usage><white> - <description>
+    altar:
+    - <yellow>--------------- How to build an Altar ---------------
+    - <aqua>Build an altar to your God by following these simple steps:
+    - ''
+    - <white>  1  - Place a block
+    - <white>  2a - Place a torch on top for a male god
+    - <white>  2b - Place a redstone torch on top for a female god
+    - <white>  3  - Place a sign on the side of the block
+    - <white>  4  - Write the name of your God on the sign
+    - ''
+    - <aqua>You can now pray to your God by right-clicking the sign!
+    - <aqua>Check what type of god you can make with <white>/g help blocks
+    blocks-header:
+    - <yellow>--------------- God Types ---------------
+    - <aqua>These are the block types you can use for making Gods:
+    - ''
+    # One per altar block: <block>, <god_type> in the god type's color (<type_color>)
+    block: '<white><block>  --->  <type_color><god_type>'
+    blocks-footer:
+    - ''
+    - <aqua>Check how to build an altar with <white>/g help altar
+  holyartifact:
+    parameters: ''
+    description: Let your God give you a Holy Artifact
+    already: <red>You already carry a Holy Artifact
+    done: <gold><god><aqua> gave <player> a Holy artifact!
+  home:
+    parameters: ''
+    description: Teleport to the home of your religion
+    none: <red>Your religion does not have a home
+  hunt:
+    parameters: ''
+    description: Show how far you are from the quest target
+    flying: <red>No flying allowed.
+    no-target: <red>There is no quest target to hunt for, Mr. fancy pants!
+  info:
+    parameters: '[god]'
+    description: Show info about your/a God
+    no-god: <red>You do not believe in any God.
+    unknown-god: <red>There is no God with such name.
+    # <title> ("God of Thunder") in the color of the god type (<type_color>); empty when gods.titles is off
+    header: <yellow>--------- <god> <type_color><title></type_color> ---------
+    god-description: <dark_purple><italic><description>
+    # <mood> is the name from names.mood
+    mood:
+      EXALTED: <gold><god> is <mood>
+      PLEASED: <dark_green><god> is <mood>
+      NEUTRAL: <white><god> is <mood>
+      DISPLEASED: <gray><god> is <mood>
+      ANGRY: <dark_red><god> is <mood>
+    # <type> is the item the god wants sacrificed
+    sacrifice: <gold><god><aqua> wants more <white><type>
+    no-priest: '<aqua>Priest: <yellow>None'
+    priest: '<aqua>Priest: <yellow><player>'
+    priests: '<aqua>Priests: '
+    priests-line: <yellow> - <player>
+    believers: '<aqua>Believers: <yellow><amount>'
+    power: '<aqua>Exact power: <yellow><power>'
+    holy-food: '<aqua>Holy food: <yellow><type>'
+    unholy-food: '<aqua>Unholy food: <yellow><type>'
+    holy-creature: '<aqua>Holy creature: <yellow><type>'
+    unholy-creature: '<aqua>Unholy creature: <yellow><type>'
+    relations: '<aqua>Religious relations: '
+    alliance: <green> Alliance with <gold><god>
+    war: <red> War with <gold><god>
+    holy-land: '<aqua>Holyland claimed: <gold><claimed>/<max>'
+  invite:
+    parameters: \<player>
+    description: Invite a player to your religion
+    not-priest: <red>Only priests can invite players
+    no-god: <red>You dont believe in a god
+    no-player: <red>There is no player with the name '<yellow><player></yellow>' online.
+    already: <yellow><player><red> already believes in '<gold><god></gold>!
+    done: <aqua>You invited <yellow><player></yellow> to join <gold><god></gold>!
+  kick:
+    parameters: \<player>
+    description: Kick a believer from your religion
+    not-priest: <red>Only priests can kick believers from a religion
+    no-believer: <red>There is no such believer called '<player>' in your religion
+    yourself: <red>You cannot kick yourself from your own religion, Bozo!
+    done: <aqua>You kicked <yellow><player></yellow> from your religion!
+    # To the believer who was kicked
+    kicked: <red>You were kicked from the religion of <yellow><god></yellow>!
+  leave:
+    parameters: ''
+    description: Leave your religion
+    done: <aqua>You left the religion of <yellow><god>
+    no-god: <red>You are not part of any religion!
+  list:
+    parameters: ''
+    description: List the Gods of this server
+    none: <gold>There are no Gods in <server>!
+    header: <yellow>--------- The Gods of <server> ---------
+    # One per god: <rank>, <name> (the name and title, padded to line up), <power>, <believers>
+    line: <yellow><rank><aqua> - <name><gold> Power <power> Believers <believers>
+    # The line of the player's god
+    you: <gold><rank> - <name><gold> Power <power> Believers <believers>
+    # Below the list, when the player's god isn't in it
+    you-below: <gold><rank> - <name> Power <power> Believers <believers>
+  love:
+    parameters: ''
+    description: Show your love to your partner
+    offline: <white><player><red> is not online!
+    done: <aqua>You love <white><player>!
+  marriages:
+    parameters: ''
+    description: List the most loving married couples
+    none: There are no married couples yet!
+    header: <yellow>--------- The Married Couples in <server> ---------
+    # <couple> below, padded to line up
+    couple: <first> & <second> (<god>)
+    # One per couple: <rank>, <couple>, <when> they last loved (time.*-ago)
+    line: <white><rank> - <couple><aqua> Loved <gold><when>
+    you: <gold><rank> - <couple><aqua> Loved <gold><when>
+    # Below the list, when the player isn't in it; <when> is the date
+    you-below: <gold><rank> - <couple> Loved <when>
+  marry:
+    parameters: \<name>
+    description: Ask another player to marry you
+    who: <red>Marry who!?
+    no-player: <red>There is no player with the name '<white><player></white>' online.
+    yourself: <red>Marry yourself!? Think again...
+    no-god: <white><player><red> does not believe in a God
+    other-god: <white><player><red> does not believe in <gold><god>
+    # <partner>
+    other-married: <white><player><red> is already married to <white><partner>!
+    married: <red>You are already married to <white><partner>!
+    proposed: <aqua>You proposed <white><player></white> to marry you in the name of <gold><god>!
+  'no':
+    parameters: ''
+    description: Reject a proposal from your God
+  prayfor:
+    parameters: \<Item/Health/Blessing/Quest>
+    description: Pray to your God for something specific
+    help:
+    - <yellow>--------------- How to pray for things ---------------
+    - '<aqua>Pray for something specific from your God:'
+    - ''
+    - <white>/g prayfor item - <aqua> pray for an item
+    - <white>/g prayfor health - <aqua> pray for health
+    - <white>/g prayfor blessing - <aqua> pray for a magical blessing
+    # Only when quests are on
+    help-quest: <white>/g prayfor quest - <aqua> pray for a quest
+    help-footer:
+    - ''
+    - <aqua>Note that you need prayer power to perform these prayers.
+    healthy: <aqua>You are already in good health.
+    has-quest: <gold><god><aqua> already has given a quest!
+  pvp:
+    parameters: ''
+    description: Toggle PvP for your religion
+    disabled: <aqua>You set PvP for your religion to <yellow> disabled
+    enabled: <aqua>You set PvP for your religion to <yellow> enabled
+  reload:
+    parameters: ''
+    description: Reload the configuration and data files
+    failed: <red>Could not reload; the old settings and data are kept. See the server log.
+    # <plugin> is "Gods vX.Y"
+    done: '<yellow><plugin>: <white>Reloaded configuration.'
+  setbible:
+    parameters: ''
+    description: Set the book in your hand as the Holy Book of your religion
+    not-priest: <red>Only your priest can set the Bible
+    failed: <red>You cannot use that as the Bible for <gold><god>
+    done: <aqua>You set <gold><title></gold> as your holy scripture!
+  sethome:
+    parameters: ''
+    description: Set the home of your religion
+    not-priest: <red>Only your priest can set the home for your religion
+    not-holy-land: <red>You can only set religion home within your Holy Land
+  setpriest:
+    parameters: \<god> \<player>
+    description: Assign someone to be the priest
+    not-enough-arguments: <red>Not enough arguments
+    no-god: <red>There is no god called '<gold><god><aqua>'
+    no-player: <red>There is no such player online
+    done: <aqua>You set <gold><player></gold> as priest of <gold><god>
+    failed: <gold><player><red> was not assigned as a priest of <gold><god>
+  setsafe:
+    parameters: ''
+    description: Set or clear neutral land at your location
+    cleared: <aqua>You set cleared the neutral land in this location.
+    set: <aqua>You set neutral land in this location.
+  startattack:
+    parameters: ''
+    description: Start an attack on the enemy Holy Land you are standing in
+    already: <red>You are already attacking a Holy Land!
+    not-holy-land: <red>You must stand in the Holy Land of an enemy religion to attack it
+    own-land: <red>You cannot attack your own Holy Land!
+    not-at-war: <red>You are not in war with <gold><god></gold>!
+    under-attack: <red>This Holy Land is already under attack!
+    done: <aqua>You started an attack on the Holy Land of <gold><god>
+  war:
+    parameters: \<god>
+    description: Toggle war with another religion
+    usage: <red>You need to specify a God which you want to go to WAR with! <yellow>/gods war \<godname>
+    own-god: <red>You cannot go to war with your own God!
+    allied: <red>You are ALLIED with <gold><god></gold>!
+  'yes':
+    parameters: ''
+    description: Accept a proposal from your God
+
+# How long ago something was, put into other messages
+time:
+  days-ago: <amount> days ago
+  hours-ago: <amount> hours ago
+  minutes-ago: <amount> min ago

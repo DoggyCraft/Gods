@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandGiveHolyArtifact extends GodsCommand
 {
@@ -12,7 +12,6 @@ public class CommandGiveHolyArtifact extends GodsCommand
 	{
 		super(ctx, "holyartifact");
 		this.permission = "gods.holyartifact";
-		this.description = "Let your God give you a Holy Artifact";
 	}
 
 	@Override
@@ -20,32 +19,32 @@ public class CommandGiveHolyArtifact extends GodsCommand
 	{
 		if (!ctx.settings().holyArtifacts().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Holy Artifacts are not enabled on this server");
+			send(sender, "command.disabled.holy-artifacts");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
-			sender.sendMessage(stringNoGod);
+			send(sender, NO_GOD);
 			return;
 		}
 		if (ctx.holyArtifactService().hasHolyArtifact(player))
 		{
-			sender.sendMessage(ChatColor.RED + "You already carry a Holy Artifact");
+			send(sender, "command.holyartifact.already");
 			return;
 		}
 		ctx.blessingService().blessPlayerWithHolyArtifact(godName, player);
-		sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " gave " + player.getName() + ChatColor.AQUA + " a Holy artifact!");
+		send(sender, "command.holyartifact.done", Messages.god(godName), Messages.player(player.getName()));
 	}
 }

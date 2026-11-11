@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -15,7 +14,6 @@ public class CommandHunt extends GodsCommand
 	{
 		super(ctx, "hunt");
 		this.permission = "gods.hunt";
-		this.description = "Show how far you are from the quest target";
 	}
 
 	@Override
@@ -23,30 +21,30 @@ public class CommandHunt extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(sender, "command.not-believer");
 			return;
 		}
 		Location pilgrimageLocation = ctx.questService().getQuestLocation(godName);
 		if (player == null || player.isFlying())
 		{
-			sender.sendMessage(ChatColor.RED + "No flying allowed.");
+			send(sender, "command.hunt.flying");
 			return;
 		}
 		if (pilgrimageLocation == null)
 		{
-			sender.sendMessage(ChatColor.RED + "There is no quest target to hunt for, Mr. fancy pants!");
+			send(sender, "command.hunt.no-target");
 			return;
 		}
 		if (!pilgrimageLocation.getWorld().getName().equals(player.getWorld().getName()))

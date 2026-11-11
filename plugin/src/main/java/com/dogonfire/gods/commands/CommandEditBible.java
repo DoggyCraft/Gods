@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandEditBible extends GodsCommand
 {
@@ -12,7 +12,6 @@ public class CommandEditBible extends GodsCommand
 	{
 		super(ctx, "editbible");
 		this.permission = "gods.priest.editbible";
-		this.description = "Get an editable copy of the Holy Book of your religion";
 		this.priestOnly = true;
 	}
 
@@ -21,39 +20,39 @@ public class CommandEditBible extends GodsCommand
 	{
 		if (!ctx.settings().bibles().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Bibles are not enabled on this server");
+			send(sender, "command.disabled.bibles");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(sender, "command.not-believer");
 			return;
 		}
 
 		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.RED + "Only your priest can edit your Holy Book");
+			send(sender, "command.editbible.not-priest");
 			return;
 		}
 		if (!ctx.holyBookService().giveEditBible(godName, player.getName()))
 		{
-			sender.sendMessage(ChatColor.RED + "Could not produce a editable bible for " + godName);
+			send(sender, "command.editbible.failed", Messages.god(godName));
 			return;
 		}
-		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + ctx.holyBookService().getBibleTitle(godName) + ChatColor.AQUA + "!");
-		sender.sendMessage(ChatColor.AQUA + "After you have edited it, set this as your bible with " + ChatColor.WHITE + "/g setbible" + ChatColor.AQUA + "!");
+		send(sender, "command.bible.produced", Messages.text("title", ctx.holyBookService().getBibleTitle(godName)));
+		send(sender, "command.editbible.hint");
 	}
 
 }

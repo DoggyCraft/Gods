@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandSetPriest extends GodsCommand
 {
@@ -12,8 +12,6 @@ public class CommandSetPriest extends GodsCommand
 	{
 		super(ctx, "setpriest");
 		this.permission = "gods.setpriest";
-		this.parameters = "<god> <player>";
-		this.description = "Assign someone to be the priest";
 	}
 
 	@Override
@@ -21,36 +19,36 @@ public class CommandSetPriest extends GodsCommand
 	{
 		if (args.length < 3)
 		{
-			sender.sendMessage(ChatColor.RED + "Not enough arguments");
+			send(sender, "command.setpriest.not-enough-arguments");
 			sendUsage(sender);
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		String godName = ctx.godService().formatGodName(args[1]);
 		if (!ctx.godService().godExist(godName))
 		{
-			sender.sendMessage(ChatColor.RED + "There is no god called '" + ChatColor.GOLD + godName + ChatColor.AQUA + "'");
+			send(sender, "command.setpriest.no-god", Messages.god(godName));
 			return;
 		}
 
 		Player otherPlayer = ctx.plugin().getServer().getPlayerExact(args[2]);
 		if (otherPlayer == null)
 		{
-			sender.sendMessage(ChatColor.RED + "There is no such player online");
+			send(sender, "command.setpriest.no-player");
 			return;
 		}
 
 		if (ctx.priestService().assignPriest(godName, otherPlayer.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.AQUA + "You set " + ChatColor.GOLD + otherPlayer.getName() + ChatColor.AQUA + " as priest of " + ChatColor.GOLD + godName);
+			send(sender, "command.setpriest.done", Messages.player(otherPlayer.getName()), Messages.god(godName));
 		}
 		else
 		{
-			sender.sendMessage(ChatColor.GOLD + otherPlayer.getName() + ChatColor.RED + " was not assigned as a priest of " + ChatColor.GOLD + godName);
+			send(sender, "command.setpriest.failed", Messages.player(otherPlayer.getName()), Messages.god(godName));
 		}
 	}
 

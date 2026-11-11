@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -14,8 +13,6 @@ public class CommandMarry extends GodsCommand
 	{
 		super(ctx, "marry");
 		this.permission = "gods.marry";
-		this.parameters = "<name>";
-		this.description = "Ask another player to marry you";
 	}
 
 	@Override
@@ -23,30 +20,30 @@ public class CommandMarry extends GodsCommand
 	{
 		if (!ctx.settings().marriage().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
+			send(sender, "command.disabled.marriage");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		String thisGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (thisGodName == null)
 		{
-			player.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(player, "command.not-believer");
 			return;
 		}
 
 		if (args.length < 2)
 		{
-			player.sendMessage(ChatColor.RED + "Marry who!?");
+			send(player, "command.marry.who");
 			return;
 		}
 
@@ -54,13 +51,13 @@ public class CommandMarry extends GodsCommand
 		Player otherPlayer = ctx.plugin().getServer().getPlayerExact(otherPlayerName);
 		if (otherPlayer == null)
 		{
-			player.sendMessage(ChatColor.RED + "There is no player with the name '" + ChatColor.WHITE + otherPlayerName + ChatColor.RED + "' online.");
+			send(player, "command.marry.no-player", Messages.player(otherPlayerName));
 			return;
 		}
 
 		if (otherPlayer.getUniqueId().equals(player.getUniqueId()))
 		{
-			player.sendMessage(ChatColor.RED + "Marry yourself!? Think again...");
+			send(player, "command.marry.yourself");
 			return;
 		}
 
@@ -68,26 +65,26 @@ public class CommandMarry extends GodsCommand
 
 		if (otherGodName == null)
 		{
-			player.sendMessage(ChatColor.WHITE + otherPlayerName + ChatColor.RED + " does not believe in a God");
+			send(player, "command.marry.no-god", Messages.player(otherPlayerName));
 			return;
 		}
 
 		if (!thisGodName.equals(otherGodName))
 		{
-			player.sendMessage(ChatColor.WHITE + otherPlayerName + ChatColor.RED + " does not believe in " + ChatColor.GOLD + thisGodName);
+			send(player, "command.marry.other-god", Messages.player(otherPlayerName), Messages.god(thisGodName));
 			return;
 		}
 
 		String partnerName = ctx.marriageService().getPartnerName(otherPlayer.getUniqueId());
 		if (partnerName != null)
 		{
-			player.sendMessage(ChatColor.WHITE + otherPlayerName + ChatColor.RED + " is already married to " + ChatColor.WHITE + partnerName + "!");
+			send(player, "command.marry.other-married", Messages.player(otherPlayerName), Messages.text("partner", partnerName));
 			return;
 		}
 		partnerName = ctx.marriageService().getPartnerName(player.getUniqueId());
 		if (partnerName != null)
 		{
-			player.sendMessage(ChatColor.RED + "You are already married to " + ChatColor.WHITE + partnerName + "!");
+			send(player, "command.marry.married", Messages.text("partner", partnerName));
 			return;
 		}
 
@@ -95,6 +92,6 @@ public class CommandMarry extends GodsCommand
 
 		ctx.godSpeech().sayWithQuestion(thisGodName, otherPlayer, Voice.BELIEVER_MARRIAGE_PROPOSAL, 1, Messages.player(player.getName()));
 
-		player.sendMessage(ChatColor.AQUA + "You proposed " + ChatColor.WHITE + otherPlayerName + ChatColor.AQUA + " to marry you in the name of " + ChatColor.GOLD + thisGodName + "!");
+		send(player, "command.marry.proposed", Messages.player(otherPlayerName), Messages.god(thisGodName));
 	}
 }

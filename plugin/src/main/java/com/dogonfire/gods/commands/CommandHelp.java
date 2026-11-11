@@ -2,7 +2,6 @@ package com.dogonfire.gods.commands;
 
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -20,8 +19,6 @@ public class CommandHelp extends GodsCommand
 		super(ctx, "help");
 		this.executer = executer;
 		this.permission = "gods.help";
-		this.parameters = "[altar/blocks]";
-		this.description = "Show the list of Gods commands";
 	}
 
 	@Override
@@ -29,7 +26,7 @@ public class CommandHelp extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (args.length < 2)
@@ -54,8 +51,7 @@ public class CommandHelp extends GodsCommand
 	{
 		boolean isPriest = (sender instanceof Player) && ctx.priestService().isPriest(((Player) sender).getUniqueId());
 
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + ctx.plugin().getDescription().getFullName() + " ------------------");
-		sender.sendMessage(ChatColor.AQUA + "/gods" + ChatColor.WHITE + " - Basic info");
+		send(sender, "command.help.header", Messages.text("plugin", ctx.plugin().getDescription().getFullName()));
 
 		for (GodsCommand localCommand : this.executer.getCommands())
 		{
@@ -64,39 +60,18 @@ public class CommandHelp extends GodsCommand
 				continue;
 			}
 
-			String usage = ChatColor.AQUA + "/gods " + localCommand.name;
-			if (localCommand.parameters != null && !localCommand.parameters.isEmpty())
-			{
-				usage += " " + localCommand.parameters;
-			}
-			if (localCommand.description != null && !localCommand.description.isEmpty())
-			{
-				usage += ChatColor.WHITE + " - " + localCommand.description;
-			}
-			sender.sendMessage(usage);
+			send(sender, "command.help.line", localCommand.usage(), Messages.component("description", localCommand.description()));
 		}
 	}
 
 	private void helpAltar(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "--------------- How to build an Altar ---------------");
-		sender.sendMessage(ChatColor.AQUA + "Build an altar to your God by following these simple steps:");
-		sender.sendMessage("");
-		sender.sendMessage(ChatColor.WHITE + "  1  - Place a block");
-		sender.sendMessage(ChatColor.WHITE + "  2a - Place a torch on top for a male god");
-		sender.sendMessage(ChatColor.WHITE + "  2b - Place a redstone torch on top for a female god");
-		sender.sendMessage(ChatColor.WHITE + "  3  - Place a sign on the side of the block");
-		sender.sendMessage(ChatColor.WHITE + "  4  - Write the name of your God on the sign");
-		sender.sendMessage("");
-		sender.sendMessage(ChatColor.AQUA + "You can now pray to your God by right-clicking the sign!");
-		sender.sendMessage(ChatColor.AQUA + "Check what type of god you can make with " + ChatColor.WHITE + "/g help blocks");
+		send(sender, "command.help.altar");
 	}
 
 	private void helpBlocks(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "--------------- God Types ---------------");
-		sender.sendMessage(ChatColor.AQUA + "These are the block types you can use for making Gods:");
-		sender.sendMessage("");
+		send(sender, "command.help.blocks-header");
 		
 		for (GodType godType : GodType.values())
 		{
@@ -105,14 +80,12 @@ public class CommandHelp extends GodsCommand
 			{
 				for (String blockMaterial : materials)
 				{
-					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + ctx.godService().getColorForGodType(godType) + Messages.legacy(ctx.messages().godTypeName(godType, GodGender.None)));
+					send(sender, "command.help.block", Messages.text("block", blockMaterial), Messages.color("type_color", ctx.godService().getColorForGodType(godType)), Messages.component("god_type", ctx.messages().godTypeName(godType, GodGender.None)));
 				}
 			}
 		}
 		
-		sender.sendMessage("");
-		sender.sendMessage(ChatColor.AQUA + "Check how to build an altar with " + ChatColor.WHITE + "/g help altar");
-
+		send(sender, "command.help.blocks-footer");
 	}
 
 }

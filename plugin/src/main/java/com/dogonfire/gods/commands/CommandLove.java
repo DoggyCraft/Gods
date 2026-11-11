@@ -2,11 +2,11 @@ package com.dogonfire.gods.commands;
 
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandLove extends GodsCommand
 {
@@ -14,7 +14,6 @@ public class CommandLove extends GodsCommand
 	{
 		super(ctx, "love");
 		this.permission = "gods.love";
-		this.description = "Show your love to your partner";
 	}
 
 	@Override
@@ -22,17 +21,17 @@ public class CommandLove extends GodsCommand
 	{
 		if (!ctx.settings().marriage().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Marriage is not enabled on this server");
+			send(sender, "command.disabled.marriage");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
@@ -40,23 +39,23 @@ public class CommandLove extends GodsCommand
 
 		if (thisGodName == null)
 		{
-			player.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(player, "command.not-believer");
 			return;
 		}
 		UUID partnerId = ctx.marriageService().getPartnerId(player.getUniqueId());
 		if (partnerId == null)
 		{
-			player.sendMessage(ChatColor.RED + "You are not married, bozo!");
+			send(player, "command.not-married");
 			return;
 		}
 		Player partner = ctx.plugin().getServer().getPlayer(partnerId);
 		if (partner == null)
 		{
-			player.sendMessage(ChatColor.WHITE + ctx.plugin().getServer().getOfflinePlayer(partnerId).getName() + ChatColor.RED + " is not online!");
+			send(player, "command.love.offline", Messages.player(ctx.plugin().getServer().getOfflinePlayer(partnerId).getName()));
 			return;
 		}
 		ctx.marriageService().love(player.getUniqueId());
-		player.sendMessage(ChatColor.AQUA + "You love " + ChatColor.WHITE + ctx.plugin().getServer().getPlayer(partnerId).getDisplayName() + "!");
+		send(player, "command.love.done", Messages.displayName(partner.getDisplayName()));
 	}
 
 }

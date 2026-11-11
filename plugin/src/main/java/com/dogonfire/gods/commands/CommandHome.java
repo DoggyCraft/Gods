@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,7 +12,6 @@ public class CommandHome extends GodsCommand
 	{
 		super(ctx, "home");
 		this.permission = "gods.home";
-		this.description = "Teleport to the home of your religion";
 	}
 
 	@Override
@@ -21,12 +19,12 @@ public class CommandHome extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
@@ -34,13 +32,13 @@ public class CommandHome extends GodsCommand
 
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(sender, "command.not-believer");
 			return;
 		}
 		Location location = ctx.godService().getHomeForGod(godName);
 		if (location == null || location.getWorld() == null)
 		{
-			sender.sendMessage(ChatColor.RED + "Your religion does not have a home");
+			send(sender, "command.home.none");
 			return;
 		}
 		player.teleport(location);

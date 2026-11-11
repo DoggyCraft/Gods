@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,7 +11,6 @@ public class CommandTogglePVP extends GodsCommand
 	{
 		super(ctx, "pvp");
 		this.permission = "gods.priest.pvp";
-		this.description = "Toggle PvP for your religion";
 		this.priestOnly = true;
 	}
 
@@ -20,30 +18,30 @@ public class CommandTogglePVP extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
-			player.sendMessage(stringPreistOnly);
+			send(player, PRIEST_ONLY);
 			return;
 		}
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		boolean pvp = ctx.godService().getGodPvP(godName);
 		if (pvp)
 		{
-			sender.sendMessage(ChatColor.AQUA + "You set PvP for your religion to " + ChatColor.YELLOW + " disabled");
+			send(sender, "command.pvp.disabled");
 			ctx.godService().setGodPvP(godName, false);
 		}
 		else
 		{
-			sender.sendMessage(ChatColor.AQUA + "You set PvP for your religion to " + ChatColor.YELLOW + " enabled");
+			send(sender, "command.pvp.enabled");
 			ctx.godService().setGodPvP(godName, true);
 		}
 	}

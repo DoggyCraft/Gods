@@ -2,7 +2,6 @@ package com.dogonfire.gods.commands;
 
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -16,8 +15,6 @@ public class CommandToggleWar extends GodsCommand
 	{
 		super(ctx, "war");
 		this.permission = "gods.priest.war";
-		this.parameters = "<god>";
-		this.description = "Toggle war with another religion";
 		this.priestOnly = true;
 	}
 
@@ -26,41 +23,41 @@ public class CommandToggleWar extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		if (args.length != 2)
 		{
-			sender.sendMessage(ChatColor.RED + "You need to specify a God which you want to go to WAR with! " + ChatColor.YELLOW + "/gods war <godname>");
+			send(sender, "command.war.usage");
 			return;
 		}
 		Player player = (Player) sender;
 		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
-			player.sendMessage(stringPreistOnly);
+			send(player, PRIEST_ONLY);
 			return;
 		}
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		String enemyGodName = ctx.godService().formatGodName(args[1]);
 		if (!ctx.godService().godExist(args[1]))
 		{
-			player.sendMessage(ChatColor.RED + "There is no God with the name " + ChatColor.GOLD + args[1]);
+			send(player, "command.no-such-god", Messages.god(args[1]));
 			return;
 		}
 		if (enemyGodName.equals(godName))
 		{
-			player.sendMessage(ChatColor.RED + "You cannot go to war with your own God!");
+			send(player, "command.war.own-god");
 			return;
 		}
 		List<String> alliances = ctx.relationService().getAllianceRelations(godName);
 		if (alliances.contains(enemyGodName))
 		{
-			player.sendMessage(ChatColor.RED + "You are ALLIED with " + ChatColor.GOLD + args[1] + ChatColor.RED + "!");
+			send(player, "command.war.allied", Messages.god(args[1]));
 			return;
 		}
 		if (ctx.relationService().toggleWarRelationForGod(godName, enemyGodName))

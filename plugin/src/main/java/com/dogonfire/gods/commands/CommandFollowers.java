@@ -1,5 +1,6 @@
 package com.dogonfire.gods.commands;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,11 +9,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandFollowers extends GodsCommand
 {
@@ -20,8 +21,6 @@ public class CommandFollowers extends GodsCommand
 	{
 		super(ctx, "followers");
 		this.permission = "gods.followers";
-		this.parameters = "[god]";
-		this.description = "Show the followers of your/a God";
 	}
 
 	@Override
@@ -29,12 +28,12 @@ public class CommandFollowers extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
@@ -53,7 +52,7 @@ public class CommandFollowers extends GodsCommand
 
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(sender, "command.not-believer");
 			return;
 		}
 
@@ -67,12 +66,12 @@ public class CommandFollowers extends GodsCommand
 
 		if (believers.size() == 0)
 		{
-			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " has no believers!");
+			send(sender, "command.followers.none", Messages.god(godName));
 			return;
 		}
 
 		playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Followers of " + godName + " ---------");
+		send(sender, "command.followers.header", Messages.god(godName));
 		Collections.sort(believers, new BelieversComparator());
 
 		int l = believers.size();
@@ -90,41 +89,17 @@ public class CommandFollowers extends GodsCommand
 
 		for (Believer believer : believersList)
 		{
-			long minutes = (thisDate.getTime() - believer.lastPrayer.getTime()) / 60000L;
-			long hours = (thisDate.getTime() - believer.lastPrayer.getTime()) / 3600000L;
-			long days = (thisDate.getTime() - believer.lastPrayer.getTime()) / 86400000L;
-
-			String date = "";
-			if (days > 0L)
-			{
-				date = days + " days ago";
-			}
-			else if (hours > 0L)
-			{
-				date = hours + " hours ago";
-			}
-			else
-			{
-				date = minutes + " min ago";
-			}
-
 			String believerName = ctx.plugin().getServer().getOfflinePlayer(believer.believerId).getName();
+			TagResolver row = TagResolver.resolver(Messages.player(String.format("%-20s", believerName)), Messages.component("when", timeAgo(believer.lastPrayer, thisDate)));
 
-			if (sender != null)
+			if (playerGod != null && (believer.believerId.equals(player.getUniqueId())))
 			{
-				if (playerGod != null && (believer.believerId.equals(player.getUniqueId())))
-				{
-					playerShown = true;
-					sender.sendMessage(ChatColor.GOLD + String.format("%-20s", believerName) + ChatColor.AQUA + String.format("%-18s", new StringBuilder().append(" Prayed ").append(ChatColor.GOLD).append(date).toString()));
-				}
-				else
-				{
-					sender.sendMessage(ChatColor.YELLOW + String.format("%-20s", believerName) + ChatColor.AQUA + String.format("%-18s", new StringBuilder().append(" Prayed ").append(ChatColor.GOLD).append(date).toString()));
-				}
+				playerShown = true;
+				send(sender, "command.followers.you", row);
 			}
 			else
 			{
-				ctx.plugin().log(String.format("%-20s", believerName) + ChatColor.AQUA + String.format("%-18s", new StringBuilder().append(" Prayed ").append(ChatColor.GOLD).append(date).toString()));
+				send(sender, "command.followers.line", row);
 			}
 		}
 
@@ -136,7 +111,7 @@ public class CommandFollowers extends GodsCommand
 
 				if ((playerGod != null) && (believer.believerId.equals(player.getUniqueId())))
 				{
-					sender.sendMessage(ChatColor.GOLD + String.format("%-20s", believerName) + String.format("%-18s", new StringBuilder().append(" Prayed ").append(believer.lastPrayer).toString()));
+					send(sender, "command.followers.you-below", Messages.player(String.format("%-20s", believerName)), Messages.text("when", believer.lastPrayer));
 				}
 			}
 		}

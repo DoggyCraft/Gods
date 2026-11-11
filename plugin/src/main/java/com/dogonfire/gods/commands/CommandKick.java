@@ -2,12 +2,12 @@ package com.dogonfire.gods.commands;
 
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandKick extends GodsCommand
 {
@@ -15,8 +15,6 @@ public class CommandKick extends GodsCommand
 	{
 		super(ctx, "kick");
 		this.permission = "gods.priest.kick";
-		this.parameters = "<player>";
-		this.description = "Kick a believer from your religion";
 		this.priestOnly = true;
 	}
 
@@ -25,18 +23,18 @@ public class CommandKick extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		if (!ctx.priestService().isPriest(player.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.RED + "Only priests can kick believers from a religion");
+			send(sender, "command.kick.not-priest");
 			return;
 		}
 		if (args.length < 2)
@@ -49,20 +47,20 @@ public class CommandKick extends GodsCommand
 		UUID believerId = findBeliever(godName, believerName);
 		if (godName == null || believerId == null)
 		{
-			sender.sendMessage(ChatColor.RED + "There is no such believer called '" + believerName + "' in your religion");
+			send(sender, "command.kick.no-believer", Messages.player(believerName));
 			return;
 		}
 		if (believerId.equals(player.getUniqueId()))
 		{
-			sender.sendMessage(ChatColor.RED + "You cannot kick yourself from your own religion, Bozo!");
+			send(sender, "command.kick.yourself");
 			return;
 		}
 		ctx.believerService().removeBeliever(godName, believerId);
-		sender.sendMessage(ChatColor.AQUA + "You kicked " + ChatColor.YELLOW + believerName + ChatColor.AQUA + " from your religion!");
+		send(sender, "command.kick.done", Messages.player(believerName));
 		Player believer = ctx.plugin().getServer().getPlayer(believerId);
 		if (believer != null)
 		{
-			believer.sendMessage(ChatColor.RED + "You were kicked from the religion of " + ChatColor.YELLOW + godName + ChatColor.RED + "!");
+			send(believer, "command.kick.kicked", Messages.god(godName));
 		}
 		ctx.plugin().log(sender.getName() + " /gods kick " + believerName);
 	}

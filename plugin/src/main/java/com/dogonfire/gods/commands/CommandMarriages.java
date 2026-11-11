@@ -1,13 +1,14 @@
 package com.dogonfire.gods.commands;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import java.util.Date;
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.MarriedCouple;
 
 public class CommandMarriages extends GodsCommand
@@ -16,7 +17,6 @@ public class CommandMarriages extends GodsCommand
 	{
 		super(ctx, "marriages");
 		this.permission = "gods.marriages";
-		this.description = "List the most loving married couples";
 	}
 
 	@Override
@@ -24,27 +24,27 @@ public class CommandMarriages extends GodsCommand
 	{
 		if (!ctx.settings().marriage().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Marriages are not enabled on this server");
+			send(sender, "command.disabled.marriages");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		List<MarriedCouple> couples = ctx.marriageService().getMarriedCouples();
 		if (couples.size() == 0)
 		{
-			sender.sendMessage("There are no married couples yet!");
+			send(sender, "command.marriages.none");
 			return;
 		}
-		sender.sendMessage(ChatColor.YELLOW + "--------- The Married Couples in " + ctx.settings().general().serverName() + " ---------");
+		send(sender, "command.marriages.header");
 		int l = couples.size();
 
 		List<MarriedCouple> couplesList = couples;
@@ -59,46 +59,15 @@ public class CommandMarriages extends GodsCommand
 
 		for (MarriedCouple couple : couplesList)
 		{
-			long minutes = (thisDate.getTime() - couple.lastLove().getTime()) / 60000L;
-			long hours = (thisDate.getTime() - couple.lastLove().getTime()) / 3600000L;
-			long days = (thisDate.getTime() - couple.lastLove().getTime()) / 86400000L;
-
-			String date = "";
-			if (days > 0L)
+			TagResolver row = TagResolver.resolver(Messages.text("rank", n), Messages.text("couple", String.format("%-30s", couple(couple))), Messages.component("when", timeAgo(couple.lastLove(), thisDate)));
+			if ((couple.player1Id().equals(player.getUniqueId())) || (couple.player2Id().equals(player.getUniqueId())))
 			{
-				date = days + " days ago";
-			}
-			else if (hours > 0L)
-			{
-				date = hours + " hours ago";
+				playerShown = true;
+				send(sender, "command.marriages.you", row);
 			}
 			else
 			{
-				date = minutes + " min ago";
-			}
-
-			String player1Name = ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName();
-			String player2Name = ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName();
-
-			if (sender != null)
-			{
-
-				if ((couple.player1Id().equals(player.getUniqueId())) || (couple.player2Id().equals(player.getUniqueId())))
-				{
-					playerShown = true;
-					sender.sendMessage("" + ChatColor.GOLD + n + " - " + String.format("%-30s", new StringBuilder(player1Name).append(" & ").append(player2Name).append(" (").append(couple.godName()).append(")").toString()) + ChatColor.AQUA
-							+ String.format("%-18s", new StringBuilder().append(" Loved ").append(ChatColor.GOLD).append(date).toString()));
-				}
-				else
-				{
-					sender.sendMessage("" + ChatColor.WHITE + n + " - " + String.format("%-30s", new StringBuilder(player1Name).append(" & ").append(player2Name).append(" (").append(couple.godName()).append(")").toString()) + ChatColor.AQUA
-							+ String.format("%-18s", new StringBuilder().append(" Loved ").append(ChatColor.GOLD).append(date).toString()));
-				}
-			}
-			else
-			{
-				ctx.plugin().log(String.format("%-30s", new StringBuilder(player1Name).append(" & ").append(player2Name).append(" (").append(couple.godName()).append(")").toString()) + ChatColor.AQUA
-						+ String.format("%-18s", new StringBuilder().append(" Loved ").append(ChatColor.GOLD).append(date).toString()));
+				send(sender, "command.marriages.line", row);
 			}
 			n++;
 		}
@@ -109,16 +78,22 @@ public class CommandMarriages extends GodsCommand
 		{
 			for (MarriedCouple couple : couples)
 			{
-				String player1Name = ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName();
-				String player2Name = ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName();
 
 				if ((couple.player1Id().equals(player.getUniqueId())) || (couple.player2Id().equals(player.getUniqueId())))
 				{
-					sender.sendMessage("" + ChatColor.GOLD + n + " - " + String.format("%-40s", new StringBuilder(player1Name).append(" & ").append(player2Name).append(" (").append(couple.godName()).append(")").toString())
-							+ String.format("%-18s", new StringBuilder().append(" Loved ").append(couple.lastLove()).toString()));
+					send(sender, "command.marriages.you-below", Messages.text("rank", n), Messages.text("couple", String.format("%-40s", couple(couple))), Messages.text("when", couple.lastLove()));
 				}
 				n++;
 			}
 		}
+	}
+
+	/** "Anna & Bob (Thor)" */
+	private String couple(MarriedCouple couple)
+	{
+		return Messages.plain(ctx.messages().component("command.marriages.couple",
+				Messages.text("first", ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName()),
+				Messages.text("second", ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName()),
+				Messages.god(couple.godName())));
 	}
 }

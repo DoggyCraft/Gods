@@ -1,6 +1,5 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,7 +11,6 @@ public class CommandSetNeutralLand extends GodsCommand
 	{
 		super(ctx, "setsafe");
 		this.permission = "gods.setsafe";
-		this.description = "Set or clear neutral land at your location";
 	}
 
 	@Override
@@ -20,31 +18,31 @@ public class CommandSetNeutralLand extends GodsCommand
 	{
 		if (!ctx.settings().holyLand().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Holy Land is not enabled on this server");
+			send(sender, "command.disabled.holy-land");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		if (ctx.holyLandService().isNeutralLandLocation(player.getLocation()))
 		{
 			ctx.holyLandService().clearNeutralLand(player.getLocation());
-			ctx.titles().send(player, 1*20, 3*20, 1*20, ChatColor.DARK_GREEN + "Wilderness", ChatColor.WHITE + "");
-			sender.sendMessage(ChatColor.AQUA + "You set cleared the neutral land in this location.");
+			ctx.titles().send(player, 1*20, 3*20, 1*20, ctx.messages().legacy("holy-land.title.wilderness"), ctx.messages().legacy("holy-land.title.wilderness-subtitle"));
+			send(sender, "command.setsafe.cleared");
 		}
 		else
 		{
 			ctx.holyLandService().setNeutralLand(player.getLocation());
-			ctx.titles().send(player, 1*20, 3*20, 1*20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
-			sender.sendMessage(ChatColor.AQUA + "You set neutral land in this location.");
+			ctx.titles().send(player, 1*20, 3*20, 1*20, ctx.messages().legacy("holy-land.title.neutral"), ctx.messages().legacy("holy-land.title.neutral-subtitle"));
+			send(sender, "command.setsafe.set");
 		}
 	}
 }

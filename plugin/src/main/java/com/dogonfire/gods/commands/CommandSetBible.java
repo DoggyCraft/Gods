@@ -1,10 +1,10 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandSetBible extends GodsCommand
 {
@@ -12,7 +12,6 @@ public class CommandSetBible extends GodsCommand
 	{
 		super(ctx, "setbible");
 		this.permission = "gods.priest.setbible";
-		this.description = "Set the book in your hand as the Holy Book of your religion";
 		this.priestOnly = true;
 	}
 
@@ -21,36 +20,36 @@ public class CommandSetBible extends GodsCommand
 	{
 		if (!ctx.settings().bibles().enabled())
 		{
-			sender.sendMessage(ChatColor.RED + "Bibles are not enabled on this server");
+			send(sender, "command.disabled.bibles");
 			return;
 		}
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 		if (sender instanceof Player == false)
 		{
-			sender.sendMessage(stringPlayerOnly);
+			send(sender, PLAYER_ONLY);
 			return;
 		}
 		Player player = (Player) sender;
 		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (godName == null)
 		{
-			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
+			send(sender, "command.not-believer");
 			return;
 		}
 		if (!ctx.priestService().isPriestForGod(player.getUniqueId(), godName))
 		{
-			sender.sendMessage(ChatColor.RED + "Only your priest can set the Bible");
+			send(sender, "command.setbible.not-priest");
 			return;
 		}
 		if (!ctx.holyBookService().setBible(godName, player.getName()))
 		{
-			sender.sendMessage(ChatColor.RED + "You cannot use that as the Bible for " + ChatColor.GOLD + godName);
+			send(sender, "command.setbible.failed", Messages.god(godName));
 			return;
 		}
-		sender.sendMessage(ChatColor.AQUA + "You set " + ChatColor.GOLD + ctx.holyBookService().getBibleTitle(godName) + ChatColor.AQUA + " as your holy scripture!");
+		send(sender, "command.setbible.done", Messages.text("title", ctx.holyBookService().getBibleTitle(godName)));
 	}
 }

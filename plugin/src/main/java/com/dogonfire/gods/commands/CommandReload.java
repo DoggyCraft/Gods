@@ -1,9 +1,9 @@
 package com.dogonfire.gods.commands;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandReload extends GodsCommand
 {
@@ -11,7 +11,6 @@ public class CommandReload extends GodsCommand
 	{
 		super(ctx, "reload");
 		this.permission = "gods.reload";
-		this.description = "Reload the configuration and data files";
 	}
 
 	@Override
@@ -19,16 +18,16 @@ public class CommandReload extends GodsCommand
 	{
 		if (!hasPermission(sender))
 		{
-			sender.sendMessage(stringNoPermission);
+			send(sender, NO_PERMISSION);
 			return;
 		}
 
 		if (!ctx.plugin().reload())
 		{
-			sender.sendMessage(ChatColor.RED + "Could not reload; the old settings and data are kept. See the server log.");
+			send(sender, "command.reload.failed");
 			return;
 		}
-		sender.sendMessage(ChatColor.YELLOW + ctx.plugin().getDescription().getFullName() + ": " + ChatColor.WHITE + "Reloaded configuration.");
+		send(sender, "command.reload.done", Messages.text("plugin", ctx.plugin().getDescription().getFullName()));
 		ctx.plugin().log(sender.getName() + " /gods reload");
 	}
 }
