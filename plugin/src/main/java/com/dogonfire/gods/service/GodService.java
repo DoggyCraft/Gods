@@ -102,6 +102,8 @@ public class GodService
 		}
 
 		this.repository.markDirty();
+		// Altars that stood before the god (it was removed and is founded anew) get their floating text
+		ctx.altarTexts().refreshGod(godName);
 	}
 
 	/** Removes the god, its place in other gods' relations, its holy book and its holy lands */
@@ -115,7 +117,8 @@ public class GodService
 		ctx.relationService().removeRelationsWith(godName);
 
 		this.repository.remove(godName);
-		// Its altars stay registered: they still stand, and praying at one founds the god anew
+		// Its altars stay registered (they still stand; praying at one founds the god anew) but lose their floating text
+		ctx.altarTexts().refreshGod(godName);
 
 		if (ctx.settings().bibles().enabled())
 		{
@@ -270,6 +273,8 @@ public class GodService
 		this.repository.save();
 
 		ctx.plugin().log("The gender of " + godName + " changed from " + oldGender + " to " + gender);
+		// The title above its altars follows
+		ctx.altarTexts().refreshGod(godName);
 		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GENDER_CHANGED, 2, genderTag(godName));
 		return true;
 	}

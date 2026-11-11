@@ -40,7 +40,8 @@ import com.dogonfire.gods.storage.AltarRepository;
  * <li>Removed when a block event (break, burn, explosion, piston, mob, place) touches an altar's sign or altar block
  * and, a tick later, the sign is gone or untagged (a cancelled or harmless event changes nothing). Breaking the altar
  * block drops the sign, so that removes the altar too.</li>
- * <li>A removed god's altars stay registered: they still stand, and praying at one founds the god anew.</li>
+ * <li>A removed god's altars stay registered: they still stand, and praying at one founds the god anew. They show no
+ * floating text while the god doesn't exist.</li>
  * </ul>
  * Only worlds Gods is active in are scanned. Main thread only.
  */
@@ -164,6 +165,7 @@ public class AltarRegistry
 			{
 				dropMainAltar(oldGod, existing, "its sign changed");
 			}
+			ctx.altarTexts().show(existing);
 			return;
 		}
 		if (existing != null)
@@ -173,6 +175,7 @@ public class AltarRegistry
 		Altar altar = new Altar(found.sign(), found.block(), found.kind(), found.god(), created, creator);
 		this.repository.add(altar);
 		ctx.plugin().logDebug("Registered the " + altar);
+		ctx.altarTexts().show(altar);
 	}
 
 	/** Unregisters the altar with this sign (it is gone); clears its god's main altar if it was that */
@@ -184,6 +187,7 @@ public class AltarRegistry
 			return;
 		}
 		ctx.plugin().logDebug("Unregistered the " + altar + ": " + why);
+		ctx.altarTexts().hide(sign);
 		dropMainAltar(altar.god(), altar, why);
 		this.repository.markDirty();
 	}
@@ -293,13 +297,17 @@ public class AltarRegistry
 		}
 	}
 
-	/** A chunk unloads: a pending scan of it is dropped */
+	/** A chunk unloads: its floating texts go, and a pending scan of it is dropped */
 	public void chunkUnloading(Chunk chunk)
 	{
 		BlockPos.ChunkPos pos = pos(chunk);
 		if (this.queued.remove(pos))
 		{
 			this.queue.remove(pos);
+		}
+		for (Altar altar : this.repository.inChunk(pos))
+		{
+			ctx.altarTexts().hide(altar.sign());
 		}
 	}
 
@@ -357,6 +365,11 @@ public class AltarRegistry
 		{
 			this.repository.markDirty();
 		}
+		// Altars whose sign is in a neighbouring chunk but whose altar block (and so its text) is here
+		for (Altar altar : this.repository.inChunk(pos))
+		{
+			ctx.altarTexts().show(altar);
+		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -398,11 +411,17 @@ public class AltarRegistry
 		return world != null ? new Location(world, altar.block().x(), altar.block().y(), altar.block().z()) : null;
 	}
 
-	/** Makes the altar its god's main altar */
+	/** Makes the altar its god's main altar; the floating texts of the old and new main altar follow */
 	public void setMainAltar(Altar altar)
 	{
+		Altar old = mainAltar(altar.god());
 		ctx.godService().setMainAltar(altar.god(), altar.sign());
 		ctx.plugin().log("The main altar of " + altar.god() + " is now at " + describe(altar.sign()) + ".");
+		if (old != null)
+		{
+			ctx.altarTexts().show(old);
+		}
+		ctx.altarTexts().show(altar);
 	}
 
 	/** "world 10, 64, -3" for the log */

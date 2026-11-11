@@ -113,7 +113,10 @@ public class SettingsLoader
 						bool("effects.prayer"),
 						bool("effects.sacrifice"),
 						bool("effects.blessings"),
-						between("effects.view-distance-blocks", 1, 128)));
+						between("effects.view-distance-blocks", 1, 128)),
+				new Settings.AltarTexts(
+						floatingText("altars.floating-text"),
+						between("altars.floating-text-view-distance-blocks", 1, 128)));
 	}
 
 	private Settings.General loadGeneral()
@@ -191,6 +194,29 @@ public class SettingsLoader
 			}
 		}
 		return Settings.Altars.of(blockTypes, bool("altars.require-claim"));
+	}
+
+	/** all, main or off (YAML reads a bare off as false and on as true) */
+	private Settings.FloatingText floatingText(String path)
+	{
+		Object value = this.config.get(path);
+		if (value instanceof Boolean on)
+		{
+			return on ? Settings.FloatingText.ALL : Settings.FloatingText.OFF;
+		}
+		if (value instanceof String text)
+		{
+			for (Settings.FloatingText mode : Settings.FloatingText.values())
+			{
+				if (mode.name().equalsIgnoreCase(text.trim()))
+				{
+					return mode;
+				}
+			}
+		}
+		Settings.FloatingText fallback = Settings.FloatingText.valueOf(defaults().getString(path, "all").toUpperCase(Locale.ROOT));
+		warn(path, value, fallback.name().toLowerCase(Locale.ROOT));
+		return fallback;
 	}
 
 	private Settings.Quests loadQuests()

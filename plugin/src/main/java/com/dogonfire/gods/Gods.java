@@ -392,6 +392,8 @@ public class Gods extends JavaPlugin
 		{
 			registerFeature(new MarriageListener(this.ctx));
 		}
+		// The text above altars (also removes strays from before when it is off)
+		this.ctx.altarTexts().start();
 	}
 
 	private void stopFeatures()
@@ -400,6 +402,8 @@ public class Gods extends JavaPlugin
 		this.ctx.holyPowerService().stop();
 		// The floating items and symbols of effects still running
 		this.ctx.effectService().stop();
+		// The floating texts above altars
+		this.ctx.altarTexts().stop();
 		for (Listener listener : this.featureListeners)
 		{
 			HandlerList.unregisterAll(listener);

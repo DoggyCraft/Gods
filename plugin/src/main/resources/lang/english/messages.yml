@@ -107,6 +107,53 @@ altar:
       praying: ['<green>✿ Altar ✿', '<dark_green>of nature', '<white><god>', '']
       curses: ['<dark_green>✿ Curses ✿', '<green>upon', '<white><player>', '']
       blessings: ['<green>✿ Blessings ✿', '<dark_green>upon', '<white><player>', '']
+  # The text floating above praying altars (config.yml's altars.floating-text), per sign style like the signs above (a
+  # style without its own text uses default): altar above every praying altar, main above a god's main altar
+  # (/gods setaltar). One entry per line; blank lines are left out. Knows <god>, <title> ("Deity of the Sea"; empty
+  # when gods.titles is off), <gender> ("God", "Goddess", "Deity"), <mood> (names.mood) and <believers> (how many).
+  floating:
+    default:
+      altar: ['<white><bold><god>', '<gray><title>']
+      main: ['<white><bold><god>', '<gray><title>', '<gold>✦ Main altar ✦']
+    frost:
+      altar: ['<aqua>❄ <white><bold><god></bold> <aqua>❄', '<dark_aqua><title>']
+      main: ['<aqua>❄ <white><bold><god></bold> <aqua>❄', '<dark_aqua><title>', '<aqua>Main altar']
+    love:
+      altar: ['<light_purple>♥ <white><bold><god></bold> <light_purple>♥', '<#ff8ac8><title>']
+      main: ['<light_purple>♥ <white><bold><god></bold> <light_purple>♥', '<#ff8ac8><title>', '<light_purple>Main altar']
+    evil:
+      altar: ['<dark_red>☠ <red><bold><god></bold> <dark_red>☠', '<gray><title>']
+      main: ['<dark_red>☠ <red><bold><god></bold> <dark_red>☠', '<gray><title>', '<dark_red>Main altar']
+    sea:
+      altar: ['<aqua>≈ <white><bold><god></bold> <aqua>≈', '<dark_aqua><title>']
+      main: ['<aqua>≈ <white><bold><god></bold> <aqua>≈', '<dark_aqua><title>', '<aqua>Main altar']
+    moon:
+      altar: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>']
+      main: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>', '<gray>Main altar']
+    sun:
+      altar: ['<gold>☀ <white><bold><god></bold> <gold>☀', '<yellow><title>']
+      main: ['<gold>☀ <white><bold><god></bold> <gold>☀', '<yellow><title>', '<gold>Main altar']
+    thunder:
+      altar: ['<yellow>⚡ <white><bold><god></bold> <yellow>⚡', '<gold><title>']
+      main: ['<yellow>⚡ <white><bold><god></bold> <yellow>⚡', '<gold><title>', '<yellow>Main altar']
+    party:
+      altar: ['<light_purple>♪ <yellow><bold><god></bold> <light_purple>♪', '<green><title>']
+      main: ['<light_purple>♪ <yellow><bold><god></bold> <light_purple>♪', '<green><title>', '<light_purple>Main altar']
+    war:
+      altar: ['<red>⚔ <white><bold><god></bold> <red>⚔', '<gray><title>']
+      main: ['<red>⚔ <white><bold><god></bold> <red>⚔', '<gray><title>', '<red>Main altar']
+    werewolves:
+      altar: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>']
+      main: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>', '<gray>Main altar']
+    creatures:
+      altar: ['<gold>✦ <white><bold><god></bold> <gold>✦', '<dark_green><title>']
+      main: ['<gold>✦ <white><bold><god></bold> <gold>✦', '<dark_green><title>', '<gold>Main altar']
+    wisdom:
+      altar: ['<blue>✎ <white><bold><god></bold> <blue>✎', '<dark_aqua><title>']
+      main: ['<blue>✎ <white><bold><god></bold> <blue>✎', '<dark_aqua><title>', '<blue>Main altar']
+    nature:
+      altar: ['<green>✿ <white><bold><god></bold> <green>✿', '<dark_green><title>']
+      main: ['<green>✿ <white><bold><god></bold> <green>✿', '<dark_green><title>', '<green>Main altar']
 
 prayer:
   power: <aqua>Your prayer power is now <hl><amount></hl>

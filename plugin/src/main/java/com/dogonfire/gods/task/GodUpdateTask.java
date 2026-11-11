@@ -551,6 +551,9 @@ public final class GodUpdateTask implements Runnable
 
 		manageHolyLands();
 
+		// Its mood and believers may have changed: the text above its altars follows
+		ctx.altarTexts().refreshGod(godName);
+
 		long timeAfter = System.currentTimeMillis();
 
 		ctx.plugin().logDebug("Processed 1 Online God in " + (timeAfter - timeBefore) + " ms");

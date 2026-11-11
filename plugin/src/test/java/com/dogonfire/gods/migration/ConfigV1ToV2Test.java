@@ -90,7 +90,8 @@ class ConfigV1ToV2Test
 				new Settings.Marriage(false, false),
 				new Settings.Bibles(false, true),
 				new Settings.Chat(true),
-				new Settings.Effects(true, true, true, true, 32));
+				new Settings.Effects(true, true, true, true, 32),
+				new Settings.AltarTexts(Settings.FloatingText.ALL, 32));
 
 		assertEquals(expected, settings);
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());

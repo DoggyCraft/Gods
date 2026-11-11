@@ -190,4 +190,20 @@ class SettingsLoaderTest
 		assertEquals("english", load("general:\n  language: ' '\n").general().language());
 		assertWarned("general.language");
 	}
+
+	/** all, main or off, in any case; a bare off (or on) is what YAML reads as a boolean */
+	@Test
+	void floatingTextIsAllMainOrOff() throws Exception
+	{
+		assertEquals(Settings.FloatingText.ALL, load("").altarTexts().floatingText());
+		assertEquals(Settings.FloatingText.MAIN, load("altars:\n  floating-text: Main\n").altarTexts().floatingText());
+		assertEquals(Settings.FloatingText.OFF, load("altars:\n  floating-text: off\n").altarTexts().floatingText());
+		assertFalse(load("altars:\n  floating-text: off\n").altarTexts().enabled());
+		assertEquals(Settings.FloatingText.ALL, load("altars:\n  floating-text: on\n").altarTexts().floatingText());
+		assertTrue(this.log.warnings().isEmpty(), "" + this.log.warnings());
+
+		assertEquals(Settings.FloatingText.ALL, load("altars:\n  floating-text: some\n").altarTexts().floatingText());
+		assertWarned("altars.floating-text");
+		assertEquals(128, load("altars:\n  floating-text-view-distance-blocks: 1000\n").altarTexts().viewDistanceBlocks());
+	}
 }

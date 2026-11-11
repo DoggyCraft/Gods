@@ -34,7 +34,8 @@ public record Settings(
 		Marriage marriage,
 		Bibles bibles,
 		Chat chat,
-		Effects effects)
+		Effects effects,
+		AltarTexts altarTexts)
 {
 	/** @param worlds the worlds Gods is active in; empty for every world (also worlds loaded later) */
 	public record General(boolean debug, String language, String serverName, List<String> worlds)
@@ -188,5 +189,26 @@ public record Settings(
 		{
 			return this.enabled && this.blessings;
 		}
+	}
+
+	/**
+	 * The floating text above altars (in the altars section of config.yml).
+	 *
+	 * @param floatingText       which praying altars show their god's name and title
+	 * @param viewDistanceBlocks how far players see it
+	 */
+	public record AltarTexts(FloatingText floatingText, int viewDistanceBlocks)
+	{
+		/** Whether any altar shows floating text */
+		public boolean enabled()
+		{
+			return this.floatingText != FloatingText.OFF;
+		}
+	}
+
+	/** {@code altars.floating-text}: all praying altars, only gods' main altars, or none */
+	public enum FloatingText
+	{
+		ALL, MAIN, OFF
 	}
 }

@@ -181,6 +181,33 @@ class MessageKeysTest
 		assertTrue(problems.isEmpty(), "Missing or too long in messages.yml: " + problems);
 	}
 
+	/** Every sign style in Gods' own themes has the floating text of altars and main altars, three lines at most */
+	@Test
+	void everySignStyleHasItsFloatingText() throws IOException
+	{
+		YamlConfiguration messages = bundled("lang/english/messages.yml");
+		YamlConfiguration themes = bundled("themes.yml");
+		List<String> problems = new ArrayList<>();
+		Set<String> styles = new TreeSet<>();
+		for (String section : themes.getKeys(false))
+		{
+			styles.add(themes.getString(section + ".sign.messages", "default"));
+		}
+		for (String style : styles)
+		{
+			for (String kind : List.of("altar", "main"))
+			{
+				String key = "altar.floating." + style + "." + kind;
+				List<String> lines = messages.getStringList(key);
+				if (lines.isEmpty() || lines.size() > 3 || !lines.getFirst().contains("<god>"))
+				{
+					problems.add(key);
+				}
+			}
+		}
+		assertTrue(problems.isEmpty(), "Missing, too long or without <god> in messages.yml: " + problems);
+	}
+
 	@Test
 	void theBundledMessagesHaveTheirVersion() throws IOException
 	{
