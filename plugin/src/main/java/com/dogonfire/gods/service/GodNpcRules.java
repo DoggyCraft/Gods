@@ -1,9 +1,11 @@
 package com.dogonfire.gods.service;
 
 import com.dogonfire.gods.config.Settings;
+import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
+import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.NpcSkin;
 
 /**
@@ -95,10 +97,44 @@ public final class GodNpcRules
 		return floatingText == Settings.FloatingText.OFF;
 	}
 
-	/** The skin a god's NPC wears: its own (/g godskin), else its god type's (themes.yml), else none (null) */
-	public static NpcSkin skin(NpcSkin godSkin, NpcSkin themeSkin)
+	/**
+	 * The skin a god's NPC wears, the first there is of:
+	 * <ul>
+	 * <li>its own (/g godskin);</li>
+	 * <li>a god (Male, and None: gods from before genders): its theme's {@code god}, the default section's {@code god};</li>
+	 * <li>a goddess (Female): its theme's {@code goddess}, the default section's {@code goddess};</li>
+	 * <li>a deity (NonBinary): its theme's {@code deity}, its theme's {@code god}, the default section's {@code deity},
+	 * the default section's {@code god};</li>
+	 * </ul>
+	 * else none (null: the plain look, only when an admin removed Gods' default skins).
+	 *
+	 * @param godSkin      the god's own skin, or null
+	 * @param gender       the god's gender (null as None)
+	 * @param themeSkins   the skins of its god type's theme (the default section's for a god without a type), or null
+	 * @param defaultSkins the skins of the {@code default} theme section, or null
+	 */
+	public static NpcSkin skin(NpcSkin godSkin, GodGender gender, Theme.NpcSkins themeSkins, Theme.NpcSkins defaultSkins)
 	{
-		return godSkin != null && !godSkin.isEmpty() ? godSkin : themeSkin != null && !themeSkin.isEmpty() ? themeSkin : null;
+		if (godSkin != null && !godSkin.isEmpty())
+		{
+			return godSkin;
+		}
+		Theme.NpcSkins theme = themeSkins != null ? themeSkins : Theme.NpcSkins.NONE;
+		Theme.NpcSkins defaults = defaultSkins != null ? defaultSkins : Theme.NpcSkins.NONE;
+		NpcSkin[] order = switch (gender == null ? GodGender.None : gender)
+		{
+			case Female -> new NpcSkin[] { theme.goddess(), defaults.goddess() };
+			case NonBinary -> new NpcSkin[] { theme.deity(), theme.god(), defaults.deity(), defaults.god() };
+			case Male, None -> new NpcSkin[] { theme.god(), defaults.god() };
+		};
+		for (NpcSkin skin : order)
+		{
+			if (skin != null && !skin.isEmpty())
+			{
+				return skin;
+			}
+		}
+		return null;
 	}
 
 	/** Whether a figure fits on the spot: its feet block and the one above can be walked through */

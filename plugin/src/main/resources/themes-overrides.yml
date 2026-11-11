@@ -24,8 +24,19 @@
 #                      pleased, neutral, angry: each with particles (particle ids like end_rod), sounds (sound ids
 #                      like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB")
 #   npc              the god's figure at its main altar (config.yml's npc section):
-#                      skin      a player name, or a section with value and signature (a signed texture, e.g. from
-#                                mineskin.org); '' for the default look. A god's own skin (/g godskin) comes first.
+#                      skin      god, goddess and/or deity, each the value and signature of a texture Mojang
+#                                signed. Yours replaces Gods' skin of each one you list; '' removes it (skin: ''
+#                                removes them all). A god wears its own skin (/g godskin) first; else a god (and a
+#                                god from before genders) its type's god skin, else the default section's god skin;
+#                                a goddess its type's goddess skin, else the default section's; a deity its type's
+#                                deity skin, its type's god skin, the default section's deity skin, else the default
+#                                section's god skin. Without any, the plain look. Player names don't work here.
+#                                To get a value and signature:
+#                                 - upload the skin's PNG to https://mineskin.org and copy the "value" and
+#                                   "signature" it shows;
+#                                 - or skip this file: wear the skin in Minecraft, have the god's priest run
+#                                   /g godskin <your name> while you're online (or run /g godskin yourself as the
+#                                   priest), and change back; the god keeps the skin.
 #
 # A god keeps the holy and unholy mob and food it already picked; changes here only affect what gods pick from now on.
 # Names are Minecraft ids (polar_bear, cooked_cod). Names this server's Minecraft version doesn't have are skipped.
@@ -51,10 +62,15 @@
 # werewolves:
 #   altar-blocks: [mossy_cobblestone]
 #   npc:
-#     skin: '' # the default look instead of the werewolf alpha
+#     skin:
+#       goddess: '' # the default section's goddess instead of the werewolf alpha
 #
 # sun:
 #   npc:
 #     skin:
-#       value: ewogICJ0aW1lc3RhbXAiIDog... # the texture value from mineskin.org
-#       signature: Z8NgxOC7mVyeW9hGKMx... # and its signature
+#       god:
+#         value: ewogICJ0aW1lc3RhbXAiIDog... # the texture value from mineskin.org
+#         signature: Z8NgxOC7mVyeW9hGKMx... # and its signature
+#       goddess:
+#         value: ewogICJ0aW1lc3RhbXAiIDog...
+#         signature: Z8NgxOC7mVyeW9hGKMx...

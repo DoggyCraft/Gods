@@ -19,12 +19,17 @@
 #                    sounds (sound ids like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB", for dust
 #                    particles and the symbol). Prayers use the god's mood, sacrifices pleased (wanted), neutral or
 #                    angry (unwanted), blessings pleased and curses angry.
-#   npc              the god's figure at its main altar (config.yml's npc section): skin, with the value and signature
-#                    of a texture Mojang signed. Without one the figure has the default look. A god's own skin
-#                    (/g godskin) comes first. To get a value and signature:
+#   npc              the god's figure at its main altar (config.yml's npc section): skin, with god, goddess and
+#                    deity, each the value and signature of a texture Mojang signed. A god wears its own skin
+#                    (/g godskin) first; else a god (and a god from before genders) its type's god skin, else the
+#                    default section's god skin; a goddess its type's goddess skin, else the default section's;
+#                    a deity its type's deity skin, its type's god skin, the default section's deity skin, else the
+#                    default section's god skin. Without any, the figure has the plain look. Player names don't work
+#                    here. To get a value and signature:
 #                     - upload the skin's PNG to https://mineskin.org and copy the "value" and "signature" it shows;
 #                     - or skip this file: wear the skin in Minecraft, have the god's priest run /g godskin <your name>
-#                       while you're online, and change back; the god keeps the skin.
+#                       while you're online (or run /g godskin yourself as the priest), and change back; the god
+#                       keeps the skin.
 # Names are Minecraft ids. Names the server's Minecraft version doesn't have (newer mobs and blocks) are skipped.
 
 default:
@@ -54,6 +59,21 @@ default:
       particles: [smoke, ash]
       sounds: [block.respawn_anchor.deplete]
       colors: [gray, black]
+  npc:
+    skin:
+      # A god, from MineSkin: https://mineskin.org/skins/c66ad715479f477dae18cb0c8688d367
+      god:
+        value: eyJ0aW1lc3RhbXAiOjE1NjIxMjA4MDIyMDIsInByb2ZpbGVJZCI6IjgyYzYwNmM1YzY1MjRiNzk4YjkxYTEyZDNhNjE2OTc3IiwicHJvZmlsZU5hbWUiOiJOb3ROb3RvcmlvdXNOZW1vIiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsidXJsIjoiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS8yOWVhNjQzMzQxYzk2OGYxMDhjODRkMjQ5YzFkMWMwMWIzYzYxNDJjMjlkNzBiYjkzYzM3NWM5MWZhM2MxZWViIn19fQ==
+        signature: LL7Gtp7fk9n0/IhAizs/BGYUu91u2xyxi/30c/tU/SQkuMXckZqHN+NDVZMpVhVMClj2xaLRPZiNGTdeuiD/DCmv66Zdk2OlWMV1MMuCXx/0AHdC21khfKrUBU17QkrmP+nzvjIz7GlAll8IKVPygZICxSFhSbs+HQj14gTEtpwxJYgATLcLkXxQ3Kth/0R572US5RzuxMJGA4opLcHKpFce6dyntskQ62z4hXMOk2gXQZcoJJcjV6s+AH99eky59AOQX0W9PUwCYT/YRWmXV8i6kj73D0Y+ONarl329DWgsK3gVApj2Pst+d4/0lS+yI07Al4NI0fYFF+6l+e+dGwljQ0lsLEsvCUSOhSejWwa2bL6BIPczyVJ+Wblsje53nHV8LCsEAnONCPp1q476Uvh6eX3rc0/lwHYEIuhBTnX+OVFpPBhxYDp9Q5yGwbOnG92N6Zb8xAMtyiq0fVShLfUq+qFsFlop8QiceLPhS8c6rkSX4dYANCvPiVkh6tgF0zf7Obo5IgW/6KMzFO6Qk4zuRQTVSdwMbwXTQigHtsAC+3RbTUgG79Iwc2+PwQjMw24fZ7mIBDDNhnQl6L+1wAK2aWMsapZ7ICP2IimzpHUmA/z4115lwLxAgCwqc0xiJe1XjaQ6o6ruN0AuFmGRWQYBRivJ+XNr3H2ROtzMlyw=
+      # A goddess (slim model), from MineSkin: https://mineskin.org/skins/23fd79ecb0354ecd9a4d89900135ba1e
+      goddess:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTY3OTI2MTcyMDkxMiwKICAicHJvZmlsZUlkIiA6ICIxNmFkYTc5YjFjMDk0MjllOWEyOGQ5MjgwZDNjNjE5ZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJMYXp1bGl0ZV9adG9uZSIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9mMjZlZjIwNjRkNjE1MDVkMWZkN2U4ZGRkOWZhODAxYjdhOWU3ZWEyNjQ2ZDZmNjg3ZTdiZTJiYWUzZDE5M2ZlIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=
+        signature: aFpmXd8JpyfXUYrqE9daG1VYn1+Nnpkg5RHSwTay8uRH72i9wvHK8Z9nTNrOKvjJFaXzdTdgzrkYcyZfwCUIqPHvIh7Ww+T73R2mceeyLaIpsi4hnn5vIeIvmDxT8ypfyA886WhqdG8AKSo4DV4D/jg8goISGrFU/luFJfwIc/9Jl5v+xTE0zZ6fkcU/NcWRoXn0KAIxxn4y4TKB5CBQ04+eew/GlJak5hXX+LowUha4WMbcG4Rl58HGVeKNQ4L07PGeB0O3g2+yLs5vFi54ox2pjziCP6EgWeZySd2PbrQmOWw50nYs3m/hiDCW93NKK8U7OjURPNLMqgpKjlmj6Rae/xU8sjfgKI48ZHCUjeerRw/uVYnBnOAzZ/oxODsJoVg3vDdkAlFHGBb1Fc+AVs2Q8N8LbTxmRrlhRrSxdU1OdaXxcxPcYwiyEJd60A2mpDvon+GU/k3uxZJ/8/0t3mme5eUG5R0mxjQdYwyRfy05gwsoupOtmNT7sppYYnI+ms0GAvL82t8UaOfLcKijOXDJj2L47MRQH8PzobQnhMu2ZtfxuqT1DB7RDUMspeDRh2G3ghtunuAEd/ukkBt2rz/YKW7CJA7lRqr0PR+sMkrFRYEbZPt6UGYX+cr1icdOsGA/kf3OqumHYHWSgYJecU1auZJMJOHwYDUEeydff8M=
+      # No deity skin yet: deities wear their type's god skin, else this god skin. A deity skin here would
+      # come before this god skin (after their type's deity and god skins).
+      # deity:
+      #   value: ...
+      #   signature: ...
 
 # Snow and ice: the creatures of cold biomes are holy, fire and heat are not
 frost:
@@ -112,6 +132,12 @@ love:
       particles: [angry_villager, smoke]
       sounds: [entity.cat.hiss]
       colors: ['#6A1B3A', black]
+  npc:
+    skin:
+      # A goddess of love, from MineSkin: https://mineskin.org/skins/c381540ee36b4b0da58a3edfab254744
+      goddess:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTY3NjY3NTg3MzEzNiwKICAicHJvZmlsZUlkIiA6ICI1MDBmZWZlMWUzZjU0NTA4OTc1YzZmMTE5ZGIyZDY1NiIsCiAgInByb2ZpbGVOYW1lIiA6ICJUZWNoU2VlZCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS8yZjRjOTA4MTY0MjcxNGU2MGFjOTJjZTlkODkyMjUwYmUwYTZjYjk5MDNlODYxODYwYjNkNTc0NTEzNTJmOTUzIgogICAgfQogIH0KfQ==
+        signature: TwM6GOyCEeFVMMljlSuUxB238XArEZgpVH9eFAOYM0jQafMYwPVignCb9nj7/sMDXyGlXMfy60uY9fqgIUFil3snVzEoDRjYwwwUxSit1FIE/sBTnIlv8C65nixcposdxS4IXyU1iUSyA+eNrYIHaP4J7+4qI8K0AvM/wQA79aXpj2/bFcMAgWwBKhbpmKOVTBPVhlt1uXkY5br/yZVEg1PfrC8csnbfDeSv1ei1ivXjfstU+FPaCQNN16bq9IFuRw9JbVQ4Zkhg16WllskNbJzOgaLleoeYvWRzjvYI2LB1l4Ln22qsdMKBy9/V/YL5p9UfEjNKcdFWIigIKMvN2B+XyZJpbGWD6eyR5MY/Ps2TTvKKHLZP6jTo31S5qiPfleH3/nC2K/F36zqB5qS9pfDQ7Bxw+XfvugzRUcGpoSYewK5vXg8YpdCXOPPZ9nwBforLICgeT5rb4Q5DsYXnt91ZQwscldFn/qI3z/4h5tRhYECxzo2/4ve9lkrAsKQ73gpxP7fAJ58HusM/AZiulKKft7qSiuiW/ub8FdK9cmlkBAWHTXytAvLAJHuoTwLM2G7rHiP+A2Txt0uZUeO3GAXyijeoWEhNfuTNDur41lSNmkcIBWrh288vtHQuWOGTX1JkuTbjznYxiZuq6GGD4lYks1GKUwYeD8VjdOTTdQM=
 
 # Darkness: the undead, the nether and the sculk are holy; the innocent animals of the surface are prey
 evil:
@@ -142,6 +168,15 @@ evil:
       particles: [large_smoke, squid_ink, soul]
       sounds: [entity.wither.ambient]
       colors: [black, '#1A001F']
+  npc:
+    skin:
+      # An evil god and goddess, from MineSkin: https://mineskin.org/skins/f36eaa091f024f15acfa108f4badd663
+      god:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTYxMzc1MjY5Mjc0OCwKICAicHJvZmlsZUlkIiA6ICJjMDI0Y2M0YTQwMzc0YWFjYTk2ZTE2Y2MwODM1ZDE4MCIsCiAgInByb2ZpbGVOYW1lIiA6ICJHZW9yZ2VOb0ZvdW5kIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2E5ZTc1MDliN2YyZDM0YjViNWI0MzcyMWM0YWYyMGU1ZGY1Yzk0OWZmOWQ4ODk2YTIwMTAwMWQ0MGI4YzJiNTkiCiAgICB9CiAgfQp9
+        signature: u8XKq0bqNHt8dNmjsXAkmKl3ypidFrAZP6D54S2BdGYRw19Zh5zmAtmODlde6mgqXCWPMceCx0D4uhK7B8AvjA/aRz/YEZ4/bHU2aISIxXoF0gA3Ya9s2VUA+Ra/D3YuFHorRyL39w8cShk11hzsLdWrPPeDA1hn8KGtd/d/V4b0qJyuZETEtAS5wFY0xUUUHNbtzCYrjJeGWfusYaOasztYgUQA3x6V6JsyNzOF5JoBXz1nm5AVT3OTAIW4PbDw6EvzHlzyz2zZJI1zQbzjWCv8gavoTmxmvJgmXkhuc0ABW3f+Fx/phutXKeK2L42jqxdV63PwkxZNOiCixlvydHuVlIQnbjrfXSHCFInz8rUBaUF3dRxn2ISUHxsCyvx9x6H+vcNcMjaS8M8WM4lLdWe17JNegqUob8Y5zKO3bpN7kDG7qoKtPFjZJ9Y9nCq7ar8X9O1iKVp6KIHm3POZkyTm2xb3/uAHJBRn6mKM5xkDesYCBagED8/IDcc2+e4dXjQKMxZwhsLmH3j8D36xgea6YjkknNFRgypArYkvB1ckNuqEwSQ2DNzmUvwI4AjO6q0CQD4/h7nFlO4VwInMk2LLCrpeHyDAt2jyehX7J3SvYHTuVrwtkyAyckvptTwY7d9vWVUQAzmHR0gHAL6rF3ZWMBo/SQ+Jz9oDhnC1Jbg=
+      goddess:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTYxMzc1MjY5Mjc0OCwKICAicHJvZmlsZUlkIiA6ICJjMDI0Y2M0YTQwMzc0YWFjYTk2ZTE2Y2MwODM1ZDE4MCIsCiAgInByb2ZpbGVOYW1lIiA6ICJHZW9yZ2VOb0ZvdW5kIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2E5ZTc1MDliN2YyZDM0YjViNWI0MzcyMWM0YWYyMGU1ZGY1Yzk0OWZmOWQ4ODk2YTIwMTAwMWQ0MGI4YzJiNTkiCiAgICB9CiAgfQp9
+        signature: u8XKq0bqNHt8dNmjsXAkmKl3ypidFrAZP6D54S2BdGYRw19Zh5zmAtmODlde6mgqXCWPMceCx0D4uhK7B8AvjA/aRz/YEZ4/bHU2aISIxXoF0gA3Ya9s2VUA+Ra/D3YuFHorRyL39w8cShk11hzsLdWrPPeDA1hn8KGtd/d/V4b0qJyuZETEtAS5wFY0xUUUHNbtzCYrjJeGWfusYaOasztYgUQA3x6V6JsyNzOF5JoBXz1nm5AVT3OTAIW4PbDw6EvzHlzyz2zZJI1zQbzjWCv8gavoTmxmvJgmXkhuc0ABW3f+Fx/phutXKeK2L42jqxdV63PwkxZNOiCixlvydHuVlIQnbjrfXSHCFInz8rUBaUF3dRxn2ISUHxsCyvx9x6H+vcNcMjaS8M8WM4lLdWe17JNegqUob8Y5zKO3bpN7kDG7qoKtPFjZJ9Y9nCq7ar8X9O1iKVp6KIHm3POZkyTm2xb3/uAHJBRn6mKM5xkDesYCBagED8/IDcc2+e4dXjQKMxZwhsLmH3j8D36xgea6YjkknNFRgypArYkvB1ckNuqEwSQ2DNzmUvwI4AjO6q0CQD4/h7nFlO4VwInMk2LLCrpeHyDAt2jyehX7J3SvYHTuVrwtkyAyckvptTwY7d9vWVUQAzmHR0gHAL6rF3ZWMBo/SQ+Jz9oDhnC1Jbg=
 
 # The sea: the creatures of the water are holy, the drowned and the guardians are not
 sea:
@@ -171,6 +206,16 @@ sea:
       particles: [squid_ink, falling_water]
       sounds: [entity.guardian.ambient]
       colors: ['#0B3A4A', black]
+  npc:
+    skin:
+      # A god of the sea, from MineSkin: https://mineskin.org/skins/c1fa552a1b184bf6b7f7b447ec407cff
+      god:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTYyMzExMjQwODE0OCwKICAicHJvZmlsZUlkIiA6ICJiNjM2OWQ0MzMwNTU0NGIzOWE5OTBhODYyNWY5MmEwNSIsCiAgInByb2ZpbGVOYW1lIiA6ICJCb2JpbmhvXyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9kZDhlNTY4Y2VmNmJlMzZiMDE1NDlmYWNhOTMwOWQ1NDg1OTk0ZDEzMjM2OTBjZmY1ZDI3NmY0NWUzYmQ2M2E2IgogICAgfQogIH0KfQ==
+        signature: nGG4MWO7GmjUj4zeXjux5y3/egefJzDn6rV2A0yqS6qpLvIwgTQVW9Wp7oLTGYl3gT5E9C0MbMWLEljKkLlHmrqzyInxnkgZychngkJGK4F6HJ9zi/bwfYaCquLs6PO89DjX0pPnxeTOaD+nDjUlWriC52lvumK2YbShcSlX5r4E2tTCxTBMjvOqbeDZQrgERixrCPUahF6SS/6nK9oJk9mEfsT9TcpiT2XwJIYtAl8dc0koyf7vcy58hY5NqWIs53fJ6+zr+30DcRZTk9VMu8jIkAH9gHaKWRRPUnGxkPPsfpLOR4IIcgdFcMEJy3M+NYufh/Fmxd2+wyZZ8AjzUGlRkZ/6imA/KhHfB/rutwGpv9KcKhdIVcMp7FlHVrT0bo1Xyy0gqgcGgdCj0HR0PkooKuYVBerh7G3b9+8SEDuIuUUJCDCTSa2mc+aP5kjvSAFaCVXa08mWu/HapV5Qywzb7dQqCg9DPdPTto7/W9LylZnp9ndlN40CDkWh5pR28ze4vMAYuS5dt8dxskEoiCgP4VdhTjWjoXXzZjFJH1lThsFu+3vciXwcYO+0B4kORpDRWCwFgHWJvMeq073oaRUUamz8oGkd/TgFBUBoLqHzKXRDUqg+AHnQ3Njvsj3nN0BSeMZSL+1CYDZKeS9+yV/hJQT57pbIZZuX5jVPZUI=
+      # A goddess of the sea (slim model), from MineSkin: https://mineskin.org/skins/7a5d52ec741e4a04937de0a63288d3eb
+      goddess:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTc0MjgxNzY2MTI1OCwKICAicHJvZmlsZUlkIiA6ICI5NjFlZjYzYTE0ZDQ0ZjdhODM1ZGFiMTRlMmFmNmUwOSIsCiAgInByb2ZpbGVOYW1lIiA6ICJ1UGlwZSIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9hMGJkYzhiZWQwZGUzZDNlODljMTM1OWE2OGNhMmRkZGU1OGUwYjc5NjVmZWE0MjVkOTViZGNlY2FlNWNiMTMxIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=
+        signature: UzVMyjE891El3n0RZ65s+y2cr3JgtsLPJiimlvwX8BIGw3EJ51dBO/V5J+fyM0HC2jKT7g8xZZUFTnZHgZZax8MPcexbBhm3hUMpX5a2n+gyct17HJjzwlfGJbZ0yzJmgKoptQsUu42hrPBbW4TWnKiIpPwVFxNUL8MxBVQOyWSg0WwpbHH+fO1WZwCK3bGo0v6LkIjClJEqHPclNsv5C/WajRPDQUPqiblUvpuEnyf43f6tKa3J8jB8MBz8L47Ht6s/YzkUCampHM2uwo5ivS3BFguyqkS0rRmZyr1VP3Yw4pwUlsyYsXrNsQlQxfiC/1zu8NzvxOgH93mwL8RzECUinm2YgUfeEj1SO6cYjwQDLDYAAhCI9h2yDqwxnpxgnReBhfzeuVWvfRM7dJiRL2yEqghxJZNtUqqlUTA5dspzjLAo3p6nlJy5vLls08eNTrMSzYYIpssq0xLZQmAwRAlBLkP5hxscRLvVsH+AOtYmecc63log4AZjdYNnheKVppSfV4uodUuqLX4jBRREUM8ScwkfROLusURG0VvRYxOpKte7No0fa1kk8v1+wmeBo9CkIHSertSP7849d5hKNc1uP6MwGPoC1E0M4c6kgspMvnlP95XVYPM2FGEXwP2nuYs5Z7ybUFhocs2viNmlHOvi4Z7RsMTJv1cnKP3PQdg=
 
 # The night and the End: night creatures and the moon rabbit are holy, the restless dead are not
 moon:
@@ -265,6 +310,12 @@ thunder:
       particles: [cloud, large_smoke]
       sounds: [entity.lightning_bolt.thunder]
       colors: ['#4A4A2A', gray]
+  npc:
+    skin:
+      # Zeus, from MineSkin: https://mineskin.org/skins/3a2fbf83c6894e288bf8570eaead958d
+      god:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTYyMjgwOTM2NTI2OCwKICAicHJvZmlsZUlkIiA6ICJjYzQ5ODJlMjE1MDI0MmQ0YWVmOTBkYWFkZTljNWJjYSIsCiAgInByb2ZpbGVOYW1lIiA6ICJraW9zaGlzaGltYWJ1a3UiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTM4NjY2NjU2MWE5MjIyMDBlOTg4MWI3Mjk1OGRkM2M5NTQ4ZjZkYjNkNzNjZTYyNWI3MTIyZWQ2ZWYzNGJkNyIKICAgIH0KICB9Cn0=
+        signature: ZqoZfwWX8yN4SWM7B1TSYaEv7WgLQPZsstLvu0j7DzLF5JUW5THcmDozlD6JcRyvQhJ8PuGyHwxklLDtudzpmDDze2KNZ8i4f99h9KcQfu+Ou/7sj+5yTsSgfSjEh9BcbXM6/065XnLsIvQAuhKs+nuEut5KIsocB6888D7QHRkT1ge7VdDqNkudnL3SHjUk2QbNCnpMxoJLUh6qrrR3haJYbgR8Vn9aYGi7hZNliSMDEeOyXBsWry2lnIDeZOiELSjAMrLvbNY50kmy0FdgNdAzoFGYTvUvnJBTPjJsjXByviwD2jl6pELF8dTuYVoR3R9Z4/dNfBNpEaL7GqomTtdINdi+QRmZftg6C2zUqab3PksaTnfXhqGG+z0/iDSmtyeP4y82uFBhOO87UxFMdVXRBWK2jctisa/tRPWCab9rB/7NeRRZ/3BRjfgy2OSGLo0lU8SthBF8vXq5khdSSqkXVcJiVMern/VAYcGuxwTY6Mo8PAy8RC66ExJqIC6HGvjbQtHNBlIUK5tpP+D6+G4yT38iue57U3sJeuoDp5dBGjhbYM4UTId8z9daalCSFLVDt63y/u2Zn/xL2wXxEl/Dy5lL4pnfZnju01trky15+XPwfUzvHVnou/95YnINmSKI2mfhdng5Q08lpKvA9Sr10KVjMrrj2bsCbtthBB0=
 
 # Feasts and music: the dancers and the playful are holy, the party poopers must go
 party:
@@ -354,10 +405,15 @@ werewolves:
       sounds: [entity.wolf.growl]
       colors: ['#3B2A1A', black]
   npc:
-    # A werewolf god, from MineSkin: https://mineskin.org/skins/fd6366661e464d70977b7d9525493248
     skin:
-      value: ewogICJ0aW1lc3RhbXAiIDogMTc2NTIzMzU5NTE3NiwKICAicHJvZmlsZUlkIiA6ICI0NDM0YmYxYzUxOTA0MjI1OGI5ODNkM2I1OGRhY2U4NSIsCiAgInByb2ZpbGVOYW1lIiA6ICIzbmpveXlfIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzJjNjRmYzkxZjlhNTQyYzk3Mzc4YzhmMTdlNzcwNzZmNTQwOTJjMDYxOWNmMDg3NDg4NjA4NTk3OTk3YzYyMDEiCiAgICB9CiAgfQp9
-      signature: GAWHA/RNg/a40vFQIBuRbzifHCDQdhn1S7oCVhuHU94JM7Yem6PNWz+EbH7oEfj88gZis4JEp4Ylc9X8eH4xA0fvghHxO9Jd0HmYZWsrk2I6k/0hHadN8CI5XM2d/CT0fR6BUImM+EQRVHRCYV/RwYSk4RHSPa17/HjB8LnRrzp+KTyK+ONW6ItT7rd9FrJSR5llLRYwD0pGFPq+JB7XG+kXB61CrjoP24kQfbqZOAr5C/YtX1PcNried64SOVlYCbrNJAxkg1kOFFCJQxd0QyVV8GXqmIJQM/aV6bmbrD5f3VCcb0YuqJGf4qoh/az48U867KTXMAGuc9NmK01NaVDAI0tszxuBgaaAvHLNROf4eLXPU+8o7/3N8Sqvm4Klv3kISoMyz1QCWEOkqesQMBw1tZalX3Mmo9MfkP5oy5PP2l4sKAUrLGs1UcN0rJGXfzgSF9COfrDj1StyYsMDPSD6i/hwKOapOGDB4VX7U3U0M2rS2bpE4QqZEokmVbUiJ6p1OPFjRws9waTXdNHmkT3e5CnZ43+gGGuHqmtXNqfkCcLp8X0Da+wNMUl092Yk1suWprFSOTlKX71ECzuxL35H3+pgCbiv62A8NmE5hBqE9Cr4m2xsVIF5edkk57jha9XP4wI5DoT7E9s4raPmaAVYHRyBywShUvRj2AkV2RU=
+      # A werewolf god, from MineSkin: https://mineskin.org/skins/fd6366661e464d70977b7d9525493248
+      god:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTc2NTIzMzU5NTE3NiwKICAicHJvZmlsZUlkIiA6ICI0NDM0YmYxYzUxOTA0MjI1OGI5ODNkM2I1OGRhY2U4NSIsCiAgInByb2ZpbGVOYW1lIiA6ICIzbmpveXlfIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzJjNjRmYzkxZjlhNTQyYzk3Mzc4YzhmMTdlNzcwNzZmNTQwOTJjMDYxOWNmMDg3NDg4NjA4NTk3OTk3YzYyMDEiCiAgICB9CiAgfQp9
+        signature: GAWHA/RNg/a40vFQIBuRbzifHCDQdhn1S7oCVhuHU94JM7Yem6PNWz+EbH7oEfj88gZis4JEp4Ylc9X8eH4xA0fvghHxO9Jd0HmYZWsrk2I6k/0hHadN8CI5XM2d/CT0fR6BUImM+EQRVHRCYV/RwYSk4RHSPa17/HjB8LnRrzp+KTyK+ONW6ItT7rd9FrJSR5llLRYwD0pGFPq+JB7XG+kXB61CrjoP24kQfbqZOAr5C/YtX1PcNried64SOVlYCbrNJAxkg1kOFFCJQxd0QyVV8GXqmIJQM/aV6bmbrD5f3VCcb0YuqJGf4qoh/az48U867KTXMAGuc9NmK01NaVDAI0tszxuBgaaAvHLNROf4eLXPU+8o7/3N8Sqvm4Klv3kISoMyz1QCWEOkqesQMBw1tZalX3Mmo9MfkP5oy5PP2l4sKAUrLGs1UcN0rJGXfzgSF9COfrDj1StyYsMDPSD6i/hwKOapOGDB4VX7U3U0M2rS2bpE4QqZEokmVbUiJ6p1OPFjRws9waTXdNHmkT3e5CnZ43+gGGuHqmtXNqfkCcLp8X0Da+wNMUl092Yk1suWprFSOTlKX71ECzuxL35H3+pgCbiv62A8NmE5hBqE9Cr4m2xsVIF5edkk57jha9XP4wI5DoT7E9s4raPmaAVYHRyBywShUvRj2AkV2RU=
+      # The werewolf alpha (slim model), from DoggyCraft's Werewolf plugin: the texture of the account WerewolfAlpha
+      goddess:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTY4NTAzNzE3NjgzNiwKICAicHJvZmlsZUlkIiA6ICJlMGQwNzRiZDY3MjI0N2ZjOTVkM2YyOGUyODk5ZTE1NSIsCiAgInByb2ZpbGVOYW1lIiA6ICJXZXJld29sZkFscGhhIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2NhZTg4YjY5MjA0YWUyYzNlM2NiZTcwOWUzZTYyNTIxZTUzZmEwNWU0ZGFkODkxYzZhZmJkZmI5MDg2OGE3ZTAiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==
+        signature: GIDMFU5fTmB4T4RFFs/pQDAg7ZsCsu5KAxMXiQw4G32G0Db5SRmJ6OtiSc3SRznJO9EAW7lmjo38+BdY4b3cgTM7IbXmZGx5ML22ZW5KYspUoot2wo9kIj5ksh+H0Tfy9JCPLpg17nd7O1aY5+RhI5Aq+mhtyhJFXn1a906Qg9/XtHhiw0bUrthpa1RrtHnbH6+hFKgzNKAEeT93MvrPajOT7dmzQ72UK3KXgpe6KzbrWFf+NL0ZbpfkjwabSIALUdcL6+92EI//dB5yMgHEln9wfzKjH+82cDGEoGQjAnJIf+/KVWOtkfNRJauwpUkIUkD4tmkXxCCTyXXwUuIb7e7CwxyFWK4K7e7ir/P5zf1NuQZV+X1MwbF1c++dlGa4yBIvrb97F9tTu+7tw6KFwxqCvj4yRjhkGXsN0soI39v95q7ucxWaX0D4oKwa9QYi9zLW6DIh9bPxGa78TAPC/WyAdM/8J+/uinX2mvEsECsKQVmrCGRrqrZgfctsnXHuqstKMNOecwDFDzi8rWlcM3/wrdHn14Lvn2bsZGR4Xhr532CY2t+JgkQvYBM5Z+tkW5C7MCVH4BbLwf2zDcDkGIOzq5VoKlu/2WML88etjyzSIhCN0WJXWFkeRr7ddTar7Nx8/AzHRUBcTGXC+UGiHMYWWq8bAILFggLKY8eJzq0=
 
 # All creatures: rare beasts are holy and must not be eaten, vermin must be slain
 creatures:

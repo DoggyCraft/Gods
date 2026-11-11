@@ -25,8 +25,8 @@ import com.dogonfire.gods.model.NpcSkin;
  *                       them, see {@link Themes#altars()})
  * @param sign           how altar signs of these gods look
  * @param effects        how the effects of these gods look and sound (prayers, sacrifices, blessings, curses)
- * @param npcSkin        the skin of these gods' NPCs at their main altars, or null for the default look (a god's own skin,
- *                       set with /g godskin, comes first)
+ * @param npcSkins       the skins of these gods' NPCs at their main altars, per gender (a god's own skin, set with
+ *                       /g godskin, comes first; see {@code GodNpcRules.skin} for the whole order)
  */
 public record Theme(
 		List<EntityType> holyMobs,
@@ -38,8 +38,27 @@ public record Theme(
 		List<Material> altarBlocks,
 		SignStyle sign,
 		Effects effects,
-		NpcSkin npcSkin)
+		NpcSkins npcSkins)
 {
+	/**
+	 * The skins of a theme's god NPCs ({@code npc.skin} in themes.yml), one per gender, each a texture Mojang signed or
+	 * null. Which one a god wears is {@code GodNpcRules.skin}'s.
+	 *
+	 * @param god     for gods (Male, and None: gods from before genders)
+	 * @param goddess for goddesses (Female)
+	 * @param deity   for deities (NonBinary)
+	 */
+	public record NpcSkins(NpcSkin god, NpcSkin goddess, NpcSkin deity)
+	{
+		public static final NpcSkins NONE = new NpcSkins(null, null, null);
+
+		/** Whether it has no skin at all */
+		public boolean isEmpty()
+		{
+			return this.god == null && this.goddess == null && this.deity == null;
+		}
+	}
+
 	/**
 	 * How an altar sign looks once Gods has made it.
 	 *

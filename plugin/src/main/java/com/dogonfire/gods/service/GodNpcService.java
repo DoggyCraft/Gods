@@ -18,6 +18,7 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.GodAscendEvent;
 import com.dogonfire.gods.api.event.GodDescendEvent;
 import com.dogonfire.gods.config.Settings;
+import com.dogonfire.gods.config.Themes;
 import com.dogonfire.gods.integration.npc.CitizensNpcs;
 import com.dogonfire.gods.integration.npc.FancyNpcsNpcs;
 import com.dogonfire.gods.integration.npc.GodNpcProvider;
@@ -353,13 +354,16 @@ public class GodNpcService
 	}
 
 	/**
-	 * The god's skin ({@link GodNpcRules#skin}: its own, else its god type's), or null for the provider's default look.
-	 * A skin known only by name is resolved in the background; until then it is given by name (Citizens and FancyNpcs
+	 * The god's skin ({@link GodNpcRules#skin}: its own, else its theme's for its gender, ...), or null for the
+	 * provider's default look. Themes only have signed textures; a god's own skin known only by name (a hand edit of
+	 * gods.yml) is resolved in the background; until then it is given by name (Citizens and FancyNpcs
 	 * resolve names themselves, the mannequin waits), and the NPCs are refreshed when it is known.
 	 */
 	private NpcSkin skinFor(String godName)
 	{
-		NpcSkin skin = GodNpcRules.skin(ctx.godService().getNpcSkin(godName), ctx.themes().of(ctx.godService().getDivineForceForGod(godName)).npcSkin());
+		Themes themes = ctx.themes();
+		NpcSkin skin = GodNpcRules.skin(ctx.godService().getNpcSkin(godName), ctx.godService().getGenderForGod(godName),
+				themes.of(ctx.godService().getDivineForceForGod(godName)).npcSkins(), themes.defaults().npcSkins());
 		if (skin == null || skin.hasTexture())
 		{
 			return skin;
@@ -389,7 +393,7 @@ public class GodNpcService
 		}
 	}
 
-	/** Finds players' skins by name (/g godskin, and themes that name a player) */
+	/** Finds players' skins by name (/g godskin) */
 	public SkinResolver skins()
 	{
 		return this.skins;

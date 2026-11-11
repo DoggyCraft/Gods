@@ -283,8 +283,9 @@ public class GodService
 		this.repository.save();
 
 		ctx.plugin().log("The gender of " + godName + " changed from " + oldGender + " to " + gender);
-		// The title above its altars follows
+		// The title above its altars follows, and its NPC wears the new gender's skin (unless it has its own)
 		ctx.altarTexts().refreshGod(godName);
+		ctx.godNpcs().refreshGod(godName);
 		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GENDER_CHANGED, 2, genderTag(godName));
 		return true;
 	}

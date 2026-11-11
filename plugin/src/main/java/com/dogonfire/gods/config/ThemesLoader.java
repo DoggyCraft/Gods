@@ -43,6 +43,9 @@ import com.dogonfire.gods.model.NpcSkin;
  * The {@code effects} section is merged the same way: {@code symbol}, and per mood (pleased, neutral, angry) the lists
  * {@code particles} (particle ids), {@code sounds} (sound ids, checked against the server's sounds) and {@code colors}
  * (dye colors or #RRGGBB).
+ * <p>
+ * {@code npc.skin} holds a signed texture per gender ({@code god}, {@code goddess}, {@code deity}); the admin's file
+ * replaces the entries it lists ({@link #readNpc}). Player names are not taken.
  */
 public final class ThemesLoader
 {
@@ -61,10 +64,20 @@ public final class ThemesLoader
 	public static final List<String>	LIST_KEYS		= List.of(HOLY_MOBS, UNHOLY_MOBS, HOLY_FOODS, UNHOLY_FOODS, SACRIFICE_NEEDS, SLAY_TARGETS, ALTAR_BLOCKS);
 	public static final List<String>	SIGN_KEYS		= List.of("messages", "dye", "glowing");
 
-	/** The NPC section: {@code npc.skin}, a player name or a section with value and signature */
+	/**
+	 * The NPC section: {@code npc.skin}, a section with a signed texture ({@code value} and {@code signature}) per
+	 * gender ({@link #SKIN_ENTRIES})
+	 */
 	public static final String			NPC				= "npc";
 	public static final String			SKIN			= "skin";
-	public static final List<String>	SKIN_KEYS		= List.of("name", "value", "signature");
+	public static final List<String>	SKIN_KEYS		= List.of("value", "signature");
+	/** The entries of {@code npc.skin}: god (Male, and None), goddess (Female), deity (NonBinary) */
+	public static final String			SKIN_GOD		= "god";
+	public static final String			SKIN_GODDESS	= "goddess";
+	public static final String			SKIN_DEITY		= "deity";
+	public static final List<String>	SKIN_ENTRIES	= List.of(SKIN_GOD, SKIN_GODDESS, SKIN_DEITY);
+	/** What a skin in themes.yml must be, for the warnings */
+	public static final String			SKIN_HINT		= "needs the value and signature of a signed texture, e.g. from mineskin.org, or use /g godskin in game";
 
 	public static final String			EFFECTS			= "effects";
 	public static final String			SYMBOL			= "symbol";
@@ -209,10 +222,16 @@ public final class ThemesLoader
 
 	/**
 	 * One section of themes.yml before its names are resolved: the lists by key (the effect lists by their path, like
-	 * {@code effects.pleased.particles}), the sign settings, the effects' symbol and the NPC skin ({@link #SKIN_KEYS}) (empty
-	 * map: not set; a set npc section replaces the default's as a whole)
+	 * {@code effects.pleased.particles}), the sign settings, the effects' symbol and the NPC skins by entry
+	 * ({@link #SKIN_ENTRIES}; only valid signed textures; a section's skins don't take the default section's, that
+	 * fallback is {@code GodNpcRules.skin}'s)
 	 */
-	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, String> npc)
+	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, RawSkin> npc)
+	{
+	}
+
+	/** A signed texture in themes.yml: its base64 value and Mojang's signature */
+	public record RawSkin(String value, String signature)
 	{
 	}
 
@@ -298,19 +317,19 @@ public final class ThemesLoader
 		}
 
 		Map<String, RawTheme> merged = new LinkedHashMap<>();
-		RawTheme defaults = apply(read(section(bundled, DEFAULT)), section(overrides, DEFAULT), null, DEFAULT, logger);
+		RawTheme defaults = apply(read(section(bundled, DEFAULT), DEFAULT, logger), section(overrides, DEFAULT), null, DEFAULT, logger);
 		merged.put(DEFAULT, defaults);
 		for (GodType type : GodType.values())
 		{
 			String name = sectionName(type);
-			RawTheme own = apply(read(section(bundled, name)), section(overrides, name), defaults, name, logger);
+			RawTheme own = apply(read(section(bundled, name), name, logger), section(overrides, name), defaults, name, logger);
 			Map<String, List<String>> lists = new LinkedHashMap<>(defaults.lists());
 			lists.putAll(own.lists());
 			Map<String, String> sign = new LinkedHashMap<>(defaults.sign());
 			sign.putAll(own.sign());
 			Map<String, String> symbol = new LinkedHashMap<>(defaults.symbol());
 			symbol.putAll(own.symbol());
-			merged.put(name, new RawTheme(lists, sign, symbol, own.npc().isEmpty() ? defaults.npc() : own.npc()));
+			merged.put(name, new RawTheme(lists, sign, symbol, own.npc()));
 		}
 		return merged;
 	}
@@ -332,7 +351,7 @@ public final class ThemesLoader
 		return null;
 	}
 
-	private static RawTheme read(ConfigurationSection section)
+	private static RawTheme read(ConfigurationSection section, String name, Logger logger)
 	{
 		Map<String, List<String>> lists = new LinkedHashMap<>();
 		Map<String, String> sign = new LinkedHashMap<>();
@@ -356,7 +375,7 @@ public final class ThemesLoader
 			readSign(section, sign);
 			readSymbol(section, symbol);
 		}
-		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, null, null) : Map.of());
+		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, name, logger, Map.of()) : Map.of());
 	}
 
 	private static void readSign(ConfigurationSection section, Map<String, String> sign)
@@ -384,23 +403,24 @@ public final class ThemesLoader
 	}
 
 	/**
-	 * The {@code npc} section of a theme: {@code skin: <player name>}, or {@code skin:} with {@code value} and
-	 * {@code signature} (and maybe {@code name}). The map holds what is set ({@link #SKIN_KEYS}); a skin that is set
-	 * but empty ({@code skin: ''}) is kept as an empty name, so it replaces the default's skin with none.
+	 * The {@code npc} section of a theme over {@code base} (the skins so far): {@code skin:} with {@code god},
+	 * {@code goddess} and/or {@code deity}, each a {@code value} and {@code signature} (a texture Mojang signed),
+	 * replaces those entries; {@code skin: ''} removes them all, an entry set to '' that one. A player name, a texture
+	 * without a signature, a value that isn't a texture or a texture without a gender is warned about
+	 * ({@link #SKIN_HINT}) and ignored.
 	 *
-	 * @param logger null for Gods' own file (no warnings)
+	 * @param name the section's name, for warnings
 	 */
-	public static Map<String, String> readNpc(ConfigurationSection section, String name, Logger logger)
+	public static Map<String, RawSkin> readNpc(ConfigurationSection section, String name, Logger logger, Map<String, RawSkin> base)
 	{
-		Map<String, String> npc = new LinkedHashMap<>();
 		if (!section.isSet(NPC))
 		{
-			return npc;
+			return base;
 		}
 		if (!section.isConfigurationSection(NPC))
 		{
 			warn(logger, "themes.yml " + name + ".npc must be a section (skin), ignoring it.");
-			return npc;
+			return base;
 		}
 		ConfigurationSection npcSection = section.getConfigurationSection(NPC);
 		for (String key : npcSection.getKeys(false))
@@ -410,30 +430,86 @@ public final class ThemesLoader
 				warn(logger, "Unknown key '" + key + "' in themes.yml " + name + ".npc (skin), ignoring it.");
 			}
 		}
-		if (npcSection.isConfigurationSection(SKIN))
+		String path = name + ".npc.skin";
+		if (!npcSection.isSet(SKIN))
 		{
-			ConfigurationSection skin = npcSection.getConfigurationSection(SKIN);
-			for (String key : skin.getKeys(false))
+			return base;
+		}
+		if (!npcSection.isConfigurationSection(SKIN))
+		{
+			if (String.valueOf(npcSection.get(SKIN)).isBlank())
 			{
-				if (SKIN_KEYS.contains(key))
+				return Map.of();
+			}
+			nameWarning(logger, path, npcSection.get(SKIN));
+			return base;
+		}
+		ConfigurationSection skin = npcSection.getConfigurationSection(SKIN);
+		if (skin.isSet("value") || skin.isSet("signature") || skin.isSet("name"))
+		{
+			warn(logger, "themes.yml " + path + " needs a skin per gender (god, goddess, deity), each with a value and signature; ignoring it.");
+			return base;
+		}
+		Map<String, RawSkin> skins = new LinkedHashMap<>(base);
+		for (String key : skin.getKeys(false))
+		{
+			if (!SKIN_ENTRIES.contains(key))
+			{
+				warn(logger, "Unknown key '" + key + "' in themes.yml " + path + " (god, goddess, deity), ignoring it.");
+			}
+			else if (skin.isConfigurationSection(key))
+			{
+				RawSkin entry = readSkin(skin.getConfigurationSection(key), path + "." + key, logger);
+				if (entry != null)
 				{
-					npc.put(key, String.valueOf(skin.get(key)));
-				}
-				else
-				{
-					warn(logger, "Unknown key '" + key + "' in themes.yml " + name + ".npc.skin (name, value, signature), ignoring it.");
+					skins.put(key, entry);
 				}
 			}
+			else if (String.valueOf(skin.get(key)).isBlank())
+			{
+				skins.remove(key);
+			}
+			else
+			{
+				nameWarning(logger, path + "." + key, skin.get(key));
+			}
 		}
-		else if (npcSection.isSet(SKIN))
+		return skins;
+	}
+
+	/** One signed texture (value and signature), or null (warned about) if it isn't one */
+	private static RawSkin readSkin(ConfigurationSection skin, String path, Logger logger)
+	{
+		for (String key : skin.getKeys(false))
 		{
-			npc.put("name", String.valueOf(npcSection.get(SKIN)));
+			if (key.equals("name"))
+			{
+				nameWarning(logger, path, skin.get(key));
+				return null;
+			}
+			if (!SKIN_KEYS.contains(key))
+			{
+				warn(logger, "Unknown key '" + key + "' in themes.yml " + path + " (value, signature), ignoring it.");
+			}
 		}
-		if (npc.isEmpty())
+		String value = skin.isSet("value") ? String.valueOf(skin.get("value")).trim() : "";
+		String signature = skin.isSet("signature") ? String.valueOf(skin.get("signature")).trim() : "";
+		if (value.isEmpty() || signature.isEmpty())
 		{
-			npc.put("name", "");
+			warn(logger, "themes.yml " + path + " has no " + (value.isEmpty() ? "value" : "signature") + ": a skin " + SKIN_HINT + ". Ignoring it.");
+			return null;
 		}
-		return npc;
+		if (SkinTextures.decode(value) == null)
+		{
+			warn(logger, "themes.yml " + path + ".value is not a skin texture: a skin " + SKIN_HINT + ". Ignoring it.");
+			return null;
+		}
+		return new RawSkin(value, signature);
+	}
+
+	private static void nameWarning(Logger logger, String path, Object name)
+	{
+		warn(logger, "themes.yml " + path + " is a player name ('" + name + "'); a skin " + SKIN_HINT + ". Ignoring it.");
 	}
 
 	private static void warn(Logger logger, String message)
@@ -454,13 +530,13 @@ public final class ThemesLoader
 		Map<String, List<String>> lists = new LinkedHashMap<>(base.lists());
 		Map<String, String> sign = new LinkedHashMap<>(base.sign());
 		Map<String, String> symbol = new LinkedHashMap<>(base.symbol());
-		Map<String, String> npc = base.npc();
+		Map<String, RawSkin> npc = base.npc();
 		for (String key : override.getKeys(false))
 		{
 			if (key.equals(NPC))
 			{
-				// Replaces the whole skin: a name doesn't mix with another skin's texture
-				npc = readNpc(override, name, logger);
+				// Replaces the gender entries it has
+				npc = readNpc(override, name, logger, npc);
 				continue;
 			}
 			if (key.equals(SIGN))
@@ -590,22 +666,19 @@ public final class ThemesLoader
 						dye(section, sign.get("dye")),
 						glowing(section, sign.get("glowing"))),
 				effects(section, raw, bundledNames),
-				npcSkin(section, raw.npc()));
+				npcSkins(raw.npc()));
 	}
 
-	/**
-	 * The NPC skin of a theme, or null for none; a texture value that isn't one is warned about and left out (a name
-	 * is checked when it is resolved)
-	 */
-	private NpcSkin npcSkin(String section, Map<String, String> npc)
+	/** The NPC skins of a theme (checked when read) */
+	private static Theme.NpcSkins npcSkins(Map<String, RawSkin> npc)
 	{
-		NpcSkin skin = new NpcSkin(npc.get("name"), npc.get("value"), npc.get("signature"));
-		if (skin.hasTexture() && SkinTextures.decode(skin.value()) == null)
-		{
-			this.logger.warning("themes.yml " + section + ".npc.skin.value is not a skin texture, ignoring it.");
-			skin = new NpcSkin(skin.name(), null, null);
-		}
-		return skin.isEmpty() ? null : skin;
+		return npc.isEmpty() ? Theme.NpcSkins.NONE
+				: new Theme.NpcSkins(npcSkin(npc.get(SKIN_GOD)), npcSkin(npc.get(SKIN_GODDESS)), npcSkin(npc.get(SKIN_DEITY)));
+	}
+
+	private static NpcSkin npcSkin(RawSkin raw)
+	{
+		return raw != null ? new NpcSkin(null, raw.value(), raw.signature()) : null;
 	}
 
 	private Theme.Effects effects(String section, RawTheme raw, Set<String> bundledNames)

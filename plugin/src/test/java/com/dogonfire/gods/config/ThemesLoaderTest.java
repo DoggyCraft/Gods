@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -261,73 +262,186 @@ class ThemesLoaderTest
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("colour")));
 	}
 
-	/** Only the werewolves have a skin of their own (a signed texture); the others look like the default mannequin */
+	/** The bundled skins: signed textures that decode to a skin URL, where Gods' themes have them, and only there */
 	@Test
-	void onlyTheWerewolvesHaveABundledSkin() throws Exception
+	void theBundledSkinsAreSignedTextures() throws Exception
 	{
 		Themes themes = load("");
+		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+		assertBundledSkin(themes.defaults().npcSkins().god(), false);
+		assertBundledSkin(themes.defaults().npcSkins().goddess(), true);
+		assertNull(themes.defaults().npcSkins().deity());
+		assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().goddess(), true);
+		assertBundledSkin(themes.of(GodType.EVIL).npcSkins().god(), false);
+		assertEquals(themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().goddess());
+		assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.LOVE).npcSkins().goddess(), false);
+		assertBundledSkin(themes.of(GodType.SEA).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.SEA).npcSkins().goddess(), true);
+		// The werewolf alpha is the account WerewolfAlpha's texture
+		assertTrue(new String(Base64.getDecoder().decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()), StandardCharsets.UTF_8).contains("\"WerewolfAlpha\""));
+		Map<GodType, Theme.NpcSkins> expected = Map.of(
+				GodType.WEREWOLVES, new Theme.NpcSkins(themes.of(GodType.WEREWOLVES).npcSkins().god(), themes.of(GodType.WEREWOLVES).npcSkins().goddess(), null),
+				GodType.EVIL, new Theme.NpcSkins(themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().god(), null),
+				GodType.THUNDER, new Theme.NpcSkins(themes.of(GodType.THUNDER).npcSkins().god(), null, null),
+				GodType.LOVE, new Theme.NpcSkins(null, themes.of(GodType.LOVE).npcSkins().goddess(), null),
+				GodType.SEA, new Theme.NpcSkins(themes.of(GodType.SEA).npcSkins().god(), themes.of(GodType.SEA).npcSkins().goddess(), null));
 		for (GodType type : GodType.values())
 		{
-			NpcSkin skin = themes.of(type).npcSkin();
-			if (type == GodType.WEREWOLVES)
-			{
-				assertTrue(skin != null && skin.isSigned() && skin.name() == null, "" + skin);
-				assertNotNull(SkinTextures.decode(skin.value()));
-			}
-			else
-			{
-				assertNull(skin, type.name());
-			}
+			assertEquals(expected.getOrDefault(type, Theme.NpcSkins.NONE), themes.of(type).npcSkins(), type.name());
 		}
-		assertNull(themes.of(null).npcSkin());
 	}
 
-	/** A name, a texture, or nothing; a set npc section replaces the default's skin as a whole */
-	@Test
-	void npcSkinsAreANameOrATexture() throws Exception
+	private static void assertBundledSkin(NpcSkin skin, boolean slim)
 	{
-		String value = SkinTextures.encode(new SkinTextures.Texture("http://textures.minecraft.net/texture/abc", false));
+		assertNotNull(skin);
+		assertTrue(skin.isSigned() && skin.name() == null, skin.toString());
+		String json = new String(Base64.getDecoder().decode(skin.value()), StandardCharsets.UTF_8);
+		com.google.gson.JsonObject textures = com.google.gson.JsonParser.parseString(json).getAsJsonObject().getAsJsonObject("textures");
+		assertTrue(textures.getAsJsonObject("SKIN").get("url").getAsString().startsWith("http://textures.minecraft.net/texture/"), json);
+		SkinTextures.Texture texture = SkinTextures.decode(skin.value());
+		assertNotNull(texture);
+		assertEquals(slim, texture.slim(), json);
+	}
+
+	private static String texture(String id)
+	{
+		return SkinTextures.encode(new SkinTextures.Texture("http://textures.minecraft.net/texture/" + id, false));
+	}
+
+	/** A signed texture per gender; a section doesn't take the default section's (that is GodNpcRules.skin's) */
+	@Test
+	void npcSkinsArePerGender() throws Exception
+	{
+		String god = texture("god");
+		String goddess = texture("goddess");
+		String deity = texture("deity");
 		Themes themes = load("""
+				moon:
+				  npc:
+				    skin:
+				      god:
+				        value: %s
+				        signature: sig0
+				      goddess:
+				        value: %s
+				        signature: sig1
+				      deity:
+				        value: %s
+				        signature: sig2
+				""".formatted(god, goddess, deity));
+		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+		assertEquals(new Theme.NpcSkins(new NpcSkin(null, god, "sig0"), new NpcSkin(null, goddess, "sig1"), new NpcSkin(null, deity, "sig2")), themes.of(GodType.MOON).npcSkins());
+		assertTrue(themes.of(GodType.FROST).npcSkins().isEmpty());
+	}
+
+	/** The admin's file replaces each gender entry it lists, keeps the others; '' removes one, skin: '' all */
+	@Test
+	void overridesReplaceSkinsPerGender() throws Exception
+	{
+		Themes bundledThemes = load("");
+		NpcSkin werewolfGod = bundledThemes.of(GodType.WEREWOLVES).npcSkins().god();
+		NpcSkin defaultGoddess = bundledThemes.defaults().npcSkins().goddess();
+		NpcSkin evil = bundledThemes.of(GodType.EVIL).npcSkins().god();
+		String mine = texture("mine");
+		Themes themes = load("""
+				werewolves:
+				  npc:
+				    skin:
+				      goddess:
+				        value: %1$s
+				        signature: sig
+				      deity:
+				        value: %1$s
+				        signature: sig
 				default:
 				  npc:
-				    skin: Notch
+				    skin:
+				      god: ''
+				evil:
+				  npc:
+				    skin:
+				      god:
+				        value: %1$s
+				        signature: sig
+				thunder:
+				  npc:
+				    skin: ''
+				""".formatted(mine));
+		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+		NpcSkin own = new NpcSkin(null, mine, "sig");
+		assertEquals(new Theme.NpcSkins(werewolfGod, own, own), themes.of(GodType.WEREWOLVES).npcSkins());
+		assertEquals(new Theme.NpcSkins(null, defaultGoddess, null), themes.defaults().npcSkins());
+		assertEquals(new Theme.NpcSkins(own, evil, null), themes.of(GodType.EVIL).npcSkins());
+		assertTrue(themes.of(GodType.THUNDER).npcSkins().isEmpty());
+	}
+
+	/**
+	 * Player names, textures without a signature, values that aren't textures and a texture without a gender are
+	 * warned about (once, with a hint) and ignored
+	 */
+	@Test
+	void badNpcSkinsAreMentionedAndIgnored() throws Exception
+	{
+		Themes bundledThemes = load("");
+		this.log.warnings().clear();
+		Themes themes = load("""
 				sun:
+				  npc:
+				    skin: Notch
+				werewolves:
+				  npc:
+				    skin:
+				      god: Notch
+				      godess:
+				        value: %s
+				        signature: sig
+				love:
+				  npc:
+				    skin:
+				      goddess:
+				        value: %s
+				party:
+				  npc:
+				    skin:
+				      deity:
+				        name: Notch
+				war:
+				  npc:
+				    skin:
+				      deity:
+				        value: not-a-texture
+				        signature: sig
+				      add: [Notch]
+				nature:
 				  npc:
 				    skin:
 				      value: %s
 				      signature: sig
-				werewolves:
-				  npc:
-				    skin: ''
-				""".formatted(value));
-		assertEquals(NpcSkin.named("Notch"), themes.of(null).npcSkin());
-		assertEquals(NpcSkin.named("Notch"), themes.of(GodType.FROST).npcSkin());
-		assertEquals(new NpcSkin(null, value, "sig"), themes.of(GodType.SUN).npcSkin());
-		assertNull(themes.of(GodType.WEREWOLVES).npcSkin());
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-	}
-
-	@Test
-	void badNpcSkinsAreMentioned() throws Exception
-	{
-		Themes themes = load("""
-				sun:
-				  npc:
-				    skin:
-				      value: not-a-texture
-				      colour: red
 				moon:
 				  npc: Notch
 				sea:
 				  npc:
 				    skn: Notch
-				""");
-		assertNull(themes.of(GodType.SUN).npcSkin());
-		assertNull(themes.of(GodType.MOON).npcSkin());
-		for (String expected : new String[] { "not a skin texture", "colour", "moon.npc", "skn" })
+				""".formatted(texture("a"), texture("b"), texture("c")));
+		assertTrue(themes.of(GodType.SUN).npcSkins().isEmpty());
+		assertEquals(bundledThemes.of(GodType.WEREWOLVES).npcSkins(), themes.of(GodType.WEREWOLVES).npcSkins());
+		// Gods' own love goddess stays
+		assertEquals(bundledThemes.of(GodType.LOVE).npcSkins(), themes.of(GodType.LOVE).npcSkins());
+		assertTrue(themes.of(GodType.PARTY).npcSkins().isEmpty());
+		assertTrue(themes.of(GodType.WAR).npcSkins().isEmpty());
+		assertTrue(themes.of(GodType.NATURE).npcSkins().isEmpty());
+		for (String expected : new String[] { "sun.npc.skin is a player name ('Notch')", "werewolves.npc.skin.god is a player name", "godess",
+				"love.npc.skin.goddess has no signature", "party.npc.skin.deity is a player name", "war.npc.skin.deity.value is not a skin texture", "'add'",
+				"nature.npc.skin needs a skin per gender", "moon.npc", "skn" })
 		{
 			assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains(expected)), expected + " in " + this.log.warnings());
 		}
+		assertTrue(this.log.warnings().stream().filter(warning -> warning.contains("player name") || warning.contains("no signature"))
+				.allMatch(warning -> warning.contains("mineskin.org") && warning.contains("/g godskin")), "" + this.log.warnings());
+		// Once each
+		assertEquals(1, this.log.warnings().stream().filter(warning -> warning.contains("sun.npc.skin")).count());
 	}
 
 	/** config.yml's altars.block-types wins for the god types it lists, even with an empty list */
