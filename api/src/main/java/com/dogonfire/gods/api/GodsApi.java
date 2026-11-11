@@ -1,7 +1,9 @@
 package com.dogonfire.gods.api;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -61,4 +63,78 @@ public interface GodsApi
 	 * is switched off in Gods' config.
 	 */
 	boolean isNeutralLand(Location location);
+
+	// ---------------------------------------------------------------------
+	// Speaking as a god
+
+	/**
+	 * The situations gods have voice lines for: the keys of Gods' voice files ({@code lang/<language>/voices/}), such as
+	 * {@code believer-praying}, {@code believer-random-pleased-speech} or {@code believers-slay-quest-started}. Each
+	 * god has a list of lines for each, in the voice of its type and gender, and says one at random.
+	 */
+	Set<String> getVoiceSituations();
+
+	/**
+	 * The god says a text to the player, formatted like everything else it says. Like all of a god's words it fires a
+	 * {@link com.dogonfire.gods.api.event.GodSpeakEvent} and is sent a tick later, only to a player who has the
+	 * {@code gods.listen} permission and is in a world Gods is enabled in.
+	 *
+	 * @param text the words, in MiniMessage format (e.g. {@code "Kneel, <player>!"}); {@code <god>} is the god's name and
+	 *             {@code <player>} the player's. Gods parses it, so don't put players' input in it unescaped.
+	 * @return false if there is no such god, the player can't hear gods, or a listener cancelled the event
+	 */
+	boolean say(String godName, Player player, String text);
+
+	/**
+	 * The god says a text to each of its believers who is online, like {@link #say(String, Player, String)}.
+	 *
+	 * @return how many believers it was said to; 0 if there is no such god
+	 */
+	int sayToBelievers(String godName, String text);
+
+	/**
+	 * The god says one of its voice lines for the situation to the player, like {@link #say(String, Player, String)}.
+	 *
+	 * @param situation one of {@link #getVoiceSituations()}
+	 * @return false if there is no such god, it has no line for the situation, the player can't hear gods, or a
+	 *         listener cancelled the event
+	 * @throws IllegalArgumentException if the situation is not one of {@link #getVoiceSituations()}
+	 */
+	default boolean sayVoiceLine(String godName, Player player, String situation)
+	{
+		return sayVoiceLine(godName, player, situation, Map.of());
+	}
+
+	/**
+	 * Like {@link #sayVoiceLine(String, Player, String)}, filling in the line's placeholders.
+	 *
+	 * @param placeholders values for the line's tags, by tag name (lower case, e.g. {@code amount} or {@code type});
+	 *                     the values are inserted as plain text. {@code god} is the god's name and {@code player} the
+	 *                     player's unless given here. Lines whose tags get no value show them as they are written.
+	 * @throws IllegalArgumentException if the situation is not one of {@link #getVoiceSituations()}, or a placeholder
+	 *                                  name is not a valid tag name ({@code a-z}, {@code 0-9}, {@code _} and {@code -})
+	 */
+	boolean sayVoiceLine(String godName, Player player, String situation, Map<String, String> placeholders);
+
+	/**
+	 * One of the god's voice lines for the situation, picked at random and rendered (with {@code §} colors, without the
+	 * chat format), for showing it some other way, e.g. as an NPC's dialogue. {@code <god>} is the god's name; other
+	 * tags are shown as they are written.
+	 *
+	 * @return empty if there is no such god or it has no line for the situation
+	 * @throws IllegalArgumentException if the situation is not one of {@link #getVoiceSituations()}
+	 */
+	default Optional<String> getVoiceLine(String godName, String situation)
+	{
+		return getVoiceLine(godName, situation, Map.of());
+	}
+
+	/**
+	 * Like {@link #getVoiceLine(String, String)}, filling in the line's placeholders as
+	 * {@link #sayVoiceLine(String, Player, String, Map)} does.
+	 *
+	 * @throws IllegalArgumentException if the situation is not one of {@link #getVoiceSituations()}, or a placeholder
+	 *                                  name is not a valid tag name
+	 */
+	Optional<String> getVoiceLine(String godName, String situation, Map<String, String> placeholders);
 }

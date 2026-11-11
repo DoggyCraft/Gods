@@ -1,5 +1,9 @@
 package com.dogonfire.gods.message;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * The situations a god speaks in: one key of the voice files ({@code lang/<language>/voices/<type>_<gender>.yml}),
  * each a list of lines the god picks one of. The key names say who is spoken to: {@code believer-} one believer,
@@ -152,5 +156,20 @@ public enum Voice
 	public String key()
 	{
 		return this.key;
+	}
+
+	private static final Map<String, Voice> BY_KEY = new HashMap<>();
+	static
+	{
+		for (Voice voice : values())
+		{
+			BY_KEY.put(voice.key, voice);
+		}
+	}
+
+	/** The situation with that key in the voice files (e.g. {@code believer-praying}), if there is one */
+	public static Optional<Voice> byKey(String key)
+	{
+		return Optional.ofNullable(key != null ? BY_KEY.get(key) : null);
 	}
 }

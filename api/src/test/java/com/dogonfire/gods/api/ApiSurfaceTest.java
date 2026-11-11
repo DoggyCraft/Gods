@@ -12,6 +12,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.api.event.GodEvent;
+import com.dogonfire.gods.api.event.GodSpeakEvent;
+
 /**
  * The API may only expose Java, Bukkit and its own types. Gods' internals change between versions, and Adventure is
  * relocated inside the Gods jar, so other plugins couldn't use either.
@@ -19,7 +22,8 @@ import org.junit.jupiter.api.Test;
 class ApiSurfaceTest
 {
 	private static final List<Class<?>> API = List.of(GodsApi.class, GodInfo.class, BelieverInfo.class, QuestInfo.class,
-			GodType.class, GodGender.class, GodMood.class, QuestType.class);
+			GodType.class, GodGender.class, GodMood.class, QuestType.class,
+			GodEvent.class, GodSpeakEvent.class);
 
 	@Test
 	void onlyExposesJavaBukkitAndApiTypes()

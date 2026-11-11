@@ -1,5 +1,6 @@
 package com.dogonfire.gods;
 
+import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
@@ -102,6 +103,16 @@ public final class GodsContext
 	{
 		Plugin other = pm.getPlugin(name);
 		return other != null && other.isEnabled();
+	}
+
+	/**
+	 * Calls an event (the API's events in {@code com.dogonfire.gods.api.event}) and returns it, to read what listeners
+	 * did with it. The services fire them, so commands, listeners, the gods' turns and the API all do.
+	 */
+	public <T extends Event> T fire(T event)
+	{
+		this.plugin.getServer().getPluginManager().callEvent(event);
+		return event;
 	}
 
 	public Gods plugin()

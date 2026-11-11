@@ -12,6 +12,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.GodSpeakEvent;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.task.GodSpeakTask;
@@ -25,7 +26,8 @@ import com.dogonfire.gods.task.InfoTask;
  * <p>
  * Every call passes its own tags. A god's line also knows {@code <god>} (the god's name) and, unless the call says
  * otherwise, {@code <player>} (the name of the player spoken to). Every god utterance goes through
- * {@link #deliver}, so that is where an event that lets other plugins change or cancel what a god says belongs.
+ * {@link #deliver}, which fires the API's {@link GodSpeakEvent}: other plugins may change or cancel what a god says
+ * (an NPC plugin can show it as dialogue instead).
  */
 public class GodSpeech
 {
@@ -68,31 +70,65 @@ public class GodSpeech
 		return Messages.legacy(messages().parsePlain(line, withGod(godName, tags)));
 	}
 
-	/** The god says one of its lines for the situation to the player after {@code delay} ticks */
-	public void say(String godName, Player player, Voice situation, int delay, TagResolver... tags)
+	/**
+	 * One of the god's lines for the situation, rendered with {@code <god>} and the given tags (legacy text, without
+	 * {@code god.speech}), or null
+	 */
+	public String renderedVoiceLine(String godName, Voice situation, TagResolver... tags)
+	{
+		String line = voiceLine(godName, situation);
+		return line != null ? Messages.legacy(messages().parse(line, withGod(godName, tags))) : null;
+	}
+
+	/**
+	 * The god says one of its lines for the situation to the player after {@code delay} ticks
+	 *
+	 * @return false if the player can't hear it, the god has nothing to say there, or a {@link GodSpeakEvent} listener
+	 *         cancelled it
+	 */
+	public boolean say(String godName, Player player, Voice situation, int delay, TagResolver... tags)
 	{
 		if (!canHear(godName, player))
 		{
-			return;
+			return false;
 		}
 		String line = voiceLine(godName, situation);
 		if (line == null)
 		{
-			return;
+			return false;
 		}
-		deliver(godName, player, line, delay, tags);
+		return deliver(godName, player, situation, line, delay, tags);
 	}
 
 	/**
 	 * The god says {@code text} (MiniMessage) to the player after {@code delay} ticks, looking like everything else it
 	 * says. For words that are not in its voice file.
+	 *
+	 * @return false if the player can't hear it or a {@link GodSpeakEvent} listener cancelled it
 	 */
-	public void sayText(String godName, Player player, String text, int delay, TagResolver... tags)
+	public boolean sayText(String godName, Player player, String text, int delay, TagResolver... tags)
 	{
-		if (canHear(godName, player))
+		return canHear(godName, player) && deliver(godName, player, null, text, delay, tags);
+	}
+
+	/**
+	 * The god says {@code text} (MiniMessage) to every online believer after {@code delay} ticks, like
+	 * {@link #sayText}
+	 *
+	 * @return how many believers it was said to
+	 */
+	public int sayTextToBelievers(String godName, String text, int delay, TagResolver... tags)
+	{
+		int told = 0;
+		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
 		{
-			deliver(godName, player, text, delay, tags);
+			Player player = ctx.plugin().getServer().getPlayer(playerId);
+			if (player != null && sayText(godName, player, text, delay, tags))
+			{
+				told++;
+			}
 		}
+		return told;
 	}
 
 	/** Like {@link #say}, followed by how to answer (/gods yes or /gods no) */
@@ -105,7 +141,7 @@ public class GodSpeech
 		String line = voiceLine(godName, situation);
 		if (line != null)
 		{
-			deliver(godName, player, line, delay, tags);
+			deliver(godName, player, situation, line, delay, tags);
 		}
 		sendInfo(player.getUniqueId(), "god.question-hint", delay + 80);
 	}
@@ -187,11 +223,13 @@ public class GodSpeech
 	}
 
 	/**
-	 * Every god's words to a player pass here: the line (MiniMessage) is formatted with {@code god.speech} now and sent
-	 * after {@code delay} ticks. A cancellable event for other plugins (to change or silence what a god says) belongs
-	 * here.
+	 * Every god's words to a player pass here: the line (MiniMessage) is formatted with {@code god.speech} now, offered
+	 * to other plugins as a {@link GodSpeakEvent} (which may change or cancel it), and sent after {@code delay} ticks.
+	 *
+	 * @param situation the voice line's situation, or null for a text the god was given
+	 * @return false if a listener cancelled it
 	 */
-	private void deliver(String godName, Player player, String line, int delay, TagResolver... tags)
+	private boolean deliver(String godName, Player player, Voice situation, String line, int delay, TagResolver... tags)
 	{
 		TagResolver lineTags = withGod(godName, tags);
 		if (!lineTags.has("player"))
@@ -199,12 +237,23 @@ public class GodSpeech
 			lineTags = TagResolver.resolver(lineTags, Messages.player(player.getName()));
 		}
 
-		Component words = messages().component("god.speech", lineTags, Placeholder.parsed("message", line));
-		List<String> text = List.of(Messages.legacy(words));
+		Component message = messages().component("god.speech", lineTags, Placeholder.parsed("message", line));
+		String words = Messages.legacy(messages().parse(line, lineTags));
 
-		ctx.plugin().logDebug(godName + " to " + player.getName() + ": " + Messages.plain(words));
+		GodSpeakEvent event = ctx.fire(new GodSpeakEvent(godName, player, situation != null ? situation.key() : null, words, Messages.legacy(message), delay));
+		if (event.isCancelled())
+		{
+			ctx.plugin().logDebug(godName + " to " + player.getName() + " (cancelled): " + Messages.plain(message));
+			return false;
+		}
 
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GodSpeakTask(ctx, player.getUniqueId(), text), delay);
+		ctx.plugin().logDebug(godName + " to " + player.getName() + ": " + Messages.plain(message));
+
+		if (!event.getMessage().isEmpty())
+		{
+			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GodSpeakTask(ctx, player.getUniqueId(), List.of(event.getMessage())), delay);
+		}
+		return true;
 	}
 
 	private static TagResolver withGod(String godName, TagResolver... tags)
