@@ -29,6 +29,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.config.Theme;
+import com.dogonfire.gods.integration.GriefPreventionIntegration;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
@@ -596,6 +597,23 @@ public class AltarService
 			}
 		}
 		return AltarClicks.chooseSign(candidates);
+	}
+
+	/**
+	 * True if a new altar may be built with this sign as far as land claims go: with config.yml's
+	 * {@code altars.require-claim} on and GriefPrevention installed, the sign and its altar block must be in a claim
+	 * where the player may build ({@link AltarClaims}). Altars that already stand are never checked.
+	 */
+	public boolean mayBuildAltarHere(Player player, Block sign)
+	{
+		GriefPreventionIntegration griefPrevention = ctx.griefPrevention();
+		if (!AltarClaims.applies(ctx.settings().altars().requireClaim(), griefPrevention != null))
+		{
+			return true;
+		}
+		Block altarBlock = getAltarBlockFromSign(sign);
+		AltarClaims.Claim signSpot = griefPrevention.claimAt(player, sign.getLocation());
+		return altarBlock == null ? AltarClaims.mayBuild(signSpot) : AltarClaims.mayBuild(signSpot, griefPrevention.claimAt(player, altarBlock.getLocation()));
 	}
 
 	/** A wall sign on an altar block (a block with an altar type and a light on top). */

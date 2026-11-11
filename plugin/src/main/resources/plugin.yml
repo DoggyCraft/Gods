@@ -8,6 +8,7 @@ main: com.dogonfire.gods.Gods
 softdepend:
   - WorldGuard
   - PlaceholderAPI
+  - GriefPrevention
 commands:
   g:
     description: "Controls the god system"

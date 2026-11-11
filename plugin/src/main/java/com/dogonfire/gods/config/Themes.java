@@ -44,6 +44,6 @@ public record Themes(Theme defaults, Map<GodType, Theme> types, Settings.Altars 
 				blocks.put(type, types.get(type).altarBlocks());
 			}
 		}
-		return Settings.Altars.of(Collections.unmodifiableMap(blocks));
+		return Settings.Altars.of(Collections.unmodifiableMap(blocks), configured.requireClaim());
 	}
 }

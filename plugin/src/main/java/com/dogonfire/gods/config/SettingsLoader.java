@@ -184,7 +184,7 @@ public class SettingsLoader
 				blockTypes.put(godType, List.copyOf(blocks));
 			}
 		}
-		return Settings.Altars.of(blockTypes);
+		return Settings.Altars.of(blockTypes, bool("altars.require-claim"));
 	}
 
 	private Settings.Quests loadQuests()

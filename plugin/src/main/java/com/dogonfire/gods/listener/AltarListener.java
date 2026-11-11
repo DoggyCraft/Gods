@@ -283,11 +283,11 @@ public class AltarListener implements Listener
 
 		if ((ctx.settings().curses().enabled()) && (ctx.altarService().isCursingAltar(block, event.getLines())))
 		{
-			created = ctx.altarService().handleNewCursingAltar(event);
+			created = mayBuildHere(player, block) ? ctx.altarService().handleNewCursingAltar(event) : null;
 		}
 		else if ((ctx.settings().blessings().enabled()) && (ctx.altarService().isBlessingAltar(block, event.getLines())))
 		{
-			created = ctx.altarService().handleNewBlessingAltar(event);
+			created = mayBuildHere(player, block) ? ctx.altarService().handleNewBlessingAltar(event) : null;
 		}
 		else
 		{
@@ -298,7 +298,7 @@ public class AltarListener implements Listener
 			{
 				return;
 			}
-			created = ctx.altarService().handleNewPrayingAltar(event);
+			created = mayBuildHere(player, block) ? ctx.altarService().handleNewPrayingAltar(event) : null;
 		}
 
 		if (created != null)
@@ -315,6 +315,20 @@ public class AltarListener implements Listener
 				block.getWorld().dropItemNaturally(block.getLocation(), sign);
 			}
 		}
+	}
+
+	/**
+	 * True if a new altar may stand here as far as land claims go (altars.require-claim with GriefPrevention); tells the
+	 * player why not otherwise
+	 */
+	private boolean mayBuildHere(Player player, Block sign)
+	{
+		if (ctx.altarService().mayBuildAltarHere(player, sign))
+		{
+			return true;
+		}
+		ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.not-in-claim", 1);
+		return false;
 	}
 
 	/** Remembers who dropped an item, so it counts as their sacrifice if it burns */

@@ -70,6 +70,10 @@ altars:
   #     frost: [snow_block, ice]
   #     werewolves: [mossy_cobblestone]
   block-types: {}
+  # With GriefPrevention installed, new altars (praying, curse and blessing signs) can only be built inside a claim
+  # where the builder has build trust (the owner or trusted players). Altars that already stand keep working wherever
+  # they are. Without GriefPrevention this does nothing.
+  require-claim: true
 
 prayers:
   # Players can pray for things with /g pray (an item, health, a blessing or a quest), paid with prayer power.

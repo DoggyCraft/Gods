@@ -68,10 +68,18 @@ public record Settings(
 	 *
 	 * @param blockTypes      the blocks that make each god type (a god type without blocks may be missing)
 	 * @param godTypesByBlock the god types each block makes
+	 * @param requireClaim    new altars only inside a GriefPrevention claim the builder may build in (only while
+	 *                        GriefPrevention is installed)
 	 */
-	public record Altars(Map<GodType, List<Material>> blockTypes, Map<Material, List<GodType>> godTypesByBlock)
+	public record Altars(Map<GodType, List<Material>> blockTypes, Map<Material, List<GodType>> godTypesByBlock, boolean requireClaim)
 	{
+		/** These altar blocks, with new altars only in claims (the default) */
 		public static Altars of(Map<GodType, List<Material>> blockTypes)
+		{
+			return of(blockTypes, true);
+		}
+
+		public static Altars of(Map<GodType, List<Material>> blockTypes, boolean requireClaim)
 		{
 			Map<Material, List<GodType>> byBlock = new HashMap<>();
 			for (Map.Entry<GodType, List<Material>> entry : blockTypes.entrySet())
@@ -87,7 +95,7 @@ public record Settings(
 			}
 			Map<Material, List<GodType>> frozen = new HashMap<>();
 			byBlock.forEach((material, godTypes) -> frozen.put(material, List.copyOf(godTypes)));
-			return new Altars(Collections.unmodifiableMap(blockTypes), Collections.unmodifiableMap(frozen));
+			return new Altars(Collections.unmodifiableMap(blockTypes), Collections.unmodifiableMap(frozen), requireClaim);
 		}
 
 		/** The blocks that make this god type; empty when none do. */

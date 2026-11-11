@@ -118,6 +118,19 @@ class SettingsLoaderTest
 		assertEquals(List.of(GodType.LOVE, GodType.PARTY), settings.altars().godTypesFor(Material.DIAMOND_BLOCK));
 	}
 
+	/** altars.require-claim is read with the altar blocks, and kept by the themes' combined altars */
+	@Test
+	void requireClaimCanBeSwitchedOff() throws Exception
+	{
+		assertTrue(load("").altars().requireClaim());
+		Settings settings = load("""
+				altars:
+				  require-claim: false
+				""");
+		assertFalse(settings.altars().requireClaim());
+		assertFalse(Themes.combineAltars(settings.altars(), java.util.Map.of()).requireClaim());
+	}
+
 	@Test
 	void questRewardsWithoutValidEntriesUseTheDefaults() throws Exception
 	{

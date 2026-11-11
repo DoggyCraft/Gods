@@ -43,6 +43,8 @@ altar:
   curse-not-allowed: <dark_red>You cannot curse players
   blessing-not-allowed: <dark_red>You cannot bless players
   build-not-allowed: <dark_red>You cannot build altars
+  # With GriefPrevention, new altars only stand in a claim where the builder has build trust
+  not-in-claim: <dark_red>Altars can only be built in a claim where you may build
   create-god-not-allowed: <red>You cannot create a new God
   # The front text Gods writes on altar signs: four lines each, per sign style (sign.messages of a god type's theme in
   # themes.yml; a style without its own text uses default). praying knows <god>, <gender> ("God", "Goddess", "Deity")

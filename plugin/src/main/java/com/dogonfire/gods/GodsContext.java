@@ -6,6 +6,7 @@ import org.bukkit.plugin.PluginManager;
 
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.Themes;
+import com.dogonfire.gods.integration.GriefPreventionIntegration;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.service.AltarService;
@@ -69,6 +70,8 @@ public final class GodsContext
 
 	// Null when WorldGuard isn't installed; its classes must not be touched then
 	private final WorldGuardIntegration		worldGuard;
+	// Null when GriefPrevention isn't installed; its classes must not be touched then
+	private final GriefPreventionIntegration	griefPrevention;
 
 	GodsContext(Gods plugin, Storage storage)
 	{
@@ -98,6 +101,7 @@ public final class GodsContext
 		this.godSpeech = new GodSpeech(this);
 
 		this.worldGuard = isEnabled(plugin.getServer().getPluginManager(), "WorldGuard") ? new WorldGuardIntegration() : null;
+		this.griefPrevention = isEnabled(plugin.getServer().getPluginManager(), "GriefPrevention") ? new GriefPreventionIntegration() : null;
 	}
 
 	static boolean isEnabled(PluginManager pm, String name)
@@ -266,5 +270,11 @@ public final class GodsContext
 	public WorldGuardIntegration worldGuard()
 	{
 		return this.worldGuard;
+	}
+
+	/** Null when GriefPrevention is not installed (or not enabled) */
+	public GriefPreventionIntegration griefPrevention()
+	{
+		return this.griefPrevention;
 	}
 }
