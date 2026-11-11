@@ -4,12 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.api.event.BelieverJoinGodEvent;
@@ -82,6 +85,21 @@ class ApiSurfaceTest
 			}
 		}
 		assertTrue(problems.isEmpty(), "Types other plugins can't rely on: " + problems);
+	}
+
+	/** Bukkit only lets plugins listen to an event that has a static getHandlerList */
+	@Test
+	void everyEventCanBeListenedTo() throws ReflectiveOperationException
+	{
+		for (Class<?> type : API)
+		{
+			if (Event.class.isAssignableFrom(type) && !Modifier.isAbstract(type.getModifiers()))
+			{
+				Method handlerList = type.getDeclaredMethod("getHandlerList");
+				assertTrue(Modifier.isStatic(handlerList.getModifiers()) && Modifier.isPublic(handlerList.getModifiers()), type.getSimpleName());
+				assertTrue(handlerList.invoke(null) instanceof HandlerList, type.getSimpleName());
+			}
+		}
 	}
 
 	private static void check(List<String> problems, String where, Type type)
