@@ -7,6 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
 public class CommandHelp extends GodsCommand
@@ -103,7 +105,7 @@ public class CommandHelp extends GodsCommand
 			{
 				for (String blockMaterial : materials)
 				{
-					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + ctx.godService().getColorForGodType(godType) + ctx.languageManager().getGodTypeName(godType, "God"));
+					sender.sendMessage(ChatColor.WHITE + blockMaterial + "  --->  " + ctx.godService().getColorForGodType(godType) + Messages.legacy(ctx.messages().godTypeName(godType, GodGender.None)));
 				}
 			}
 		}

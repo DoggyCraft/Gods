@@ -2,14 +2,13 @@ package com.dogonfire.gods.listener;
 
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodType;
 
 /**
@@ -55,14 +54,14 @@ public class BelieverListener implements Listener
 			return;
 		}
 
-		LanguageManager.LANGUAGESTRING message = null;
+		String message = null;
 
 		if (godName == null)
 		{
 			// War gods reward slaying heathens
 			if (ctx.godService().getDivineForceForGod(killerGodName) == GodType.WAR)
 			{
-				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingHeathen;
+				message = "believer.power-for-heathen-kill";
 			}
 		}
 		else
@@ -70,7 +69,7 @@ public class BelieverListener implements Listener
 			List<String> warRelations = ctx.relationService().getWarRelations(killerGodName);
 			if ((warRelations != null) && (warRelations.contains(godName)))
 			{
-				message = LanguageManager.LANGUAGESTRING.YouEarnedPowerBySlayingEnemy;
+				message = "believer.power-for-enemy-kill";
 			}
 		}
 
@@ -81,7 +80,7 @@ public class BelieverListener implements Listener
 			ctx.believerService().increasePrayerPower(killer.getUniqueId(), 2);
 			double powerAfter = ctx.believerService().getBelieverPower(killer.getUniqueId());
 
-			ctx.godSpeech().sendInfo(killer.getUniqueId(), message, ChatColor.AQUA, (int) (powerAfter - powerBefore), killerGodName, 20);
+			ctx.godSpeech().sendInfo(killer.getUniqueId(), message, 20, Messages.amount((int) (powerAfter - powerBefore)), Messages.god(killerGodName));
 		}
 	}
 }

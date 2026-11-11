@@ -5,7 +5,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandSetHome extends GodsCommand
 {
@@ -56,7 +57,6 @@ public class CommandSetHome extends GodsCommand
 			}
 		}
 		ctx.godService().setHomeForGod(godName, player.getLocation());
-		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSetHome, 2);
+		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_SET_HOME, 2, Messages.player(player.getName()));
 	}
 }

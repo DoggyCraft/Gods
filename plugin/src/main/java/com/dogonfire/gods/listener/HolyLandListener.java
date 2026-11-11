@@ -31,7 +31,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.service.HolyLandContest;
@@ -418,7 +418,7 @@ public class HolyLandListener implements Listener
 
 		if ((godName == null) || (!targetLandGodName.equals(godName)))
 		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.TeleportIntoHolylandNotAllowed, ChatColor.DARK_RED, 0, targetLandGodName, 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.no-teleport", 1, Messages.god(targetLandGodName));
 			event.setCancelled(true);
 		}
 	}
@@ -519,8 +519,8 @@ public class HolyLandListener implements Listener
 
 				ctx.titles().send(player, 1 * 20, 4 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
 
-				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandKillsStatus, ChatColor.AQUA, String.valueOf(minutesLeft), attackerKillsNeeded, defenderKillsNeeded, 20);
-				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.ContestedLandDesecrationStatus, ChatColor.AQUA, godTo, 0, desecration, 20);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.contested-kills", 20, Messages.text("minutes", minutesLeft), Messages.text("attacker_kills", attackerKillsNeeded), Messages.text("defender_kills", defenderKillsNeeded));
+				ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.contested-desecration", 20, Messages.god(godTo), Messages.text("desecrations", desecration));
 				return;
 			}
 		}

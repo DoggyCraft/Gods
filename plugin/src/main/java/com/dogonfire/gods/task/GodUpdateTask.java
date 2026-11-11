@@ -1,5 +1,6 @@
 package com.dogonfire.gods.task;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.MarriedCouple;
 
@@ -38,7 +40,15 @@ public final class GodUpdateTask implements Runnable
 		this.ctx = ctx;
 	}
 
-	private boolean manageBelieverForAngryGod(String godName, Player believer)
+	/** {@code <player>}: "Anna and Bob" for a married couple */
+	private TagResolver coupleTag(MarriedCouple couple)
+	{
+		return Messages.component("player", ctx.messages().component("marriage.couple",
+				Messages.text("first", ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName()),
+				Messages.text("second", ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName())));
+	}
+
+	private boolean manageBelieverForAngryGod(String godName, Player believer, TagResolver priest)
 	{
 		if (!ctx.plugin().isEnabledInWorld(believer.getWorld()))
 		{
@@ -56,9 +66,7 @@ public final class GodUpdateTask implements Runnable
 
 			if (ctx.blessingService().cursePlayer(godName, believer.getUniqueId(), godPower))
 			{
-				ctx.languageManager().setPlayerName(believer.getDisplayName());
-
-				ctx.godSpeech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToBelieverCursedAngry, 2 + this.random.nextInt(10));
+				ctx.godSpeech().say(godName, believer, Voice.BELIEVER_CURSED_ANGRY, 2 + this.random.nextInt(10), Messages.displayName(believer.getDisplayName()));
 
 				return true;
 			}
@@ -70,7 +78,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				return false;
 			}
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomAngrySpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_RANDOM_ANGRY_SPEECH, priest);
 			return true;
 		}
 
@@ -84,7 +92,7 @@ public final class GodUpdateTask implements Runnable
 		return false;
 	}
 
-	private boolean manageBelieverForDispleasedGod(String godName, Player believer)
+	private boolean manageBelieverForDispleasedGod(String godName, Player believer, TagResolver priest)
 	{
 		if (believer == null)
 		{
@@ -100,7 +108,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				return false;
 			}
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomDispleasedSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_RANDOM_DISPLEASED_SPEECH, priest);
 			return true;
 		}
 		if (this.random.nextInt(1 + 600 / ctx.godService().getVerbosityForGod(godName)) == 0)
@@ -113,7 +121,7 @@ public final class GodUpdateTask implements Runnable
 		return false;
 	}
 
-	private boolean manageBelieverForExaltedGod(String godName, Player believer)
+	private boolean manageBelieverForExaltedGod(String godName, Player believer, TagResolver priest)
 	{
 		if (believer == null)
 		{
@@ -150,16 +158,6 @@ public final class GodUpdateTask implements Runnable
 
 						if (blessedItem != null)
 						{
-							ctx.languageManager().setPlayerName(believer.getDisplayName());
-							try
-							{
-								ctx.languageManager().setType(ctx.languageManager().getItemTypeName(blessedItem.getType()));
-							}
-							catch (Exception ex)
-							{
-								ctx.plugin().logDebug(ex.getMessage());
-							}
-
 							ctx.believerService().setItemBlessingTime(believer.getUniqueId());
 
 							return true;
@@ -177,8 +175,6 @@ public final class GodUpdateTask implements Runnable
 					if ((power >= ctx.settings().itemBlessings().minGodPower()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
 					{
 						ctx.blessingService().blessPlayerWithHolyArtifact(godName, believer);
-
-						ctx.languageManager().setPlayerName(believer.getDisplayName());
 						ctx.believerService().setHolyArtifactBlessingTime(believer.getUniqueId());
 
 						return true;
@@ -191,11 +187,10 @@ public final class GodUpdateTask implements Runnable
 		{
 			if (ctx.blessingService().blessPlayer(godName, believer.getUniqueId(), ctx.godService().getGodPower(godName)))
 			{
-				ctx.languageManager().setPlayerName(believer.getDisplayName());
+				TagResolver blessed = Messages.displayName(believer.getDisplayName());
+				ctx.godSpeech().say(godName, believer, Voice.PLAYER_BLESSED, 2 + this.random.nextInt(10), blessed);
 
-				ctx.godSpeech().say(godName, believer, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
-
-				ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, believer.getUniqueId());
+				ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_BLESSED, believer.getUniqueId(), blessed);
 
 				return true;
 			}
@@ -208,8 +203,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
-				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_MARRIED_COUPLE, coupleTag(couple));
 				return true;
 			}
 		}
@@ -220,7 +214,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				return false;
 			}
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomExaltedSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_RANDOM_EXALTED_SPEECH, priest);
 			return true;
 		}
 
@@ -234,7 +228,7 @@ public final class GodUpdateTask implements Runnable
 		return false;
 	}
 
-	private boolean manageBelieverForNeutralGod(String godName, Player believer)
+	private boolean manageBelieverForNeutralGod(String godName, Player believer, TagResolver priest)
 	{
 		if (believer == null)
 		{
@@ -252,8 +246,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
-				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_MARRIED_COUPLE, coupleTag(couple));
 				return true;
 			}
 		}
@@ -263,7 +256,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				return false;
 			}
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomNeutralSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_RANDOM_NEUTRAL_SPEECH, priest);
 			return true;
 		}
 
@@ -277,7 +270,7 @@ public final class GodUpdateTask implements Runnable
 		return false;
 	}
 
-	private boolean manageBelieverForPleasedGod(String godName, Player believer)
+	private boolean manageBelieverForPleasedGod(String godName, Player believer, TagResolver priest)
 	{
 		if (believer == null)
 		{
@@ -311,17 +304,7 @@ public final class GodUpdateTask implements Runnable
 						ItemStack blessedItem = ctx.blessingService().blessPlayerWithItem(godName, believer);
 
 						if (blessedItem != null)
-						{
-							ctx.languageManager().setPlayerName(believer.getDisplayName());
-							try
-							{
-								ctx.languageManager().setType(ctx.languageManager().getItemTypeName(blessedItem.getType()));
-							}
-							catch (Exception ex)
-							{
-								ctx.plugin().logDebug(ex.getMessage());
-							}
-							ctx.believerService().setItemBlessingTime(believer.getUniqueId());
+						{							ctx.believerService().setItemBlessingTime(believer.getUniqueId());
 
 							return true;
 						}
@@ -338,8 +321,7 @@ public final class GodUpdateTask implements Runnable
 			{
 				MarriedCouple couple = marriedCouples.get(this.random.nextInt(marriedCouples.size()));
 
-				ctx.languageManager().setPlayerName(ctx.plugin().getServer().getOfflinePlayer(couple.player1Id()).getName() + " and " + ctx.plugin().getServer().getOfflinePlayer(couple.player2Id()).getName());
-				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMarriedCouple);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_MARRIED_COUPLE, coupleTag(couple));
 				return true;
 			}
 		}
@@ -351,7 +333,7 @@ public final class GodUpdateTask implements Runnable
 				return false;
 			}
 
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverRandomPleasedSpeech);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_RANDOM_PLEASED_SPEECH, priest);
 
 			return true;
 		}
@@ -389,17 +371,18 @@ public final class GodUpdateTask implements Runnable
 				{
 					priestName = ctx.plugin().getServer().getOfflinePlayer(priests.get(this.random.nextInt(priests.size()))).getName();
 				}
-				ctx.languageManager().setPlayerName(priestName != null ? priestName : "our priest");
+				// What the god says at random speaks of one of its priests as <player>
+				TagResolver priest = priestName != null ? Messages.player(priestName) : Messages.component("player", ctx.messages().component("god.our-priest"));
 
 				Player believer = ctx.plugin().getServer().getPlayer(believerId);
 
 				switch (godMood)
 				{
-					case EXALTED: manageBelieverForExaltedGod(godName, believer); break;
-					case PLEASED: manageBelieverForPleasedGod(godName, believer); break;
-					case NEUTRAL: manageBelieverForNeutralGod(godName, believer); break;
-					case DISPLEASED: manageBelieverForDispleasedGod(godName, believer); break;
-					case ANGRY: manageBelieverForAngryGod(godName, believer);
+					case EXALTED: manageBelieverForExaltedGod(godName, believer, priest); break;
+					case PLEASED: manageBelieverForPleasedGod(godName, believer, priest); break;
+					case NEUTRAL: manageBelieverForNeutralGod(godName, believer, priest); break;
+					case DISPLEASED: manageBelieverForDispleasedGod(godName, believer, priest); break;
+					case ANGRY: manageBelieverForAngryGod(godName, believer, priest);
 				}
 
 				managedBelievers.add(believerId);

@@ -7,7 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandAlliance extends GodsCommand {
 
@@ -55,16 +56,12 @@ public class CommandAlliance extends GodsCommand {
 			return;
 		}
 		if (ctx.relationService().toggleAllianceRelationForGod(godName, allyGodName)) {
-			ctx.languageManager().setPlayerName(godName);
-			ctx.godSpeech().sayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
-			ctx.languageManager().setPlayerName(allyGodName);
-			ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAlliance, 10);
+			ctx.godSpeech().sayToBelievers(allyGodName, Voice.BELIEVERS_ALLIANCE, 10, Messages.player(godName));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_ALLIANCE, 10, Messages.player(allyGodName));
 		} else {
-			ctx.languageManager().setPlayerName(godName);
-			ctx.godSpeech().sayToBelievers(allyGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
+			ctx.godSpeech().sayToBelievers(allyGodName, Voice.BELIEVERS_ALLIANCE_CANCELLED, 10, Messages.player(godName));
 
-			ctx.languageManager().setPlayerName(allyGodName);
-			ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAllianceCancelled, 10);
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_ALLIANCE_CANCELLED, 10, Messages.player(allyGodName));
 		}
 	}
 }

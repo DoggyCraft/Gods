@@ -5,7 +5,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandMarry extends GodsCommand
 {
@@ -92,8 +93,7 @@ public class CommandMarry extends GodsCommand
 
 		ctx.marriageService().proposeMarriage(player.getUniqueId(), otherPlayer.getUniqueId());
 
-		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godSpeech().sayWithQuestion(thisGodName, otherPlayer, LanguageManager.LANGUAGESTRING.GodToBelieverMarriageProposal, 1);
+		ctx.godSpeech().sayWithQuestion(thisGodName, otherPlayer, Voice.BELIEVER_MARRIAGE_PROPOSAL, 1, Messages.player(player.getName()));
 
 		player.sendMessage(ChatColor.AQUA + "You proposed " + ChatColor.WHITE + otherPlayerName + ChatColor.AQUA + " to marry you in the name of " + ChatColor.GOLD + thisGodName + "!");
 	}

@@ -11,6 +11,8 @@ god:
   # How a god's words look. <god> is the god's name, <message> the line from its voice file.
   speech: '<gold>\<<god>>: <white><bold><message>'
   question-hint: <aqua>Use <white>/gods yes or /gods no</white> to answer the God
+  # <player> in what a god says at random when it has no priest
+  our-priest: our priest
 
 # Hints sent a little while after something happens
 help:
@@ -73,6 +75,8 @@ holy-land:
   no-teleport: <dark_red>You cannot teleport into the Holy Land of <hl><god></hl>
 
 marriage:
+  # <player> in what a god says about a married couple
+  couple: <first> and <second>
   # <player> is the partner's display name
   divorced-you: <red><hl><player></hl> just <hl>DIVORCED</hl> you!
   loves-you: <green><hl><player></hl> <dark_red>LOVES</dark_red> you!
@@ -161,3 +165,8 @@ names:
     NEUTRAL: Neutral
     DISPLEASED: Displeased
     ANGRY: Angry
+
+# Sent to everyone on the server
+broadcast:
+  # When config.yml's gods.broadcast-new-gods is on. <player>, <god>, <gender> ("God", "Goddess")
+  new-god: <white><player><aqua> started to believe in the <gender> <gold><god>

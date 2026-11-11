@@ -6,11 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.Believer;
 import com.dogonfire.gods.storage.BelieverRepository;
 import com.dogonfire.gods.util.LegacyDates;
@@ -265,7 +264,7 @@ public class BelieverService
 		believer.setPrayerPower(prayerPower);
 		changed();
 
-		ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, prayerPower, "", 10);
+		ctx.godSpeech().sendInfo(believerId, "prayer.power", 10, Messages.amount(prayerPower));
 	}
 
 	public void clearPrayerPower(UUID believerId)
@@ -277,7 +276,7 @@ public class BelieverService
 		}
 		changed();
 
-		ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.YourPrayerPower, ChatColor.AQUA, 0, "", 10);
+		ctx.godSpeech().sendInfo(believerId, "prayer.power", 10, Messages.amount(0));
 	}
 
 	// ---------------------------------------------------------------------

@@ -40,6 +40,7 @@ import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
 import com.dogonfire.gods.listener.QuestListener;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
+import com.dogonfire.gods.migration.LegacyLangFiles;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.service.ChatService;
 import com.dogonfire.gods.storage.Storage;
@@ -50,7 +51,7 @@ import com.dogonfire.gods.util.AtomicFiles;
  * The plugin. It only wires things: onEnable reads the settings, builds the {@link GodsContext} (the object graph),
  * loads the data, registers the command, the always-on listeners and the repeating tasks, then starts the features
  * that can be switched on and off in config.yml ({@link #startFeatures()}). /g reload ({@link #reload()}) re-reads
- * config, language and data files and restarts those features; onDisable undoes everything and saves.
+ * config, message and data files and restarts those features; onDisable undoes everything and saves.
  */
 public class Gods extends JavaPlugin
 {
@@ -181,7 +182,7 @@ public class Gods extends JavaPlugin
 	}
 
 	/**
-	 * /g reload: reads config.yml again, then the language files and the data files, and restarts the features so
+	 * /g reload: reads config.yml again, then the message files and the data files, and restarts the features so
 	 * switching them on or off in config.yml takes effect. A data file that was edited on disk is read again (the edit
 	 * wins over changes not yet saved); the others keep what is in memory and are saved. If config.yml can't be read,
 	 * or the data files couldn't be saved in time, the old settings and data stay and false is returned.
@@ -215,7 +216,7 @@ public class Gods extends JavaPlugin
 	}
 
 	/**
-	 * Loads the language files and the data of every enabled feature, in the order the services depend on each other.
+	 * Loads the messages and the data of every enabled feature, in the order the services depend on each other.
 	 * Data of a feature that is switched off is not read (and so not written).
 	 */
 	private void loadData()
@@ -233,7 +234,9 @@ public class Gods extends JavaPlugin
 			this.ctx.holyLandService().load();
 		}
 
-		this.ctx.languageManager().load();
+		// Old lang/<language>_*.yml files (Gods 0.9.x and before MiniMessage) become the new message files first
+		LegacyLangFiles.migrate(getDataFolder().toPath().resolve("lang"), this::getResource, getLogger());
+		this.ctx.messages().load(this.settings.general().language(), this.settings.general().serverName());
 		this.ctx.godService().load();
 		this.ctx.questService().load();
 		this.ctx.believerService().load();

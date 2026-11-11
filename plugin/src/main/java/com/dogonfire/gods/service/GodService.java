@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
@@ -245,19 +246,19 @@ public class GodService
 		{
 			return "";
 		}
-		return ctx.languageManager().getGodTypeName(godType, ctx.languageManager().getGodGenderName(getGenderForGod(godName)));
+		return Messages.legacy(ctx.messages().godTypeName(godType, getGenderForGod(godName)));
 	}
 
 	/**
-	 * @return the language file the god speaks from, e.g. english_sun_male.yml, built from Settings.Language and the
-	 *         god's type and gender. A god without a gender always gets the same one, picked from its seed.
+	 * @return the voice the god speaks with, e.g. sun_male, from its type and gender. A god without a gender always gets
+	 *         the same one, picked from its seed.
 	 */
-	public String getLanguageFileForGod(String godName)
+	public String getVoiceForGod(String godName)
 	{
 		GodType godType = getDivineForceForGod(godName);
 		GodGender godGender = godType != null ? getGenderForGod(godName) : null;
 		long seed = godGender == GodGender.None ? getSeedForGod(godName) : 0L;
-		return GodRules.languageFile(ctx.settings().general().language(), godType, godGender, seed);
+		return GodRules.voice(godType, godGender, seed);
 	}
 
 	/** The god's personality: a random number, made once and kept */

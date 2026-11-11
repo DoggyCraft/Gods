@@ -5,7 +5,7 @@ import org.bukkit.plugin.PluginManager;
 
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.BlessingService;
@@ -30,7 +30,7 @@ import com.dogonfire.gods.storage.Storage;
 
 /**
  * The plugin's object graph, built once per enable by {@link Gods#onEnable()} and passed to the constructor of every
- * service, listener, command and task (and the LanguageManager). There is no static way to reach it.
+ * service, listener, command and task. There is no static way to reach it.
  * <p>
  * The services call each other in cycles, so each one keeps the context and asks it for the others when it
  * needs them; a service gets its repository from {@link Storage} through its constructor. Constructors must not call
@@ -43,7 +43,7 @@ public final class GodsContext
 	private final Gods						plugin;
 	private final Storage					storage;
 
-	private final LanguageManager			languageManager;
+	private final Messages					messages;
 	private final Permissions				permissions;
 	private final GodService				godService;
 	private final MoodService				moodService;
@@ -73,7 +73,7 @@ public final class GodsContext
 		this.plugin = plugin;
 		this.storage = storage;
 
-		this.languageManager = new LanguageManager(this);
+		this.messages = new Messages(plugin.getDataFolder().toPath().resolve("lang"), plugin::getResource, plugin.getLogger());
 		this.permissions = new Permissions();
 		this.godService = new GodService(this, storage.gods());
 		this.moodService = new MoodService(this, storage.gods());
@@ -120,9 +120,10 @@ public final class GodsContext
 		return this.storage;
 	}
 
-	public LanguageManager languageManager()
+	/** The texts players see (messages.yml) and the gods' voices; read again on /g reload */
+	public Messages messages()
 	{
-		return this.languageManager;
+		return this.messages;
 	}
 
 	/** Permission checks (Bukkit's own) */

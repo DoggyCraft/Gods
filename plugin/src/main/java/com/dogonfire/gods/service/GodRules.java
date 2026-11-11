@@ -5,12 +5,13 @@ import java.util.Random;
 
 import org.bukkit.ChatColor;
 
+import com.dogonfire.gods.message.GodVoices;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
 /**
  * The rules for a god's identity and power, without Bukkit's server so they can be tested: how its name is written,
- * its color and language file, how strong it is and how talkative. The arithmetic is kept exactly as it was.
+ * its color and voice, how strong it is and how talkative. The arithmetic is kept exactly as it was.
  */
 public final class GodRules
 {
@@ -50,10 +51,10 @@ public final class GodRules
 	}
 
 	/**
-	 * The language file a god speaks from, e.g. english_sun_male.yml. A god without a gender always gets the same one,
-	 * picked from its seed; a god that doesn't exist ({@code type} null) speaks as a male sun god.
+	 * The voice a god speaks with (see {@link GodVoices}), e.g. sun_male. A god without a gender always gets the same
+	 * one, picked from its seed; a god that doesn't exist ({@code type} null) speaks as a male sun god.
 	 */
-	public static String languageFile(String language, GodType type, GodGender gender, long seed)
+	public static String voice(GodType type, GodGender gender, long seed)
 	{
 		if (type == null)
 		{
@@ -64,7 +65,7 @@ public final class GodRules
 		{
 			gender = (seed & 1L) == 0L ? GodGender.Female : GodGender.Male;
 		}
-		return language + "_" + type.name().toLowerCase() + "_" + gender.name().toLowerCase() + ".yml";
+		return GodVoices.name(type, gender);
 	}
 
 	/** A god's power: the power of all its believers, but at least {@code minPower} (the whitelist's) */

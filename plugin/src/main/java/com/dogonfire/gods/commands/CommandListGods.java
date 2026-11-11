@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
 
 public class CommandListGods extends GodsCommand
 {
@@ -116,7 +115,7 @@ public class CommandListGods extends GodsCommand
 		}
 		if (sender != null)
 		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.InfoHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g info <godname>", 80);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "help.info-hint", 80);
 		}
 
 	}

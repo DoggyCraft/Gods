@@ -13,7 +13,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.util.LegacyDates;
@@ -174,8 +175,7 @@ public class PriestService
 			if (PriestRules.isInactive(ctx.believerService().getLastPrayerTime(believerId).getTime(), System.currentTimeMillis(), ctx.settings().priests().maxHoursWithoutPrayer()))
 			{
 				String priestName = ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
-				ctx.languageManager().setPlayerName(priestName != null ? priestName : "our priest");
-				ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversRemovedPriest, 2 + this.random.nextInt(40));
+				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_REMOVED_PRIEST, 2 + this.random.nextInt(40), priestName != null ? Messages.player(priestName) : Messages.component("player", ctx.messages().component("god.our-priest")));
 				removePriest(godName, believerId);
 			}
 			else
@@ -262,9 +262,8 @@ public class PriestService
 				if (setPendingPriest(godName, believerId))
 				{
 					ctx.plugin().log(godName + " offered " + player.getName() + " to be priest");
-					ctx.languageManager().setPlayerName(player.getName());
 
-					ctx.godSpeech().sayWithQuestion(godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverOfferPriest, 2);
+					ctx.godSpeech().sayWithQuestion(godName, player, Voice.BELIEVER_OFFER_PRIEST, 2, Messages.player(player.getName()));
 
 					return true;
 				}
@@ -279,7 +278,6 @@ public class PriestService
 
 				if (player != null)
 				{
-					ctx.languageManager().setPlayerName(player.getDisplayName());
 
 					// Remind the priests of a commandment, or of the holy book when bibles are on
 					int r = ctx.settings().bibles().enabled() ? this.random.nextInt(2) : 0;
@@ -291,26 +289,21 @@ public class PriestService
 							switch (this.random.nextInt(4))
 							{
 							case 0:
-								ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.commandmentService().getHolyFoodTypeForGod(godName)));
-								ctx.godSpeech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestEatFoodType);
+								ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_EAT_FOOD_TYPE, Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().itemName(ctx.commandmentService().getHolyFoodTypeForGod(godName))));
 								break;
 							case 1:
-								ctx.languageManager().setType(ctx.languageManager().getItemTypeName(ctx.commandmentService().getUnholyFoodTypeForGod(godName)));
-								ctx.godSpeech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestNotEatFoodType);
+								ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_NOT_EAT_FOOD_TYPE, Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().itemName(ctx.commandmentService().getUnholyFoodTypeForGod(godName))));
 								break;
 							case 2:
-								ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.commandmentService().getUnholyMobTypeForGod(godName)));
-								ctx.godSpeech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestSlayMobType);
+								ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_SLAY_MOB_TYPE, Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().mobName(ctx.commandmentService().getUnholyMobTypeForGod(godName))));
 								break;
 							default:
-								ctx.languageManager().setType(ctx.languageManager().getMobTypeName(ctx.commandmentService().getHolyMobTypeForGod(godName)));
-								ctx.godSpeech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestNotSlayMobType);
+								ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_NOT_SLAY_MOB_TYPE, Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().mobName(ctx.commandmentService().getHolyMobTypeForGod(godName))));
 							}
 						}
 						else
 						{
-							ctx.languageManager().setType(ctx.holyBookService().getBibleTitle(godName));
-							ctx.godSpeech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestUseBible);
+							ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_USE_BIBLE, Messages.displayName(player.getDisplayName()), Messages.type(ctx.holyBookService().getBibleTitle(godName)));
 						}
 						return true;
 					}

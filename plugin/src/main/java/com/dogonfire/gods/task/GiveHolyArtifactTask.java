@@ -9,7 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodType;
 
 public class GiveHolyArtifactTask extends Task
@@ -64,8 +65,7 @@ public class GiveHolyArtifactTask extends Task
 			Random random = new Random();
 			if (this.speak)
 			{
-				ctx.languageManager().setPlayerName(this.player.getName());
-				ctx.godSpeech().say(this.godName, this.player, LanguageManager.LANGUAGESTRING.GodToBelieverHolyArtifactBlessing, 2 + random.nextInt(10));
+				ctx.godSpeech().say(this.godName, this.player, Voice.BELIEVER_HOLY_ARTIFACT_BLESSING, 2 + random.nextInt(10), Messages.player(this.player.getName()));
 			}
 		}
 	}

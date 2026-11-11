@@ -5,7 +5,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandPriestStartAttack extends GodsCommand
 {
@@ -76,9 +77,8 @@ public class CommandPriestStartAttack extends GodsCommand
 		}
 		ctx.relationService().setContestedHolyLandForGod(godName, player.getLocation());
 		sender.sendMessage(ChatColor.AQUA + "You started an attack on the Holy Land of " + ChatColor.GOLD + otherGodName);
-		ctx.godSpeech().sendInfoToBelievers(godName, LanguageManager.LANGUAGESTRING.AttackingHolyLandsHelp, ChatColor.AQUA, 80);
-		ctx.languageManager().setPlayerName(otherGodName);
-		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackStarted, 40);
+		ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.attacking-hint");
+		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_ATTACK_STARTED, 40, Messages.player(otherGodName));
 	}
 
 }

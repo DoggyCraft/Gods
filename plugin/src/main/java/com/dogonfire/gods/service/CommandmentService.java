@@ -11,7 +11,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.storage.GodRepository;
 
@@ -304,17 +305,7 @@ public class CommandmentService
 			Material itemType = getSacrificeItemTypeForGod(godName);
 			if (itemType != null)
 			{
-				String itemName = ctx.languageManager().getItemTypeName(itemType);
-				try
-				{
-					ctx.languageManager().setType(itemName);
-				}
-				catch (Exception ex)
-				{
-					ctx.plugin().logDebug(ex.getMessage());
-				}
-
-				ctx.godSpeech().sayToBeliever(godName, believerId, LanguageManager.LANGUAGESTRING.GodToBelieversSacrificeItemType);
+				ctx.godSpeech().sayToBeliever(godName, believerId, Voice.BELIEVERS_SACRIFICE_ITEM_TYPE, Messages.type(ctx.messages().itemName(itemType)));
 
 				return true;
 			}
@@ -333,24 +324,15 @@ public class CommandmentService
 
 			if (ctx.blessingService().blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
 			{
-				try
-				{
-					ctx.languageManager().setType(ctx.languageManager().getItemTypeName(eatFoodType));
-				}
-				catch (Exception ex)
-				{
-					ctx.plugin().logDebug(ex.getMessage());
-				}
 				
-				ctx.languageManager().setPlayerName(player.getDisplayName());
 				
 				if (ctx.settings().commandments().broadcastFoodEaten())
 				{
-					ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing, 2 + this.random.nextInt(20));
+					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_EAT_FOOD_BLESSING, 2 + this.random.nextInt(20), Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().itemName(eatFoodType)));
 				}
 				else
 				{
-					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversEatFoodBlessing);
+					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_EAT_FOOD_BLESSING, Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().itemName(eatFoodType)));
 				}
 			}
 		}
@@ -361,24 +343,15 @@ public class CommandmentService
 			
 			if (ctx.blessingService().cursePlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
 			{
-				try
-				{
-					ctx.languageManager().setType(ctx.languageManager().getItemTypeName(notEatFoodType));
-				}
-				catch (Exception ex)
-				{
-					ctx.plugin().logDebug(ex.getMessage());
-				}
 
-				ctx.languageManager().setPlayerName(player.getDisplayName().toUpperCase());
 
 				if (ctx.settings().commandments().broadcastFoodEaten())
 				{
-					ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing, 2 + this.random.nextInt(10));
+					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_NOT_EAT_FOOD_CURSING, 2 + this.random.nextInt(10), Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().itemName(notEatFoodType)));
 				}
 				else
 				{
-					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversNotEatFoodCursing);
+					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_NOT_EAT_FOOD_CURSING, Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().itemName(notEatFoodType)));
 				}
 			}
 		}
@@ -398,22 +371,13 @@ public class CommandmentService
 			{
 				ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));
 
-				ctx.languageManager().setPlayerName(player.getDisplayName());
-				try
-				{
-					ctx.languageManager().setType(ctx.languageManager().getMobTypeName(unholyMobType));
-				}
-				catch (Exception ex)
-				{
-					ctx.plugin().logDebug(ex.getMessage());
-				}
 				if (ctx.settings().commandments().broadcastMobSlain())
 				{
-					ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing, 2 + this.random.nextInt(20));
+					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_SLAY_MOB_BLESSING, 2 + this.random.nextInt(20), Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().mobName(unholyMobType)));
 				}
 				else
 				{
-					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversSlayMobBlessing);
+					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_SLAY_MOB_BLESSING, Messages.displayName(player.getDisplayName()), Messages.type(ctx.messages().mobName(unholyMobType)));
 				}
 			}
 		}
@@ -424,23 +388,14 @@ public class CommandmentService
 			{
 				ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
 
-				ctx.languageManager().setPlayerName(player.getDisplayName().toUpperCase());
-				try
-				{
-					ctx.languageManager().setType(ctx.languageManager().getMobTypeName(holyMobType));
-				}
-				catch (Exception ex)
-				{
-					ctx.plugin().logDebug(ex.getMessage());
-				}
 				
 				if (ctx.settings().commandments().broadcastMobSlain())
 				{
-					ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing, 2 + this.random.nextInt(10));
+					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_NOT_SLAY_MOB_CURSING, 2 + this.random.nextInt(10), Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().mobName(holyMobType)));
 				}
 				else
 				{
-					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieversNotSlayMobCursing);
+					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_NOT_SLAY_MOB_CURSING, Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().mobName(holyMobType)));
 				}
 			}
 		}
@@ -474,24 +429,15 @@ public class CommandmentService
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
 			ctx.blessingService().cursePlayer(godName, believer.getUniqueId(), ctx.godService().getGodPower(godName));
 
-			try
-			{
-				ctx.languageManager().setType(ctx.languageManager().getItemTypeName(eatFoodType));
-			}
-			catch (Exception ex)
-			{
-				ctx.plugin().logDebug(ex.getMessage());
-			}
 
-			ctx.languageManager().setPlayerName(believer.getDisplayName());
 
 			if (ctx.settings().commandments().broadcastFoodEaten())
 			{
-				ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice, 2 + this.random.nextInt(10));
+				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVER_HOLY_FOOD_SACRIFICE, 2 + this.random.nextInt(10), Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(eatFoodType)));
 			}
 			else
 			{
-				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverHolyFoodSacrifice);
+				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_HOLY_FOOD_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(eatFoodType)));
 			}
 
 			ctx.blessingService().strikePlayerWithLightning(believer.getUniqueId(), 1 + this.random.nextInt(3));
@@ -501,16 +447,7 @@ public class CommandmentService
 
 		float value = getSacrificeValueForGod(godName, type);
 
-		ctx.languageManager().setPlayerName(believer.getDisplayName());
 
-		try
-		{
-			ctx.languageManager().setType(ctx.languageManager().getItemTypeName(type));
-		}
-		catch (Exception ex)
-		{
-			ctx.plugin().logDebug(ex.getMessage());
-		}
 
 		SacrificeRules.Verdict verdict = SacrificeRules.verdict(value);
 		if (verdict == SacrificeRules.Verdict.GOOD)
@@ -519,19 +456,19 @@ public class CommandmentService
 			ctx.believerService().addPrayer(believer.getUniqueId(), godName);
 
 			ctx.blessingService().blessPlayer(godName, believer.getUniqueId(), godPower);
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverGoodSacrifice);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_GOOD_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(type)));
 
 			ctx.believerService().increasePrayerPower(believer.getUniqueId(), 1);
 		}
 		else if (verdict == SacrificeRules.Verdict.MEH)
 		{
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverMehSacrifice);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_MEH_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(type)));
 		}
 		else
 		{
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
 			ctx.blessingService().strikePlayerWithLightning(believer.getUniqueId(), 1 + this.random.nextInt(3));
-			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverBadSacrifice);
+			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_BAD_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(type)));
 		}
 
 		setSacrificeValueForGod(godName, type, Float.valueOf(SacrificeRules.afterSacrifice(value)));

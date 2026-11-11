@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
@@ -16,7 +15,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.model.NeutralLand;
 import com.dogonfire.gods.model.RegionKey;
@@ -268,7 +268,7 @@ public class HolyLandService
 
 		if (getClaimedChunksForGod(godName) >= getMaximumChunksForGod(godName))
 		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.CannotClaimMoreHolyland, ChatColor.RED, 0, "", 1);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.cannot-claim-more", 1);
 			return;
 		}
 
@@ -278,9 +278,8 @@ public class HolyLandService
 		int claimed = getClaimedChunksForGod(godName);
 		int max = getMaximumChunksForGod(godName);
 
-		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
-		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimed, Integer.toString(max), 20 * 5);
+		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CLAIMED_HOLY_LAND, 1, Messages.player(player.getName()));
+		ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.size", 20 * 5, Messages.text("claimed", claimed), Messages.text("max", max));
 	}
 
 	/**
@@ -312,9 +311,8 @@ public class HolyLandService
 		int claimedAfter = getClaimedChunksForGod(godName);
 		int max = getMaximumChunksForGod(godName);
 
-		ctx.languageManager().setPlayerName(player.getName());
-		ctx.godSpeech().sayToBelievers(godName, LanguageManager.LANGUAGESTRING.GodToBelieversClaimedHolyLand, 1);
-		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.HolylandSize, ChatColor.AQUA, claimedAfter, Integer.toString(max), 20 * 5);
+		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CLAIMED_HOLY_LAND, 1, Messages.player(player.getName()));
+		ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.size", 20 * 5, Messages.text("claimed", claimedAfter), Messages.text("max", max));
 	}
 
 	// ---------------------------------------------------------------------
@@ -487,14 +485,14 @@ public class HolyLandService
 		{
 			if (defenderWins)
 			{
-				ctx.godSpeech().sayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandSuccess, 1);
-				ctx.godSpeech().sayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandFailed, 1);
+				ctx.godSpeech().sayToBelievers(defendingGodName, Voice.BELIEVERS_DEFEND_HOLY_LAND_SUCCESS, 1);
+				ctx.godSpeech().sayToBelievers(attackingGodName, Voice.BELIEVERS_ATTACK_HOLY_LAND_FAILED, 1);
 			}
 			else
 			{
 				setHolyLand(location, attackingGodName);
-				ctx.godSpeech().sayToBelievers(defendingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversDefendHolyLandFailed, 1);
-				ctx.godSpeech().sayToBelievers(attackingGodName, LanguageManager.LANGUAGESTRING.GodToBelieversAttackHolyLandSuccess, 1);
+				ctx.godSpeech().sayToBelievers(defendingGodName, Voice.BELIEVERS_DEFEND_HOLY_LAND_FAILED, 1);
+				ctx.godSpeech().sayToBelievers(attackingGodName, Voice.BELIEVERS_ATTACK_HOLY_LAND_SUCCESS, 1);
 			}
 		}
 

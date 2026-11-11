@@ -31,15 +31,15 @@ class GodRulesTest
 	}
 
 	@Test
-	void theLanguageFileComesFromTypeAndGender()
+	void theVoiceComesFromTypeAndGender()
 	{
-		assertEquals("english_thunder_male.yml", GodRules.languageFile("english", GodType.THUNDER, GodGender.Male, 0L));
-		assertEquals("german_love_female.yml", GodRules.languageFile("german", GodType.LOVE, GodGender.Female, 1L));
+		assertEquals("thunder_male", GodRules.voice(GodType.THUNDER, GodGender.Male, 0L));
+		assertEquals("love_female", GodRules.voice(GodType.LOVE, GodGender.Female, 1L));
 		// No gender: the seed picks one, always the same
-		assertEquals("english_sea_female.yml", GodRules.languageFile("english", GodType.SEA, GodGender.None, 42L));
-		assertEquals("english_sea_male.yml", GodRules.languageFile("english", GodType.SEA, GodGender.None, 43L));
+		assertEquals("sea_female", GodRules.voice(GodType.SEA, GodGender.None, 42L));
+		assertEquals("sea_male", GodRules.voice(GodType.SEA, GodGender.None, 43L));
 		// No such god
-		assertEquals("english_sun_male.yml", GodRules.languageFile("english", null, null, 0L));
+		assertEquals("sun_male", GodRules.voice(null, null, 0L));
 	}
 
 	@Test

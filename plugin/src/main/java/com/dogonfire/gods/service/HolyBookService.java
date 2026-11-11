@@ -1,5 +1,6 @@
 package com.dogonfire.gods.service;
 
+import net.kyori.adventure.text.Component;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.HolyBook;
 import com.dogonfire.gods.storage.HolyBookRepository;
 
@@ -202,6 +204,13 @@ public class HolyBookService
 		return true;
 	}
 
+	/** A page of the default book: one of the god's lines for it, with the god as <player> and the commandment as <type> */
+	private String page(String godName, Voice text, Component type)
+	{
+		String page = ctx.godSpeech().plainVoiceLine(godName, text, Messages.player(godName), Messages.type(type != null ? type : Component.empty()));
+		return page != null ? page : "";
+	}
+
 	/** Writes the god's default book from its commandments */
 	private void initBible(String godName)
 	{
@@ -213,31 +222,22 @@ public class HolyBookService
 		book.setTitle(defaultTitle(godName));
 		book.setAuthor(godName);
 
-		LanguageManager language = ctx.languageManager();
 		CommandmentService commandments = ctx.commandmentService();
 
-		language.setPlayerName(godName);
-
-		pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText1));
+		pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_1, null));
 		try
 		{
-			language.setType(language.getMobTypeName(commandments.getUnholyMobTypeForGod(godName)));
-			pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText2));
+			pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_2, ctx.messages().mobName(commandments.getUnholyMobTypeForGod(godName))));
 
-			language.setType(language.getItemTypeName(commandments.getHolyFoodTypeForGod(godName)));
-			pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText3));
+			pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_3, ctx.messages().itemName(commandments.getHolyFoodTypeForGod(godName))));
 
-			language.setType(language.getItemTypeName(commandments.getUnholyFoodTypeForGod(godName)));
-			pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText4));
+			pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_4, ctx.messages().itemName(commandments.getUnholyFoodTypeForGod(godName))));
 
-			language.setType(language.getMobTypeName(commandments.getHolyMobTypeForGod(godName)));
-			pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText5));
+			pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_5, ctx.messages().mobName(commandments.getHolyMobTypeForGod(godName))));
 
-			language.setType(language.getMobTypeName(commandments.getHolyMobTypeForGod(godName)));
-			pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText6));
+			pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_6, ctx.messages().mobName(commandments.getHolyMobTypeForGod(godName))));
 
-			language.setType(language.getMobTypeName(commandments.getHolyMobTypeForGod(godName)));
-			pages.add(language.getLanguageStringForBook(godName, LanguageManager.LANGUAGESTRING.DefaultBibleText7));
+			pages.add(page(godName, Voice.DEFAULT_BIBLE_TEXT_7, ctx.messages().mobName(commandments.getHolyMobTypeForGod(godName))));
 
 			book.setPages(pages);
 		}

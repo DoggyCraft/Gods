@@ -1,0 +1,119 @@
+package com.dogonfire.gods.message;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.junit.jupiter.api.Test;
+
+import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodType;
+
+/** Every message and voice key the code uses must exist in the bundled files, or players see "missing message" */
+class MessageKeysTest
+{
+	private static final Pattern	KEY	= Pattern.compile("\"([a-z][a-z-]*(?:\\.[a-z0-9_-]+)+)\"");
+
+	/** Keys built at runtime, which the scan can't see */
+	private static final List<String>	DYNAMIC_KEYS	= List.of();
+
+	@Test
+	void everyUsedMessageKeyExists() throws IOException
+	{
+		YamlConfiguration messages = bundled("lang/english/messages.yml");
+		Set<String> sections = messages.getKeys(false);
+		// Settings look the same (holy-land.enabled), so they are told apart by being in config.yml
+		YamlConfiguration config = bundled("config.yml");
+
+		TreeSet<String> used = new TreeSet<>(DYNAMIC_KEYS);
+		try (Stream<Path> files = Files.walk(Path.of("src/main/java")))
+		{
+			// migration/ names the keys of old files
+			for (Path file : files.filter(f -> f.toString().endsWith(".java") && !f.toString().contains("/migration/")).toList())
+			{
+				Matcher matcher = KEY.matcher(Files.readString(file));
+				while (matcher.find())
+				{
+					String key = matcher.group(1);
+					// Permissions (gods.listen) and the like look the same; only keys of a message section count
+					if (sections.contains(key.substring(0, key.indexOf('.'))) && !config.contains(key))
+					{
+						used.add(key);
+					}
+				}
+			}
+		}
+
+		assertFalse(used.isEmpty());
+		List<String> missing = new ArrayList<>();
+		for (String key : used)
+		{
+			if (!messages.contains(key) || messages.isConfigurationSection(key))
+			{
+				missing.add(key);
+			}
+		}
+		assertTrue(missing.isEmpty(), "Missing from messages.yml: " + missing);
+	}
+
+	@Test
+	void everyVoiceKeyIsInEveryVoiceFile() throws IOException
+	{
+		List<String> missing = new ArrayList<>();
+		for (GodType type : GodType.values())
+		{
+			for (GodGender gender : List.of(GodGender.Male, GodGender.Female))
+			{
+				String name = GodVoices.name(type, gender);
+				YamlConfiguration voice = bundled("lang/english/voices/" + name + ".yml");
+				assertEquals(Messages.MESSAGES_VERSION, voice.getInt(Messages.VERSION_KEY), name);
+				for (Voice situation : Voice.values())
+				{
+					if (voice.getStringList(situation.key()).isEmpty())
+					{
+						missing.add(name + ": " + situation.key());
+					}
+				}
+			}
+		}
+		assertTrue(missing.isEmpty(), "Missing voice lines: " + missing);
+	}
+
+	@Test
+	void theBundledMessagesHaveTheirVersion() throws IOException
+	{
+		assertEquals(Messages.MESSAGES_VERSION, bundled("lang/english/messages.yml").getInt(Messages.VERSION_KEY));
+	}
+
+	private YamlConfiguration bundled(String path) throws IOException
+	{
+		try (InputStream in = getClass().getClassLoader().getResourceAsStream(path))
+		{
+			YamlConfiguration yaml = new YamlConfiguration();
+			try
+			{
+				yaml.loadFromString(new String(Objects.requireNonNull(in, path).readAllBytes(), StandardCharsets.UTF_8));
+			}
+			catch (org.bukkit.configuration.InvalidConfigurationException e)
+			{
+				throw new IOException(path + " is broken", e);
+			}
+			return yaml;
+		}
+	}
+}

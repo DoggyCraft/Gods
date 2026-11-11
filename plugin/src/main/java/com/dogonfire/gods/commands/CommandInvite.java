@@ -5,7 +5,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandInvite extends GodsCommand
 {
@@ -64,9 +65,8 @@ public class CommandInvite extends GodsCommand
 		}
 		ctx.believerService().setInvitation(invitedPlayer.getUniqueId(), godName);
 		ctx.plugin().log(godName + " invited to " + invitedPlayer.getName() + " to join the religion");
-		ctx.languageManager().setPlayerName(invitedPlayer.getName());
-		ctx.godSpeech().say(godName, invitedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerInvite, 10);
-		ctx.godSpeech().sendInfo(invitedPlayer.getUniqueId(), LanguageManager.LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, "/gods yes or /gods no", "/gods yes or /gods no", 40);
+		ctx.godSpeech().say(godName, invitedPlayer, Voice.PLAYER_INVITE, 10, Messages.player(invitedPlayer.getName()));
+		ctx.godSpeech().sendInfo(invitedPlayer.getUniqueId(), "god.question-hint", 40);
 		player.sendMessage(ChatColor.AQUA + "You invited " + ChatColor.YELLOW + playerName + ChatColor.AQUA + " to join " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
 	}
 

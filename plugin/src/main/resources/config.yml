@@ -12,7 +12,7 @@ config-version: 2
 general:
   # Log extra information to the console, for finding problems.
   debug: false
-  # The language of Gods' messages: the prefix of the files in plugins/Gods/lang/ (e.g. english_general.yml).
+  # The language of Gods' messages: the folder in plugins/Gods/lang/ (english: lang/english/messages.yml and voices/).
   language: english
   # The name of your server, used in some messages.
   server-name: Your Server

@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
+import com.dogonfire.gods.message.Messages;
 
 public class CommandHunt extends GodsCommand
 {
@@ -55,8 +55,7 @@ public class CommandHunt extends GodsCommand
 			return;
 		}
 		Vector vector = pilgrimageLocation.toVector().subtract(player.getLocation().toVector());
-		ctx.languageManager().setAmount((int) vector.length());
-		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, (int) vector.length(), "", 20);
+		ctx.godSpeech().sendInfo(player.getUniqueId(), "quest.target-range", 20, Messages.text("distance", (int) vector.length()));
 
 	}
 

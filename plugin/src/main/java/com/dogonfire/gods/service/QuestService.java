@@ -1,5 +1,7 @@
 package com.dogonfire.gods.service;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -19,7 +21,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.Quest;
 import com.dogonfire.gods.model.QuestLocation;
 import com.dogonfire.gods.model.QuestTarget;
@@ -42,31 +45,31 @@ public class QuestService
 	}
 
 	// What each god says about a quest, indexed by Phase. Types without speech have no entry.
-	private static final Map<QuestType, LANGUAGESTRING[]>	QUEST_SPEECH	= new EnumMap<QuestType, LANGUAGESTRING[]>(QuestType.class);
+	private static final Map<QuestType, Voice[]>	QUEST_SPEECH	= new EnumMap<QuestType, Voice[]>(QuestType.class);
 
 	static
 	{
-		speech(QuestType.SLAY, LANGUAGESTRING.GodToBelieversSlayQuestStarted, LANGUAGESTRING.GodToBelieversSlayQuestProgress, LANGUAGESTRING.GodToBelieversSlayQuestStatus, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, LANGUAGESTRING.GodToBelieversSlayQuestFailed);
-		speech(QuestType.CONVERT, LANGUAGESTRING.GodToBelieversConvertQuestStarted, LANGUAGESTRING.GodToBelieversConvertQuestProgress, LANGUAGESTRING.GodToBelieversConvertQuestStatus, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, LANGUAGESTRING.GodToBelieversConvertQuestFailed);
-		speech(QuestType.BUILDALTARS, LANGUAGESTRING.GodToBelieversBuildAltarsQuestStarted, LANGUAGESTRING.GodToBelieversBuildAltarsQuestProgress, LANGUAGESTRING.GodToBelieversBuildAltarsQuestStatus, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, LANGUAGESTRING.GodToBelieversBuildAltarsQuestFailed);
-		speech(QuestType.BUILDTOWER, LANGUAGESTRING.GodToBelieversBuildTowerQuestStarted, LANGUAGESTRING.GodToBelieversBuildTowerQuestProgress, LANGUAGESTRING.GodToBelieversBuildTowerQuestStatus, LANGUAGESTRING.GodToBelieversBuildTowerQuestCompleted, LANGUAGESTRING.GodToBelieversBuildTowerQuestFailed);
-		speech(QuestType.ITEMSACRIFICE, LANGUAGESTRING.GodToBelieversSacrificeQuestStarted, LANGUAGESTRING.GodToBelieversSacrificeQuestProgress, LANGUAGESTRING.GodToBelieversSacrificeQuestStatus, LANGUAGESTRING.GodToBelieversSacrificeQuestCompleted, LANGUAGESTRING.GodToBelieversSacrificeQuestFailed);
-		speech(QuestType.HOLYFEAST, LANGUAGESTRING.GodToBelieversHolyFeastQuestStarted, LANGUAGESTRING.GodToBelieversHolyFeastQuestProgress, LANGUAGESTRING.GodToBelieversHolyFeastQuestStatus, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, LANGUAGESTRING.GodToBelieversHolyFeastQuestFailed);
-		speech(QuestType.GIVEITEMS, LANGUAGESTRING.GodToBelieversGiveItemsQuestStarted, LANGUAGESTRING.GodToBelieversGiveBiblesQuestProgress, LANGUAGESTRING.GodToBelieversGiveItemsQuestStatus, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, LANGUAGESTRING.GodToBelieversGiveItemsQuestFailed);
-		speech(QuestType.BURNBIBLES, LANGUAGESTRING.GodToBelieversBurnBiblesQuestStarted, LANGUAGESTRING.GodToBelieversBurnBiblesQuestProgress, LANGUAGESTRING.GodToBelieversBurnBiblesQuestStatus, LANGUAGESTRING.GodToBelieversBurnBiblesQuestCompleted, LANGUAGESTRING.GodToBelieversBurnBiblesQuestFailed);
-		speech(QuestType.CRUSADE, LANGUAGESTRING.GodToBelieversCrusadeQuestStarted, LANGUAGESTRING.GodToBelieversCrusadeQuestProgress, LANGUAGESTRING.GodToBelieversCrusadeQuestStatus, LANGUAGESTRING.GodToBelieversCrusadeQuestCompleted, LANGUAGESTRING.GodToBelieversCrusadeQuestFailed);
-		speech(QuestType.PILGRIMAGE, LANGUAGESTRING.GodToBelieversPilgrimageQuestStarted, LANGUAGESTRING.GodToBelieversPilgrimageQuestProgress, LANGUAGESTRING.GodToBelieversPilgrimageQuestStatus, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, LANGUAGESTRING.GodToBelieversPilgrimageQuestFailed);
-		speech(QuestType.CLAIMHOLYLAND, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStarted, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestProgress, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestStatus, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestCompleted, LANGUAGESTRING.GodToBelieversClaimHolyLandQuestFailed);
+		speech(QuestType.SLAY, Voice.BELIEVERS_SLAY_QUEST_STARTED, Voice.BELIEVERS_SLAY_QUEST_PROGRESS, Voice.BELIEVERS_SLAY_QUEST_STATUS, Voice.BELIEVERS_SLAY_QUEST_COMPLETED, Voice.BELIEVERS_SLAY_QUEST_FAILED);
+		speech(QuestType.CONVERT, Voice.BELIEVERS_CONVERT_QUEST_STARTED, Voice.BELIEVERS_CONVERT_QUEST_PROGRESS, Voice.BELIEVERS_CONVERT_QUEST_STATUS, Voice.BELIEVERS_CONVERT_QUEST_COMPLETED, Voice.BELIEVERS_CONVERT_QUEST_FAILED);
+		speech(QuestType.BUILDALTARS, Voice.BELIEVERS_BUILD_ALTARS_QUEST_STARTED, Voice.BELIEVERS_BUILD_ALTARS_QUEST_PROGRESS, Voice.BELIEVERS_BUILD_ALTARS_QUEST_STATUS, Voice.BELIEVERS_BUILD_ALTARS_QUEST_COMPLETED, Voice.BELIEVERS_BUILD_ALTARS_QUEST_FAILED);
+		speech(QuestType.BUILDTOWER, Voice.BELIEVERS_BUILD_TOWER_QUEST_STARTED, Voice.BELIEVERS_BUILD_TOWER_QUEST_PROGRESS, Voice.BELIEVERS_BUILD_TOWER_QUEST_STATUS, Voice.BELIEVERS_BUILD_TOWER_QUEST_COMPLETED, Voice.BELIEVERS_BUILD_TOWER_QUEST_FAILED);
+		speech(QuestType.ITEMSACRIFICE, Voice.BELIEVERS_SACRIFICE_QUEST_STARTED, Voice.BELIEVERS_SACRIFICE_QUEST_PROGRESS, Voice.BELIEVERS_SACRIFICE_QUEST_STATUS, Voice.BELIEVERS_SACRIFICE_QUEST_COMPLETED, Voice.BELIEVERS_SACRIFICE_QUEST_FAILED);
+		speech(QuestType.HOLYFEAST, Voice.BELIEVERS_HOLY_FEAST_QUEST_STARTED, Voice.BELIEVERS_HOLY_FEAST_QUEST_PROGRESS, Voice.BELIEVERS_HOLY_FEAST_QUEST_STATUS, Voice.BELIEVERS_HOLY_FEAST_QUEST_COMPLETED, Voice.BELIEVERS_HOLY_FEAST_QUEST_FAILED);
+		speech(QuestType.GIVEITEMS, Voice.BELIEVERS_GIVE_ITEMS_QUEST_STARTED, Voice.BELIEVERS_GIVE_BIBLES_QUEST_PROGRESS, Voice.BELIEVERS_GIVE_ITEMS_QUEST_STATUS, Voice.BELIEVERS_GIVE_ITEMS_QUEST_COMPLETED, Voice.BELIEVERS_GIVE_ITEMS_QUEST_FAILED);
+		speech(QuestType.BURNBIBLES, Voice.BELIEVERS_BURN_BIBLES_QUEST_STARTED, Voice.BELIEVERS_BURN_BIBLES_QUEST_PROGRESS, Voice.BELIEVERS_BURN_BIBLES_QUEST_STATUS, Voice.BELIEVERS_BURN_BIBLES_QUEST_COMPLETED, Voice.BELIEVERS_BURN_BIBLES_QUEST_FAILED);
+		speech(QuestType.CRUSADE, Voice.BELIEVERS_CRUSADE_QUEST_STARTED, Voice.BELIEVERS_CRUSADE_QUEST_PROGRESS, Voice.BELIEVERS_CRUSADE_QUEST_STATUS, Voice.BELIEVERS_CRUSADE_QUEST_COMPLETED, Voice.BELIEVERS_CRUSADE_QUEST_FAILED);
+		speech(QuestType.PILGRIMAGE, Voice.BELIEVERS_PILGRIMAGE_QUEST_STARTED, Voice.BELIEVERS_PILGRIMAGE_QUEST_PROGRESS, Voice.BELIEVERS_PILGRIMAGE_QUEST_STATUS, Voice.BELIEVERS_PILGRIMAGE_QUEST_COMPLETED, Voice.BELIEVERS_PILGRIMAGE_QUEST_FAILED);
+		speech(QuestType.CLAIMHOLYLAND, Voice.BELIEVERS_CLAIM_HOLY_LAND_QUEST_STARTED, Voice.BELIEVERS_CLAIM_HOLY_LAND_QUEST_PROGRESS, Voice.BELIEVERS_CLAIM_HOLY_LAND_QUEST_STATUS, Voice.BELIEVERS_CLAIM_HOLY_LAND_QUEST_COMPLETED, Voice.BELIEVERS_CLAIM_HOLY_LAND_QUEST_FAILED);
 	}
 
-	private static void speech(QuestType type, LANGUAGESTRING started, LANGUAGESTRING progress, LANGUAGESTRING status, LANGUAGESTRING completed, LANGUAGESTRING failed)
+	private static void speech(QuestType type, Voice started, Voice progress, Voice status, Voice completed, Voice failed)
 	{
-		QUEST_SPEECH.put(type, new LANGUAGESTRING[] { started, progress, status, completed, failed });
+		QUEST_SPEECH.put(type, new Voice[] { started, progress, status, completed, failed });
 	}
 
-	private static LANGUAGESTRING questSpeech(QuestType type, Phase phase)
+	private static Voice questSpeech(QuestType type, Phase phase)
 	{
-		LANGUAGESTRING[] strings = QUEST_SPEECH.get(type);
+		Voice[] strings = QUEST_SPEECH.get(type);
 		return (strings == null) ? null : strings[phase.ordinal()];
 	}
 
@@ -468,84 +471,72 @@ public class QuestService
 	// What the gods say
 
 	// The quest target as the gods should say it: mob and item names from the language file, the holy book title, ...
-	private String targetDisplayName(String godName, QuestType questType)
+	private Component targetDisplayName(String godName, QuestType questType)
 	{
 		String targetType = targetType(godName);
+		Component plain = Component.text(targetType == null ? "" : targetType);
 
 		try
 		{
 			switch (questType)
 			{
 			case SLAY:
-				return ctx.languageManager().getMobTypeName(EntityType.valueOf(targetType.toUpperCase()));
+				return ctx.messages().mobName(EntityType.valueOf(targetType.toUpperCase()));
 			case ITEMSACRIFICE:
 			case BURNBIBLES:
 				Material material = Material.matchMaterial(targetType);
-				String itemName = (material == null) ? null : ctx.languageManager().getItemTypeName(material);
-				return (itemName == null) ? targetType : itemName;
+				return (material == null) ? plain : ctx.messages().itemName(material);
 			case GIVEITEMS:
 				String bibleTitle = ctx.holyBookService().getBibleTitle(godName);
-				return (bibleTitle == null) ? targetType : bibleTitle;
+				return (bibleTitle == null) ? plain : Component.text(bibleTitle);
 			default:
-				return targetType;
+				return plain;
 			}
 		}
 		catch (RuntimeException ex)
 		{
-			return targetType;
+			return plain;
 		}
 	}
 
-	// Sets $Amount and $Type for a quest message. LanguageManager is shared, so call it right before speaking.
-	private void setQuestSpeechValues(String godName, QuestType questType, int amount)
+	// <amount> and <type> of a quest message
+	private TagResolver questTags(String godName, QuestType questType, int amount)
 	{
-		ctx.languageManager().setAmount(amount);
-
-		String targetName = targetDisplayName(godName, questType);
-		try
-		{
-			ctx.languageManager().setType((targetName == null) ? "" : targetName);
-		}
-		catch (Exception ex)
-		{
-			ctx.plugin().logDebug(ex.getMessage());
-		}
+		return TagResolver.resolver(Messages.amount(amount), Messages.type(targetDisplayName(godName, questType)));
 	}
 
 	public void godSayFailed(String godName)
 	{
 		QuestType questType = questType(godName);
-		LANGUAGESTRING message = questSpeech(questType, Phase.FAILED);
+		Voice message = questSpeech(questType, Phase.FAILED);
 
 		if (message == null)
 		{
 			return;
 		}
 
-		setQuestSpeechValues(godName, questType, amount(godName) - progress(godName));
-		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100), questTags(godName, questType, amount(godName) - progress(godName)));
 	}
 
 	private void godSayNewQuest(String godName)
 	{
 		QuestType questType = questType(godName);
-		LANGUAGESTRING message = questSpeech(questType, Phase.STARTED);
+		Voice message = questSpeech(questType, Phase.STARTED);
 
 		if (message == null)
 		{
 			return;
 		}
 
-		setQuestSpeechValues(godName, questType, amount(godName));
-		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100), questTags(godName, questType, amount(godName)));
 
 		switch (questType)
 		{
 		case PILGRIMAGE:
-			ctx.godSpeech().sendInfoToBelievers(godName, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 150);
+			ctx.godSpeech().sendInfoToBelievers(godName, "quest.target-hint");
 			break;
 		case ITEMSACRIFICE:
-			ctx.godSpeech().sendInfoToBelievers(godName, LANGUAGESTRING.SacrificeHelp, ChatColor.AQUA, 150);
+			ctx.godSpeech().sendInfoToBelievers(godName, "quest.sacrifice-hint");
 			break;
 		default:
 			break;
@@ -555,28 +546,27 @@ public class QuestService
 	private void godSayProgress(String godName)
 	{
 		QuestType questType = questType(godName);
-		LANGUAGESTRING message = questSpeech(questType, Phase.PROGRESS);
+		Voice message = questSpeech(questType, Phase.PROGRESS);
 
 		if (message == null)
 		{
 			return;
 		}
 
-		setQuestSpeechValues(godName, questType, amount(godName) - progress(godName));
-		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(10));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(10), questTags(godName, questType, amount(godName) - progress(godName)));
 	}
 
 	public void godSayStatus(String godName)
 	{
 		QuestType questType = questType(godName);
-		LANGUAGESTRING message = questSpeech(questType, Phase.STATUS);
+		Voice message = questSpeech(questType, Phase.STATUS);
 
 		if (message == null)
 		{
 			return;
 		}
 
-		setQuestSpeechValues(godName, questType, amount(godName) - progress(godName));
+		TagResolver tags = questTags(godName, questType, amount(godName) - progress(godName));
 
 		switch (questType)
 		{
@@ -585,12 +575,12 @@ public class QuestService
 			// Quests with a place to find: remind now and then, and tell hunting believers how far they are
 			if (this.random.nextInt(6) == 0)
 			{
-				ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
+				ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100), tags);
 			}
 			sendQuestTargetHints(godName);
 			break;
 		default:
-			ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100));
+			ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(100), tags);
 			break;
 		}
 	}
@@ -617,7 +607,7 @@ public class QuestService
 			{
 				if (this.random.nextInt(10) == 0)
 				{
-					ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.QuestTargetHelp, ChatColor.AQUA, 0, "", 20);
+					ctx.godSpeech().sendInfo(believerId, "quest.target-hint", 20);
 				}
 				continue;
 			}
@@ -629,7 +619,7 @@ public class QuestService
 
 			int distance = (int) targetLocation.toVector().distance(player.getLocation().toVector());
 
-			ctx.godSpeech().sendInfo(believerId, LANGUAGESTRING.QuestTargetRange, ChatColor.AQUA, distance, "", 20);
+			ctx.godSpeech().sendInfo(believerId, "quest.target-range", 20, Messages.text("distance", distance));
 		}
 	}
 
@@ -654,7 +644,7 @@ public class QuestService
 
 		if (addProgress(godName))
 		{
-			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversBuildAltarsQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_BUILD_ALTARS_QUEST_COMPLETED, 2 + this.random.nextInt(10));
 			ctx.prayerService().addBeliefAndRewardBelievers(godName);
 
 			removeSuccessQuestForGod(godName);
@@ -682,7 +672,7 @@ public class QuestService
 
 		if (addProgress(godName))
 		{
-			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversHolyFeastQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_HOLY_FEAST_QUEST_COMPLETED, 2 + this.random.nextInt(10));
 			complete(godName, 2.0F);
 		}
 		else
@@ -700,8 +690,7 @@ public class QuestService
 
 		if (addProgress(godName))
 		{
-			ctx.languageManager().setPlayerName(playerName);
-			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CONVERT_QUEST_COMPLETED, 2 + this.random.nextInt(10), Messages.player(playerName));
 			complete(godName, 1.0F);
 		}
 		else
@@ -726,7 +715,7 @@ public class QuestService
 
 		if (addProgress(godName))
 		{
-			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversSlayQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_SLAY_QUEST_COMPLETED, 2 + this.random.nextInt(10));
 			complete(godName, 2.0F);
 		}
 		else
@@ -755,16 +744,8 @@ public class QuestService
 			return true;
 		}
 
-		try
-		{
-			ctx.languageManager().setType(targetType(questGod));
-		}
-		catch (Exception ex)
-		{
-			ctx.plugin().logDebug(ex.getMessage());
-		}
 
-		ctx.godSpeech().sayToBelievers(questGod, LANGUAGESTRING.GodToBelieversPilgrimageQuestCompleted, 2);
+		ctx.godSpeech().sayToBelievers(questGod, Voice.BELIEVERS_PILGRIMAGE_QUEST_COMPLETED, 2, Messages.type(targetType(questGod)));
 
 		ctx.moodService().addMoodForGod(godName, 2.0F * ctx.moodService().getPleasedModifierForGod(godName));
 		ctx.prayerService().addBeliefAndRewardBelievers(godName);
@@ -802,8 +783,7 @@ public class QuestService
 
 		if (addPlayerProgress(godName, playerId))
 		{
-			ctx.languageManager().setPlayerName((player != null) ? player.getDisplayName() : "");
-			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversConvertQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CONVERT_QUEST_COMPLETED, 2 + this.random.nextInt(10), Messages.displayName((player != null) ? player.getDisplayName() : ""));
 			complete(godName, 1.0F);
 		}
 		else
@@ -830,12 +810,10 @@ public class QuestService
 
 		boolean completed = addPlayerProgress(godName, playerId);
 
-		ctx.languageManager().setPlayerName((player != null) ? player.getDisplayName() : "");
 
 		if (completed)
 		{
-			setQuestSpeechValues(godName, QuestType.GIVEITEMS, 0);
-			ctx.godSpeech().sayToBelievers(godName, LANGUAGESTRING.GodToBelieversGiveItemsQuestCompleted, 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GIVE_ITEMS_QUEST_COMPLETED, 2 + this.random.nextInt(10), questTags(godName, QuestType.GIVEITEMS, 0), Messages.displayName((player != null) ? player.getDisplayName() : ""));
 			complete(godName, 2.0F);
 		}
 		else
@@ -870,9 +848,7 @@ public class QuestService
 
 		if (completed)
 		{
-			setQuestSpeechValues(godName, questType, 0);
-			ctx.languageManager().setPlayerName(player.getDisplayName());
-			ctx.godSpeech().sayToBelievers(godName, questSpeech(questType, Phase.COMPLETED), 2 + this.random.nextInt(10));
+			ctx.godSpeech().sayToBelievers(godName, questSpeech(questType, Phase.COMPLETED), 2 + this.random.nextInt(10), questTags(godName, questType, 0));
 			complete(godName, 2.0F);
 		}
 		else

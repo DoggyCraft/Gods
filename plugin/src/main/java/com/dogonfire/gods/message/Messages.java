@@ -21,6 +21,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 
@@ -156,6 +157,15 @@ public final class Messages
 		}
 	}
 
+	/** Sends a message to every player and the console, like {@code Server#broadcastMessage} */
+	public void broadcast(Server server, String key, TagResolver... tags)
+	{
+		for (Component line : lines(key, tags))
+		{
+			server.broadcastMessage(legacy(line));
+		}
+	}
+
 	/** Parses MiniMessage text with the global tags ({@code <server>}, {@code <hl>}) and the given ones */
 	public Component parse(String miniMessage, TagResolver... tags)
 	{
@@ -260,6 +270,12 @@ public final class Messages
 	public static TagResolver player(String name)
 	{
 		return text("player", name == null ? "" : name);
+	}
+
+	/** {@code <player>} as a display name, which may hold § colors */
+	public static TagResolver displayName(String displayName)
+	{
+		return legacyText("player", displayName);
 	}
 
 	/** {@code <god>} */

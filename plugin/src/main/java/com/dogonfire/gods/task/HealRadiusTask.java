@@ -1,6 +1,5 @@
 package com.dogonfire.gods.task;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -9,8 +8,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.util.NearbyEntities;
-import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 
 /**
  * Heals up to maxPlayers other players within 20 blocks.
@@ -49,6 +48,6 @@ public class HealRadiusTask extends Task {
 			target.getWorld().playEffect(target.getLocation(), Effect.ENDER_SIGNAL, 0);
 			n++;
 		}
-		ctx.godSpeech().sendInfo(this.player.getUniqueId(), LANGUAGESTRING.YouHealedBeings, ChatColor.AQUA, n, "", 20);
+		ctx.godSpeech().sendInfo(this.player.getUniqueId(), "power.healed", 20, Messages.amount(n));
 	}
 }

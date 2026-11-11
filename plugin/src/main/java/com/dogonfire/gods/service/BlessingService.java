@@ -15,8 +15,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.config.Settings;
-import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.storage.GodRepository;
@@ -304,7 +305,7 @@ public class BlessingService
 
 	public void healPlayer(String godName, Player player)
 	{
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new HealPlayerTask(ctx, godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverHealthBlessing), 2L);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new HealPlayerTask(ctx, godName, player, Voice.BELIEVER_HEALTH_BLESSING), 2L);
 	}
 
 	public void manageBlessedPlayer(String godName)
@@ -332,11 +333,10 @@ public class BlessingService
 
 			if (blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
 			{
-				ctx.languageManager().setPlayerName(player.getName());
 
-				ctx.godSpeech().say(godName, player, LanguageManager.LANGUAGESTRING.GodToPlayerBlessed, 2 + this.random.nextInt(10));
+				ctx.godSpeech().say(godName, player, Voice.PLAYER_BLESSED, 2 + this.random.nextInt(10), Messages.player(player.getName()));
 
-				ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerBlessed, player.getUniqueId());
+				ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_BLESSED, player.getUniqueId(), Messages.player(player.getName()));
 			}
 		}
 	}
@@ -366,11 +366,10 @@ public class BlessingService
 
 			if (cursePlayer(godName, cursedPlayer.getUniqueId(), godPower))
 			{
-				ctx.languageManager().setPlayerName(cursedPlayer.getDisplayName());
 
-				ctx.godSpeech().say(godName, cursedPlayer, LanguageManager.LANGUAGESTRING.GodToPlayerCursed, 2 + this.random.nextInt(10));
+				ctx.godSpeech().say(godName, cursedPlayer, Voice.PLAYER_CURSED, 2 + this.random.nextInt(10), Messages.displayName(cursedPlayer.getDisplayName()));
 
-				ctx.godSpeech().sayToBelieversExcept(godName, LanguageManager.LANGUAGESTRING.GodToBelieversPlayerCursed, cursedPlayer.getUniqueId());
+				ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_CURSED, cursedPlayer.getUniqueId(), Messages.displayName(cursedPlayer.getDisplayName()));
 			}
 		}
 	}

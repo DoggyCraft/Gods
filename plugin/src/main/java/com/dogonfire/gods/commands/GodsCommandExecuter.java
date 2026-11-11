@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.managers.LanguageManager;
 
 public class GodsCommandExecuter implements CommandExecutor
 {
@@ -119,12 +118,12 @@ public class GodsCommandExecuter implements CommandExecutor
 				}
 			}
 			sender.sendMessage("" + ChatColor.AQUA);
-			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.GodsHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help", 80);
-			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.AltarHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g help altar", 160);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "help.commands-hint", 80);
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "help.altar-hint", 160);
 
 			if (ctx.settings().prayers().enabled())
 			{
-				ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayForHelp, ChatColor.AQUA, 0, ChatColor.WHITE + "/g prayfor", 240);
+				ctx.godSpeech().sendInfo(player.getUniqueId(), "help.prayfor-hint", 240);
 			}
 		}
 		sender.sendMessage(ChatColor.GREEN + "For the full command list, please use " + ChatColor.AQUA + "/gods help");
