@@ -17,6 +17,8 @@ public class GodListService
 	private final GodsContext			ctx;
 	private final GodListRepository		whitelist;
 	private final GodListRepository		blacklist;
+	// Whether whitelist.yml was read at least once; a reload that can't read it keeps the list read before
+	private boolean						whitelistUsable;
 
 	public GodListService(GodsContext ctx, GodListRepository whitelist, GodListRepository blacklist)
 	{
@@ -29,9 +31,22 @@ public class GodListService
 	{
 		if (ctx.settings().gods().whitelist())
 		{
-			this.whitelist.load();
+			boolean read = this.whitelist.load();
+			if (read)
+			{
+				this.whitelistUsable = true;
+			}
+			else if (this.whitelistUsable)
+			{
+				ctx.plugin().getLogger().warning("whitelist.yml could not be read; using the whitelist as it was before the reload.");
+			}
+			else
+			{
+				// An empty whitelist would block every god
+				ctx.plugin().getLogger().warning("whitelist.yml could not be read, so the whitelist is OFF until it is fixed (and Gods is reloaded).");
+			}
 
-			if (this.whitelist.size() == 0)
+			if (read && this.whitelist.size() == 0)
 			{
 				this.whitelist.put(EXAMPLE_GOD, Map.of("MinPower", 0));
 				this.whitelist.save();
@@ -42,9 +57,9 @@ public class GodListService
 
 		if (ctx.settings().gods().blacklist())
 		{
-			this.blacklist.load();
+			boolean read = this.blacklist.load();
 
-			if (this.blacklist.size() == 0)
+			if (read && this.blacklist.size() == 0)
 			{
 				this.blacklist.put(EXAMPLE_GOD, "");
 				this.blacklist.save();
@@ -60,10 +75,13 @@ public class GodListService
 		return ctx.settings().gods().blacklist() && this.blacklist.contains(godName);
 	}
 
-	/** Whether this god may be prayed to as far as the whitelist goes: always while it is off */
+	/**
+	 * Whether this god may be prayed to as far as the whitelist goes: always while it is off, or while whitelist.yml
+	 * has never been read successfully (it can't be read)
+	 */
 	public boolean isWhitelistedGod(String godName)
 	{
-		return !ctx.settings().gods().whitelist() || this.whitelist.contains(godName);
+		return !ctx.settings().gods().whitelist() || !this.whitelistUsable || this.whitelist.contains(godName);
 	}
 
 	/** Whether this god may be prayed to: not blacklisted, and whitelisted if the whitelist is on */
