@@ -433,11 +433,7 @@ public final class GodUpdateTask implements Runnable
 		}
 		else if (ctx.questService().hasExpiredQuest(godName))
 		{
-			ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
-
-			ctx.questService().godSayFailed(godName);
-
-			ctx.questService().removeFailedQuestForGod(godName);
+			ctx.questService().failQuest(godName);
 		}
 		else if (random.nextInt(5) == 0)
 		{

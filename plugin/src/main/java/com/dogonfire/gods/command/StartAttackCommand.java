@@ -52,7 +52,10 @@ public final class StartAttackCommand extends SubCommand
 		{
 			throw new CommandException("command.startattack.under-attack");
 		}
-		this.ctx.relationService().setContestedHolyLandForGod(godName, location);
+		if (!this.ctx.relationService().setContestedHolyLandForGod(godName, location))
+		{
+			throw new CommandException("command.cancelled");
+		}
 		send(sender, "command.startattack.done", Messages.god(otherGodName));
 		this.ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.attacking-hint");
 		this.ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_ATTACK_STARTED, 40, Messages.player(otherGodName));

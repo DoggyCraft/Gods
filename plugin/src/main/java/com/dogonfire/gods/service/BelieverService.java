@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.Believer;
 import com.dogonfire.gods.storage.BelieverRepository;
@@ -128,6 +129,12 @@ public class BelieverService
 	}
 
 	/** One more prayer to {@code godName}, whenever the last one was */
+	/** Whether a prayer to {@code godName} would count now ({@link #addPrayer} returns false if not) */
+	public boolean canPray(UUID believerId, String godName)
+	{
+		return BelieverRules.canPray(find(believerId), godName, now(), ctx.settings().prayers().minMinutesBetweenPrayers());
+	}
+
 	public boolean incPrayer(UUID believerId, String godName)
 	{
 		Believer believer = getOrCreate(believerId);
@@ -178,8 +185,11 @@ public class BelieverService
 		return BelieverRules.hasRecentPrayer(lastPrayer(believerId), Instant.now(), ctx.settings().prayers().minMinutesBetweenPrayers());
 	}
 
-	/** The believer leaves {@code godName} (if that is their god); the rest of their entry stays */
-	public void believerLeave(String godName, UUID believerId)
+	/**
+	 * The believer leaves {@code godName} (if that is their god); the rest of their entry stays. Fires a
+	 * {@link BelieverLeaveGodEvent}.
+	 */
+	public void believerLeave(String godName, UUID believerId, BelieverLeaveGodEvent.Reason reason)
 	{
 		if (godName == null || believerId == null)
 		{
@@ -193,10 +203,14 @@ public class BelieverService
 		believer.setGodName(null);
 		changed();
 		ctx.chatService().refresh(believerId);
+		ctx.fire(new BelieverLeaveGodEvent(godName, believerId, reason));
 	}
 
-	/** Removes the believer's whole entry, if they believe in {@code godName} or in no god */
-	public void removeBeliever(String godName, UUID believerId)
+	/**
+	 * Removes the believer's whole entry, if they believe in {@code godName} or in no god. Fires a
+	 * {@link BelieverLeaveGodEvent} if they believed in it.
+	 */
+	public void removeBeliever(String godName, UUID believerId, BelieverLeaveGodEvent.Reason reason)
 	{
 		String believerGodName = getGodForBeliever(believerId);
 		if (believerGodName != null && !believerGodName.equals(godName))
@@ -211,6 +225,11 @@ public class BelieverService
 
 		changed();
 		ctx.chatService().refresh(believerId);
+
+		if (believerGodName != null)
+		{
+			ctx.fire(new BelieverLeaveGodEvent(godName, believerId, reason));
+		}
 	}
 
 	// ---------------------------------------------------------------------

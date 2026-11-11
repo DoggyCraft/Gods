@@ -32,7 +32,10 @@ public final class HolyArtifactCommand extends SubCommand
 		{
 			throw new CommandException("command.holyartifact.already");
 		}
-		this.ctx.blessingService().blessPlayerWithHolyArtifact(godName, player);
+		if (!this.ctx.blessingService().blessPlayerWithHolyArtifact(godName, player))
+		{
+			throw new CommandException("command.cancelled");
+		}
 		send(sender, "command.holyartifact.done", Messages.god(godName), Messages.player(player.getName()));
 	}
 }

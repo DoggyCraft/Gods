@@ -14,6 +14,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.BelieverJoinGodEvent;
+import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
+import com.dogonfire.gods.api.event.BelieverPrayEvent;
+import com.dogonfire.gods.api.event.GodCreateEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodGender;
@@ -47,7 +51,7 @@ public class PrayerService
 		return false;
 	}
 
-	private boolean addBelief(Player player, String godName, boolean allowChangeGod)
+	private boolean addBelief(Player player, String godName, boolean allowChangeGod, BelieverJoinGodEvent.Reason reason)
 	{
 		String oldGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
@@ -76,6 +80,13 @@ public class PrayerService
 			ctx.believerService().clearChangingGod(player.getUniqueId());
 		}
 
+		// Joining can be cancelled; if they can't pray yet, addPrayer says so as before
+		boolean joining = oldGodName == null || !oldGodName.equals(godName);
+		if (joining && ctx.believerService().canPray(player.getUniqueId(), godName) && ctx.fire(new BelieverJoinGodEvent(godName, player, oldGodName, reason)).isCancelled())
+		{
+			return false;
+		}
+
 		if (!ctx.believerService().addPrayer(player.getUniqueId(), godName))
 		{
 			int timeUntilCanPray = ctx.believerService().getTimeUntilCanPray(player.getUniqueId());
@@ -90,6 +101,7 @@ public class PrayerService
 			{
 				ctx.priestService().removePriest(oldGodName, player.getUniqueId());
 			}
+			ctx.fire(new BelieverLeaveGodEvent(oldGodName, player.getUniqueId(), BelieverLeaveGodEvent.Reason.CHANGED_GOD));
 
 
 			ctx.godSpeech().sayToBelievers(oldGodName, Voice.BELIEVERS_PLAYER_LEFT_RELIGION, 2 + this.random.nextInt(20), Messages.player(player.getName()));
@@ -117,7 +129,7 @@ public class PrayerService
 				ctx.marriageService().divorce(player.getUniqueId());
 			}
 			
-			ctx.questService().handleJoinReligion(player.getName(), godName);
+			ctx.questService().handleJoinReligion(player, godName);
 
 			if (ctx.settings().bibles().enabled() && ctx.settings().bibles().giveOnJoin())
 			{
@@ -170,6 +182,11 @@ public class PrayerService
 
 			ctx.plugin().logDebug("God divine force is " + godType);
 
+			if (ctx.fire(new GodCreateEvent(godName, player, ApiSnapshots.godType(godType), ApiSnapshots.gender(godGender), player.getLocation())).isCancelled())
+			{
+				return false;
+			}
+
 			ctx.godService().createGod(godName, player.getLocation(), godGender, godType);
 
 			if (ctx.settings().gods().broadcastNewGods())
@@ -180,7 +197,7 @@ public class PrayerService
 			ctx.plugin().log(player.getName() + " created new god " + godName);
 		}
 
-		return addBelief(player, godName, allowChangeGod);
+		return addBelief(player, godName, allowChangeGod, BelieverJoinGodEvent.Reason.ALTAR);
 	}
 
 	public void believerAccept(UUID believerId)
@@ -212,7 +229,7 @@ public class PrayerService
 		if (pendingGodInvitation != null)
 		{
 			ctx.plugin().logDebug("pendingGodInvitation is " + pendingGodInvitation);
-			if (addBelief(player, pendingGodInvitation, true))
+			if (addBelief(player, pendingGodInvitation, true, BelieverJoinGodEvent.Reason.INVITATION))
 			{
 				ctx.believerService().clearInvitation(believerId);
 
@@ -240,7 +257,11 @@ public class PrayerService
 		{
 			if (pendingPriest.equals(believerId))
 			{
-				ctx.priestService().assignPriest(godName, believerId);
+				if (!ctx.priestService().assignPriest(godName, believerId))
+				{
+					ctx.plugin().log(player.getName() + " accepted the offer from " + godName + " to be priest, but did not become one");
+					return;
+				}
 
 				ctx.plugin().log(player.getName() + " accepted the offer from " + godName + " to be priest");
 
@@ -281,7 +302,7 @@ public class PrayerService
 		{
 			ctx.priestService().removePriest(godName, believerId);
 		}
-		ctx.believerService().believerLeave(godName, believerId);
+		ctx.believerService().believerLeave(godName, believerId, BelieverLeaveGodEvent.Reason.LEFT);
 
 
 		if (ctx.settings().marriage().enabled())
@@ -350,6 +371,11 @@ public class PrayerService
 			return false;
 		}
 
+		if (godName != null && ctx.fire(new BelieverPrayEvent(godName, player, location)).isCancelled())
+		{
+			return false;
+		}
+
 		if (addBeliefByAltar(player, godName, location, ctx.believerService().getChangingGod(player.getUniqueId())))
 		{
 			Block altarBlock = ctx.altarService().getAltarBlockFromSign(player.getWorld().getBlockAt(location));
@@ -402,7 +428,7 @@ public class PrayerService
 			{
 				ctx.priestService().removePriest(godName, playerId);
 			}
-			ctx.believerService().believerLeave(godName, playerId);
+			ctx.believerService().believerLeave(godName, playerId, BelieverLeaveGodEvent.Reason.DIED);
 		}
 	}
 
@@ -439,7 +465,7 @@ public class PrayerService
 						ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_LOST_BELIEVER, 2 + this.random.nextInt(100), Messages.player(believerName));
 					}
 
-					ctx.believerService().removeBeliever(godName, believerId);
+					ctx.believerService().removeBeliever(godName, believerId, BelieverLeaveGodEvent.Reason.INACTIVE);
 				}
 			}
 

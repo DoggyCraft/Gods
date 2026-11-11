@@ -12,8 +12,24 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.api.event.BelieverJoinGodEvent;
+import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
+import com.dogonfire.gods.api.event.BelieverPrayEvent;
+import com.dogonfire.gods.api.event.GodBlessPlayerEvent;
+import com.dogonfire.gods.api.event.GodCreateEvent;
+import com.dogonfire.gods.api.event.GodCursePlayerEvent;
 import com.dogonfire.gods.api.event.GodEvent;
+import com.dogonfire.gods.api.event.GodMoodChangeEvent;
+import com.dogonfire.gods.api.event.GodRelationChangeEvent;
 import com.dogonfire.gods.api.event.GodSpeakEvent;
+import com.dogonfire.gods.api.event.HolyLandAttackStartEvent;
+import com.dogonfire.gods.api.event.HolyLandClaimEvent;
+import com.dogonfire.gods.api.event.PriestAssignEvent;
+import com.dogonfire.gods.api.event.PriestRemoveEvent;
+import com.dogonfire.gods.api.event.QuestCompleteEvent;
+import com.dogonfire.gods.api.event.QuestEvent;
+import com.dogonfire.gods.api.event.QuestFailEvent;
+import com.dogonfire.gods.api.event.QuestStartEvent;
 
 /**
  * The API may only expose Java, Bukkit and its own types. Gods' internals change between versions, and Adventure is
@@ -23,7 +39,10 @@ class ApiSurfaceTest
 {
 	private static final List<Class<?>> API = List.of(GodsApi.class, GodInfo.class, BelieverInfo.class, QuestInfo.class,
 			GodType.class, GodGender.class, GodMood.class, QuestType.class,
-			GodEvent.class, GodSpeakEvent.class);
+			GodEvent.class, GodSpeakEvent.class, BelieverPrayEvent.class, BelieverJoinGodEvent.class, BelieverLeaveGodEvent.class,
+			GodCreateEvent.class, GodMoodChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
+			GodCursePlayerEvent.class, QuestEvent.class, QuestStartEvent.class, QuestCompleteEvent.class, QuestFailEvent.class,
+			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class);
 
 	@Test
 	void onlyExposesJavaBukkitAndApiTypes()

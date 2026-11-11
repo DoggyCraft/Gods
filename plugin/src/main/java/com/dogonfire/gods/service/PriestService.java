@@ -13,6 +13,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.PriestAssignEvent;
+import com.dogonfire.gods.api.event.PriestRemoveEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.God;
@@ -67,6 +69,11 @@ public class PriestService
 		ctx.plugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
 	}
 
+	/**
+	 * Makes the believer a priest of their god (firing a {@link PriestAssignEvent}) and clears the god's priest offer.
+	 *
+	 * @return false if they don't believe in the god or a listener cancelled it
+	 */
 	public boolean assignPriest(String godName, UUID playerId)
 	{
 		God existing = this.repository.find(godName);
@@ -91,6 +98,11 @@ public class PriestService
 			}
 			else
 			{
+				if (ctx.fire(new PriestAssignEvent(god.name(), playerId)).isCancelled())
+				{
+					this.repository.markDirty();
+					return false;
+				}
 				god.priests().add(playerId);
 				dispatchPriestCommand(ctx.settings().priests().assignCommand(), playerId);
 			}
@@ -259,12 +271,8 @@ public class PriestService
 					return false;
 				}
 
-				if (setPendingPriest(godName, believerId))
+				if (offerPriesthood(godName, player))
 				{
-					ctx.plugin().log(godName + " offered " + player.getName() + " to be priest");
-
-					ctx.godSpeech().sayWithQuestion(godName, player, Voice.BELIEVER_OFFER_PRIEST, 2, Messages.player(player.getName()));
-
 					return true;
 				}
 			}
@@ -317,6 +325,25 @@ public class PriestService
 		return false;
 	}
 
+	/**
+	 * The god offers the believer to become its priest; they answer with /g yes or /g no. At most one offer every 3
+	 * minutes per god.
+	 *
+	 * @return false if the god offered priesthood too recently
+	 */
+	public boolean offerPriesthood(String godName, Player player)
+	{
+		if (!setPendingPriest(godName, player.getUniqueId()))
+		{
+			return false;
+		}
+		ctx.plugin().log(godName + " offered " + player.getName() + " to be priest");
+
+		ctx.godSpeech().sayWithQuestion(godName, player, Voice.BELIEVER_OFFER_PRIEST, 2, Messages.player(player.getName()));
+		return true;
+	}
+
+	/** Removes the priest (firing a {@link PriestRemoveEvent} if they were one) */
 	public void removePriest(String godName, UUID playerId)
 	{
 		God god = this.repository.find(godName);
@@ -324,6 +351,7 @@ public class PriestService
 		if (god != null && god.priests().remove(playerId))
 		{
 			dispatchPriestCommand(ctx.settings().priests().removeCommand(), playerId);
+			ctx.fire(new PriestRemoveEvent(god.name(), playerId));
 		}
 
 		ctx.chatService().refresh(playerId);

@@ -6,12 +6,16 @@ import java.util.List;
 import org.bukkit.Location;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.GodRelationChangeEvent;
+import com.dogonfire.gods.api.event.HolyLandAttackStartEvent;
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.ContestedLand;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.storage.GodRepository;
 
 /**
- * Relations between gods: alliances and wars (priests toggle them with /g alliance and /g war), and the holy land a
+ * Relations between gods: alliances and wars (priests toggle them with /g ally and /g war), and the holy land a
  * god attacks. {@link HolyLandService} owns the attack itself (on the land: who attacks, kills, when it ends); this
  * keeps the attacker's side in gods.yml and drops it once the land no longer has this god as attacker. The rules are
  * in {@link RelationRules}. Main thread only.
@@ -60,45 +64,71 @@ public class RelationService
 	}
 
 	/**
-	 * Makes the two gods allies (ending any war between them), or ends their alliance if they are allies.
+	 * Makes the two gods allies (ending any war between them), or ends their alliance, and tells both gods' believers.
+	 * Fires a {@link GodRelationChangeEvent}; does nothing if they are already (not) allies.
 	 *
-	 * @return true if they are allies now
+	 * @return false if a listener cancelled it
 	 */
-	public boolean toggleAllianceRelationForGod(String godName, String allyGodName)
+	public boolean setAlliance(String godName, String allyGodName, boolean allied)
 	{
-		if (!hasAllianceRelation(godName, allyGodName))
+		if (hasAllianceRelation(godName, allyGodName) == allied)
+		{
+			return true;
+		}
+		if (ctx.fire(new GodRelationChangeEvent(godName, allyGodName, GodRelationChangeEvent.Relation.ALLIANCE, allied)).isCancelled())
+		{
+			return false;
+		}
+
+		if (allied)
 		{
 			RelationRules.makeAllies(this.repository.forChange(godName), this.repository.forChange(allyGodName));
 			this.repository.markDirty();
-
-			return true;
+		}
+		else
+		{
+			RelationRules.end(god(godName), godName, god(allyGodName), allyGodName, true);
+			this.repository.save();
 		}
 
-		RelationRules.end(god(godName), godName, god(allyGodName), allyGodName, true);
-		this.repository.save();
-
-		return false;
+		Voice voice = allied ? Voice.BELIEVERS_ALLIANCE : Voice.BELIEVERS_ALLIANCE_CANCELLED;
+		ctx.godSpeech().sayToBelievers(allyGodName, voice, 10, Messages.player(godName));
+		ctx.godSpeech().sayToBelievers(godName, voice, 10, Messages.player(allyGodName));
+		return true;
 	}
 
 	/**
-	 * Puts the two gods at war (ending any alliance between them), or ends their war if they are at war.
+	 * Puts the two gods at war (ending any alliance between them), or ends their war, and tells both gods' believers.
+	 * Fires a {@link GodRelationChangeEvent}; does nothing if they are already (not) at war.
 	 *
-	 * @return true if they are at war now
+	 * @return false if a listener cancelled it
 	 */
-	public boolean toggleWarRelationForGod(String godName, String enemyGodName)
+	public boolean setWar(String godName, String enemyGodName, boolean atWar)
 	{
-		if (!hasWarRelation(godName, enemyGodName))
+		if (hasWarRelation(godName, enemyGodName) == atWar)
+		{
+			return true;
+		}
+		if (ctx.fire(new GodRelationChangeEvent(godName, enemyGodName, GodRelationChangeEvent.Relation.WAR, atWar)).isCancelled())
+		{
+			return false;
+		}
+
+		if (atWar)
 		{
 			RelationRules.makeEnemies(this.repository.forChange(godName), this.repository.forChange(enemyGodName));
 			this.repository.markDirty();
-
-			return true;
+		}
+		else
+		{
+			RelationRules.end(god(godName), godName, god(enemyGodName), enemyGodName, false);
+			this.repository.save();
 		}
 
-		RelationRules.end(god(godName), godName, god(enemyGodName), enemyGodName, false);
-		this.repository.save();
-
-		return false;
+		Voice voice = atWar ? Voice.BELIEVERS_WAR : Voice.BELIEVERS_WAR_CANCELLED;
+		ctx.godSpeech().sayToBelievers(enemyGodName, voice, 10, Messages.player(godName));
+		ctx.godSpeech().sayToBelievers(godName, voice, 10, Messages.player(enemyGodName));
+		return true;
 	}
 
 	/** A god is removed: no other god is its ally or enemy any more */
@@ -113,9 +143,18 @@ public class RelationService
 	// ---------------------------------------------------------------------
 	// The holy land a god attacks
 
-	/** A priest started an attack on the holy land at {@code contestedLand} */
-	public void setContestedHolyLandForGod(String godName, Location contestedLand)
+	/**
+	 * A priest started an attack on the holy land at {@code contestedLand}. Fires a {@link HolyLandAttackStartEvent}.
+	 *
+	 * @return false if a listener cancelled it
+	 */
+	public boolean setContestedHolyLandForGod(String godName, Location contestedLand)
 	{
+		if (ctx.fire(new HolyLandAttackStartEvent(godName, ctx.holyLandService().getGodAtHolyLandLocation(contestedLand), contestedLand)).isCancelled())
+		{
+			return false;
+		}
+
 		God god = this.repository.forChange(godName);
 		if (god != null)
 		{
@@ -126,6 +165,7 @@ public class RelationService
 		ctx.holyLandService().setContestedLand(contestedLand, godName);
 
 		this.repository.markDirty();
+		return true;
 	}
 
 	public void clearContestedHolyLandForGod(String godName)

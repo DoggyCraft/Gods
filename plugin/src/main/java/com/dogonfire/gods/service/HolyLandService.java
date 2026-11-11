@@ -15,6 +15,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.HolyLandClaimEvent;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.HolyLand;
@@ -272,6 +273,11 @@ public class HolyLandService
 			return;
 		}
 
+		if (ctx.fire(new HolyLandClaimEvent(godName, player, location)).isCancelled())
+		{
+			return;
+		}
+
 		setHolyLand(location, godName);
 		setHolyLandName(location, generateHolyLandName(location.getBlock().getBiome()));
 
@@ -302,6 +308,11 @@ public class HolyLandService
 		}
 
 		if (getClaimedChunksForGod(godName) >= getMaximumChunksForGod(godName))
+		{
+			return;
+		}
+
+		if (ctx.fire(new HolyLandClaimEvent(godName, player, location)).isCancelled())
 		{
 			return;
 		}

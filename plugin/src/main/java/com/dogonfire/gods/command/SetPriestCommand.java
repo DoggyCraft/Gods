@@ -26,8 +26,13 @@ public final class SetPriestCommand extends SubCommand
 			throw new CommandException("command.setpriest.no-god", Messages.god(godName));
 		}
 		Player priest = onlinePlayer(args.get(1), "command.setpriest.no-player");
-		String result = this.ctx.priestService().assignPriest(godName, priest.getUniqueId()) ? "command.setpriest.done" : "command.setpriest.failed";
-		send(sender, result, Messages.player(priest.getName()), Messages.god(godName));
+		boolean believer = godName.equals(godOf(priest));
+		if (!this.ctx.priestService().assignPriest(godName, priest.getUniqueId()))
+		{
+			// A believer who isn't made priest was stopped by another plugin
+			throw believer ? new CommandException("command.cancelled") : new CommandException("command.setpriest.failed", Messages.player(priest.getName()), Messages.god(godName));
+		}
+		send(sender, "command.setpriest.done", Messages.player(priest.getName()), Messages.god(godName));
 	}
 
 	@Override

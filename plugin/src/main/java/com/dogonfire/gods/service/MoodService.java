@@ -1,6 +1,7 @@
 package com.dogonfire.gods.service;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.GodMoodChangeEvent;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.storage.GodRepository;
@@ -20,7 +21,10 @@ public class MoodService
 		this.repository = repository;
 	}
 
-	/** Adds to (or with a negative value, takes from) the god's mood, within -100 to 100 */
+	/**
+	 * Adds to (or with a negative value, takes from) the god's mood, within -100 to 100. Fires a
+	 * {@link GodMoodChangeEvent} if the mood changes; a listener may cancel or change it.
+	 */
 	public void addMoodForGod(String godName, float mood)
 	{
 		God god = this.repository.forChange(godName);
@@ -29,7 +33,18 @@ public class MoodService
 			return;
 		}
 
-		god.setMood(MoodRules.add(god.mood(), mood));
+		float newMood = MoodRules.add(god.mood(), mood);
+		if (newMood == god.mood())
+		{
+			return;
+		}
+		GodMoodChangeEvent event = ctx.fire(new GodMoodChangeEvent(god.name(), god.mood(), newMood));
+		if (event.isCancelled())
+		{
+			return;
+		}
+
+		god.setMood(MoodRules.add(event.getNewMood(), 0.0F));
 
 		this.repository.markDirty();
 	}

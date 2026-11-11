@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
-import com.dogonfire.gods.message.Voice;
 
 /** /g war &lt;god&gt;: starts or ends a war of the priest's god with another god */
 public final class WarCommand extends SubCommand
@@ -37,9 +36,11 @@ public final class WarCommand extends SubCommand
 		{
 			throw new CommandException("command.war.allied", Messages.god(typed));
 		}
-		Voice voice = this.ctx.relationService().toggleWarRelationForGod(godName, enemyGodName) ? Voice.BELIEVERS_WAR : Voice.BELIEVERS_WAR_CANCELLED;
-		this.ctx.godSpeech().sayToBelievers(enemyGodName, voice, 10, Messages.player(godName));
-		this.ctx.godSpeech().sayToBelievers(godName, voice, 10, Messages.player(enemyGodName));
+		boolean atWar = !this.ctx.relationService().hasWarRelation(godName, enemyGodName);
+		if (!this.ctx.relationService().setWar(godName, enemyGodName, atWar))
+		{
+			throw new CommandException("command.cancelled");
+		}
 	}
 
 	@Override

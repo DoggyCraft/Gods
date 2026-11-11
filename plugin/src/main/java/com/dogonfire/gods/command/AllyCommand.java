@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
-import com.dogonfire.gods.message.Voice;
 
 /** /g ally &lt;god&gt;: starts or ends an alliance of the priest's god with another god */
 public final class AllyCommand extends SubCommand
@@ -37,9 +36,11 @@ public final class AllyCommand extends SubCommand
 		{
 			throw new CommandException("command.ally.at-war", Messages.god(typed));
 		}
-		Voice voice = this.ctx.relationService().toggleAllianceRelationForGod(godName, allyGodName) ? Voice.BELIEVERS_ALLIANCE : Voice.BELIEVERS_ALLIANCE_CANCELLED;
-		this.ctx.godSpeech().sayToBelievers(allyGodName, voice, 10, Messages.player(godName));
-		this.ctx.godSpeech().sayToBelievers(godName, voice, 10, Messages.player(allyGodName));
+		boolean allied = !this.ctx.relationService().hasAllianceRelation(godName, allyGodName);
+		if (!this.ctx.relationService().setAlliance(godName, allyGodName, allied))
+		{
+			throw new CommandException("command.cancelled");
+		}
 	}
 
 	@Override

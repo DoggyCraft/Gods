@@ -20,6 +20,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.QuestInfo;
+import com.dogonfire.gods.api.event.QuestCompleteEvent;
+import com.dogonfire.gods.api.event.QuestFailEvent;
+import com.dogonfire.gods.api.event.QuestStartEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.Quest;
@@ -295,6 +299,14 @@ public class QuestService
 			}
 		}
 
+		// Other plugins may take the new quest back before the believers hear of it
+		if (newQuest && ctx.fire(new QuestStartEvent(snapshot(godName))).isCancelled())
+		{
+			ctx.plugin().logDebug("Another plugin cancelled the new quest of " + godName);
+			discardQuest(godName);
+			newQuest = false;
+		}
+
 		ctx.godService().setTimeSinceLastQuest(godName);
 
 		if (newQuest)
@@ -504,7 +516,7 @@ public class QuestService
 		return TagResolver.resolver(Messages.amount(amount), Messages.type(targetDisplayName(godName, questType)));
 	}
 
-	public void godSayFailed(String godName)
+	private void godSayFailed(String godName)
 	{
 		QuestType questType = questType(godName);
 		Voice message = questSpeech(questType, Phase.FAILED);
@@ -680,7 +692,8 @@ public class QuestService
 		}
 	}
 
-	public boolean handleJoinReligion(String playerName, String godName)
+	/** A player joined the god: counts for a convert quest */
+	public boolean handleJoinReligion(Player player, String godName)
 	{
 		if (!hasQuest(godName) || questType(godName) != QuestType.CONVERT)
 		{
@@ -689,7 +702,7 @@ public class QuestService
 
 		if (addProgress(godName))
 		{
-			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CONVERT_QUEST_COMPLETED, 2 + this.random.nextInt(10), Messages.player(playerName));
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CONVERT_QUEST_COMPLETED, 2 + this.random.nextInt(10), Messages.player(player.getName()));
 			complete(godName, 1.0F);
 		}
 		else
@@ -858,11 +871,80 @@ public class QuestService
 		return true;
 	}
 
+
 	// ---------------------------------------------------------------------
 	// Ending quests
 
-	/** Removes a failed quest: takes away its pilgrimage chest, then always clears the quest, even if the chest can't be removed */
+	/** The god's quest as the API shows it, or null if it has none */
+	public QuestInfo snapshot(String godName)
+	{
+		return ApiSnapshots.quest(quest(godName), getQuestLocation(godName));
+	}
+
+	/**
+	 * Ends the god's quest as completed, as if its believers had done it (for the API): the god says so, is pleased and
+	 * rewards its believers. Returns false if it has no quest.
+	 */
+	public boolean completeQuest(String godName)
+	{
+		if (!hasQuest(godName))
+		{
+			return false;
+		}
+		QuestType questType = questType(godName);
+		Voice message = questSpeech(questType, Phase.COMPLETED);
+		if (message != null)
+		{
+			ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(10), questTags(godName, questType, 0));
+		}
+		// Nobody opened the pilgrimage chest, so it goes
+		removeChest(godName);
+		complete(godName, 1.0F);
+		return true;
+	}
+
+	/** The quest failed (its time ran out, or the API failed it): the god is angered, says so and the quest is removed */
+	public boolean failQuest(String godName)
+	{
+		if (!hasQuest(godName))
+		{
+			return false;
+		}
+		ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
+
+		godSayFailed(godName);
+
+		removeFailedQuestForGod(godName);
+		return true;
+	}
+
+	/**
+	 * Removes a failed quest (firing {@link QuestFailEvent}): takes away its pilgrimage chest, then always clears the
+	 * quest, even if the chest can't be removed
+	 */
 	public void removeFailedQuestForGod(String godName)
+	{
+		QuestInfo quest = snapshot(godName);
+		if (quest != null)
+		{
+			ctx.fire(new QuestFailEvent(quest));
+		}
+		discardQuest(godName);
+	}
+
+	/** Removes a quest that is done, firing {@link QuestCompleteEvent} */
+	public void removeSuccessQuestForGod(String godName)
+	{
+		QuestInfo quest = snapshot(godName);
+		if (quest != null)
+		{
+			ctx.fire(new QuestCompleteEvent(quest));
+		}
+		removeQuest(godName);
+	}
+
+	/** Takes away the quest's pilgrimage chest, if it has one; never throws */
+	private void removeChest(String godName)
 	{
 		try
 		{
@@ -880,14 +962,12 @@ public class QuestService
 		{
 			ctx.plugin().log("Could not remove the pilgrimage chest of " + godName + ": " + ex.getMessage());
 		}
-		finally
-		{
-			removeQuest(godName);
-		}
 	}
 
-	public void removeSuccessQuestForGod(String godName)
+	/** Removes the quest and its pilgrimage chest, without an event */
+	private void discardQuest(String godName)
 	{
+		removeChest(godName);
 		removeQuest(godName);
 	}
 

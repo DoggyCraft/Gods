@@ -440,7 +440,7 @@ public class CommandmentService
 				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_HOLY_FOOD_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(eatFoodType)));
 			}
 
-			ctx.blessingService().strikePlayerWithLightning(believer.getUniqueId(), 1 + this.random.nextInt(3));
+			ctx.blessingService().smite(godName, believer, 1 + this.random.nextInt(3));
 
 			return;
 		}
@@ -467,7 +467,7 @@ public class CommandmentService
 		else
 		{
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
-			ctx.blessingService().strikePlayerWithLightning(believer.getUniqueId(), 1 + this.random.nextInt(3));
+			ctx.blessingService().smite(godName, believer, 1 + this.random.nextInt(3));
 			ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_BAD_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(type)));
 		}
 

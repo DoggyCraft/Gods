@@ -15,6 +15,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.GodBlessPlayerEvent;
+import com.dogonfire.gods.api.event.GodCursePlayerEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.config.Settings;
@@ -77,6 +79,11 @@ public class BlessingService
 
 		int ticks = BlessingRules.blessingTicks(godPower);
 
+		if (ctx.fire(new GodBlessPlayerEvent(godName, player, GodBlessPlayerEvent.Blessing.EFFECT)).isCancelled())
+		{
+			return false;
+		}
+
 		switch (blessingType)
 		{
 		case 0:
@@ -100,13 +107,14 @@ public class BlessingService
 		return true;
 	}
 
-	public void blessPlayerWithHolyArtifact(String godName, Player player)
+	/** Gives the player a holy artifact of the god's type; false if they can't get one (see {@link #giveHolyArtifact}) */
+	public boolean blessPlayerWithHolyArtifact(String godName, Player player)
 	{
 		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
-			return;
+			return false;
 		}
-		giveHolyArtifact(godName, ctx.godService().getDivineForceForGod(godName), player, true);
+		return giveHolyArtifact(godName, ctx.godService().getDivineForceForGod(godName), player, true);
 	}
 
 	public ItemStack blessPlayerWithItem(String godName, Player player)
@@ -116,9 +124,9 @@ public class BlessingService
 			return null;
 		}
 		ItemStack item = getItemNeed(godName, player);
-		if (item != null)
+		if (item == null || !giveItem(godName, player, item.getType(), true))
 		{
-			giveItem(godName, player, item.getType(), true);
+			return null;
 		}
 		return item;
 	}
@@ -142,6 +150,17 @@ public class BlessingService
 				kind -> !((kind == BlessingRules.CURSE_LIGHTNING && !curses.lightning()) || (kind == BlessingRules.CURSE_MOBS && !curses.mobs())));
 
 		int ticks = BlessingRules.curseTicks(godPower);
+
+		GodCursePlayerEvent.Curse curse = switch (curseType)
+		{
+			case BlessingRules.CURSE_LIGHTNING -> GodCursePlayerEvent.Curse.LIGHTNING;
+			case BlessingRules.CURSE_MOBS -> GodCursePlayerEvent.Curse.MOBS;
+			default -> GodCursePlayerEvent.Curse.EFFECT;
+		};
+		if (ctx.fire(new GodCursePlayerEvent(godName, player, curse)).isCancelled())
+		{
+			return false;
+		}
 
 		switch (curseType)
 		{
@@ -264,19 +283,39 @@ public class BlessingService
 		return false;
 	}
 
-	public void giveHolyArtifact(String godName, GodType godType, Player player, boolean speak)
+	/**
+	 * Drops a holy artifact in front of the player (a {@link GodBlessPlayerEvent})
+	 *
+	 * @return false if they carry one already or a listener cancelled it
+	 */
+	public boolean giveHolyArtifact(String godName, GodType godType, Player player, boolean speak)
 	{
 		// A second artifact would only drop at their feet: the pickup is refused while they carry one
 		if (ctx.holyArtifactService().hasHolyArtifact(player))
 		{
-			return;
+			return false;
+		}
+		if (ctx.fire(new GodBlessPlayerEvent(godName, player, GodBlessPlayerEvent.Blessing.HOLY_ARTIFACT)).isCancelled())
+		{
+			return false;
 		}
 		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GiveHolyArtifactTask(ctx, godName, godType, player, speak), 2L);
+		return true;
 	}
 
-	public void giveItem(String godName, Player player, Material material, boolean speak)
+	/**
+	 * Drops an item in front of the player (a {@link GodBlessPlayerEvent})
+	 *
+	 * @return false if a listener cancelled it
+	 */
+	public boolean giveItem(String godName, Player player, Material material, boolean speak)
 	{
+		if (ctx.fire(new GodBlessPlayerEvent(godName, player, GodBlessPlayerEvent.Blessing.ITEM)).isCancelled())
+		{
+			return false;
+		}
 		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GiveItemTask(ctx, godName, player, material, speak), 2L);
+		return true;
 	}
 
 	private boolean hasFood(Player player, String godName)
@@ -303,9 +342,19 @@ public class BlessingService
 		return false;
 	}
 
-	public void healPlayer(String godName, Player player)
+	/**
+	 * Heals the player (a {@link GodBlessPlayerEvent}); the god says so
+	 *
+	 * @return false if a listener cancelled it
+	 */
+	public boolean healPlayer(String godName, Player player)
 	{
+		if (ctx.fire(new GodBlessPlayerEvent(godName, player, GodBlessPlayerEvent.Blessing.HEAL)).isCancelled())
+		{
+			return false;
+		}
 		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new HealPlayerTask(ctx, godName, player, Voice.BELIEVER_HEALTH_BLESSING), 2L);
+		return true;
 	}
 
 	public void manageBlessedPlayer(String godName)
@@ -407,7 +456,23 @@ public class BlessingService
 		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new SpawnHostileMobsTask(ctx, godName, player, mobType, numberOfMobs), 2L);
 	}
 
-	public boolean strikePlayerWithLightning(UUID playerId, int damage)
+	/**
+	 * The god strikes the player with lightning (a {@link GodCursePlayerEvent}); {@code damage} 0 or less only looks
+	 * like lightning
+	 *
+	 * @return false if a listener cancelled it
+	 */
+	public boolean smite(String godName, Player player, int damage)
+	{
+		if (ctx.fire(new GodCursePlayerEvent(godName, player, GodCursePlayerEvent.Curse.LIGHTNING)).isCancelled())
+		{
+			return false;
+		}
+		return strikePlayerWithLightning(player.getUniqueId(), damage);
+	}
+
+	/** Lightning strikes the player, without an event: for curses that fired one already */
+	private boolean strikePlayerWithLightning(UUID playerId, int damage)
 	{
 		Player player = ctx.plugin().getServer().getPlayer(playerId);
 

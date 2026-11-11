@@ -123,8 +123,11 @@ public final class PrayForCommand extends SubCommand
 		{
 			throw new CommandException("command.prayfor.healthy");
 		}
+		if (!this.ctx.blessingService().healPlayer(godName, player))
+		{
+			throw new CommandException("command.cancelled");
+		}
 		this.ctx.godSpeech().sendInfo(playerId, "prayer.prayed-for-health", 1, Messages.amount(cost), Messages.god(godName));
-		this.ctx.blessingService().healPlayer(godName, player);
 		this.ctx.believerService().increasePrayerPower(playerId, -cost);
 		this.ctx.believerService().setItemBlessingTime(playerId);
 	}

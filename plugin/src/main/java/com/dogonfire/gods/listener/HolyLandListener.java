@@ -276,7 +276,7 @@ public class HolyLandListener implements Listener
 			{
 				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
-					ctx.blessingService().strikePlayerWithLightning(player.getUniqueId(), 3);
+					ctx.blessingService().smite(godName, player, 3);
 				}
 				event.setCancelled(true);
 
@@ -286,7 +286,7 @@ public class HolyLandListener implements Listener
 			{
 				if ((ctx.settings().holyLand().lightning()) && ((event.getEntity() instanceof Player)))
 				{
-					ctx.blessingService().strikePlayerWithLightning(player.getUniqueId(), 3);
+					ctx.blessingService().smite(godName, player, 3);
 				}
 				if (!ctx.relationService().hasWarRelation(godName, attackerGodName))
 				{

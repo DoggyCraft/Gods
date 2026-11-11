@@ -207,6 +207,8 @@ command:
   player-only: <red>This is a Player-Only command.
   priest-only: <red>This is a Priest-Only command.
   invalid: <red>Invalid Gods command!
+  # Another plugin stopped what the command was about to do
+  cancelled: <red>Another plugin stopped that.
   # /gods without a command
   gods:
     # <plugin> is "Gods vX.Y", <amount> the number of gods, <believers> the number of believers
