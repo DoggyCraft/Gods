@@ -34,6 +34,7 @@ import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.service.HolyLandContest;
+import com.dogonfire.gods.service.HolyLandRules;
 import com.dogonfire.gods.service.HolyLandService;
 
 /**
@@ -333,7 +334,8 @@ public class HolyLandListener implements Listener
 	@EventHandler(ignoreCancelled = true)
 	public void onCreatureSpawn(CreatureSpawnEvent event)
 	{
-		if (!isActiveIn(event.getLocation().getWorld()))
+		// Only what the world spawns by itself: eggs, breeding, golems, commands and plugins are let in
+		if (!HolyLandRules.isWorldSpawn(event.getSpawnReason()) || !isActiveIn(event.getLocation().getWorld()))
 		{
 			return;
 		}
@@ -356,12 +358,12 @@ public class HolyLandListener implements Listener
 				return;
 			}
 
-			if (event.getEntity().getType() == ctx.commandmentService().getHolyMobTypeForGod(godName))
+			if (event.getEntity().getType() == ctx.commandmentService().findHolyMobType(godName))
 			{
 				return;
 			}
 
-			if (event.getEntity().getType() == ctx.commandmentService().getUnholyMobTypeForGod(godName))
+			if (event.getEntity().getType() == ctx.commandmentService().findUnholyMobType(godName))
 			{
 				ctx.plugin().logDebug("Prevented unholy mob " + event.getEntityType() + " from spawning in Holy Land of " + godName);
 				event.setCancelled(true);

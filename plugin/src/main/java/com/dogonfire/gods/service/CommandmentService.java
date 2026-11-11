@@ -279,6 +279,24 @@ public class CommandmentService
 		}
 	}
 
+	/**
+	 * The holy mob of a god as stored, or null if there is no such god or it has none yet. Unlike
+	 * {@link #getHolyMobTypeForGod} it changes nothing (it never picks one or creates the god), so event handlers can
+	 * call it for any land.
+	 */
+	public EntityType findHolyMobType(String godName)
+	{
+		God god = this.repository.find(godName);
+		return god != null ? parseEntityType(god.holyMob()) : null;
+	}
+
+	/** {@link #findHolyMobType} for the unholy mob */
+	public EntityType findUnholyMobType(String godName)
+	{
+		God god = this.repository.find(godName);
+		return god != null ? parseEntityType(god.unholyMob()) : null;
+	}
+
 	public EntityType getUnholyMobTypeForGod(String godName)
 	{
 		God god = this.repository.forChange(godName);
