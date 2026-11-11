@@ -18,6 +18,8 @@ New
 * All messages are MiniMessage and can be changed, including the ones that were hard-coded.
 * /g reload reloads everything, and reads only the data files you edited on disk.
 * Data files are saved in the background and never overwritten when they can't be read (a copy is kept as <file>.broken-<time>).
+* Gods never deletes gods, priests, believers or holy lands because another data file couldn't be read, and never saves over a data file you edited on disk (run /g reload to use your edit). Every data file is backed up (.v1.bak) before 1.0.0 first rewrites it.
+* general.worlds: [] means every world, also worlds loaded later by other plugins.
 * Anonymous statistics on bStats.
 
 Fixed (a selection)
@@ -31,6 +33,9 @@ Fixed (a selection)
 
 Changed
 * gods.setsafe is for ops only.
+* Holy artifact powers can no longer grief or kill: teleport only lands on a safe spot, earthquake only hurts the creatures it hits, ice spikes melt back, tame only takes wild animals, and the gods' lightning no longer starts fires or changes creatures.
+* Holy land only keeps out mobs the world spawns itself, not spawn eggs, breeding or golems.
+* /g yes and /g no work for players without a god (to accept an invitation).
 * Holy laws, prophecies, instruction books, global quests, holy war and slay dragon quests (never finished) and /g answer are removed.
 
 Ideas from earlier versions (not done)
