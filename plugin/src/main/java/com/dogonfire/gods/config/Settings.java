@@ -35,9 +35,14 @@ public record Settings(
 		Bibles bibles,
 		Chat chat)
 {
-	/** @param worlds the worlds Gods is active in; never empty unless the server has no worlds */
+	/** @param worlds the worlds Gods is active in; empty for every world (also worlds loaded later) */
 	public record General(boolean debug, String language, String serverName, List<String> worlds)
 	{
+		/** True if Gods is active in the world with this name */
+		public boolean isActiveIn(String world)
+		{
+			return this.worlds.isEmpty() || this.worlds.contains(world);
+		}
 	}
 
 	/**

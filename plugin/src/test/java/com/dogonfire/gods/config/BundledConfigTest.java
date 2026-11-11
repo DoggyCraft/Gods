@@ -63,7 +63,7 @@ class BundledConfigTest
 		rewards.put(Material.SUNFLOWER, 1);
 
 		return new Settings(
-				new Settings.General(false, "english", "Your Server", List.of("world", "world_nether")),
+				new Settings.General(false, "english", "Your Server", List.of()),
 				new Settings.GodSettings(true, false, true, 1.0D, 0.03D, false, false),
 				new Settings.Believers(false, 5 * 60, 154),
 				new Settings.Priests(3, 1, 72, false, "", ""),

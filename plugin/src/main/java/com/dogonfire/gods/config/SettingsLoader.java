@@ -27,17 +27,14 @@ public class SettingsLoader
 {
 	private final Configuration	config;
 	private final Logger		logger;
-	private final List<String>	serverWorlds;
 
 	/**
 	 * @param config       config.yml, with the bundled config.yml as its defaults
-	 * @param serverWorlds the worlds to use when general.worlds is empty
 	 */
-	public SettingsLoader(Configuration config, Logger logger, List<String> serverWorlds)
+	public SettingsLoader(Configuration config, Logger logger)
 	{
 		this.config = config;
 		this.logger = logger;
-		this.serverWorlds = List.copyOf(serverWorlds);
 	}
 
 	public Settings load()
@@ -129,11 +126,7 @@ public class SettingsLoader
 				worlds.add(world);
 			}
 		}
-		if (worlds.isEmpty())
-		{
-			worlds.addAll(this.serverWorlds);
-		}
-		this.logger.info("Gods is active in " + (worlds.isEmpty() ? "no worlds" : "the worlds " + String.join(", ", worlds)) + ".");
+		this.logger.info("Gods is active in " + (worlds.isEmpty() ? "every world" : "the worlds " + String.join(", ", worlds)) + ".");
 
 		return new Settings.General(bool("general.debug"), language, string("general.server-name"), List.copyOf(worlds));
 	}

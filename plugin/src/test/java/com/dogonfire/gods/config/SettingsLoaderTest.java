@@ -165,7 +165,9 @@ class SettingsLoaderTest
 	@Test
 	void noWorldsMeansEveryWorld() throws Exception
 	{
-		assertEquals(List.of("world", "world_nether"), load("general:\n  worlds: []\n").general().worlds());
+		assertEquals(List.of(), load("general:\n  worlds: []\n").general().worlds());
+		assertTrue(load("general:\n  worlds: []\n").general().isActiveIn("a_world_loaded_later"));
+		assertFalse(load("general:\n  worlds: [survival]\n").general().isActiveIn("creative"));
 		assertEquals(List.of("survival"), load("general:\n  worlds: [survival, survival, '']\n").general().worlds());
 	}
 

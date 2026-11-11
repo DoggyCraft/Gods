@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -333,11 +334,11 @@ public class Gods extends JavaPlugin
 			{
 				if (player.getName() != null)
 				{
-					this.knownPlayerIds.put(player.getName().toLowerCase(), player.getUniqueId());
+					this.knownPlayerIds.put(player.getName().toLowerCase(Locale.ROOT), player.getUniqueId());
 				}
 			}
 		}
-		return this.knownPlayerIds.get(name.toLowerCase());
+		return this.knownPlayerIds.get(name.toLowerCase(Locale.ROOT));
 	}
 
 	/** The features that can be switched on and off in config.yml */
@@ -368,6 +369,8 @@ public class Gods extends JavaPlugin
 
 	private void stopFeatures()
 	{
+		// Ice spikes put back what they changed
+		this.ctx.holyPowerService().stop();
 		for (Listener listener : this.featureListeners)
 		{
 			HandlerList.unregisterAll(listener);
@@ -414,8 +417,7 @@ public class Gods extends JavaPlugin
 		}
 
 		config.setDefaults(defaults);
-		List<String> serverWorlds = getServer().getWorlds().stream().map(World::getName).toList();
-		return new SettingsLoader(config, getLogger(), serverWorlds).load();
+		return new SettingsLoader(config, getLogger()).load();
 	}
 
 	/**
@@ -445,7 +447,7 @@ public class Gods extends JavaPlugin
 
 	public boolean isEnabledInWorld(World world)
 	{
-		return this.settings.general().worlds().contains(world.getName());
+		return this.settings.general().isActiveIn(world.getName());
 	}
 
 	public void log(String message)

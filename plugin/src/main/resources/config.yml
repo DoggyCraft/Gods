@@ -16,7 +16,7 @@ general:
   language: english
   # The name of your server, used in some messages.
   server-name: Your Server
-  # The worlds Gods is active in. Leave it empty ([]) for every world the server has when Gods starts.
+  # The worlds Gods is active in. Leave it empty ([]) for every world, also worlds loaded later by other plugins.
   worlds: []
 
 gods:

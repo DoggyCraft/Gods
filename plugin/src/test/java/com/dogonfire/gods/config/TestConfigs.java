@@ -44,7 +44,7 @@ public final class TestConfigs
 	public static Settings load(YamlConfiguration config, CapturingLogger log)
 	{
 		config.setDefaults(bundled());
-		return new SettingsLoader(config, log.logger(), List.of("world", "world_nether")).load();
+		return new SettingsLoader(config, log.logger()).load();
 	}
 
 	/** A logger that keeps the warnings it is given instead of printing them. */
