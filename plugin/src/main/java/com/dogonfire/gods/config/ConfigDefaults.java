@@ -8,10 +8,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public final class ConfigDefaults
 {
 	/**
-	 * Sections the admin may shorten. Once a server's config has one of these sections, entries missing from it are
+	 * Sections the admin may shorten (a rank's conditions are such sections: a condition left out doesn't count). Once a server's config has one of these sections, entries missing from it are
 	 * left out on purpose and not filled in; a section that is missing entirely (a new feature) is added whole.
 	 */
-	public static final List<String> FREE_FORM_SECTIONS = List.of("altars.block-types", "quests.reward-values");
+	public static final List<String> FREE_FORM_SECTIONS = List.of("altars.block-types", "quests.reward-values", "ranks.recognized", "ranks.descended", "ranks.exalted",
+			"ranks.greater");
 
 	private ConfigDefaults()
 	{

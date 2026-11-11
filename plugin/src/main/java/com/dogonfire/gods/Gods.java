@@ -89,6 +89,7 @@ import com.dogonfire.gods.listener.QuestListener;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.ConfigV2ToV3;
 import com.dogonfire.gods.migration.ConfigV3ToV4;
+import com.dogonfire.gods.migration.ConfigV4ToV5;
 import com.dogonfire.gods.migration.LegacyLangFiles;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.service.ChatService;
@@ -105,8 +106,8 @@ import com.dogonfire.gods.util.AtomicFiles;
  */
 public class Gods extends JavaPlugin
 {
-	/** The layout of config.yml this version writes; see {@link ConfigV1ToV2}, {@link ConfigV2ToV3} and {@link ConfigV3ToV4} */
-	public static final int					CONFIG_VERSION		= 4;
+	/** The layout of config.yml this version writes; see {@link ConfigV1ToV2}, {@link ConfigV2ToV3}, {@link ConfigV3ToV4} and {@link ConfigV4ToV5} */
+	public static final int					CONFIG_VERSION		= 5;
 
 	/** Replaced as a whole by /g reload */
 	private volatile Settings				settings;
@@ -545,13 +546,15 @@ public class Gods extends JavaPlugin
 
 	/**
 	 * config.yml's versions: 1 (no config-version, CamelCase sections) is upgraded by {@link ConfigV1ToV2}, 2 by
-	 * {@link ConfigV2ToV3} (altar blocks moved into the themes), 3 by {@link ConfigV3ToV4} (the home is the main altar); a
+	 * {@link ConfigV2ToV3} (altar blocks moved into the themes), 3 by {@link ConfigV3ToV4} (the home is the main altar), 4
+	 * by {@link ConfigV4ToV5} (the descent became the descended rank); a
 	 * file without config-version that already has the kebab-case
 	 * sections only lost its key and is taken as the current version
 	 */
 	private VersionedYaml configFormat()
 	{
-		return new VersionedYaml("config-version", CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(this::getResource, getLogger()), new ConfigV2ToV3(this::getResource), new ConfigV3ToV4(getLogger())), ConfigV1ToV2::isVersion2Layout);
+		return new VersionedYaml("config-version", CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(this::getResource, getLogger()), new ConfigV2ToV3(this::getResource), new ConfigV3ToV4(getLogger()),
+				new ConfigV4ToV5(this::getResource, getLogger())), ConfigV1ToV2::isVersion2Layout);
 	}
 
 	private YamlConfiguration bundledConfig() throws VersionedYaml.LoadException

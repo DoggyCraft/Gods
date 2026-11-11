@@ -70,11 +70,12 @@ class ConfigV3ToV4Test
 		Files.writeString(file, VERSION_3);
 
 		VersionedYaml format = new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1,
-				List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger())),
+				List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()),
+				new ConfigV4ToV5(TestConfigs::resource, this.log.logger())),
 				ConfigV1ToV2::isVersion2Layout);
 		YamlConfiguration loaded = format.load(file.toFile(), this.log.logger());
 
-		assertEquals(4, Gods.CONFIG_VERSION);
+		assertTrue(Gods.CONFIG_VERSION >= 4);
 		assertEquals(Gods.CONFIG_VERSION, loaded.getInt("config-version"));
 		assertFalse(loaded.contains("priests.only-priests-can-set-home"));
 		assertEquals(VERSION_3, Files.readString(this.dir.resolve("config.yml.v3.bak")));

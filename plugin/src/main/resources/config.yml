@@ -7,7 +7,7 @@
 # is kept as config.yml.v1.bak.
 
 # The version of this file's layout. Gods uses it to upgrade old configs; don't change it.
-config-version: 4
+config-version: 5
 
 general:
   # Log extra information to the console, for finding problems.
@@ -233,24 +233,110 @@ effects:
   view-distance-blocks: 32
 
 npc:
-  # The god stands as a figure (an NPC) in front of its main altar (/g setaltar), at the spot before the altar sign.
+  # Once a god has risen to the descended rank (see ranks), it stands as a figure (an NPC) in front of its main altar
+  # (/g setaltar), at the spot before the altar sign.
   # Right-clicking it prays to the god as praying at the altar does. Priests give it their own skin or a player's with
   # /g godskin; otherwise it wears its theme's skin for its gender (themes.yml).
   enabled: true
   # Who makes the figure: auto, builtin, citizens, fancynpcs or off. auto uses Citizens if it is installed, else
   # FancyNpcs if it is installed, else the built-in figure (a vanilla mannequin, Minecraft 1.21.9 and newer), else none.
   provider: auto
-  # A god appears at its altar only once it has descended, a milestone its religion has to reach. It descends (with
-  # lightning and its effects, and tells its believers) when all of these hold, and it has a main altar.
-  descend:
-    # It needs a priest. When it has none any more, it ascends again.
+
+ranks:
+  # A religion grows through five ranks: spirit (a new god), recognized, descended, exalted and greater. Each god type
+  # has its own names for them (themes.yml). On its turn a god rises one rank when it meets every condition of the
+  # next rank. Each condition is optional: leave it out, or set it to 0 or false, and it doesn't count.
+  #   min-believers           believers
+  #   min-power               power (the power its believers give it with their prayers; /g info shows it)
+  #   requires-priest         a priest
+  #   min-mood                at least this mood: angry, displeased, neutral, pleased or exalted
+  #   requires-main-altar     a main altar
+  #   hours-after-priest      it has had a priest for this many hours
+  #   hours-at-previous-rank  it has had the rank below for this many hours
+  # and what its religion has done in its whole life:
+  #   min-prayers             prayers at its altars
+  #   min-sacrifices          sacrifices it was pleased with (doesn't count while sacrifices are off)
+  #   min-quests              completed quests (doesn't count while quests are off)
+  #   min-altars              praying altars standing
+  #   min-holy-land-regions   regions of holy land (doesn't count while holy land is off)
+  #   min-converts            players who joined through an invitation (/g invite)
+  # requires-priest and min-believers carry over to the ranks above. A god never falls because of its mood or what
+  # its religion has done (an angry god just stops rising). Without a priest it falls at once below every rank that
+  # needs one; with fewer believers than its rank needs for drop-grace-hours, it falls to the highest rank it still
+  # has the believers for.
+  # Gods from before ranks get the rank they qualify for (leaving out what their religion has done, which Gods didn't
+  # count before) on their first turn.
+  # How long a god may have fewer believers than its rank needs before it falls, in hours (a believer leaving for a
+  # moment doesn't make it fall).
+  drop-grace-hours: 24
+  # A recognized religion: it has a priest and a few believers. Its holy book and quests unlock (see unlocks).
+  recognized:
     requires-priest: true
-    # It needs at least this many believers.
     min-believers: 3
-    # With a priest required: how long the god must have had one, in hours.
+  # The god descends to its main altar: it appears there as a figure (see npc), with lightning, and tells its
+  # believers. It ascends again when it falls below this rank.
+  descended:
+    requires-priest: true
+    min-believers: 3
     hours-after-priest: 24
-    # The power it needs (the power its believers give it). 0 for no minimum.
     min-power: 0
-    # When its believers stay fewer than min-believers this long, in hours, it ascends (it doesn't come and go when a
-    # believer leaves for a moment). It descends again when all of the above hold again.
-    ascend-grace-hours: 24
+    min-mood: neutral
+    requires-main-altar: true
+  # An exalted religion: many believers who pray, sacrifice and do quests, and a pleased god. Holy artifacts,
+  # alliances and wars unlock.
+  exalted:
+    min-believers: 10
+    min-power: 50
+    min-mood: pleased
+    hours-at-previous-rank: 72
+    min-prayers: 150
+    min-sacrifices: 20
+    min-quests: 2
+    min-altars: 2
+    min-converts: 2
+  # A greater god: a great religion that has held its rank for a week. Everyone on the server hears of it; its god
+  # takes a second priest and its believers feel its aura in its holy land.
+  greater:
+    min-believers: 20
+    min-power: 150
+    min-mood: pleased
+    hours-at-previous-rank: 168
+    min-prayers: 500
+    min-sacrifices: 75
+    min-quests: 6
+    min-altars: 4
+    min-holy-land-regions: 4
+    min-converts: 5
+  # The lowest rank each feature needs (spirit, recognized, descended, exalted or greater). Commands of a feature a
+  # god hasn't unlocked yet say which rank it needs. The features' own switches above still apply.
+  unlocks:
+    # The religion's holy book (/g bible, /g editbible, /g setbible, and a copy for new believers).
+    bibles: recognized
+    # Quests, given by the god or prayed for with /g prayfor quest.
+    quests: recognized
+    # Holy artifacts, given by the god or with /g holyartifact.
+    holy-artifacts: exalted
+    # Alliances and wars with other religions (/g ally, /g war).
+    relations: exalted
+    # One more priest than priests.max-per-god.
+    extra-priest: greater
+    # The aura in the god's holy land (see aura).
+    aura: greater
+    # Regions of holy land a god may claim on top of the ones its power gives it (power / 10 + 3), per rank.
+    holy-land-extra-regions:
+      spirit: 0
+      recognized: 1
+      descended: 2
+      exalted: 4
+      greater: 8
+  # Believers in their own god's holy land feel its aura: a gentle effect, given again on each of the god's turns
+  # (every 10 seconds or more, depending on how many gods have believers online).
+  aura:
+    # Whether there is an aura at all.
+    enabled: true
+    # The effect (a Minecraft effect id like regeneration, speed or luck).
+    effect: regeneration
+    # Its level: 0 for I, 1 for II.
+    amplifier: 0
+    # How long it lasts each time it is given, in seconds.
+    seconds: 15

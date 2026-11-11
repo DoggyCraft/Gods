@@ -15,6 +15,8 @@ import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 
 /**
@@ -25,6 +27,10 @@ import com.dogonfire.gods.model.GodType;
  */
 public class SettingsLoader
 {
+	/** The conditions a rank may have in config.yml (ranks.<rank>) */
+	public static final List<String>	RANK_CONDITIONS	= List.of("min-believers", "min-power", "requires-priest", "min-mood", "requires-main-altar", "hours-after-priest",
+			"hours-at-previous-rank", "min-prayers", "min-sacrifices", "min-quests", "min-altars", "min-holy-land-regions", "min-converts");
+
 	private final Configuration	config;
 	private final Logger		logger;
 
@@ -118,13 +124,155 @@ public class SettingsLoader
 						between("altars.floating-text-view-distance-blocks", 1, 128)),
 				new Settings.Npc(
 						bool("npc.enabled"),
-						npcProvider("npc.provider"),
-						new Settings.Descend(
-								bool("npc.descend.requires-priest"),
-								atLeast("npc.descend.min-believers", 0),
-								atLeast("npc.descend.hours-after-priest", 0),
-								atLeast("npc.descend.min-power", 0),
-								atLeast("npc.descend.ascend-grace-hours", 0))));
+						npcProvider("npc.provider")),
+				loadRanks());
+	}
+
+	private Settings.Ranks loadRanks()
+	{
+		Map<GodRank, Settings.RankConditions> conditions = new EnumMap<>(GodRank.class);
+		for (GodRank rank : GodRank.values())
+		{
+			conditions.put(rank, rank == GodRank.SPIRIT ? Settings.RankConditions.NONE : rankConditions("ranks." + rank.key()));
+		}
+		Map<GodRank, Integer> extraRegions = new EnumMap<>(GodRank.class);
+		for (GodRank rank : GodRank.values())
+		{
+			extraRegions.put(rank, atLeast("ranks.unlocks.holy-land-extra-regions." + rank.key(), 0));
+		}
+		Settings.Unlocks unlocks = new Settings.Unlocks(
+				rank("ranks.unlocks.bibles"),
+				rank("ranks.unlocks.quests"),
+				rank("ranks.unlocks.holy-artifacts"),
+				rank("ranks.unlocks.relations"),
+				rank("ranks.unlocks.extra-priest"),
+				rank("ranks.unlocks.aura"),
+				Collections.unmodifiableMap(extraRegions));
+		String effect = string("ranks.aura.effect").trim().toLowerCase(Locale.ROOT);
+		if (effect.startsWith("minecraft:"))
+		{
+			effect = effect.substring("minecraft:".length());
+		}
+		Settings.Aura aura = new Settings.Aura(
+				bool("ranks.aura.enabled"),
+				effect,
+				between("ranks.aura.amplifier", 0, 4),
+				between("ranks.aura.seconds", 1, 600));
+		return new Settings.Ranks(Collections.unmodifiableMap(conditions), atLeast("ranks.drop-grace-hours", 0), unlocks, aura);
+	}
+
+
+	/**
+	 * One rank's conditions ({@code ranks.<rank>}, a free-form section, see {@link ConfigDefaults#FREE_FORM_SECTIONS}):
+	 * a condition the section leaves out doesn't count, so an admin drops one by removing it; a section that is
+	 * missing altogether is the bundled one. A value of the wrong type is warned about and doesn't count.
+	 */
+	private Settings.RankConditions rankConditions(String path)
+	{
+		ConfigurationSection section = section(path);
+		if (section == null)
+		{
+			if (this.config.isSet(path))
+			{
+				this.logger.warning(path + " in config.yml must be a section of conditions; " + path.substring(path.indexOf('.') + 1) + " has none.");
+			}
+			return Settings.RankConditions.NONE;
+		}
+		for (String key : section.getKeys(false))
+		{
+			if (!RANK_CONDITIONS.contains(key))
+			{
+				this.logger.warning("Unknown condition '" + key + "' in " + path + " in config.yml, ignoring it.");
+			}
+		}
+		return new Settings.RankConditions(
+				condition(section, path, "min-believers"),
+				condition(section, path, "min-power"),
+				conditionFlag(section, path, "requires-priest"),
+				conditionMood(section, path, "min-mood"),
+				conditionFlag(section, path, "requires-main-altar"),
+				condition(section, path, "hours-after-priest"),
+				condition(section, path, "hours-at-previous-rank"),
+				condition(section, path, "min-prayers"),
+				condition(section, path, "min-sacrifices"),
+				condition(section, path, "min-quests"),
+				condition(section, path, "min-altars"),
+				condition(section, path, "min-holy-land-regions"),
+				condition(section, path, "min-converts"));
+	}
+
+	/** A number condition: 0 when missing; one that isn't a number is warned about (0), a negative one is 0 */
+	private int condition(ConfigurationSection section, String path, String key)
+	{
+		if (!section.isSet(key))
+		{
+			return 0;
+		}
+		Object value = section.get(key);
+		if (!(value instanceof Number number))
+		{
+			warn(path + "." + key, value, 0);
+			return 0;
+		}
+		if (number.intValue() < 0)
+		{
+			warn(path + "." + key, value, 0);
+			return 0;
+		}
+		return number.intValue();
+	}
+
+	/** A true/false condition: false when missing or not true/false (warned about) */
+	private boolean conditionFlag(ConfigurationSection section, String path, String key)
+	{
+		if (!section.isSet(key))
+		{
+			return false;
+		}
+		Object value = section.get(key);
+		if (!(value instanceof Boolean flag))
+		{
+			warn(path + "." + key, value, false);
+			return false;
+		}
+		return flag;
+	}
+
+	/** A mood band (angry, displeased, neutral, pleased, exalted), or null when missing or unknown (warned about) */
+	private GodMood conditionMood(ConfigurationSection section, String path, String key)
+	{
+		if (!section.isSet(key))
+		{
+			return null;
+		}
+		Object value = section.get(key);
+		if (value instanceof String text)
+		{
+			for (GodMood mood : GodMood.values())
+			{
+				if (mood.name().equalsIgnoreCase(text.trim()))
+				{
+					return mood;
+				}
+			}
+		}
+		this.logger.warning("Invalid mood '" + value + "' for " + path + "." + key + " in config.yml (angry, displeased, neutral, pleased or exalted); it doesn't count.");
+		return null;
+	}
+
+	/** A rank (spirit, recognized, descended, exalted, greater); an unknown one is warned about and the default used */
+	private GodRank rank(String path)
+	{
+		Object value = this.config.get(path);
+		GodRank rank = value instanceof String text ? GodRank.byKey(text) : null;
+		if (rank != null)
+		{
+			return rank;
+		}
+		GodRank fallback = GodRank.byKey(defaults().getString(path, "spirit"));
+		fallback = fallback != null ? fallback : GodRank.SPIRIT;
+		warn(path, value, fallback.key());
+		return fallback;
 	}
 
 	private Settings.General loadGeneral()

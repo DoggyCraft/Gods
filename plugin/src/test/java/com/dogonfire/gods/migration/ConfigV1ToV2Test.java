@@ -92,7 +92,8 @@ class ConfigV1ToV2Test
 				new Settings.Chat(true),
 				new Settings.Effects(true, true, true, true, 32),
 				new Settings.AltarTexts(Settings.FloatingText.ALL, 32),
-				new Settings.Npc(true, Settings.NpcProvider.AUTO, new Settings.Descend(true, 3, 24, 0, 24)));
+				new Settings.Npc(true, Settings.NpcProvider.AUTO),
+				TestConfigs.defaultRanks());
 
 		assertEquals(expected, settings);
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
@@ -207,7 +208,8 @@ class ConfigV1ToV2Test
 		String old = fixture("config-0.9.yml");
 		Files.writeString(file, old);
 
-		VersionedYaml format = new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger())));
+		VersionedYaml format = new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()),
+				new ConfigV4ToV5(TestConfigs::resource, this.log.logger())));
 		YamlConfiguration loaded = format.load(file.toFile(), this.log.logger());
 
 		assertEquals(Gods.CONFIG_VERSION, loaded.getInt("config-version"));
@@ -226,7 +228,8 @@ class ConfigV1ToV2Test
 	/** What Gods.loadSettings uses */
 	private VersionedYaml format()
 	{
-		return new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger())), ConfigV1ToV2::isVersion2Layout);
+		return new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()),
+				new ConfigV4ToV5(TestConfigs::resource, this.log.logger())), ConfigV1ToV2::isVersion2Layout);
 	}
 
 	/** A version 2 config whose config-version was removed by hand is not reset to the defaults */

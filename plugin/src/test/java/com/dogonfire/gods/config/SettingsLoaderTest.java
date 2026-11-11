@@ -11,6 +11,8 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 
 class SettingsLoaderTest
@@ -211,7 +213,7 @@ class SettingsLoaderTest
 	@Test
 	void npcProviderIsOneOfTheKnownOnes() throws Exception
 	{
-		assertEquals(new Settings.Npc(true, Settings.NpcProvider.AUTO, new Settings.Descend(true, 3, 24, 0, 24)), load("").npc());
+		assertEquals(new Settings.Npc(true, Settings.NpcProvider.AUTO), load("").npc());
 		assertEquals(Settings.NpcProvider.CITIZENS, load("npc:\n  provider: Citizens\n").npc().provider());
 		assertEquals(Settings.NpcProvider.FANCYNPCS, load("npc:\n  provider: fancynpcs\n").npc().provider());
 		assertEquals(Settings.NpcProvider.BUILTIN, load("npc:\n  provider: builtin\n").npc().provider());
@@ -221,5 +223,54 @@ class SettingsLoaderTest
 
 		assertEquals(Settings.NpcProvider.AUTO, load("npc:\n  provider: znpcs\n").npc().provider());
 		assertWarned("npc.provider");
+	}
+
+	/** A rank's conditions: what its section has, nothing else; odd values are warned about and don't count */
+	@Test
+	void rankConditionsAreWhatTheSectionHas() throws Exception
+	{
+		assertEquals(TestConfigs.defaultRanks(), load("").ranks());
+
+		Settings.Ranks ranks = load("""
+				ranks:
+				  exalted:
+				    min-believers: 4
+				    min-mood: Exalted
+				  greater: {}
+				""").ranks();
+		assertEquals(new Settings.RankConditions(4, 0, false, GodMood.EXALTED, false, 0, 0, 0, 0, 0, 0, 0, 0), ranks.of(GodRank.EXALTED));
+		assertEquals(Settings.RankConditions.NONE, ranks.of(GodRank.GREATER));
+		// A rank the config leaves out has the bundled conditions
+		assertEquals(TestConfigs.defaultRanks().of(GodRank.RECOGNIZED), ranks.of(GodRank.RECOGNIZED));
+		assertEquals(Settings.RankConditions.NONE, ranks.of(GodRank.SPIRIT));
+		assertTrue(this.log.warnings().isEmpty(), "" + this.log.warnings());
+
+		Settings.RankConditions odd = load("""
+				ranks:
+				  exalted:
+				    min-believers: many
+				    min-mood: furious
+				    requires-priest: yes please
+				    min-prayers: -5
+				    min-miracles: 3
+				""").ranks().of(GodRank.EXALTED);
+		assertEquals(Settings.RankConditions.NONE, odd);
+		assertWarned("ranks.exalted.min-believers");
+		assertWarned("ranks.exalted.min-mood");
+		assertWarned("ranks.exalted.requires-priest");
+		assertWarned("ranks.exalted.min-prayers");
+		assertWarned("min-miracles");
+	}
+
+	/** Unlocks name a rank; an unknown one gets the default */
+	@Test
+	void unlocksNameARank() throws Exception
+	{
+		Settings.Unlocks unlocks = load("ranks:\n  unlocks:\n    bibles: Greater\n    quests: godlike\n").ranks().unlocks();
+		assertEquals(GodRank.GREATER, unlocks.bibles());
+		assertEquals(GodRank.RECOGNIZED, unlocks.quests());
+		assertWarned("ranks.unlocks.quests");
+		assertEquals(8, unlocks.holyLandExtraRegions(GodRank.GREATER));
+		assertEquals("speed", load("ranks:\n  aura:\n    effect: minecraft:Speed\n").ranks().aura().effect());
 	}
 }

@@ -239,7 +239,7 @@ public class GodNpcService
 		boolean hasMainAltar = altar != null && altar.kind() == AltarKind.PRAYING && godName.equals(altar.god());
 		DescentRules.Facts facts = new DescentRules.Facts(!ctx.priestService().getPriestsForGod(godName).isEmpty(), ctx.believerService().getBelieversForGod(godName).size(),
 				ctx.godService().getGodPower(godName), hasMainAltar, LegacyDates.SECONDS.now());
-		DescentRules.Outcome outcome = DescentRules.check(ctx.settings().npc().descend(), state, facts);
+		DescentRules.Outcome outcome = DescentRules.check(ctx.settings().ranks().of(com.dogonfire.gods.model.GodRank.DESCENDED), ctx.settings().ranks().dropGraceHours(), state, facts);
 		switch (outcome.change())
 		{
 			case NONE -> ctx.godService().setDescentState(godName, outcome.state());

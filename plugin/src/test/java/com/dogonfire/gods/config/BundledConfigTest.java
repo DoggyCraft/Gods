@@ -70,7 +70,8 @@ class BundledConfigTest
 				new Settings.Chat(false),
 				new Settings.Effects(true, true, true, true, 32),
 				new Settings.AltarTexts(Settings.FloatingText.ALL, 32),
-				new Settings.Npc(true, Settings.NpcProvider.AUTO, new Settings.Descend(true, 3, 24, 0, 24)));
+				new Settings.Npc(true, Settings.NpcProvider.AUTO),
+				TestConfigs.defaultRanks());
 	}
 
 	@Test

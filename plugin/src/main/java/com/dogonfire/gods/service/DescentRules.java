@@ -49,7 +49,7 @@ public final class DescentRules
 	{
 	}
 
-	public static Outcome check(Settings.Descend rules, State state, Facts facts)
+	public static Outcome check(Settings.RankConditions rules, int ascendGraceHours, State state, Facts facts)
 	{
 		Instant priestSince = facts.hasPriest() ? (state.priestSince() != null ? state.priestSince() : facts.now()) : null;
 		boolean enoughBelievers = facts.believers() >= rules.minBelievers();
@@ -74,7 +74,7 @@ public final class DescentRules
 			return new Outcome(new State(priestSince, state.descended(), null), Change.NONE);
 		}
 		Instant ascendingSince = state.ascendingSince() != null ? state.ascendingSince() : facts.now();
-		if (!facts.now().isBefore(ascendingSince.plus(Duration.ofHours(rules.ascendGraceHours()))))
+		if (!facts.now().isBefore(ascendingSince.plus(Duration.ofHours(ascendGraceHours))))
 		{
 			return new Outcome(new State(priestSince, null, null), Change.ASCEND);
 		}

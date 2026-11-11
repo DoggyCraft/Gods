@@ -9,6 +9,8 @@ import java.util.Set;
 
 import org.bukkit.Material;
 
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 
 /**
@@ -36,7 +38,8 @@ public record Settings(
 		Chat chat,
 		Effects effects,
 		AltarTexts altarTexts,
-		Npc npc)
+		Npc npc,
+		Ranks ranks)
 {
 	/** @param worlds the worlds Gods is active in; empty for every world (also worlds loaded later) */
 	public record General(boolean debug, String language, String serverName, List<String> worlds)
@@ -213,26 +216,89 @@ public record Settings(
 	}
 
 	/**
-	 * The god standing as an NPC at its main altar (the npc section of config.yml).
+	 * The god standing as an NPC at its main altar (the npc section of config.yml). It appears once the god has the
+	 * {@link GodRank#DESCENDED} rank (see {@link Ranks}).
 	 *
 	 * @param enabled  whether gods appear at their main altars at all
 	 * @param provider who makes the NPC; {@code auto} picks one (see {@code integration/npc/NpcProviders})
-	 * @param descend  when a god descends to its altar (and its NPC appears) and when it ascends again
 	 */
-	public record Npc(boolean enabled, NpcProvider provider, Descend descend)
+	public record Npc(boolean enabled, NpcProvider provider)
 	{
 	}
 
 	/**
-	 * When a god descends to its main altar ({@code npc.descend}; see {@code service/DescentRules}).
+	 * The ranks a religion grows through (the ranks section of config.yml; see {@code service/RankRules}).
 	 *
-	 * @param requiresPriest   it needs a priest to descend, and ascends when it has none
-	 * @param minBelievers     it needs this many believers to descend; below it for {@code ascendGraceHours} it ascends
-	 * @param hoursAfterPriest with a priest required: how long it must have had one
-	 * @param minPower         the power it needs to descend; 0 for none
-	 * @param ascendGraceHours how long its believers may stay too few before it ascends
+	 * @param conditions     what a god needs for each rank above {@link GodRank#SPIRIT} (every rank has an entry; one
+	 *                       without conditions is {@link RankConditions#NONE})
+	 * @param dropGraceHours how long a god may have fewer believers than its rank needs before it falls
+	 * @param unlocks        the lowest rank each feature needs
+	 * @param aura           the effect believers get in their god's holy land, from {@link Unlocks#aura()} on
 	 */
-	public record Descend(boolean requiresPriest, int minBelievers, int hoursAfterPriest, int minPower, int ascendGraceHours)
+	public record Ranks(Map<GodRank, RankConditions> conditions, int dropGraceHours, Unlocks unlocks, Aura aura)
+	{
+		/** What a god needs for this rank; none for {@link GodRank#SPIRIT} */
+		public RankConditions of(GodRank rank)
+		{
+			return this.conditions.getOrDefault(rank, RankConditions.NONE);
+		}
+	}
+
+	/**
+	 * What a god needs to rise to one rank ({@code ranks.<rank>}); 0, false or null means no such condition. Each holds
+	 * for this rank only: config.yml is expected to ask more of higher ranks.
+	 *
+	 * @param minBelievers        believers (a structural condition: below it for the grace period, the god falls)
+	 * @param minPower            power (its believers' prayers)
+	 * @param requiresPriest      a priest (structural: without one the god falls at once)
+	 * @param minMood             at least this mood, or null
+	 * @param requiresMainAltar   a main altar
+	 * @param hoursAfterPriest    it has had a priest this long ({@code PriestSince})
+	 * @param hoursAtPreviousRank it has had the rank below this long ({@code RankSince})
+	 * @param minPrayers          prayers at its altars in its whole life
+	 * @param minSacrifices       sacrifices it was pleased with (ignored while sacrifices are off)
+	 * @param minQuests           completed quests (ignored while quests are off)
+	 * @param minAltars           praying altars standing (altars.yml)
+	 * @param minHolyLandRegions  regions of holy land (ignored while holy land is off)
+	 * @param minConverts         players who joined it through an invitation
+	 */
+	public record RankConditions(int minBelievers, int minPower, boolean requiresPriest, GodMood minMood, boolean requiresMainAltar, int hoursAfterPriest,
+			int hoursAtPreviousRank, int minPrayers, int minSacrifices, int minQuests, int minAltars, int minHolyLandRegions, int minConverts)
+	{
+		public static final RankConditions NONE = new RankConditions(0, 0, false, null, false, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+
+	/**
+	 * The lowest rank each feature needs ({@code ranks.unlocks}).
+	 *
+	 * @param bibles               the religion's holy book (/g bible, /g editbible, /g setbible, a copy on joining)
+	 * @param quests               quests (given by the god or prayed for)
+	 * @param holyArtifacts        holy artifacts (given by the god, /g holyartifact)
+	 * @param relations            alliances and wars (/g ally, /g war)
+	 * @param extraPriest          one more priest than priests.max-per-god
+	 * @param aura                 the holy land aura ({@link Aura})
+	 * @param holyLandExtraRegions regions of holy land a god may claim on top of the ones its power gives, per rank
+	 *                             (every rank has an entry)
+	 */
+	public record Unlocks(GodRank bibles, GodRank quests, GodRank holyArtifacts, GodRank relations, GodRank extraPriest, GodRank aura,
+			Map<GodRank, Integer> holyLandExtraRegions)
+	{
+		/** The extra regions of holy land a god of this rank may claim */
+		public int holyLandExtraRegions(GodRank rank)
+		{
+			return this.holyLandExtraRegions.getOrDefault(rank, 0);
+		}
+	}
+
+	/**
+	 * Believers in their god's holy land get a gentle effect, refreshed on the god's turn ({@code ranks.aura}).
+	 *
+	 * @param enabled   whether there is an aura at all
+	 * @param effect    the potion effect's id (e.g. {@code regeneration}), looked up on the server
+	 * @param amplifier 0 for level I, 1 for level II
+	 * @param seconds   how long it lasts each time
+	 */
+	public record Aura(boolean enabled, String effect, int amplifier, int seconds)
 	{
 	}
 

@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Handler;
@@ -13,6 +15,9 @@ import java.util.logging.Logger;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 
 /** Config files and a logger that remembers its warnings, for the config and migration tests. */
 public final class TestConfigs
@@ -38,6 +43,26 @@ public final class TestConfigs
 		YamlConfiguration yaml = new YamlConfiguration();
 		yaml.loadFromString(content);
 		return yaml;
+	}
+
+	/** The ranks of the bundled config.yml (ranks section) */
+	public static Settings.Ranks defaultRanks()
+	{
+		Map<GodRank, Settings.RankConditions> conditions = new EnumMap<>(GodRank.class);
+		conditions.put(GodRank.SPIRIT, Settings.RankConditions.NONE);
+		conditions.put(GodRank.RECOGNIZED, new Settings.RankConditions(3, 0, true, null, false, 0, 0, 0, 0, 0, 0, 0, 0));
+		conditions.put(GodRank.DESCENDED, new Settings.RankConditions(3, 0, true, GodMood.NEUTRAL, true, 24, 0, 0, 0, 0, 0, 0, 0));
+		conditions.put(GodRank.EXALTED, new Settings.RankConditions(10, 50, false, GodMood.PLEASED, false, 0, 72, 150, 20, 2, 2, 0, 2));
+		conditions.put(GodRank.GREATER, new Settings.RankConditions(20, 150, false, GodMood.PLEASED, false, 0, 168, 500, 75, 6, 4, 4, 5));
+		Map<GodRank, Integer> extraRegions = new EnumMap<>(GodRank.class);
+		extraRegions.put(GodRank.SPIRIT, 0);
+		extraRegions.put(GodRank.RECOGNIZED, 1);
+		extraRegions.put(GodRank.DESCENDED, 2);
+		extraRegions.put(GodRank.EXALTED, 4);
+		extraRegions.put(GodRank.GREATER, 8);
+		return new Settings.Ranks(conditions, 24,
+				new Settings.Unlocks(GodRank.RECOGNIZED, GodRank.RECOGNIZED, GodRank.EXALTED, GodRank.EXALTED, GodRank.GREATER, GodRank.GREATER, extraRegions),
+				new Settings.Aura(true, "regeneration", 0, 15));
 	}
 
 	/** Settings from {@code config}, with the bundled config as its defaults, the way Gods loads them. */
