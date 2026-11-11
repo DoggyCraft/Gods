@@ -18,6 +18,7 @@ import com.dogonfire.gods.service.ChatService;
 import com.dogonfire.gods.service.CommandmentService;
 import com.dogonfire.gods.service.EffectService;
 import com.dogonfire.gods.service.GodListService;
+import com.dogonfire.gods.service.GodNpcService;
 import com.dogonfire.gods.service.GodService;
 import com.dogonfire.gods.service.GodSpeech;
 import com.dogonfire.gods.service.HolyArtifactService;
@@ -63,6 +64,7 @@ public final class GodsContext
 	private final AltarService				altarService;
 	private final AltarRegistry				altarRegistry;
 	private final AltarTextService			altarTexts;
+	private final GodNpcService			godNpcs;
 	private final HolyLandService			holyLandService;
 	private final HolyBookService			holyBookService;
 	private final MarriageService			marriageService;
@@ -98,6 +100,7 @@ public final class GodsContext
 		this.altarService = new AltarService(this);
 		this.altarRegistry = new AltarRegistry(this, storage.altars());
 		this.altarTexts = new AltarTextService(this);
+		this.godNpcs = new GodNpcService(this);
 		this.holyLandService = new HolyLandService(this, storage.holyLands());
 		this.holyBookService = new HolyBookService(this, storage.bibles());
 		this.marriageService = new MarriageService(this, storage.marriages());
@@ -231,6 +234,12 @@ public final class GodsContext
 	public AltarTextService altarTexts()
 	{
 		return this.altarTexts;
+	}
+
+	/** The gods' NPCs at their main altars; started and stopped with the features */
+	public GodNpcService godNpcs()
+	{
+		return this.godNpcs;
 	}
 
 	/** Its data is only loaded, and its listener (HolyLandListener) only registered, while holy land is enabled */

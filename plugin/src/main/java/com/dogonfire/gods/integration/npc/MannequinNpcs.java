@@ -108,12 +108,30 @@ public final class MannequinNpcs implements GodNpcProvider
 	@Override
 	public void removeStrays()
 	{
+		removeTagged(this.npcKey, this.type, this.npcs.values(), this.logger);
+	}
+
+	/**
+	 * Removes every built-in god NPC in loaded chunks (left by a crash), also while another provider makes the NPCs;
+	 * does nothing on a server without mannequins
+	 */
+	public static void removeTagged(Plugin plugin)
+	{
+		EntityType type = mannequinType();
+		if (type != null && type.getEntityClass() != null)
+		{
+			removeTagged(new NamespacedKey(plugin, "npc"), type, java.util.List.of(), plugin.getLogger());
+		}
+	}
+
+	private static void removeTagged(NamespacedKey key, EntityType type, java.util.Collection<Entity> keep, Logger logger)
+	{
 		int removed = 0;
 		for (World world : org.bukkit.Bukkit.getWorlds())
 		{
-			for (Entity entity : world.getEntitiesByClass(this.type.getEntityClass()))
+			for (Entity entity : world.getEntitiesByClass(type.getEntityClass()))
 			{
-				if (entity.getPersistentDataContainer().has(this.npcKey, PersistentDataType.STRING) && !this.npcs.containsValue(entity))
+				if (entity.getPersistentDataContainer().has(key, PersistentDataType.STRING) && !keep.contains(entity))
 				{
 					entity.remove();
 					removed++;
@@ -122,7 +140,7 @@ public final class MannequinNpcs implements GodNpcProvider
 		}
 		if (removed > 0)
 		{
-			this.logger.info("Removed " + removed + " god NPCs left from before.");
+			logger.info("Removed " + removed + " god NPCs left from before.");
 		}
 	}
 

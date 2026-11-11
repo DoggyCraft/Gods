@@ -80,6 +80,7 @@ import com.dogonfire.gods.listener.AltarWorldListener;
 import com.dogonfire.gods.listener.BelieverListener;
 import com.dogonfire.gods.listener.ChatListener;
 import com.dogonfire.gods.listener.GodListener;
+import com.dogonfire.gods.listener.GodNpcListener;
 import com.dogonfire.gods.listener.HolyArtifactListener;
 import com.dogonfire.gods.listener.HolyBookListener;
 import com.dogonfire.gods.listener.HolyLandListener;
@@ -402,6 +403,12 @@ public class Gods extends JavaPlugin
 		}
 		// The text above altars (also removes strays from before when it is off)
 		this.ctx.altarTexts().start();
+		// The gods at their main altars (also removes strays from before)
+		if (this.settings.npc().enabled())
+		{
+			registerFeature(new GodNpcListener(this.ctx));
+		}
+		this.ctx.godNpcs().start();
 	}
 
 	private void stopFeatures()
@@ -412,6 +419,8 @@ public class Gods extends JavaPlugin
 		this.ctx.effectService().stop();
 		// The floating texts above altars
 		this.ctx.altarTexts().stop();
+		// The gods' NPCs
+		this.ctx.godNpcs().stop();
 		for (Listener listener : this.featureListeners)
 		{
 			HandlerList.unregisterAll(listener);

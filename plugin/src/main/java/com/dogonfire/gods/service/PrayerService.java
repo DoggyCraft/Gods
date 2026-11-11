@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -406,6 +407,58 @@ public class PrayerService
 
 			ctx.godSpeech().say(godName, player, Voice.BELIEVER_PRIEST_REJECTED, 2 + this.random.nextInt(20), Messages.player(player.getName()));
 		}
+	}
+
+	/**
+	 * A player prays at a praying altar sign: a click on the sign, its altar block or light, or the god's NPC in front
+	 * of it. Checks the permission, the god's name, the white/blacklist and the god's access, then prays
+	 * ({@link #handleAltarPray}).
+	 *
+	 * @param sign     the praying altar's sign
+	 * @param signGod  the god's name as the sign gives it
+	 * @return whether the prayer was heard
+	 */
+	public boolean prayAtAltarSign(Player player, Block sign, String signGod)
+	{
+		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.pray")))
+		{
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.praying-not-allowed", 1);
+			return false;
+		}
+
+		if (signGod == null)
+		{
+			return false;
+		}
+
+		String altarGodName = ChatColor.stripColor(signGod).trim();
+
+		if (altarGodName.length() <= 1)
+		{
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.invalid-god-name", 1);
+			return false;
+		}
+
+		altarGodName = ctx.godService().formatGodName(altarGodName);
+
+		if (!ctx.godListService().isAllowedGod(altarGodName))
+		{
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.god-not-allowed", 1);
+			return false;
+		}
+
+		if (!ctx.godService().hasGodAccess(player.getUniqueId(), altarGodName))
+		{
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.no-access", 1);
+			return false;
+		}
+
+		if (handleAltarPray(sign.getLocation(), player, altarGodName))
+		{
+			ctx.plugin().log(player.getDisplayName() + " prayed to " + altarGodName + " at an altar");
+			return true;
+		}
+		return false;
 	}
 
 	public boolean handleAltarPray(Location location, Player player, String godName)

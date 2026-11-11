@@ -309,6 +309,7 @@ public class AltarRegistry
 		{
 			ctx.altarTexts().hide(altar.sign());
 		}
+		ctx.godNpcs().chunkUnloading(pos);
 	}
 
 	/** Every tick: scans up to {@link AltarScan#CHUNKS_PER_TICK} queued chunks that are still loaded */
@@ -370,6 +371,8 @@ public class AltarRegistry
 		{
 			ctx.altarTexts().show(altar);
 		}
+		// Gods whose main altar is here appear in front of it
+		ctx.godNpcs().chunkScanned(pos);
 	}
 
 	// ---------------------------------------------------------------------

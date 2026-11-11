@@ -2,7 +2,6 @@ package com.dogonfire.gods.listener;
 
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -214,45 +213,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.pray")))
-		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.praying-not-allowed", 1);
-			return;
-		}
-
-		String altarGodName = altar.god();
-
-		if (altarGodName == null)
-		{
-			return;
-		}
-
-		altarGodName = ChatColor.stripColor(altarGodName).trim();
-
-		if (altarGodName.length() <= 1)
-		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.invalid-god-name", 1);
-			return;
-		}
-
-		altarGodName = ctx.godService().formatGodName(altarGodName);
-
-		if (!ctx.godListService().isAllowedGod(altarGodName))
-		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.god-not-allowed", 1);
-			return;
-		}
-
-		if (!ctx.godService().hasGodAccess(player.getUniqueId(), altarGodName))
-		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.no-access", 1);
-			return;
-		}
-
-		if (ctx.prayerService().handleAltarPray(block.getLocation(), player, altarGodName))
-		{
-			ctx.plugin().log(player.getDisplayName() + " prayed to " + altarGodName + " at an altar");
-		}
+		ctx.prayerService().prayAtAltarSign(player, block, altar.god());
 	}
 
 	/** Turns a sign written on an altar block into a praying, cursing or blessing altar. */

@@ -104,6 +104,7 @@ public class GodService
 		this.repository.markDirty();
 		// Altars that stood before the god (it was removed and is founded anew) get their floating text
 		ctx.altarTexts().refreshGod(godName);
+		ctx.godNpcs().refreshGod(godName);
 	}
 
 	/** Removes the god, its place in other gods' relations, its holy book and its holy lands */
@@ -119,6 +120,8 @@ public class GodService
 		this.repository.remove(godName);
 		// Its altars stay registered (they still stand; praying at one founds the god anew) but lose their floating text
 		ctx.altarTexts().refreshGod(godName);
+		// Its NPC goes with it
+		ctx.godNpcs().refreshGod(godName);
 
 		if (ctx.settings().bibles().enabled())
 		{
@@ -471,6 +474,8 @@ public class GodService
 		}
 		god.setMainAltar(sign);
 		this.repository.save();
+		// The god appears at its new main altar, or leaves the old one
+		ctx.godNpcs().refreshGod(godName);
 	}
 
 	/** Whether only the god's believers may use its altars */

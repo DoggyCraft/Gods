@@ -553,6 +553,7 @@ public final class GodUpdateTask implements Runnable
 
 		// Its mood and believers may have changed: the text above its altars follows
 		ctx.altarTexts().refreshGod(godName);
+		ctx.godNpcs().refreshGod(godName);
 
 		long timeAfter = System.currentTimeMillis();
 
