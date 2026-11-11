@@ -1,11 +1,9 @@
 package com.dogonfire.gods.service;
 
-import org.bukkit.ChatColor;
-
 /**
- * The texts of holy artifacts, without a server so they can be tested: the uses line of the lore, the rank an
- * artifact earns by being used, and how artifacts from before the tags are recognized by their lore. Kept exactly as
- * they were.
+ * The rules of holy artifacts, without a server so they can be tested: the rank an artifact earns by being used, and
+ * how artifacts from before the tags are recognized by their lore. Kept exactly as they were; the texts are
+ * {@code artifact.*} in messages.yml.
  */
 public final class HolyArtifactRules
 {
@@ -13,14 +11,8 @@ public final class HolyArtifactRules
 	{
 	}
 
-	/** The second lore line */
-	public static String usesLine(int uses)
-	{
-		return ChatColor.WHITE + "Used " + uses + (uses == 1 ? " time" : " times");
-	}
-
-	/** The rank shown before the artifact's name; empty below 5 uses */
-	public static String rankName(int uses)
+	/** The rank an artifact has after this many uses (its key under artifact.rank in messages.yml); "" below 5 uses */
+	public static String rank(int uses)
 	{
 		if (uses < 5)
 		{
@@ -28,40 +20,43 @@ public final class HolyArtifactRules
 		}
 		if (uses < 20)
 		{
-			return ChatColor.GREEN + "Shiny";
+			return "shiny";
 		}
 		if (uses < 50)
 		{
-			return ChatColor.GREEN + "Honorable";
+			return "honorable";
 		}
 		if (uses < 100)
 		{
-			return ChatColor.GREEN + "Holy";
+			return "holy";
 		}
 		if (uses < 150)
 		{
-			return ChatColor.GREEN + "Saintly";
+			return "saintly";
 		}
 		if (uses < 200)
 		{
-			return ChatColor.BLUE + "Amazing";
+			return "amazing";
 		}
 		if (uses < 300)
 		{
-			return ChatColor.BLUE + "Mega";
+			return "mega";
 		}
 		if (uses < 500)
 		{
-			return ChatColor.BLUE + "Awesome";
+			return "awesome";
 		}
 		if (uses < 1000)
 		{
-			return ChatColor.DARK_PURPLE + "Epic";
+			return "epic";
 		}
-		return ChatColor.GOLD + "Legendary";
+		return "legendary";
 	}
 
-	/** The first lore line (without colors) of an artifact made before artifacts were tagged */
+	/**
+	 * The first lore line (without colors) of an artifact made before artifacts were tagged. These were always in
+	 * English, whatever messages.yml says now.
+	 */
 	public static boolean isArtifactLine(String firstLine)
 	{
 		return firstLine.startsWith("A Holy artifact") || firstLine.startsWith("An Unholy artifact");

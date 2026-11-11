@@ -27,7 +27,10 @@ public final class HolyPowerRules
 	{
 	}
 
-	/** The lore line of an artifact with this power */
+	/**
+	 * The lore line that described the power of an artifact made before artifacts were tagged, which {@link #parse} reads
+	 * back. Always English; what new artifacts show is artifact.power.&lt;POWER&gt; in messages.yml.
+	 */
 	public static String describe(HolyPower power, int value)
 	{
 		return switch (power)

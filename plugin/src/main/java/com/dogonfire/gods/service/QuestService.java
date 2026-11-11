@@ -11,7 +11,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -754,7 +753,7 @@ public class QuestService
 		Player player = ctx.plugin().getServer().getPlayer(playerId);
 		if (player != null)
 		{
-			ctx.plugin().getServer().broadcastMessage(ChatColor.GOLD + player.getDisplayName() + ChatColor.AQUA + " completed a pilgrimage to " + ChatColor.GOLD + targetType(questGod));
+			ctx.messages().broadcast(ctx.plugin().getServer(), "broadcast.pilgrimage", Messages.displayName(player.getDisplayName()), Messages.type(targetType(questGod)));
 		}
 
 		ctx.believerService().setHunting(playerId, false);

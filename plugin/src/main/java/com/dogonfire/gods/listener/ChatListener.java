@@ -1,6 +1,5 @@
 package com.dogonfire.gods.listener;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -10,6 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.service.ChatService;
 
 public class ChatListener implements Listener
@@ -54,15 +54,8 @@ public class ChatListener implements Listener
 
 		event.setCancelled(true);
 
-		String message;
-		if (info.priest)
-		{
-			message = ChatColor.YELLOW + "[" + godName + "Chat] " + player.getName() + ": " + ChatColor.WHITE + event.getMessage();
-		}
-		else
-		{
-			message = ChatColor.YELLOW + "[" + godName + "Chat] " + ChatColor.RED + player.getName() + ChatColor.YELLOW + ": " + ChatColor.WHITE + event.getMessage();
-		}
+		// Rendered once, here on the chat thread (Messages is thread-safe)
+		String message = ctx.messages().legacy(info.priest ? "chat.priest" : "chat.believer", Messages.god(godName), Messages.player(player.getName()), Messages.text("message", event.getMessage()));
 
 		for (Player otherPlayer : ctx.plugin().getServer().getOnlinePlayers())
 		{

@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -364,7 +363,7 @@ public class MarriageService
 			ctx.godSpeech().say(godName, partner, Voice.BELIEVER_MARRIED, 10, Messages.displayName(player.getDisplayName()));
 
 			ctx.plugin().log(player.getDisplayName() + " just married " + partner.getDisplayName() + " in the name of " + godName);
-			ctx.plugin().getServer().broadcastMessage(ChatColor.WHITE + player.getDisplayName() + ChatColor.AQUA + " just married " + ChatColor.WHITE + partner.getDisplayName() + ChatColor.AQUA + " in the name of " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
+			ctx.messages().broadcast(ctx.plugin().getServer(), "broadcast.married", Messages.displayName(player.getDisplayName()), Messages.legacyText("partner", partner.getDisplayName()), Messages.god(godName));
 			if ((ctx.settings().holyArtifacts().enabled()) && (ctx.settings().marriage().weddingFireworks()))
 			{
 				ctx.holyPowerService().shootFirework(player, 16);

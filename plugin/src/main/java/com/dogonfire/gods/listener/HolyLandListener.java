@@ -2,7 +2,6 @@ package com.dogonfire.gods.listener;
 
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -90,7 +89,7 @@ public class HolyLandListener implements Listener
 
 		if (lands().isNeutralLandLocation(event.getBlock().getLocation()))
 		{
-			player.sendMessage(ChatColor.RED + "You cannot build in neutral land");
+			ctx.messages().send(player, "holy-land.neutral-no-build");
 
 			event.setCancelled(true);
 			return;
@@ -107,7 +106,7 @@ public class HolyLandListener implements Listener
 
 		if ((playerGod == null) || (!playerGod.equals(godName)))
 		{
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.YELLOW + godName);
+			ctx.messages().send(player, "holy-land.no-access", Messages.god(godName));
 
 			event.setCancelled(true);
 		}
@@ -136,7 +135,7 @@ public class HolyLandListener implements Listener
 
 		if (lands().isNeutralLandLocation(location))
 		{
-			player.sendMessage(ChatColor.RED + "You cannot break blocks in neutral land");
+			ctx.messages().send(player, "holy-land.neutral-no-break");
 			event.setCancelled(true);
 			return;
 		}
@@ -156,7 +155,7 @@ public class HolyLandListener implements Listener
 
 		if ((attackerGod == null) || (!attackerGod.equals(godName)))
 		{
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.YELLOW + godName);
+			ctx.messages().send(player, "holy-land.no-access", Messages.god(godName));
 			event.setCancelled(true);
 		}
 	}
@@ -199,14 +198,14 @@ public class HolyLandListener implements Listener
 		}
 		if (lands().isContestedLand(player.getLocation()))
 		{
-			player.sendMessage(ChatColor.RED + "This Holy Land is contested! Win the battle before you can access this Holy Land!");
+			ctx.messages().send(player, "holy-land.contested-no-access");
 			event.setCancelled(true);
 			return;
 		}
 		String playerGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (playerGodName == null)
 		{
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.GOLD + blockGodName);
+			ctx.messages().send(player, "holy-land.no-access-gold", Messages.god(blockGodName));
 			event.setCancelled(true);
 			return;
 		}
@@ -220,7 +219,7 @@ public class HolyLandListener implements Listener
 			{
 				return;
 			}
-			player.sendMessage(ChatColor.RED + "You do not have access to the holy land of " + ChatColor.GOLD + blockGodName);
+			ctx.messages().send(player, "holy-land.no-access-gold", Messages.god(blockGodName));
 			event.setCancelled(true);
 		}
 	}
@@ -495,7 +494,7 @@ public class HolyLandListener implements Listener
 
 			if (!HolyLandService.NEUTRAL_LAND_MARKER.equals(godFrom))
 			{
-				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
+				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.neutral"), ctx.messages().legacy("holy-land.title.neutral-subtitle"));
 			}
 			return;
 		}
@@ -517,7 +516,7 @@ public class HolyLandListener implements Listener
 				int defenderKillsNeeded = HolyLandContest.defenderKillsNeeded(contest);
 				int desecration = contest.desecration();
 
-				ctx.titles().send(player, 1 * 20, 4 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.RED + "Contested " + minutesLeft + " min");
+				ctx.titles().send(player, 1 * 20, 4 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.contested", Messages.god(godTo)), ctx.messages().legacy("holy-land.title.contested-subtitle", Messages.text("minutes", minutesLeft)));
 
 				ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.contested-kills", 20, Messages.text("minutes", minutesLeft), Messages.text("attacker_kills", attackerKillsNeeded), Messages.text("defender_kills", defenderKillsNeeded));
 				ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.contested-desecration", 20, Messages.god(godTo), Messages.text("desecrations", desecration));
@@ -535,16 +534,16 @@ public class HolyLandListener implements Listener
 			String playerGod = ctx.believerService().getGodForBeliever(player.getUniqueId());
 			if ((playerGod != null) && (playerGod.equals(godTo)))
 			{
-				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, ChatColor.WHITE + nullToEmpty(lands().getHolyLandName(to)));
+				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.holy-land", Messages.god(godTo)), ctx.messages().legacy("holy-land.title.holy-land-name", Messages.text("name", nullToEmpty(lands().getHolyLandName(to)))));
 			}
 			else
 			{
-				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godTo, nullToEmpty(ctx.godService().getGodDescription(godTo)));
+				ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.holy-land", Messages.god(godTo)), ctx.messages().legacy("holy-land.title.other-description", Messages.text("description", nullToEmpty(ctx.godService().getGodDescription(godTo)))));
 			}
 		}
 		else if ((godFrom != null) && (godTo == null))
 		{
-			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.DARK_GREEN + "Wilderness", "");
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.wilderness"), ctx.messages().legacy("holy-land.title.wilderness-subtitle"));
 		}
 	}
 
@@ -562,7 +561,7 @@ public class HolyLandListener implements Listener
 		if (lands().isNeutralLandLocation(location))
 		{
 			lands().setNeutralLandLocationFrom(player.getUniqueId());
-			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.WHITE + "Neutral Land", ChatColor.GREEN + "You are safe against mobs and PvP");
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.neutral"), ctx.messages().legacy("holy-land.title.neutral-subtitle"));
 			return;
 		}
 
@@ -570,11 +569,11 @@ public class HolyLandListener implements Listener
 
 		if (godName != null)
 		{
-			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.GOLD + "Holyland of " + godName, ChatColor.WHITE + nullToEmpty(ctx.godService().getGodDescription(godName)));
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.holy-land", Messages.god(godName)), ctx.messages().legacy("holy-land.title.description", Messages.text("description", nullToEmpty(ctx.godService().getGodDescription(godName)))));
 		}
 		else
 		{
-			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ChatColor.DARK_GREEN + "Wilderness", "");
+			ctx.titles().send(player, 1 * 20, 3 * 20, 1 * 20, ctx.messages().legacy("holy-land.title.wilderness"), ctx.messages().legacy("holy-land.title.wilderness-subtitle"));
 		}
 	}
 

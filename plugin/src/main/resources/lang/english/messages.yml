@@ -70,6 +70,17 @@ holy-land:
     wilderness-subtitle: ''
     neutral: <white>Neutral Land
     neutral-subtitle: <green>You are safe against mobs and PvP
+    # <god> owning the land
+    holy-land: <gold>Holyland of <god>
+    # The subtitle in your own holy land: <description> of your god
+    description: <white><description>
+    # The subtitle in a named holy land of another god: its <name>
+    holy-land-name: <white><name>
+    # The subtitle in a holy land of another god: its god's <description>
+    other-description: <description>
+    contested: <gold>Holyland of <god>
+    # <minutes> left of the battle
+    contested-subtitle: <red>Contested <minutes> min
   size: <aqua>You religion now has claimed <hl><claimed></hl>/<hl><max></hl> Holyland
   cannot-claim-more: <red>You cannot claim more Holyland
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
@@ -79,6 +90,12 @@ holy-land:
   # <god> owning the land
   contested-desecration: <aqua>This Holy Land has been desecrated <hl><desecrations></hl> times
   no-teleport: <dark_red>You cannot teleport into the Holy Land of <hl><god></hl>
+  neutral-no-build: <red>You cannot build in neutral land
+  neutral-no-break: <red>You cannot break blocks in neutral land
+  no-access: <red>You do not have access to the holy land of <yellow><god>
+  # The same, when using or attacking something in it
+  no-access-gold: <red>You do not have access to the holy land of <gold><god>
+  contested-no-access: <red>This Holy Land is contested! Win the battle before you can access this Holy Land!
 
 marriage:
   # <player> in what a god says about a married couple
@@ -176,6 +193,10 @@ names:
 broadcast:
   # When config.yml's gods.broadcast-new-gods is on. <player>, <god>, <gender> ("God", "Goddess")
   new-god: <white><player><aqua> started to believe in the <gender> <gold><god>
+  # When two players marry: <player>, <partner> (display names), <god>
+  married: <white><player><aqua> just married <white><partner><aqua> in the name of <gold><god><aqua>!
+  # When a believer completes a pilgrimage: <player> (display name) and the <type> of the place
+  pilgrimage: <gold><player><aqua> completed a pilgrimage to <gold><type>
 
 # The /gods command. Each command has its parameters and description (shown by /gods help) and its replies.
 command:
@@ -504,3 +525,98 @@ time:
   days-ago: <amount> days ago
   hours-ago: <amount> hours ago
   minutes-ago: <amount> min ago
+
+# Religion chat (/gods chat): <god>, <player> and the <message> they wrote
+chat:
+  believer: '<yellow>[<god>Chat] <red><player><yellow>: <white><message>'
+  priest: '<yellow>[<god>Chat] <player>: <white><message>'
+
+holy-book:
+  # The title of a new holy book (no colors)
+  default-title: Holy Book of <god>
+
+# Holy artifacts
+artifact:
+  # The name stored in the artifact (no colors): <item> is one of the names below, <god> the god that gave it
+  item-name: <item> of <god>
+  # The name shown: <name> is item-name
+  display-name: <gold><name>
+  # The name once the artifact has a rank: <rank> below
+  ranked-name: <rank> <gold><name>
+  # Sent to everyone when an artifact gets a new rank: <player>, <name>, <rank>
+  ranked: <aqua><player>'s <white><name><aqua> is now <rank>
+  # The second lore line: <amount> of uses
+  used: <white>Used <amount> times
+  used-once: <white>Used <amount> time
+  cooling-down: <red>Your holy artifact needs <seconds> more seconds to regain its power.
+  world-busy: <red>The heavens of this world are already being moved by a holy artifact.
+  # The ranks an artifact earns by being used (5, 20, 50, 100, 150, 200, 300, 500 and 1000 uses)
+  rank:
+    shiny: <green>Shiny
+    honorable: <green>Honorable
+    holy: <green>Holy
+    saintly: <green>Saintly
+    amazing: <blue>Amazing
+    mega: <blue>Mega
+    awesome: <blue>Awesome
+    epic: <dark_purple>Epic
+    legendary: <gold>Legendary
+  # The third lore line: <value> is the power's strength, <double> twice that
+  power:
+    KNOWLEDGE: <green>Boosts <value> levels of xp
+    CALLMOON: <green>Calls the moon for <value> min
+    CALLSUN: <green>Calls the sun for <value> min
+    HEALING: <green>Heals up to <value> other players
+    TAME: <green>Tame all beasts within <double> blocks
+    LIGHTNING: <green>Lightning strikes up to <value> enemies
+    LIGHTNING_STORM: <green>Creates a thunderstorm lasting <value> minutes
+    TELEPORT: <green>Teleport up to <value> blocks
+    FREEZE: <green>Freezes all water within a <value> block radius
+    ICE: <green>Shoots ice spike which freezes a target on hit
+    FIREBALL: <green>Fires a fireball with a <value> seconds cooldown
+    EARTHQUAKE: <green>Earthquake in <value> block radius
+    NATURE: <green>Grows nature in a radius of <value> blocks
+    FIREWORK: <green>Shoots <value> firework rockets
+    DRUNK: <green>Gets you drunk for <value> seconds!
+  # Per god type: the first lore line, and the names of its two artifact items (in the order of the items Gods picks
+  # from)
+  kind:
+    FROST:
+      lore: <dark_purple>A Holy artifact of Frost
+      items: [Frostwand, Frostblade]
+    LOVE:
+      lore: <dark_purple>A Holy artifact of Love
+      items: [Love jewel, Heartstone]
+    EVIL:
+      lore: <dark_purple>An Unholy artifact of Evil
+      items: [Bloodsword, Bloodaxe]
+    SEA:
+      lore: <dark_purple>A Holy artifact of the Sea
+      items: [Heart of the sea, Tidestone]
+    MOON:
+      lore: <dark_purple>A Holy artifact of the Moon
+      items: [Moon dial, Night veil]
+    SUN:
+      lore: <dark_purple>A Holy artifact of the Sun
+      items: [Sunstaff, Sunblade]
+    THUNDER:
+      lore: <dark_purple>A Holy artifact of Thunder
+      items: [Thunderwand, Thunderaxe]
+    PARTY:
+      lore: <dark_purple>A Holy artifact of the PAAARTEY!
+      items: [Partystick, Partystar]
+    WAR:
+      lore: <dark_purple>A Holy artifact of War
+      items: [Warsword, Waraxe]
+    WEREWOLVES:
+      lore: <dark_purple>A Holy artifact of the Pack
+      items: [Wolfpaw, Fangblade]
+    CREATURES:
+      lore: <dark_purple>A Holy artifact of Creatures
+      items: [Beastwand, Beast feather]
+    WISDOM:
+      lore: <dark_purple>A Holy artifact of Wisdom
+      items: [Knowledge tome, Quill]
+    NATURE:
+      lore: <dark_purple>A Holy artifact of Nature
+      items: [Earthdigger, Druid staff]

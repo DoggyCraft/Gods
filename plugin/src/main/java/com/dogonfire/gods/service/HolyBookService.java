@@ -44,9 +44,9 @@ public class HolyBookService
 		this.repository.save();
 	}
 
-	private static String defaultTitle(String godName)
+	private String defaultTitle(String godName)
 	{
-		return "Holy Book of " + godName;
+		return Messages.plain(ctx.messages().component("holy-book.default-title", Messages.god(godName)));
 	}
 
 	/** The god's pages, writing the default book first if it has none */

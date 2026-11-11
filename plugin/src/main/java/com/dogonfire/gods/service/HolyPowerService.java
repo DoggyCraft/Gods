@@ -1,9 +1,9 @@
 package com.dogonfire.gods.service;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.HolyPower;
 import com.dogonfire.gods.service.power.AttackPowers;
 import com.dogonfire.gods.service.power.GiftPowers;
@@ -42,12 +42,12 @@ public class HolyPowerService
 		PowerCooldowns.Result result = this.cooldowns.use(player.getUniqueId(), player.getWorld().getUID(), powerType, powerStrength, System.currentTimeMillis());
 		if (result instanceof PowerCooldowns.Cooling cooling)
 		{
-			player.sendMessage(ChatColor.RED + "Your holy artifact needs " + cooling.seconds() + " more seconds to regain its power.");
+			ctx.messages().send(player, "artifact.cooling-down", Messages.text("seconds", cooling.seconds()));
 			return false;
 		}
 		if (result instanceof PowerCooldowns.WorldBusy)
 		{
-			player.sendMessage(ChatColor.RED + "The heavens of this world are already being moved by a holy artifact.");
+			ctx.messages().send(player, "artifact.world-busy");
 			return false;
 		}
 

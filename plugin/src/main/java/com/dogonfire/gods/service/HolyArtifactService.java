@@ -1,5 +1,6 @@
 package com.dogonfire.gods.service;
 
+import net.kyori.adventure.text.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,6 +20,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.HolyPower;
 
@@ -31,11 +33,8 @@ import com.dogonfire.gods.model.HolyPower;
  */
 public class HolyArtifactService
 {
-	private record ArtifactItem(Material material, String name)
-	{
-	}
-
-	private record ArtifactKind(String lore, HolyPower power, ArtifactItem... items)
+	/** The power of a god type's artifacts and the items they can be; their names and lore are artifact.kind.<TYPE> in messages.yml */
+	private record ArtifactKind(HolyPower power, Material... items)
 	{
 	}
 
@@ -61,20 +60,26 @@ public class HolyArtifactService
 	{
 		return switch (godType)
 		{
-		case FROST -> new ArtifactKind("A Holy artifact of Frost", HolyPower.FREEZE, new ArtifactItem(Material.STICK, "Frostwand"), new ArtifactItem(Material.IRON_SWORD, "Frostblade"));
-		case LOVE -> new ArtifactKind("A Holy artifact of Love", HolyPower.HEALING, new ArtifactItem(Material.DIAMOND, "Love jewel"), new ArtifactItem(Material.AMETHYST_SHARD, "Heartstone"));
-		case EVIL -> new ArtifactKind("An Unholy artifact of Evil", HolyPower.LIGHTNING, new ArtifactItem(Material.IRON_SWORD, "Bloodsword"), new ArtifactItem(Material.IRON_AXE, "Bloodaxe"));
-		case SEA -> new ArtifactKind("A Holy artifact of the Sea", HolyPower.ICE, new ArtifactItem(Material.HEART_OF_THE_SEA, "Heart of the sea"), new ArtifactItem(Material.PRISMARINE_SHARD, "Tidestone"));
-		case MOON -> new ArtifactKind("A Holy artifact of the Moon", HolyPower.CALLMOON, new ArtifactItem(Material.CLOCK, "Moon dial"), new ArtifactItem(Material.PHANTOM_MEMBRANE, "Night veil"));
-		case SUN -> new ArtifactKind("A Holy artifact of the Sun", HolyPower.CALLSUN, new ArtifactItem(Material.BLAZE_ROD, "Sunstaff"), new ArtifactItem(Material.GOLDEN_SWORD, "Sunblade"));
-		case THUNDER -> new ArtifactKind("A Holy artifact of Thunder", HolyPower.LIGHTNING_STORM, new ArtifactItem(Material.STICK, "Thunderwand"), new ArtifactItem(Material.GOLDEN_AXE, "Thunderaxe"));
-		case PARTY -> new ArtifactKind("A Holy artifact of the PAAARTEY!", HolyPower.FIREWORK, new ArtifactItem(Material.STICK, "Partystick"), new ArtifactItem(Material.FIREWORK_STAR, "Partystar"));
-		case WAR -> new ArtifactKind("A Holy artifact of War", HolyPower.FIREBALL, new ArtifactItem(Material.IRON_SWORD, "Warsword"), new ArtifactItem(Material.IRON_AXE, "Waraxe"));
-		case WEREWOLVES -> new ArtifactKind("A Holy artifact of the Pack", HolyPower.TAME, new ArtifactItem(Material.RABBIT_FOOT, "Wolfpaw"), new ArtifactItem(Material.IRON_SWORD, "Fangblade"));
-		case CREATURES -> new ArtifactKind("A Holy artifact of Creatures", HolyPower.TAME, new ArtifactItem(Material.STICK, "Beastwand"), new ArtifactItem(Material.FEATHER, "Beast feather"));
-		case WISDOM -> new ArtifactKind("A Holy artifact of Wisdom", HolyPower.KNOWLEDGE, new ArtifactItem(Material.BOOK, "Knowledge tome"), new ArtifactItem(Material.FEATHER, "Quill"));
-		case NATURE -> new ArtifactKind("A Holy artifact of Nature", HolyPower.NATURE, new ArtifactItem(Material.GOLDEN_HOE, "Earthdigger"), new ArtifactItem(Material.STICK, "Druid staff"));
+		case FROST -> new ArtifactKind(HolyPower.FREEZE, Material.STICK, Material.IRON_SWORD);
+		case LOVE -> new ArtifactKind(HolyPower.HEALING, Material.DIAMOND, Material.AMETHYST_SHARD);
+		case EVIL -> new ArtifactKind(HolyPower.LIGHTNING, Material.IRON_SWORD, Material.IRON_AXE);
+		case SEA -> new ArtifactKind(HolyPower.ICE, Material.HEART_OF_THE_SEA, Material.PRISMARINE_SHARD);
+		case MOON -> new ArtifactKind(HolyPower.CALLMOON, Material.CLOCK, Material.PHANTOM_MEMBRANE);
+		case SUN -> new ArtifactKind(HolyPower.CALLSUN, Material.BLAZE_ROD, Material.GOLDEN_SWORD);
+		case THUNDER -> new ArtifactKind(HolyPower.LIGHTNING_STORM, Material.STICK, Material.GOLDEN_AXE);
+		case PARTY -> new ArtifactKind(HolyPower.FIREWORK, Material.STICK, Material.FIREWORK_STAR);
+		case WAR -> new ArtifactKind(HolyPower.FIREBALL, Material.IRON_SWORD, Material.IRON_AXE);
+		case WEREWOLVES -> new ArtifactKind(HolyPower.TAME, Material.RABBIT_FOOT, Material.IRON_SWORD);
+		case CREATURES -> new ArtifactKind(HolyPower.TAME, Material.STICK, Material.FEATHER);
+		case WISDOM -> new ArtifactKind(HolyPower.KNOWLEDGE, Material.BOOK, Material.FEATHER);
+		case NATURE -> new ArtifactKind(HolyPower.NATURE, Material.GOLDEN_HOE, Material.STICK);
 		};
+	}
+
+	/** The second lore line: how often the artifact was used */
+	private String usesLine(int uses)
+	{
+		return ctx.messages().legacy(uses == 1 ? "artifact.used-once" : "artifact.used", Messages.amount(uses));
 	}
 
 	public Item createHolyArtifact(GodType godType, String godName, Location location)
@@ -86,25 +91,30 @@ public class HolyArtifactService
 		}
 
 		ArtifactKind kind = getArtifactKind(godType);
-		ArtifactItem artifactItem = kind.items()[this.random.nextInt(kind.items().length)];
+		int index = this.random.nextInt(kind.items().length);
+		Material material = kind.items()[index];
 		HolyPower holyPower = kind.power();
 		int powerValue = 1;
-		String itemName = artifactItem.name() + " of " + godName;
+		Messages messages = ctx.messages();
+		List<String> names = messages.raw("artifact.kind." + godType.name() + ".items");
+		Component baseName = messages.parse(names.isEmpty() ? material.name() : names.get(index % names.size()));
+		String itemName = Messages.plain(messages.component("artifact.item-name", Messages.component("item", baseName), Messages.god(godName)));
 
-		ItemStack item = new ItemStack(artifactItem.material());
+		ItemStack item = new ItemStack(material);
 		ItemMeta itemMeta = item.getItemMeta();
 		if (itemMeta == null)
 		{
-			ctx.plugin().logDebug("createHolyArtifact(): Could not get item meta for " + artifactItem.material());
+			ctx.plugin().logDebug("createHolyArtifact(): Could not get item meta for " + material);
 			return null;
 		}
 
-		itemMeta.setDisplayName(ChatColor.GOLD + itemName);
+		itemMeta.setDisplayName(messages.legacy("artifact.display-name", Messages.text("name", itemName)));
 
+		// Three lines, as before: the kind, the uses and the power
 		List<String> lore = new ArrayList<String>();
-		lore.add(ChatColor.DARK_PURPLE + kind.lore());
-		lore.add(HolyArtifactRules.usesLine(0));
-		lore.add(ChatColor.GREEN + HolyPowerRules.describe(holyPower, powerValue));
+		lore.add(messages.legacy("artifact.kind." + godType.name() + ".lore"));
+		lore.add(usesLine(0));
+		lore.add(messages.legacy("artifact.power." + holyPower.name(), Messages.text("value", powerValue), Messages.text("double", 2 * powerValue)));
 		itemMeta.setLore(lore);
 
 		switch (this.random.nextInt(6))
@@ -169,16 +179,17 @@ public class HolyArtifactService
 		List<String> lore = itemMeta.getLore();
 		if (lore != null && lore.size() >= 2)
 		{
-			lore.set(1, HolyArtifactRules.usesLine(uses));
+			lore.set(1, usesLine(uses));
 			itemMeta.setLore(lore);
 		}
 
-		String rankName = HolyArtifactRules.rankName(uses);
-		if (!rankName.equals(HolyArtifactRules.rankName(oldUses)))
+		String rank = HolyArtifactRules.rank(uses);
+		if (!rank.equals(HolyArtifactRules.rank(oldUses)))
 		{
 			String baseName = data.getOrDefault(this.nameKey, PersistentDataType.STRING, ChatColor.stripColor(itemMeta.getDisplayName()));
-			itemMeta.setDisplayName(rankName + " " + ChatColor.GOLD + baseName);
-			ctx.plugin().getServer().broadcastMessage(ChatColor.AQUA + player.getName() + "'s " + ChatColor.WHITE + baseName + ChatColor.AQUA + " is now " + rankName);
+			Component rankName = ctx.messages().component("artifact.rank." + rank);
+			itemMeta.setDisplayName(ctx.messages().legacy("artifact.ranked-name", Messages.component("rank", rankName), Messages.text("name", baseName)));
+			ctx.messages().broadcast(ctx.plugin().getServer(), "artifact.ranked", Messages.player(player.getName()), Messages.text("name", baseName), Messages.component("rank", rankName));
 		}
 
 		boolean broken = false;
