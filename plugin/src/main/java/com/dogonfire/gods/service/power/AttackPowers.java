@@ -2,7 +2,7 @@ package com.dogonfire.gods.service.power;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -17,19 +17,34 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import com.dogonfire.gods.service.HolyPowerRules;
 import com.dogonfire.gods.util.NearbyEntities;
 
-/** The powers that hit something: a fireball, an ice spike and an earthquake */
+/**
+ * The powers that hit something: a fireball, an ice spike and an earthquake. The ice an ice spike leaves is packed ice
+ * (it doesn't melt into water), can't be broken ({@link #isEncased}) and is put back as it was after a few seconds, or
+ * at once by {@link #restoreAll} when the plugin stops.
+ */
 public final class AttackPowers
 {
-	private final Plugin	plugin;
-	private final Random	random	= new Random();
+	/** What the ice spike encases its target in: doesn't melt, and breaking it leaves no water */
+	static final Material				ENCASING		= Material.PACKED_ICE;
+
+	// How far around the spot where the earthquake stops it hurts and throws up creatures
+	private static final double			QUAKE_RADIUS	= 3.0D;
+
+	private final Plugin				plugin;
+	private final Random				random			= new Random();
+
+	// Every block an ice spike turned to ice and what it was before, until it is put back
+	private final Map<Block, BlockData>	encased			= new LinkedHashMap<Block, BlockData>();
 
 	public AttackPowers(Plugin plugin)
 	{
@@ -44,13 +59,20 @@ public final class AttackPowers
 	}
 
 	/**
-	 * EARTHQUAKE: a wave of breaking blocks runs ahead of the player (up to 10 steps) and throws up whatever it reaches
+	 * EARTHQUAKE: a shockwave runs along the ground ahead of the player (up to 10 steps). At the first creature it
+	 * reaches it bursts: the creatures within a few blocks are hurt (by the caster, so holy land and PvP rules apply) and
+	 * thrown a few blocks into the air. Breaks no blocks and never hurts the caster.
 	 */
-	public void earthQuake(final Player player, int value)
+	public void earthQuake(final Player player, final int value)
 	{
 		final Location location = player.getLocation().add(0.0D, -0.2D, 0.0D);
 		final Vector direction = player.getLocation().getDirection();
 		direction.setY(0);
+		if (direction.lengthSquared() < 1.0E-6D)
+		{
+			// Looking straight up or down
+			return;
+		}
 		direction.normalize();
 		BukkitRunnable task = new BukkitRunnable()
 		{
@@ -60,7 +82,7 @@ public final class AttackPowers
 			public void run()
 			{
 				Location above = location.clone().add(0.0D, 1.0D, 0.0D);
-				if ((above.getBlock().getType().isSolid()) || (!location.getBlock().getType().isSolid()))
+				if (!player.isOnline() || (above.getBlock().getType().isSolid()) || (!location.getBlock().getType().isSolid()))
 				{
 					cancel();
 					return;
@@ -76,14 +98,11 @@ public final class AttackPowers
 						playBlockBreakEffect(temp, block);
 					}
 				}
-				Entity[] near = NearbyEntities.all(location, 1.5D);
 
 				boolean hit = false;
-
-				Random random = new Random();
-				for (Entity e : near)
+				for (Entity e : NearbyEntities.all(location, 1.5D))
 				{
-					if (e != player)
+					if (e != player && e instanceof LivingEntity)
 					{
 						hit = true;
 						break;
@@ -91,15 +110,7 @@ public final class AttackPowers
 				}
 				if (hit)
 				{
-					location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), 10.0F, false, false);
-					near = NearbyEntities.all(location, 2.5D);
-					for (Entity e : near)
-					{
-						if (e != player)
-						{
-							e.setVelocity(new Vector(random.nextGaussian() / 4.0D, 1.0D + random.nextDouble() * 10.0D, random.nextGaussian() / 4.0D));
-						}
-					}
+					burst(player, location.clone().add(0.0D, 1.0D, 0.0D), value);
 					cancel();
 					return;
 				}
@@ -114,6 +125,30 @@ public final class AttackPowers
 		task.runTaskTimer(this.plugin, 0L, 3L);
 	}
 
+	// The earthquake's burst: an explosion to see and hear (that touches nothing), then damage and a throw upwards
+	private void burst(Player caster, Location center, int value)
+	{
+		World world = center.getWorld();
+		world.spawnParticle(Particle.EXPLOSION_EMITTER, center, 1);
+		world.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 4.0F, 0.7F);
+
+		double damage = HolyPowerRules.earthquakeDamage(value);
+		for (Entity e : world.getNearbyEntities(center, QUAKE_RADIUS, QUAKE_RADIUS, QUAKE_RADIUS))
+		{
+			if (e == caster || !(e instanceof LivingEntity living) || living.isDead() || e.getLocation().distanceSquared(center) > QUAKE_RADIUS * QUAKE_RADIUS)
+			{
+				continue;
+			}
+			living.damage(damage, caster);
+			if (living.isDead())
+			{
+				continue;
+			}
+			// About 3 to 5 blocks up: a fall that hurts a little, not one that kills
+			living.setVelocity(new Vector(this.random.nextGaussian() / 4.0D, 0.8D + this.random.nextDouble() * 0.3D, this.random.nextGaussian() / 4.0D));
+		}
+	}
+
 	/** ICE: an ice block flies where the player looks and encases what it hits in ice for a few seconds */
 	public void ice(final Player player, int power)
 	{
@@ -122,10 +157,14 @@ public final class AttackPowers
 		final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0.0D, 1.8D, 0.0D), Material.ICE.createBlockData());
 		block.setVelocity(player.getLocation().getDirection().multiply(2.0D));
 
+		// It never turns into a block where it lands, nor into an item
 		block.setDropItem(false);
+		block.setCancelDrop(true);
 
 		BukkitRunnable run = new BukkitRunnable()
 		{
+			private int ticks = 0;
+
 			@Override
 			public void run()
 			{
@@ -134,21 +173,17 @@ public final class AttackPowers
 				Location bLoc = block.getLocation();
 				Location loc;
 
-				for (int x = -1; x < 2; x++)
+				for (int x = -1; x < 2 && !hit; x++)
 				{
-					for (int y = -1; y < 2; y++)
+					for (int y = -1; y < 2 && !hit; y++)
 					{
-						for (int z = -1; z < 2; z++)
+						for (int z = -1; z < 2 && !hit; z++)
 						{
-							loc = block.getLocation().add(x, y, z);
-							if (world.getBlockAt(loc).getType() != Material.AIR)
+							loc = bLoc.clone().add(x, y, z);
+							Block b = world.getBlockAt(loc);
+							if (b.getType().isSolid() && overlaps(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 1.0D, 1.0D, 1.0D, bLoc.getX() - 0.5D, bLoc.getY() - 0.5D, bLoc.getZ() - 0.5D, 1.0D, 1.0D, 1.0D))
 							{
-								Block b = world.getBlockAt(loc);
-								if ((b.getType().isSolid()) && (overlaps(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 1.0D, 1.0D, 1.0D, bLoc.getX() - 0.5D, bLoc.getY() - 0.5D, bLoc.getZ() - 0.5D, 1.0D, 1.0D, 1.0D)))
-								{
-									hit = true;
-									break;
-								}
+								hit = true;
 							}
 						}
 					}
@@ -156,8 +191,7 @@ public final class AttackPowers
 
 				if (!hit)
 				{
-					List<Entity> entities = block.getNearbyEntities(1.0D, 1.0D, 1.0D);
-					for (Entity e : entities)
+					for (Entity e : block.getNearbyEntities(1.0D, 1.0D, 1.0D))
 					{
 						if (e != player)
 						{
@@ -167,31 +201,43 @@ public final class AttackPowers
 					}
 				}
 
-				if (block.isDead() || hit)
+				// A spike that flies on and on (out of loaded chunks, into the void) stops after 10 seconds
+				if (block.isDead() || hit || ++this.ticks > 200)
 				{
+					Block target = block.getLocation().getBlock();
 					block.remove();
-
-					// A landed falling block turns into an ice block; remove only that
-					Block landed = block.getLocation().getBlock();
-					if (landed.getType() == Material.ICE)
-					{
-						landed.setType(Material.AIR);
-					}
-
 					cancel();
 
-					encaseInIce(landed);
+					if (this.ticks <= 200)
+					{
+						encaseInIce(target);
+					}
 				}
 			}
 		};
 		run.runTaskTimer(this.plugin, 0L, 1L);
 	}
 
+	/** Whether this block is ice an ice spike left, which is put back by itself and so can't be broken */
+	public boolean isEncased(Block block)
+	{
+		return this.encased.containsKey(block);
+	}
+
+	/** Puts back at once every block ice spikes turned to ice (when the plugin stops) */
+	public void restoreAll()
+	{
+		for (Map.Entry<Block, BlockData> entry : this.encased.entrySet())
+		{
+			restore(entry.getKey(), entry.getValue());
+		}
+		this.encased.clear();
+	}
+
 	// Encase the target in ice for a few seconds, then put back what was there
 	private void encaseInIce(Block landed)
 	{
 		final List<Block> changedBlocks = new ArrayList<Block>();
-		final Map<Block, BlockData> originalData = new HashMap<Block, BlockData>();
 
 		for (int x = -1; x < 2; x++)
 		{
@@ -202,11 +248,12 @@ public final class AttackPowers
 					Block b = landed.getRelative(x, y, z);
 					Material type = b.getType();
 
-					if (type.isAir() || (Tag.REPLACEABLE.isTagged(type) && type != Material.LAVA))
+					// Only air and what a block may replace (water, grass, ...); never ice that was there already
+					if (!this.encased.containsKey(b) && (type.isAir() || (Tag.REPLACEABLE.isTagged(type) && type != Material.LAVA)))
 					{
-						originalData.put(b, b.getBlockData());
+						this.encased.put(b, b.getBlockData());
 						changedBlocks.add(b);
-						b.setType(Material.ICE, false);
+						b.setType(ENCASING, false);
 					}
 				}
 			}
@@ -228,14 +275,24 @@ public final class AttackPowers
 					}
 
 					Block c = changedBlocks.remove(changedBlocks.size() - 1);
-					if (c.getType() == Material.ICE)
+					BlockData original = encased.remove(c);
+					if (original != null && c.getType() == ENCASING)
 					{
 						playBlockBreakEffect(c.getLocation(), c);
-						c.setBlockData(originalData.get(c), false);
+						restore(c, original);
 					}
 				}
 			}
 		}.runTaskTimer(this.plugin, 80 + this.random.nextInt(40), 3L);
+	}
+
+	// Puts back what a block was, if it is still the ice the spike left (a piston may have moved it)
+	private static void restore(Block block, BlockData original)
+	{
+		if (block.getType() == ENCASING)
+		{
+			block.setBlockData(original, false);
+		}
 	}
 
 	// Whether two boxes (corner and size) touch

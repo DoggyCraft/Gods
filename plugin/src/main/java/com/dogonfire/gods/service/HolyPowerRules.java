@@ -1,14 +1,18 @@
 package com.dogonfire.gods.service;
 
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.bukkit.Material;
 
 import com.dogonfire.gods.model.HolyPower;
 
 /**
  * The rules of holy powers, without Bukkit so they can be tested: the lore line that describes a power (and reading it
- * back from artifacts made before artifacts were tagged), how long a player waits between uses, and how far the area
- * powers reach. Kept exactly as they were.
+ * back from artifacts made before artifacts were tagged), how long a player waits between uses, how far the area
+ * powers reach, where TELEPORT may put a player and how hard EARTHQUAKE hits.
  */
 public final class HolyPowerRules
 {
@@ -22,6 +26,12 @@ public final class HolyPowerRules
 	public static final long	KNOWLEDGE_COOLDOWN_MILLIS	= 10 * 60 * 1000L;
 
 	private static final int	MAX_EFFECT_RADIUS			= 30;
+	private static final int	MAX_TELEPORT_DISTANCE		= 48;
+	private static final double	MAX_EARTHQUAKE_DAMAGE		= 10.0D;
+
+	// What a player must not be teleported into or onto
+	private static final Set<Material>	UNSAFE_SPACE	= EnumSet.of(Material.WATER, Material.LAVA, Material.BUBBLE_COLUMN, Material.FIRE, Material.SOUL_FIRE, Material.POWDER_SNOW, Material.SWEET_BERRY_BUSH, Material.WITHER_ROSE, Material.COBWEB, Material.END_PORTAL, Material.NETHER_PORTAL, Material.END_GATEWAY);
+	private static final Set<Material>	UNSAFE_GROUND	= EnumSet.of(Material.LAVA, Material.MAGMA_BLOCK, Material.CACTUS, Material.CAMPFIRE, Material.SOUL_CAMPFIRE, Material.POINTED_DRIPSTONE, Material.FIRE, Material.SOUL_FIRE, Material.POWDER_SNOW);
 
 	private HolyPowerRules()
 	{
@@ -107,5 +117,35 @@ public final class HolyPowerRules
 	public static int effectRadius(int strength)
 	{
 		return Math.max(1, Math.min(10 * strength, MAX_EFFECT_RADIUS));
+	}
+
+	/**
+	 * How far TELEPORT reaches. Old artifacts were made with values meant as hundreds of blocks; it is capped so a
+	 * teleport stays among loaded chunks.
+	 */
+	public static int teleportDistance(int strength)
+	{
+		return Math.max(1, Math.min(100 * strength, MAX_TELEPORT_DISTANCE));
+	}
+
+	/**
+	 * Whether a player can stand with their feet in {@code feet}: two free blocks (passable, no liquid, nothing that
+	 * burns or hurts) over solid ground that doesn't hurt. The caller says which blocks are solid and passable (and
+	 * counts a waterlogged block as liquid).
+	 */
+	public static boolean isSafeSpot(Material ground, boolean groundSolid, Material feet, boolean feetPassable, Material head, boolean headPassable)
+	{
+		return groundSolid && !UNSAFE_GROUND.contains(ground) && isFree(feet, feetPassable) && isFree(head, headPassable);
+	}
+
+	private static boolean isFree(Material type, boolean passable)
+	{
+		return passable && !UNSAFE_SPACE.contains(type);
+	}
+
+	/** How hard the EARTHQUAKE hits each creature near where it stops (in half hearts) */
+	public static double earthquakeDamage(int strength)
+	{
+		return Math.min(4.0D + 2.0D * Math.max(1, strength), MAX_EARTHQUAKE_DAMAGE);
 	}
 }

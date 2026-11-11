@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -13,7 +14,7 @@ import com.dogonfire.gods.GodsContext;
 
 /**
  * Holy artifacts: a believer using one (right-click with it in hand), and a player who carries one can't pick up
- * another. Registered only while holy artifacts are enabled ({@code Gods.startFeatures}).
+ * another, and the ice of an ice spike can't be broken. Registered only while holy artifacts are enabled ({@code Gods.startFeatures}).
  */
 public class HolyArtifactListener implements Listener
 {
@@ -42,6 +43,16 @@ public class HolyArtifactListener implements Listener
 			{
 				ctx.holyArtifactService().handleActivate(player, player.getInventory().getItemInMainHand());
 			}
+		}
+	}
+
+	/** The ice an ice spike left can't be broken (or mined with silk touch); it goes away by itself */
+	@EventHandler(ignoreCancelled = true)
+	public void onEncasingBreak(BlockBreakEvent event)
+	{
+		if (ctx.holyPowerService().isEncased(event.getBlock()))
+		{
+			event.setCancelled(true);
 		}
 	}
 

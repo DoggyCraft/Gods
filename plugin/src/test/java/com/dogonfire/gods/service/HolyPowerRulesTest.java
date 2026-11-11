@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.model.HolyPower;
@@ -108,5 +109,41 @@ class HolyPowerRulesTest
 		// A refused use starts no cooldown
 		assertTrue(cooldowns.use(OTHER, WORLD, HolyPower.LIGHTNING_STORM, 1, 180_000L) instanceof PowerCooldowns.Ready);
 		assertTrue(cooldowns.use(OTHER, WORLD, HolyPower.FIREBALL, 1, 180_000L) instanceof PowerCooldowns.Ready);
+	}
+
+	@Test
+	void teleportStaysAmongLoadedChunks()
+	{
+		assertEquals(48, HolyPowerRules.teleportDistance(1));
+		assertEquals(48, HolyPowerRules.teleportDistance(500));
+		assertEquals(1, HolyPowerRules.teleportDistance(0));
+	}
+
+	@Test
+	void teleportOnlyToSolidGroundWithTwoFreeBlocks()
+	{
+		assertTrue(HolyPowerRules.isSafeSpot(Material.GRASS_BLOCK, true, Material.AIR, true, Material.AIR, true));
+		assertTrue(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.SHORT_GRASS, true, Material.AIR, true));
+
+		// No ground, or ground that hurts
+		assertFalse(HolyPowerRules.isSafeSpot(Material.AIR, false, Material.AIR, true, Material.AIR, true));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.MAGMA_BLOCK, true, Material.AIR, true, Material.AIR, true));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.CACTUS, true, Material.AIR, true, Material.AIR, true));
+
+		// No room, liquid or fire
+		assertFalse(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.AIR, true, Material.STONE, false));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.WATER, true, Material.AIR, true));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.LAVA, true, Material.AIR, true));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.FIRE, true, Material.AIR, true));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.AIR, true, Material.WATER, true));
+		assertFalse(HolyPowerRules.isSafeSpot(Material.STONE, true, Material.POWDER_SNOW, true, Material.AIR, true));
+	}
+
+	@Test
+	void anEarthquakeHurtsButDoesNotKill()
+	{
+		assertEquals(6.0D, HolyPowerRules.earthquakeDamage(1));
+		assertEquals(10.0D, HolyPowerRules.earthquakeDamage(10));
+		assertTrue(HolyPowerRules.earthquakeDamage(0) > 0.0D);
 	}
 }

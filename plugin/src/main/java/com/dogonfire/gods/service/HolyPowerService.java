@@ -1,5 +1,6 @@
 package com.dogonfire.gods.service;
 
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
@@ -70,6 +71,21 @@ public class HolyPowerService
 		case DRUNK -> this.gifts.drunk(player, powerStrength);
 		}
 		return true;
+	}
+
+	/** Whether this block is the ice of an ice spike, which can't be broken */
+	public boolean isEncased(Block block)
+	{
+		return this.attacks.isEncased(block);
+	}
+
+	/**
+	 * Puts back at once what powers changed for a while (the ice of ice spikes). Call it before the scheduler's tasks are
+	 * cancelled when the plugin stops, or the blocks stay changed.
+	 */
+	public void stop()
+	{
+		this.attacks.restoreAll();
 	}
 
 	/** Fireworks around the player (also for weddings and love), without a cooldown */
