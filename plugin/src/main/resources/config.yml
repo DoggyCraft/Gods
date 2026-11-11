@@ -223,9 +223,11 @@ effects:
   # section of themes.yml): at prayers, sacrifices, blessings and curses. Off means no effects at all.
   enabled: true
   # Particles rising around the altar and a sound when a believer prays: brighter when the god is pleased, darker and
-  # shorter when it is angry.
+  # shorter when it is angry. They grow with the god's rank (see ranks): a spirit's are a flicker, its symbol floats up
+  # from the descended rank on, and a greater god's are the grandest.
   prayer: true
-  # A burning sacrifice floats up, spins and shrinks, with an effect showing whether the god wanted it.
+  # A burning sacrifice floats up, spins and shrinks (from the recognized rank on; a spirit's only flickers in the
+  # fire), with an effect showing whether the god wanted it.
   sacrifice: true
   # A soft glow and chime around blessed players, a dark swirl and a low sound around cursed ones.
   blessings: true

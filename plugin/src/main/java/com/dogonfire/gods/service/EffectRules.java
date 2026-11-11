@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 
 /**
  * The numbers and choices of the gods' effects ({@link EffectService}), without the server so they can be tested:
@@ -90,6 +91,62 @@ public final class EffectRules
 			case NEUTRAL -> new Waves(4, 8, 1.4, 0.8, 3, 1.0F);
 			case ANGRY -> new Waves(3, 8, 0.5, 0.6, 2, 0.6F);
 		};
+	}
+
+	/**
+	 * How grand a god's altar effects are, by its rank: a spirit's prayers are a modest flicker, the waves grow with each
+	 * rank, the symbol floats up from the descended rank on and a sacrifice floats up as an item from recognized on; a
+	 * greater god's are the grandest.
+	 *
+	 * @param scale            how many waves and particles, and how high they rise, against the base effect
+	 * @param symbol           whether the theme's symbol floats up at prayers
+	 * @param sacrificeDisplay whether a sacrifice floats up as an item (else only particles at the fire)
+	 */
+	public record Tier(double scale, boolean symbol, boolean sacrificeDisplay)
+	{
+	}
+
+	/** The tier of a rank's effects (null: a spirit's) */
+	public static Tier tier(GodRank rank)
+	{
+		return switch (rank != null ? rank : GodRank.SPIRIT)
+		{
+			case SPIRIT -> new Tier(0.4, false, false);
+			case RECOGNIZED -> new Tier(0.7, false, true);
+			case DESCENDED -> new Tier(1.0, true, true);
+			case EXALTED -> new Tier(1.25, true, true);
+			case GREATER -> new Tier(1.5, true, true);
+		};
+	}
+
+	/** A prayer's waves for a god of this rank: the mood's waves ({@link #prayer(Theme.EffectMood)}) scaled by its tier */
+	public static Waves prayer(Theme.EffectMood mood, GodRank rank)
+	{
+		return scaled(prayer(mood), tier(rank).scale());
+	}
+
+	/** Whether the symbol floats up at a prayer to a god of this rank: from the descended rank on, not for an angry god */
+	public static boolean showsSymbol(Theme.EffectMood mood, String symbol, GodRank rank)
+	{
+		return tier(rank).symbol() && showsSymbol(mood, symbol);
+	}
+
+	/**
+	 * A god rose to a new rank: pleased waves at its main altar, grander for higher ranks (more than a prayer of that
+	 * rank, and a little more again for each rank)
+	 */
+	public static Waves rankUp(GodRank rank)
+	{
+		int step = rank != null ? rank.ordinal() : 0;
+		Waves base = scaled(prayer(Theme.EffectMood.PLEASED), tier(rank).scale());
+		return new Waves(base.waves() + 1 + step, base.particles() + step, base.rise() + 0.4 * step, base.radius() + 0.1 * step, base.ticksApart(), 1.2F + 0.1F * step);
+	}
+
+	/** Waves with {@code scale} times the waves, particles and rise (at least two waves of four particles) */
+	static Waves scaled(Waves waves, double scale)
+	{
+		return new Waves(Math.max(2, (int) Math.round(waves.waves() * scale)), Math.max(4, (int) Math.round(waves.particles() * scale)), waves.rise() * scale,
+				waves.radius() * Math.min(1.3, Math.max(0.7, scale)), waves.ticksApart(), waves.pitch());
 	}
 
 	/** A sacrifice: a wanted one floats high and spins, an unwanted one barely rises and is cast down */

@@ -26,10 +26,12 @@ import org.joml.Vector3f;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.Theme;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 
 /**
- * Short effects in the style of a god's type (the {@code effects} of its theme in themes.yml): at prayers, sacrifices,
+ * Short effects in the style of a god's type (the {@code effects} of its theme in themes.yml), as grand as its rank
+ * ({@link EffectRules#tier}): at prayers, sacrifices, rank changes,
  * blessings and curses. Particles and sounds go only to players within config.yml's view distance, and nothing at all
  * happens when nobody is that close. Floating items and symbols are display entities that are never saved
  * ({@code setPersistent(false)}), move by client-side interpolation, are removed when their effect ends and, through
@@ -71,11 +73,12 @@ public class EffectService
 		Theme.Effects theme = themeOf(godName).effects();
 		Theme.EffectMood mood = EffectRules.moodOf(ctx.moodService().getMoodForGod(godName));
 		Theme.EffectStyle style = theme.of(mood);
-		EffectRules.Waves waves = EffectRules.prayer(mood);
+		GodRank rank = rankOf(godName);
+		EffectRules.Waves waves = EffectRules.prayer(mood, rank);
 
 		sound(viewers, center, style, SoundCategory.BLOCKS, waves.pitch());
 		waves(viewers, () -> center, style, waves);
-		if (EffectRules.showsSymbol(mood, theme.symbol()))
+		if (EffectRules.showsSymbol(mood, theme.symbol(), rank))
 		{
 			symbol(center.clone().add(0, 1.4, 0), theme.symbol(), firstColor(style), mood == Theme.EffectMood.PLEASED ? 1.3 : 0.8);
 		}
@@ -109,6 +112,32 @@ public class EffectService
 	}
 
 	/**
+	 * The god rose to a new rank: the theme's pleased particles rise in waves around its main altar, grander for higher
+	 * ranks, with its sound and its symbol floating up high. With effects switched off nothing is shown.
+	 */
+	public void rankUp(String godName, Location at, GodRank rank)
+	{
+		if (!effects().enabled() || at == null)
+		{
+			return;
+		}
+		List<Player> viewers = viewers(at);
+		if (viewers.isEmpty())
+		{
+			return;
+		}
+		Theme.Effects theme = themeOf(godName).effects();
+		Theme.EffectStyle style = theme.of(Theme.EffectMood.PLEASED);
+		EffectRules.Waves waves = EffectRules.rankUp(rank);
+		sound(viewers, at, style, SoundCategory.BLOCKS, waves.pitch());
+		waves(viewers, () -> at, style, waves);
+		if (EffectRules.showsSymbol(Theme.EffectMood.PLEASED, theme.symbol()))
+		{
+			symbol(at.clone().add(0, 1.6, 0), theme.symbol(), firstColor(style), 1.4 + 0.3 * rank.ordinal());
+		}
+	}
+
+	/**
 	 * A sacrifice burns: the item floats up from the fire, spins and shrinks away, with the god's pleased (wanted),
 	 * neutral or angry (unwanted) particles and sound.
 	 */
@@ -127,6 +156,12 @@ public class EffectService
 		Theme.EffectStyle style = themeOf(godName).effects().of(mood);
 		EffectRules.Rise rise = EffectRules.sacrifice(mood);
 		sound(viewers, start, style, SoundCategory.BLOCKS, rise.pitch());
+		if (!EffectRules.tier(rankOf(godName)).sacrificeDisplay())
+		{
+			// A spirit's sacrifice only flickers in the fire
+			particles(viewers, start, style, 6, 0.2, 0);
+			return;
+		}
 
 		ItemStack shown = burning.getItemStack().clone();
 		shown.setAmount(1);
@@ -210,6 +245,12 @@ public class EffectService
 	{
 		GodType type = godName != null && ctx.godService().godExist(godName) ? ctx.godService().getDivineForceForGod(godName) : null;
 		return ctx.themes().of(type);
+	}
+
+	/** The god's rank, which decides how grand its effects are */
+	private GodRank rankOf(String godName)
+	{
+		return godName != null ? ctx.rankService().getRank(godName) : GodRank.SPIRIT;
 	}
 
 	/** The players close enough to see and hear an effect here */

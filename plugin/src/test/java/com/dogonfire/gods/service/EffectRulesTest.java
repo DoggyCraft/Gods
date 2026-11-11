@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.config.Theme.EffectMood;
 import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 
 class EffectRulesTest
 {
@@ -114,5 +115,38 @@ class EffectRulesTest
 	{
 		assertEquals("§x§a§e§e§8§f§f", EffectRules.legacyColor(0xAEE8FF));
 		assertEquals("§x§0§0§0§0§0§1", EffectRules.legacyColor(1));
+	}
+
+	/** A spirit's effects are a modest flicker; they grow with each rank, and the symbol and floating sacrifice come with it */
+	@Test
+	void effectsGrowWithTheRank()
+	{
+		EffectRules.Waves previous = null;
+		for (GodRank rank : GodRank.values())
+		{
+			EffectRules.Waves waves = EffectRules.prayer(EffectMood.PLEASED, rank);
+			assertTrue(waves.waves() >= 2 && waves.particles() >= 4, rank.name());
+			// Still a small, fixed number per viewer
+			assertTrue(waves.total() <= 150, rank + ": " + waves.total());
+			if (previous != null)
+			{
+				assertTrue(waves.total() > previous.total(), rank.name());
+				assertTrue(waves.rise() > previous.rise(), rank.name());
+			}
+			previous = waves;
+			EffectRules.Waves rankUp = EffectRules.rankUp(rank);
+			assertTrue(rankUp.total() > waves.total(), rank.name());
+			assertTrue(rankUp.total() <= 250, rank + " rank up: " + rankUp.total());
+		}
+		assertEquals(EffectRules.prayer(EffectMood.NEUTRAL), EffectRules.prayer(EffectMood.NEUTRAL, GodRank.DESCENDED));
+		assertTrue(EffectRules.prayer(EffectMood.PLEASED, GodRank.SPIRIT).total() < EffectRules.prayer(EffectMood.PLEASED).total());
+
+		assertFalse(EffectRules.showsSymbol(EffectMood.PLEASED, "✦", GodRank.SPIRIT));
+		assertFalse(EffectRules.showsSymbol(EffectMood.PLEASED, "✦", GodRank.RECOGNIZED));
+		assertTrue(EffectRules.showsSymbol(EffectMood.PLEASED, "✦", GodRank.DESCENDED));
+		assertFalse(EffectRules.showsSymbol(EffectMood.ANGRY, "✦", GodRank.GREATER));
+		assertFalse(EffectRules.tier(GodRank.SPIRIT).sacrificeDisplay());
+		assertTrue(EffectRules.tier(GodRank.RECOGNIZED).sacrificeDisplay());
+		assertEquals(EffectRules.tier(GodRank.SPIRIT), EffectRules.tier(null));
 	}
 }
