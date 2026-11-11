@@ -572,7 +572,7 @@ public class QuestService
 		}
 	}
 
-	private void godSayProgress(String godName)
+	private void godSayProgress(String godName, TagResolver... extraTags)
 	{
 		QuestType questType = questType(godName);
 		Voice message = questSpeech(questType, Phase.PROGRESS);
@@ -582,7 +582,7 @@ public class QuestService
 			return;
 		}
 
-		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(10), questTags(godName, questType, amount(godName) - progress(godName)));
+		ctx.godSpeech().sayToBelievers(godName, message, 2 + this.random.nextInt(10), questTags(godName, questType, amount(godName) - progress(godName)), TagResolver.resolver(extraTags));
 	}
 
 	public void godSayStatus(String godName)
@@ -848,7 +848,7 @@ public class QuestService
 		}
 		else
 		{
-			godSayProgress(godName);
+			godSayProgress(godName, Messages.displayName((player != null) ? player.getDisplayName() : ""));
 		}
 	}
 

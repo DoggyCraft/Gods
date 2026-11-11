@@ -342,6 +342,7 @@ command:
     parameters: ''
     description: Let your God give you a Holy Artifact
     already: <red>You already carry a Holy Artifact
+    world-disabled: <red>Gods are not present in this world
     done: <gold><god><aqua> gave <player> a Holy artifact!
   home:
     parameters: ''

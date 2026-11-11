@@ -311,7 +311,13 @@ public class PriestService
 						}
 						else
 						{
-							ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_USE_BIBLE, Messages.displayName(player.getDisplayName()), Messages.type(ctx.holyBookService().getBibleTitle(godName)));
+							String bibleTitle = ctx.holyBookService().getBibleTitle(godName);
+							if (bibleTitle == null)
+							{
+								// The god has no holy book yet: nothing to remind of (as before)
+								return false;
+							}
+							ctx.godSpeech().sayToPriests(godName, Voice.PRIEST_USE_BIBLE, Messages.displayName(player.getDisplayName()), Messages.type(bibleTitle));
 						}
 						return true;
 					}
