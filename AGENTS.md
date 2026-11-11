@@ -13,6 +13,7 @@ nix develop                           # devshell with JDK 25 + Maven (flake.nix)
 mvn clean package                     # default goal; tests and builds plugin/target/Gods-<version>.jar
 mvn test -pl plugin -am -Dtest=SettingsLoaderTest -Dsurefire.failIfNoSpecifiedTests=false  # one test class (append #method for one test)
 mvn -Pspigot -pl plugin -am clean compile  # compile against spigot-api instead: fails on any Paper-only API (CI runs this too)
+mvn -pl api dependency:build-classpath -Dmdep.outputFile=target/spigot.classpath && java ci/LinkCheck.java plugin/target/Gods-*.jar "$(cat api/target/spigot.classpath)"  # the built jar only references Bukkit API that spigot-api 1.21.3 has (CI runs this too)
 ```
 
 - A parent `pom.xml` (shared versions and repositories) with two modules, in the standard Maven layout:
