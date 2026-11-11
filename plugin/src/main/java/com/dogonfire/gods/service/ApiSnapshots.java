@@ -104,7 +104,7 @@ public final class ApiSnapshots
 	{
 		return new GodInfo(god.name(), godType(god.type()), gender(god.gender()), mood(god.mood()), god.mood(), power, believers, god.priests(), god.allies(),
 				god.enemies(), god.description(), home != null && home.getWorld() != null ? home : null, holyLandClaims, quest, god.created(),
-				mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null);
+				mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null, god.descended());
 	}
 
 	/** The believer as the API shows them, or null if they believe in no god */

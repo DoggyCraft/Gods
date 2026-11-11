@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 /**
@@ -64,6 +65,34 @@ public interface GodsApi
 	 * is switched off in Gods' config.
 	 */
 	boolean isNeutralLand(Location location);
+
+	// ---------------------------------------------------------------------
+	// The god at its altar
+
+	/**
+	 * The entity of the god's NPC: the figure that stands in front of its main altar once it has descended
+	 * ({@link GodInfo#descended()}). Empty when it has none now (it hasn't descended, its altar's chunks aren't loaded,
+	 * NPCs are switched off) or when the NPC has no server-side entity (FancyNpcs' NPCs are client-side only). The
+	 * entity is Gods' to manage: don't remove, move or change it.
+	 *
+	 * @param godName the god's name (in any case)
+	 * @return the NPC's entity (a mannequin, or a Citizens player NPC), if there is one
+	 */
+	default Optional<Entity> getNpc(String godName)
+	{
+		return Optional.empty();
+	}
+
+	/**
+	 * Whether the entity is one of the gods' NPCs (made by Gods itself or by Citizens for Gods)
+	 *
+	 * @param entity any entity
+	 * @return true if it is a god's NPC
+	 */
+	default boolean isGodNpc(Entity entity)
+	{
+		return false;
+	}
 
 	// ---------------------------------------------------------------------
 	// Speaking as a god

@@ -97,6 +97,17 @@ class ApiSurfaceTest
 		// GodInfo before mainAltar
 		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
 				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class);
+		// GodInfo before descended
+		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
+				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class);
+	}
+
+	/** The NPC methods came after the rest and have defaults, so other implementations (test doubles) still compile */
+	@Test
+	void npcMethodsHaveDefaults() throws ReflectiveOperationException
+	{
+		assertTrue(GodsApi.class.getMethod("getNpc", String.class).isDefault());
+		assertTrue(GodsApi.class.getMethod("isGodNpc", org.bukkit.entity.Entity.class).isDefault());
 	}
 
 	/** Bukkit only lets plugins listen to an event that has a static getHandlerList */

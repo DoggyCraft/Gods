@@ -98,6 +98,7 @@ class ApiSnapshotsTest
 		god.priests().add(PRIEST);
 		god.allies().add("Hera");
 		god.enemies().add("Hades");
+		god.setDescended(CREATED.plusSeconds(3600));
 		QuestInfo quest = new QuestInfo("Zeus", com.dogonfire.gods.api.QuestType.SLAY, "ZOMBIE", 10, 3, null, null, null);
 		Location home = new Location(WORLD, 1, 64, 2);
 
@@ -125,6 +126,8 @@ class ApiSnapshotsTest
 		assertEquals(CREATED, info.created());
 		assertEquals(mainAltar, info.mainAltar());
 		assertNotSame(info.mainAltar(), info.mainAltar());
+		assertEquals(CREATED.plusSeconds(3600), info.descended());
+		assertTrue(info.isDescended());
 	}
 
 	@Test
@@ -159,6 +162,8 @@ class ApiSnapshotsTest
 		assertNull(info.mainAltar());
 		assertNull(info.description());
 		assertNull(info.created());
+		assertNull(info.descended());
+		assertFalse(info.isDescended());
 	}
 
 	@Test

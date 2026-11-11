@@ -29,10 +29,12 @@ import org.bukkit.Location;
  * @param created        when the god was created, or null if that isn't known
  * @param mainAltar      the altar block of the god's main altar (chosen by a priest with /g setaltar), or null if it
  *                       has none or that world isn't loaded
+ * @param descended      when the god descended to its main altar, where it appears as an NPC (Gods' config,
+ *                       {@code npc.descend}), or null if it hasn't (or ascended again)
  */
 public record GodInfo(String name, GodType type, GodGender gender, GodMood mood, float moodValue, float power,
 		Set<UUID> believers, List<UUID> priests, List<String> allies, List<String> enemies, String description,
-		Location home, int holyLandClaims, QuestInfo quest, Instant created, Location mainAltar)
+		Location home, int holyLandClaims, QuestInfo quest, Instant created, Location mainAltar, Instant descended)
 {
 	public GodInfo
 	{
@@ -67,7 +69,40 @@ public record GodInfo(String name, GodType type, GodGender gender, GodMood mood,
 			Set<UUID> believers, List<UUID> priests, List<String> allies, List<String> enemies, String description,
 			Location home, int holyLandClaims, QuestInfo quest, Instant created)
 	{
-		this(name, type, gender, mood, moodValue, power, believers, priests, allies, enemies, description, home, holyLandClaims, quest, created, null);
+		this(name, type, gender, mood, moodValue, power, believers, priests, allies, enemies, description, home, holyLandClaims, quest, created, null, null);
+	}
+
+	/**
+	 * A snapshot without a descent (the constructor before gods descended, kept for plugins that build snapshots)
+	 *
+	 * @param name           the god's name
+	 * @param type           the god's divine force, or null
+	 * @param gender         the god's gender
+	 * @param mood           how the god feels
+	 * @param moodValue      the god's exact mood
+	 * @param power          the god's power
+	 * @param believers      every player who believes in the god
+	 * @param priests        the god's priests
+	 * @param allies         the gods this god is allied with
+	 * @param enemies        the gods this god is at war with
+	 * @param description    what its priests wrote about it, or null
+	 * @param home           where the god lives, or null
+	 * @param holyLandClaims how many regions of holy land the god has claimed
+	 * @param quest          the god's current quest, or null
+	 * @param created        when the god was created, or null
+	 * @param mainAltar      the altar block of the god's main altar, or null
+	 */
+	public GodInfo(String name, GodType type, GodGender gender, GodMood mood, float moodValue, float power,
+			Set<UUID> believers, List<UUID> priests, List<String> allies, List<String> enemies, String description,
+			Location home, int holyLandClaims, QuestInfo quest, Instant created, Location mainAltar)
+	{
+		this(name, type, gender, mood, moodValue, power, believers, priests, allies, enemies, description, home, holyLandClaims, quest, created, mainAltar, null);
+	}
+
+	/** Whether the god has descended to its main altar (see {@link #descended()}) */
+	public boolean isDescended()
+	{
+		return this.descended != null;
 	}
 
 	/** A copy, so changing it doesn't change the snapshot */

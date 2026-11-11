@@ -15,6 +15,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
@@ -161,6 +162,24 @@ public final class GodsApiService implements GodsApi
 		checkThread();
 		return ctx.settings().holyLand().enabled() && location.getWorld() != null && ctx.holyLandService().isNeutralLandLocation(location);
 	}
+
+	// ---------------------------------------------------------------------
+	// The god at its altar
+
+	@Override
+	public Optional<Entity> getNpc(String godName)
+	{
+		checkThread();
+		return existing(godName).map(name -> ctx.godNpcs().entity(name));
+	}
+
+	@Override
+	public boolean isGodNpc(Entity entity)
+	{
+		checkThread();
+		return entity != null && ctx.godNpcs().godOf(entity) != null;
+	}
+
 	// ---------------------------------------------------------------------
 	// Speaking as a god
 
