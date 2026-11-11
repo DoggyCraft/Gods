@@ -24,6 +24,7 @@ public final class God
 	private boolean				privateAccess;				// PrivateAccess: only believers may use its altars
 	private String				description;				// Description
 	private GodHome				home;						// Home
+	private BlockPos			mainAltar;					// MainAltar.World/X/Y/Z: the sign of its main altar (/g setaltar)
 
 	private float				mood;						// Mood: -100 (angry) to 100 (exalted)
 	private long				seed;						// Seed: 0 until generated; fixes its personality
@@ -130,6 +131,17 @@ public final class God
 	public void setHome(GodHome home)
 	{
 		this.home = home;
+	}
+
+	/** The sign of the god's main altar (set with /g setaltar), or null */
+	public BlockPos mainAltar()
+	{
+		return this.mainAltar;
+	}
+
+	public void setMainAltar(BlockPos mainAltar)
+	{
+		this.mainAltar = mainAltar;
 	}
 
 	public float mood()

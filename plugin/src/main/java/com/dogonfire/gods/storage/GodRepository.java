@@ -20,6 +20,7 @@ import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.model.ContestedLand;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.util.LegacyDates;
@@ -29,7 +30,8 @@ import com.dogonfire.gods.util.LegacyDates;
  * of {@link God}; times as {@code "HH:mm:ss dd-MM-yyyy"}, players as UUID strings).
  * <pre>
  * data-version: 2
- * &lt;god name&gt;: Created, DivineForce, Gender, PrivateAccess, Description, Home.World/X/Y/Z, Mood, Seed, Verbosity,
+ * &lt;god name&gt;: Created, DivineForce, Gender, PrivateAccess, Description, Home.World/X/Y/Z, MainAltar.World/X/Y/Z,
+ *              Mood, Seed, Verbosity,
  *              Priests, PendingPriest, PendingPriestTime, Allies, Enemies, ContestedLand.World/X/Y/Z/Hash,
  *              BlessedPlayer, BlessedTime, CursedPlayer, CursedTime, EatFoodType, NotEatFoodType, NotSlayMobType,
  *              SlayMobType, SacrificeValues.&lt;material&gt;, PvP, MobDamage, MobSpawning, LastQuestTime,
@@ -51,6 +53,7 @@ public final class GodRepository extends Repository
 	private static final String			PRIVATE_ACCESS			= "PrivateAccess";
 	private static final String			DESCRIPTION				= "Description";
 	private static final String			HOME					= "Home";
+	private static final String			MAIN_ALTAR				= "MainAltar";
 	private static final String			MOOD					= "Mood";
 	private static final String			SEED					= "Seed";
 	private static final String			VERBOSITY				= "Verbosity";
@@ -78,7 +81,7 @@ public final class GodRepository extends Repository
 	/** Kept by older versions next to ContestedLand; cleared with it ({@link #clearContestedLand}) */
 	private static final List<String>	LEGACY_CONTESTED		= List.of("ContestedKills", "ContestedDesecration");
 
-	private static final Set<String>	KNOWN					= Set.of(CREATED, DIVINE_FORCE, GENDER, PRIVATE_ACCESS, DESCRIPTION, HOME, MOOD, SEED, VERBOSITY,
+	private static final Set<String>	KNOWN					= Set.of(CREATED, DIVINE_FORCE, GENDER, PRIVATE_ACCESS, DESCRIPTION, HOME, MAIN_ALTAR, MOOD, SEED, VERBOSITY,
 			PRIESTS, PENDING_PRIEST, PENDING_PRIEST_TIME, ALLIES, ENEMIES, CONTESTED_LAND, BLESSED_PLAYER, BLESSED_TIME, CURSED_PLAYER, CURSED_TIME,
 			HOLY_FOOD, UNHOLY_FOOD, HOLY_MOB, UNHOLY_MOB, SACRIFICE_VALUES, PVP, MOB_DAMAGE, MOB_SPAWNING, LAST_QUEST_TIME, GENDER_CHANGED_TIME);
 
@@ -198,6 +201,16 @@ public final class GodRepository extends Repository
 		else if (section.contains(HOME))
 		{
 			extras.put(HOME, toPlain(section.get(HOME)));
+		}
+
+		if (section.isString(MAIN_ALTAR + ".World") && section.isInt(MAIN_ALTAR + ".X") && section.isInt(MAIN_ALTAR + ".Y") && section.isInt(MAIN_ALTAR + ".Z"))
+		{
+			god.setMainAltar(new BlockPos(section.getString(MAIN_ALTAR + ".World"), section.getInt(MAIN_ALTAR + ".X"), section.getInt(MAIN_ALTAR + ".Y"),
+					section.getInt(MAIN_ALTAR + ".Z")));
+		}
+		else if (section.contains(MAIN_ALTAR))
+		{
+			extras.put(MAIN_ALTAR, toPlain(section.get(MAIN_ALTAR)));
 		}
 
 		god.setMood((float) section.getDouble(MOOD));
@@ -352,6 +365,13 @@ public final class GodRepository extends Repository
 				section.set(HOME + ".Y", god.home().y());
 				section.set(HOME + ".Z", god.home().z());
 				section.set(HOME + ".World", god.home().world());
+			}
+			if (god.mainAltar() != null)
+			{
+				section.set(MAIN_ALTAR + ".World", god.mainAltar().world());
+				section.set(MAIN_ALTAR + ".X", god.mainAltar().x());
+				section.set(MAIN_ALTAR + ".Y", god.mainAltar().y());
+				section.set(MAIN_ALTAR + ".Z", god.mainAltar().z());
 			}
 			if (god.mood() != 0.0F)
 			{

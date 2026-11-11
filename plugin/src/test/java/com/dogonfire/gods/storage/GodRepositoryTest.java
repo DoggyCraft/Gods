@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.ContestedLand;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
@@ -250,5 +251,42 @@ class GodRepositoryTest
 		assertEquals("None", written.getString("Odin.Gender"));
 		// A gender this version doesn't know is kept as it was
 		assertEquals("Unknown", written.getString("Hel.Gender"));
+	}
+
+	/** The main altar (/g setaltar) is its sign's block, MainAltar.World/X/Y/Z; one that can't be read is kept as it was */
+	@Test
+	void mainAltarsRoundTrip() throws IOException
+	{
+		Files.writeString(this.dir.resolve("gods.yml"), """
+				data-version: 2
+				Zeus:
+				  MainAltar:
+				    World: world.of.gods
+				    X: 10
+				    Y: 64
+				    Z: -3
+				Hera:
+				  MainAltar: somewhere
+				""");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.gods().load());
+		assertEquals(new BlockPos("world.of.gods", 10, 64, -3), storage.gods().find("Zeus").mainAltar());
+		assertNull(storage.gods().find("Hera").mainAltar());
+
+		God thor = storage.gods().getOrCreate("Thor");
+		thor.setMainAltar(new BlockPos("world", -1, 70, 2));
+		storage.gods().markDirty();
+		storage.close();
+
+		YamlConfiguration written = written();
+		assertEquals("world.of.gods", written.getString("Zeus.MainAltar.World"));
+		assertEquals(-3, written.getInt("Zeus.MainAltar.Z"));
+		assertEquals("somewhere", written.getString("Hera.MainAltar"));
+		assertEquals(70, written.getInt("Thor.MainAltar.Y"));
+
+		Storage again = Fixtures.storage(this.dir);
+		assertTrue(again.gods().load());
+		assertEquals(new BlockPos("world", -1, 70, 2), again.gods().find("Thor").mainAltar());
+		again.close();
 	}
 }

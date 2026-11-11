@@ -88,6 +88,15 @@ class ApiSurfaceTest
 		assertTrue(problems.isEmpty(), "Types other plugins can't rely on: " + problems);
 	}
 
+	/** Components added to a snapshot keep the constructor plugins compiled against */
+	@Test
+	void snapshotsKeepTheirOldConstructors() throws ReflectiveOperationException
+	{
+		// GodInfo before mainAltar
+		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
+				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class);
+	}
+
 	/** Bukkit only lets plugins listen to an event that has a static getHandlerList */
 	@Test
 	void everyEventCanBeListenedTo() throws ReflectiveOperationException

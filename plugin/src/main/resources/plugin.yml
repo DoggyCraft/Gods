@@ -54,6 +54,7 @@ permissions:
       gods.priest.invite: true
       gods.priest.kick: true
       gods.priest.pvp: true
+      gods.priest.setaltar: true
       gods.priest.setbible: true
       gods.priest.startattack: true
       gods.priest.war: true
@@ -175,6 +176,9 @@ permissions:
   gods.priest.pvp:
     default: true
     description: "Allows priest to change the pvp setting for their religion"
+  gods.priest.setaltar:
+    default: true
+    description: "Allows a priest to choose the main altar of their religion"
   gods.priest.setbible:
     default: true
     description: "Allows a priest to set the Holy Book for his religion"

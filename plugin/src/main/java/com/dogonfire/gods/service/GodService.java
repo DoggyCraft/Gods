@@ -3,6 +3,7 @@ package com.dogonfire.gods.service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.GodGenderChangeEvent;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
@@ -113,6 +115,7 @@ public class GodService
 		ctx.relationService().removeRelationsWith(godName);
 
 		this.repository.remove(godName);
+		// Its altars stay registered: they still stand, and praying at one founds the god anew
 
 		if (ctx.settings().bibles().enabled())
 		{
@@ -444,6 +447,25 @@ public class GodService
 		}
 
 		this.repository.markDirty();
+	}
+
+	/** The sign of the god's main altar (/g setaltar), or null; see {@link AltarRegistry#mainAltar} */
+	public BlockPos getMainAltar(String godName)
+	{
+		God god = god(godName);
+		return god != null ? god.mainAltar() : null;
+	}
+
+	/** Makes the altar with this sign the god's main altar (null: none); saved now */
+	public void setMainAltar(String godName, BlockPos sign)
+	{
+		God god = god(godName);
+		if (god == null || Objects.equals(god.mainAltar(), sign))
+		{
+			return;
+		}
+		god.setMainAltar(sign);
+		this.repository.save();
 	}
 
 	/** Whether only the god's believers may use its altars */

@@ -8,10 +8,12 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -25,7 +27,8 @@ import com.dogonfire.gods.storage.AltarRepository;
 
 /**
  * Where the altars are (altars.yml, {@link AltarRepository}): every tagged altar sign Gods made, used or found, with its
- * altar block, kind and god.
+ * altar block, kind and god, and each god's main altar (/g setaltar; stored on the god in gods.yml, see
+ * {@link #mainAltar}).
  * <ul>
  * <li>Added when an altar is built (after its sign is tagged), when one is used (an old altar is tagged on first use),
  * and when a scan finds one.</li>
@@ -149,13 +152,18 @@ public class AltarRegistry
 		this.repository.markDirty();
 	}
 
-	/** Adds or updates one altar from what its sign says */
+	/** Adds or updates one altar from what its sign says, keeping the main altar in line */
 	private void apply(AltarScan.Found found, Altar existing, UUID creator, Instant created)
 	{
 		if (existing != null && existing.block().equals(found.block()))
 		{
+			String oldGod = existing.god();
 			existing.setKind(found.kind());
 			existing.setGod(found.god());
+			if (!Objects.equals(oldGod, found.god()) || found.kind() != AltarKind.PRAYING)
+			{
+				dropMainAltar(oldGod, existing, "its sign changed");
+			}
 			return;
 		}
 		if (existing != null)
@@ -167,7 +175,7 @@ public class AltarRegistry
 		ctx.plugin().logDebug("Registered the " + altar);
 	}
 
-	/** Unregisters the altar with this sign (it is gone) */
+	/** Unregisters the altar with this sign (it is gone); clears its god's main altar if it was that */
 	private void remove(BlockPos sign, String why)
 	{
 		Altar altar = this.repository.remove(sign);
@@ -176,7 +184,17 @@ public class AltarRegistry
 			return;
 		}
 		ctx.plugin().logDebug("Unregistered the " + altar + ": " + why);
+		dropMainAltar(altar.god(), altar, why);
 		this.repository.markDirty();
+	}
+
+	private void dropMainAltar(String godName, Altar altar, String why)
+	{
+		if (godName != null && altar.sign().equals(ctx.godService().getMainAltar(godName)))
+		{
+			ctx.godService().setMainAltar(godName, null);
+			ctx.plugin().log("The main altar of " + godName + " at " + describe(altar.sign()) + " is gone (" + why + "); " + godName + " has no main altar now.");
+		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -339,5 +357,57 @@ public class AltarRegistry
 		{
 			this.repository.markDirty();
 		}
+	}
+
+	// ---------------------------------------------------------------------
+	// Main altars
+
+	/**
+	 * The god's main altar (/g setaltar), or null if it has none. gods.yml keeps it (its sign) on the god; the
+	 * registry's altar is returned when it has it, else one made from the stored sign (an altar not found again yet,
+	 * e.g. after altars.yml was lost; its altar block is then not known and given as the sign).
+	 * <p>
+	 * This is where a god can appear in the world (a later NPC): {@link MainAltarRules#standingSpot} is the spot in
+	 * front of its sign, {@link #mainAltarLocation} the altar block.
+	 */
+	public Altar mainAltar(String godName)
+	{
+		BlockPos sign = ctx.godService().getMainAltar(godName);
+		if (sign == null)
+		{
+			return null;
+		}
+		Altar altar = this.repository.atSign(sign);
+		return altar != null ? altar : new Altar(sign, sign, AltarKind.PRAYING, godName, null, null);
+	}
+
+	/** Whether this altar is its god's main altar */
+	public boolean isMainAltar(Altar altar)
+	{
+		return altar.god() != null && altar.sign().equals(ctx.godService().getMainAltar(altar.god()));
+	}
+
+	/**
+	 * The altar block of the god's main altar as a location (its world loaded), or null if it has none or its world
+	 * isn't loaded
+	 */
+	public Location mainAltarLocation(String godName)
+	{
+		Altar altar = mainAltar(godName);
+		World world = altar != null ? ctx.plugin().getServer().getWorld(altar.world()) : null;
+		return world != null ? new Location(world, altar.block().x(), altar.block().y(), altar.block().z()) : null;
+	}
+
+	/** Makes the altar its god's main altar */
+	public void setMainAltar(Altar altar)
+	{
+		ctx.godService().setMainAltar(altar.god(), altar.sign());
+		ctx.plugin().log("The main altar of " + altar.god() + " is now at " + describe(altar.sign()) + ".");
+	}
+
+	/** "world 10, 64, -3" for the log */
+	public static String describe(BlockPos pos)
+	{
+		return pos.world() + " " + pos.x() + ", " + pos.y() + ", " + pos.z();
 	}
 }

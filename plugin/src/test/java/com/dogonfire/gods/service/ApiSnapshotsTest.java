@@ -101,7 +101,9 @@ class ApiSnapshotsTest
 		QuestInfo quest = new QuestInfo("Zeus", com.dogonfire.gods.api.QuestType.SLAY, "ZOMBIE", 10, 3, null, null, null);
 		Location home = new Location(WORLD, 1, 64, 2);
 
-		GodInfo info = ApiSnapshots.god(god, 12.5F, Set.of(PRIEST, BELIEVER), home, 4, quest);
+		Location mainAltar = new Location(WORLD, 10, 64, -4);
+
+		GodInfo info = ApiSnapshots.god(god, 12.5F, Set.of(PRIEST, BELIEVER), home, 4, quest, mainAltar);
 
 		assertEquals("Zeus", info.name());
 		assertEquals(com.dogonfire.gods.api.GodType.THUNDER, info.type());
@@ -121,6 +123,8 @@ class ApiSnapshotsTest
 		assertEquals(4, info.holyLandClaims());
 		assertEquals(quest, info.quest());
 		assertEquals(CREATED, info.created());
+		assertEquals(mainAltar, info.mainAltar());
+		assertNotSame(info.mainAltar(), info.mainAltar());
 	}
 
 	@Test
@@ -129,7 +133,7 @@ class ApiSnapshotsTest
 		God god = new God("Zeus");
 		god.priests().add(PRIEST);
 		Location home = new Location(WORLD, 1, 64, 2);
-		GodInfo info = ApiSnapshots.god(god, 0.0F, Set.of(), home, 0, null);
+		GodInfo info = ApiSnapshots.god(god, 0.0F, Set.of(), home, 0, null, null);
 
 		god.priests().clear();
 		god.allies().add("Hera");
@@ -146,12 +150,13 @@ class ApiSnapshotsTest
 	@Test
 	void aGodWithoutTypeGenderOrLoadedHomeStillHasASnapshot()
 	{
-		GodInfo info = ApiSnapshots.god(new God("Nobody"), 0.0F, Set.of(), new Location(null, 1, 2, 3), 0, null);
+		GodInfo info = ApiSnapshots.god(new God("Nobody"), 0.0F, Set.of(), new Location(null, 1, 2, 3), 0, null, new Location(null, 4, 5, 6));
 
 		assertNull(info.type());
 		assertEquals(com.dogonfire.gods.api.GodGender.NONE, info.gender());
 		assertEquals(com.dogonfire.gods.api.GodMood.NEUTRAL, info.mood());
 		assertNull(info.home());
+		assertNull(info.mainAltar());
 		assertNull(info.description());
 		assertNull(info.created());
 	}

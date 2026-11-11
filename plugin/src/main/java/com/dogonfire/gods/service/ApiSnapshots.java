@@ -98,11 +98,13 @@ public final class ApiSnapshots
 	 * @param home           its home, or null (also when its world isn't loaded)
 	 * @param holyLandClaims how many regions it claimed
 	 * @param quest          its quest, or null
+	 * @param mainAltar      the altar block of its main altar, or null (also when its world isn't loaded)
 	 */
-	public static GodInfo god(God god, float power, Set<UUID> believers, Location home, int holyLandClaims, QuestInfo quest)
+	public static GodInfo god(God god, float power, Set<UUID> believers, Location home, int holyLandClaims, QuestInfo quest, Location mainAltar)
 	{
 		return new GodInfo(god.name(), godType(god.type()), gender(god.gender()), mood(god.mood()), god.mood(), power, believers, god.priests(), god.allies(),
-				god.enemies(), god.description(), home != null && home.getWorld() != null ? home : null, holyLandClaims, quest, god.created());
+				god.enemies(), god.description(), home != null && home.getWorld() != null ? home : null, holyLandClaims, quest, god.created(),
+				mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null);
 	}
 
 	/** The believer as the API shows them, or null if they believe in no god */

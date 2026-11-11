@@ -759,6 +759,10 @@ command:
     alliance: <green> Alliance with <gold><god>
     war: <red> War with <gold><god>
     holy-land: '<aqua>Holyland claimed: <gold><claimed>/<max>'
+    # Only the God's believers see where its main altar is; <world>, <x>, <y>, <z> are its altar block
+    main-altar: '<aqua>Main altar: <yellow><world> <x>, <y>, <z>'
+    # Shown to its priests when the God has none
+    no-main-altar: '<aqua>Main altar: <yellow>None <gray>(look at one of your altars and use /gods setaltar)'
   invite:
     parameters: \<player>
     description: Invite a player to your religion
@@ -858,6 +862,17 @@ command:
     failed: <red>Could not reload; the old settings and data are kept. See the server log.
     # <plugin> is "Gods vX.Y"
     done: '<yellow><plugin>: <white>Reloaded configuration.'
+  setaltar:
+    parameters: ''
+    description: Make the altar you look at the main altar of your religion
+    not-priest: <red>Only priests can choose the main altar of your religion
+    no-altar: <red>Look at the sign, the block or the light of an altar to your God, at most 5 blocks away
+    not-praying: <red>That is not an altar to pray at
+    # <god> is the priest's own God
+    other-god: <red>That altar is not an altar of <gold><god>
+    already: <yellow>That already is the main altar of <gold><god>
+    # <world>, <x>, <y>, <z> are its altar block
+    done: <aqua>The main altar of <gold><god></gold> is now at <yellow><world> <x>, <y>, <z>
   setbible:
     parameters: ''
     description: Set the book in your hand as the Holy Book of your religion

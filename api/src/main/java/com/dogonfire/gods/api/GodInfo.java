@@ -27,10 +27,12 @@ import org.bukkit.Location;
  * @param holyLandClaims how many regions of holy land the god has claimed (0 when holy land is switched off)
  * @param quest          the god's current quest, or null if it has none
  * @param created        when the god was created, or null if that isn't known
+ * @param mainAltar      the altar block of the god's main altar (chosen by a priest with /g setaltar), or null if it
+ *                       has none or that world isn't loaded
  */
 public record GodInfo(String name, GodType type, GodGender gender, GodMood mood, float moodValue, float power,
 		Set<UUID> believers, List<UUID> priests, List<String> allies, List<String> enemies, String description,
-		Location home, int holyLandClaims, QuestInfo quest, Instant created)
+		Location home, int holyLandClaims, QuestInfo quest, Instant created, Location mainAltar)
 {
 	public GodInfo
 	{
@@ -39,6 +41,33 @@ public record GodInfo(String name, GodType type, GodGender gender, GodMood mood,
 		allies = List.copyOf(allies);
 		enemies = List.copyOf(enemies);
 		home = home != null ? home.clone() : null;
+		mainAltar = mainAltar != null ? mainAltar.clone() : null;
+	}
+
+	/**
+	 * A snapshot without a main altar (the constructor before main altars, kept for plugins that build snapshots)
+	 *
+	 * @param name           the god's name
+	 * @param type           the god's divine force, or null
+	 * @param gender         the god's gender
+	 * @param mood           how the god feels
+	 * @param moodValue      the god's exact mood
+	 * @param power          the god's power
+	 * @param believers      every player who believes in the god
+	 * @param priests        the god's priests
+	 * @param allies         the gods this god is allied with
+	 * @param enemies        the gods this god is at war with
+	 * @param description    what its priests wrote about it, or null
+	 * @param home           where the god lives, or null
+	 * @param holyLandClaims how many regions of holy land the god has claimed
+	 * @param quest          the god's current quest, or null
+	 * @param created        when the god was created, or null
+	 */
+	public GodInfo(String name, GodType type, GodGender gender, GodMood mood, float moodValue, float power,
+			Set<UUID> believers, List<UUID> priests, List<String> allies, List<String> enemies, String description,
+			Location home, int holyLandClaims, QuestInfo quest, Instant created)
+	{
+		this(name, type, gender, mood, moodValue, power, believers, priests, allies, enemies, description, home, holyLandClaims, quest, created, null);
 	}
 
 	/** A copy, so changing it doesn't change the snapshot */
@@ -46,6 +75,13 @@ public record GodInfo(String name, GodType type, GodGender gender, GodMood mood,
 	public Location home()
 	{
 		return this.home != null ? this.home.clone() : null;
+	}
+
+	/** A copy, so changing it doesn't change the snapshot */
+	@Override
+	public Location mainAltar()
+	{
+		return this.mainAltar != null ? this.mainAltar.clone() : null;
 	}
 
 	/** Whether the player believes in the god */

@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.GodMood;
 
 /** /g info [god]: everything about a god (the player's own by default) */
@@ -91,9 +92,34 @@ public final class InfoCommand extends SubCommand
 			}
 		}
 
+		mainAltar(sender, godName);
+
 		if (this.ctx.settings().holyLand().enabled())
 		{
 			send(sender, "command.info.holy-land", Messages.text("claimed", this.ctx.holyLandService().getClaimedChunksForGod(godName)), Messages.text("max", this.ctx.holyLandService().getMaximumChunksForGod(godName)));
+		}
+	}
+
+	/**
+	 * Where the god's main altar is: only for its believers (and the console), so other religions can't look it up;
+	 * its priests are told when it has none
+	 */
+	private void mainAltar(CommandSender sender, String godName)
+	{
+		boolean believer = !(sender instanceof Player player) || godName.equals(godOf(player));
+		if (!believer)
+		{
+			return;
+		}
+		Altar altar = this.ctx.altarRegistry().mainAltar(godName);
+		if (altar != null)
+		{
+			send(sender, "command.info.main-altar", Messages.text("world", altar.world()), Messages.text("x", altar.block().x()), Messages.text("y", altar.block().y()),
+					Messages.text("z", altar.block().z()));
+		}
+		else if (sender instanceof Player player && this.ctx.priestService().isPriest(player.getUniqueId()))
+		{
+			send(sender, "command.info.no-main-altar");
 		}
 	}
 

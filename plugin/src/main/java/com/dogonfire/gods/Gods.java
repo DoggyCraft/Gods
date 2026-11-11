@@ -59,6 +59,7 @@ import com.dogonfire.gods.command.PrayForCommand;
 import com.dogonfire.gods.command.PvpCommand;
 import com.dogonfire.gods.command.RejectCommand;
 import com.dogonfire.gods.command.ReloadCommand;
+import com.dogonfire.gods.command.SetAltarCommand;
 import com.dogonfire.gods.command.SetBibleCommand;
 import com.dogonfire.gods.command.SetHomeCommand;
 import com.dogonfire.gods.command.SetPriestCommand;
@@ -340,7 +341,7 @@ public class Gods extends JavaPlugin
 				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LeaveCommand(this.ctx),
 				new ListCommand(this.ctx), new LoveCommand(this.ctx), new MarriagesCommand(this.ctx), new MarryCommand(this.ctx),
 				new PrayForCommand(this.ctx), new PvpCommand(this.ctx), new RejectCommand(this.ctx), new ReloadCommand(this.ctx),
-				new SetBibleCommand(this.ctx), new SetHomeCommand(this.ctx), new SetPriestCommand(this.ctx), new SetSafeCommand(this.ctx),
+				new SetAltarCommand(this.ctx), new SetBibleCommand(this.ctx), new SetHomeCommand(this.ctx), new SetPriestCommand(this.ctx), new SetSafeCommand(this.ctx),
 				new StartAttackCommand(this.ctx), new WarCommand(this.ctx)))
 		{
 			router.register(command);

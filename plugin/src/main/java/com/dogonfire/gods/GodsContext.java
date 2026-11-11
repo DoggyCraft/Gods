@@ -218,7 +218,7 @@ public final class GodsContext
 		return this.altarService;
 	}
 
-	/** Where the altars are (altars.yml) */
+	/** Where the altars are (altars.yml) and each god's main altar */
 	public AltarRegistry altarRegistry()
 	{
 		return this.altarRegistry;
