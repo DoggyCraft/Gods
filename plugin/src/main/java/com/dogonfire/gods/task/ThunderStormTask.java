@@ -7,6 +7,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.util.NearbyEntities;
 
 public class ThunderStormTask extends Task {
 	private long stopTime;
@@ -28,7 +29,7 @@ public class ThunderStormTask extends Task {
 
 		this.player.getWorld().setStorm(true);
 
-		Entity[] entities = ctx.holyPowerManager().getNearbyLivingEntities(this.player.getLocation(), 20.0D);
+		Entity[] entities = NearbyEntities.living(this.player.getLocation(), 20.0D);
 
 		if (entities.length > 0) {
 			Entity targetEntity = entities[this.random.nextInt(entities.length)];

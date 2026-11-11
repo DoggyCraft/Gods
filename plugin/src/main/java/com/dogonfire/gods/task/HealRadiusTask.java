@@ -9,6 +9,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.util.NearbyEntities;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 
 /**
@@ -33,7 +34,7 @@ public class HealRadiusTask extends Task {
 		this.player.playSound(this.player.getLocation(), Sound.AMBIENT_CAVE, 1.0F, 0.1F);
 
 		int n = 0;
-		for (Entity entity : ctx.holyPowerManager().getNearbyLivingEntities(this.player.getLocation(), 20.0D)) {
+		for (Entity entity : NearbyEntities.living(this.player.getLocation(), 20.0D)) {
 			if (n >= this.maxPlayers) {
 				break;
 			}

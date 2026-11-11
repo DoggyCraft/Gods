@@ -158,7 +158,7 @@ public class QuestAndHolyItemListener implements Listener
 			Material type = player.getInventory().getItemInMainHand().getType();
 			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null) && (ctx.settings().holyArtifacts().enabled()))
 			{
-				ctx.holyArtifactManager().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
+				ctx.holyArtifactService().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
 			}
 		}
 	}
@@ -179,9 +179,9 @@ public class QuestAndHolyItemListener implements Listener
 
 		if (ctx.settings().holyArtifacts().enabled())
 		{
-			if (ctx.holyArtifactManager().isHolyArtifact(event.getItem().getItemStack()))
+			if (ctx.holyArtifactService().isHolyArtifact(event.getItem().getItemStack()))
 			{
-				if (ctx.holyArtifactManager().hasHolyArtifact(player.getName()))
+				if (ctx.holyArtifactService().hasHolyArtifact(player.getName()))
 				{
 					event.setCancelled(true);
 					return;

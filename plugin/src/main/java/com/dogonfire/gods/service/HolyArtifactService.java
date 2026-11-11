@@ -1,4 +1,4 @@
-package com.dogonfire.gods.managers;
+package com.dogonfire.gods.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,19 +20,22 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.HolyPower;
 
-//
-// Holy artifacts are items a God gives to a believer. Right-clicking one
-// activates its holy power. An artifact keeps its state (power, uses, name)
-// in its own persistent data, so it needs no data file.
-//
-public class HolyArtifactManager
+/**
+ * Holy artifacts: items a god gives to a believer (a blessing, or /g giveartifact). Right-clicking one activates its holy
+ * power ({@link HolyPowerService}). An artifact keeps its state (power, uses, name) in its own persistent data
+ * ({@code gods:holy_power}, {@code gods:holy_power_value}, {@code gods:holy_artifact_uses},
+ * {@code gods:holy_artifact_name}), so it needs no data file; artifacts from before the tags are recognized by their
+ * lore. Never by display name. Main thread only.
+ */
+public class HolyArtifactService
 {
 	private record ArtifactItem(Material material, String name)
 	{
 	}
 
-	private record ArtifactKind(String lore, HolyPowerManager.HolyPower power, ArtifactItem... items)
+	private record ArtifactKind(String lore, HolyPower power, ArtifactItem... items)
 	{
 	}
 
@@ -45,7 +48,7 @@ public class HolyArtifactManager
 
 	private final GodsContext ctx;
 
-	public HolyArtifactManager(GodsContext ctx)
+	public HolyArtifactService(GodsContext ctx)
 	{
 		this.ctx = ctx;
 		this.powerKey = new NamespacedKey(ctx.plugin(), "holy_power");
@@ -58,19 +61,19 @@ public class HolyArtifactManager
 	{
 		return switch (godType)
 		{
-		case FROST -> new ArtifactKind("A Holy artifact of Frost", HolyPowerManager.HolyPower.FREEZE, new ArtifactItem(Material.STICK, "Frostwand"), new ArtifactItem(Material.IRON_SWORD, "Frostblade"));
-		case LOVE -> new ArtifactKind("A Holy artifact of Love", HolyPowerManager.HolyPower.HEALING, new ArtifactItem(Material.DIAMOND, "Love jewel"), new ArtifactItem(Material.AMETHYST_SHARD, "Heartstone"));
-		case EVIL -> new ArtifactKind("An Unholy artifact of Evil", HolyPowerManager.HolyPower.LIGHTNING, new ArtifactItem(Material.IRON_SWORD, "Bloodsword"), new ArtifactItem(Material.IRON_AXE, "Bloodaxe"));
-		case SEA -> new ArtifactKind("A Holy artifact of the Sea", HolyPowerManager.HolyPower.ICE, new ArtifactItem(Material.HEART_OF_THE_SEA, "Heart of the sea"), new ArtifactItem(Material.PRISMARINE_SHARD, "Tidestone"));
-		case MOON -> new ArtifactKind("A Holy artifact of the Moon", HolyPowerManager.HolyPower.CALLMOON, new ArtifactItem(Material.CLOCK, "Moon dial"), new ArtifactItem(Material.PHANTOM_MEMBRANE, "Night veil"));
-		case SUN -> new ArtifactKind("A Holy artifact of the Sun", HolyPowerManager.HolyPower.CALLSUN, new ArtifactItem(Material.BLAZE_ROD, "Sunstaff"), new ArtifactItem(Material.GOLDEN_SWORD, "Sunblade"));
-		case THUNDER -> new ArtifactKind("A Holy artifact of Thunder", HolyPowerManager.HolyPower.LIGHTNING_STORM, new ArtifactItem(Material.STICK, "Thunderwand"), new ArtifactItem(Material.GOLDEN_AXE, "Thunderaxe"));
-		case PARTY -> new ArtifactKind("A Holy artifact of the PAAARTEY!", HolyPowerManager.HolyPower.FIREWORK, new ArtifactItem(Material.STICK, "Partystick"), new ArtifactItem(Material.FIREWORK_STAR, "Partystar"));
-		case WAR -> new ArtifactKind("A Holy artifact of War", HolyPowerManager.HolyPower.FIREBALL, new ArtifactItem(Material.IRON_SWORD, "Warsword"), new ArtifactItem(Material.IRON_AXE, "Waraxe"));
-		case WEREWOLVES -> new ArtifactKind("A Holy artifact of the Pack", HolyPowerManager.HolyPower.TAME, new ArtifactItem(Material.RABBIT_FOOT, "Wolfpaw"), new ArtifactItem(Material.IRON_SWORD, "Fangblade"));
-		case CREATURES -> new ArtifactKind("A Holy artifact of Creatures", HolyPowerManager.HolyPower.TAME, new ArtifactItem(Material.STICK, "Beastwand"), new ArtifactItem(Material.FEATHER, "Beast feather"));
-		case WISDOM -> new ArtifactKind("A Holy artifact of Wisdom", HolyPowerManager.HolyPower.KNOWLEDGE, new ArtifactItem(Material.BOOK, "Knowledge tome"), new ArtifactItem(Material.FEATHER, "Quill"));
-		case NATURE -> new ArtifactKind("A Holy artifact of Nature", HolyPowerManager.HolyPower.NATURE, new ArtifactItem(Material.GOLDEN_HOE, "Earthdigger"), new ArtifactItem(Material.STICK, "Druid staff"));
+		case FROST -> new ArtifactKind("A Holy artifact of Frost", HolyPower.FREEZE, new ArtifactItem(Material.STICK, "Frostwand"), new ArtifactItem(Material.IRON_SWORD, "Frostblade"));
+		case LOVE -> new ArtifactKind("A Holy artifact of Love", HolyPower.HEALING, new ArtifactItem(Material.DIAMOND, "Love jewel"), new ArtifactItem(Material.AMETHYST_SHARD, "Heartstone"));
+		case EVIL -> new ArtifactKind("An Unholy artifact of Evil", HolyPower.LIGHTNING, new ArtifactItem(Material.IRON_SWORD, "Bloodsword"), new ArtifactItem(Material.IRON_AXE, "Bloodaxe"));
+		case SEA -> new ArtifactKind("A Holy artifact of the Sea", HolyPower.ICE, new ArtifactItem(Material.HEART_OF_THE_SEA, "Heart of the sea"), new ArtifactItem(Material.PRISMARINE_SHARD, "Tidestone"));
+		case MOON -> new ArtifactKind("A Holy artifact of the Moon", HolyPower.CALLMOON, new ArtifactItem(Material.CLOCK, "Moon dial"), new ArtifactItem(Material.PHANTOM_MEMBRANE, "Night veil"));
+		case SUN -> new ArtifactKind("A Holy artifact of the Sun", HolyPower.CALLSUN, new ArtifactItem(Material.BLAZE_ROD, "Sunstaff"), new ArtifactItem(Material.GOLDEN_SWORD, "Sunblade"));
+		case THUNDER -> new ArtifactKind("A Holy artifact of Thunder", HolyPower.LIGHTNING_STORM, new ArtifactItem(Material.STICK, "Thunderwand"), new ArtifactItem(Material.GOLDEN_AXE, "Thunderaxe"));
+		case PARTY -> new ArtifactKind("A Holy artifact of the PAAARTEY!", HolyPower.FIREWORK, new ArtifactItem(Material.STICK, "Partystick"), new ArtifactItem(Material.FIREWORK_STAR, "Partystar"));
+		case WAR -> new ArtifactKind("A Holy artifact of War", HolyPower.FIREBALL, new ArtifactItem(Material.IRON_SWORD, "Warsword"), new ArtifactItem(Material.IRON_AXE, "Waraxe"));
+		case WEREWOLVES -> new ArtifactKind("A Holy artifact of the Pack", HolyPower.TAME, new ArtifactItem(Material.RABBIT_FOOT, "Wolfpaw"), new ArtifactItem(Material.IRON_SWORD, "Fangblade"));
+		case CREATURES -> new ArtifactKind("A Holy artifact of Creatures", HolyPower.TAME, new ArtifactItem(Material.STICK, "Beastwand"), new ArtifactItem(Material.FEATHER, "Beast feather"));
+		case WISDOM -> new ArtifactKind("A Holy artifact of Wisdom", HolyPower.KNOWLEDGE, new ArtifactItem(Material.BOOK, "Knowledge tome"), new ArtifactItem(Material.FEATHER, "Quill"));
+		case NATURE -> new ArtifactKind("A Holy artifact of Nature", HolyPower.NATURE, new ArtifactItem(Material.GOLDEN_HOE, "Earthdigger"), new ArtifactItem(Material.STICK, "Druid staff"));
 		};
 	}
 
@@ -84,7 +87,7 @@ public class HolyArtifactManager
 
 		ArtifactKind kind = getArtifactKind(godType);
 		ArtifactItem artifactItem = kind.items()[this.random.nextInt(kind.items().length)];
-		HolyPowerManager.HolyPower holyPower = kind.power();
+		HolyPower holyPower = kind.power();
 		int powerValue = 1;
 		String itemName = artifactItem.name() + " of " + godName;
 
@@ -100,8 +103,8 @@ public class HolyArtifactManager
 
 		List<String> lore = new ArrayList<String>();
 		lore.add(ChatColor.DARK_PURPLE + kind.lore());
-		lore.add(getUsesLine(0));
-		lore.add(ChatColor.GREEN + ctx.holyPowerManager().describe(holyPower, powerValue));
+		lore.add(HolyArtifactRules.usesLine(0));
+		lore.add(ChatColor.GREEN + HolyPowerRules.describe(holyPower, powerValue));
 		itemMeta.setLore(lore);
 
 		switch (this.random.nextInt(6))
@@ -125,52 +128,6 @@ public class HolyArtifactManager
 		return location.getWorld().dropItem(location, item);
 	}
 
-	private static String getUsesLine(int uses)
-	{
-		return ChatColor.WHITE + "Used " + uses + (uses == 1 ? " time" : " times");
-	}
-
-	private static String getArtifactRankName(int uses)
-	{
-		if (uses < 5)
-		{
-			return "";
-		}
-		if (uses < 20)
-		{
-			return ChatColor.GREEN + "Shiny";
-		}
-		if (uses < 50)
-		{
-			return ChatColor.GREEN + "Honorable";
-		}
-		if (uses < 100)
-		{
-			return ChatColor.GREEN + "Holy";
-		}
-		if (uses < 150)
-		{
-			return ChatColor.GREEN + "Saintly";
-		}
-		if (uses < 200)
-		{
-			return ChatColor.BLUE + "Amazing";
-		}
-		if (uses < 300)
-		{
-			return ChatColor.BLUE + "Mega";
-		}
-		if (uses < 500)
-		{
-			return ChatColor.BLUE + "Awesome";
-		}
-		if (uses < 1000)
-		{
-			return ChatColor.DARK_PURPLE + "Epic";
-		}
-		return ChatColor.GOLD + "Legendary";
-	}
-
 	/**
 	 * Activates the holy power of the artifact a player right-clicked with.
 	 * Each use counts towards the artifact's rank, and wears it like any other
@@ -183,13 +140,13 @@ public class HolyArtifactManager
 			return;
 		}
 		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
-		HolyPowerManager.PowerDescription holyPower = getHolyPower(item);
+		HolyPowerRules.PowerDescription holyPower = getHolyPower(item);
 		if (player == null || holyPower == null)
 		{
 			return;
 		}
 
-		if (!ctx.holyPowerManager().activatePower(player, holyPower.power(), holyPower.value()))
+		if (!ctx.holyPowerService().activatePower(player, holyPower.power(), holyPower.value()))
 		{
 			return;
 		}
@@ -213,12 +170,12 @@ public class HolyArtifactManager
 		List<String> lore = itemMeta.getLore();
 		if (lore != null && lore.size() >= 2)
 		{
-			lore.set(1, getUsesLine(uses));
+			lore.set(1, HolyArtifactRules.usesLine(uses));
 			itemMeta.setLore(lore);
 		}
 
-		String rankName = getArtifactRankName(uses);
-		if (!rankName.equals(getArtifactRankName(oldUses)))
+		String rankName = HolyArtifactRules.rankName(uses);
+		if (!rankName.equals(HolyArtifactRules.rankName(oldUses)))
 		{
 			String baseName = data.getOrDefault(this.nameKey, PersistentDataType.STRING, ChatColor.stripColor(itemMeta.getDisplayName()));
 			itemMeta.setDisplayName(rankName + " " + ChatColor.GOLD + baseName);
@@ -294,7 +251,7 @@ public class HolyArtifactManager
 	 * The power of an artifact, from its persistent data or, for artifacts
 	 * made by older versions, from its lore. Null if the item is no artifact.
 	 */
-	private HolyPowerManager.PowerDescription getHolyPower(ItemStack item)
+	private HolyPowerRules.PowerDescription getHolyPower(ItemStack item)
 	{
 		ItemMeta itemMeta = item.getItemMeta();
 		PersistentDataContainer data = itemMeta.getPersistentDataContainer();
@@ -305,8 +262,8 @@ public class HolyArtifactManager
 		}
 		try
 		{
-			HolyPowerManager.HolyPower power = HolyPowerManager.HolyPower.valueOf(powerName);
-			return new HolyPowerManager.PowerDescription(power, data.getOrDefault(this.powerValueKey, PersistentDataType.INTEGER, 1));
+			HolyPower power = HolyPower.valueOf(powerName);
+			return new HolyPowerRules.PowerDescription(power, data.getOrDefault(this.powerValueKey, PersistentDataType.INTEGER, 1));
 		}
 		catch (IllegalArgumentException ex)
 		{
@@ -320,7 +277,7 @@ public class HolyArtifactManager
 	 * lore starts with the artifact line and its third line describes a
 	 * holy power. Null for any other item.
 	 */
-	private HolyPowerManager.PowerDescription getLegacyHolyPower(ItemMeta itemMeta)
+	private HolyPowerRules.PowerDescription getLegacyHolyPower(ItemMeta itemMeta)
 	{
 		if (!itemMeta.hasLore())
 		{
@@ -332,10 +289,10 @@ public class HolyArtifactManager
 			return null;
 		}
 		String firstLine = ChatColor.stripColor(lore.get(0));
-		if (!firstLine.startsWith("A Holy artifact") && !firstLine.startsWith("An Unholy artifact"))
+		if (!HolyArtifactRules.isArtifactLine(firstLine))
 		{
 			return null;
 		}
-		return ctx.holyPowerManager().getHolyPowerFromDescription(ChatColor.stripColor(lore.get(2)));
+		return HolyPowerRules.parse(ChatColor.stripColor(lore.get(2)));
 	}
 }

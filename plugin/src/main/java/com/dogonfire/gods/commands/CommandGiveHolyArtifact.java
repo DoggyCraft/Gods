@@ -40,7 +40,7 @@ public class CommandGiveHolyArtifact extends GodsCommand
 			sender.sendMessage(stringNoGod);
 			return;
 		}
-		if (ctx.holyArtifactManager().hasHolyArtifact(player))
+		if (ctx.holyArtifactService().hasHolyArtifact(player))
 		{
 			sender.sendMessage(ChatColor.RED + "You already carry a Holy Artifact");
 			return;

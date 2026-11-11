@@ -378,8 +378,8 @@ public class MarriageService
 			ctx.plugin().getServer().broadcastMessage(ChatColor.WHITE + player.getDisplayName() + ChatColor.AQUA + " just married " + ChatColor.WHITE + partner.getDisplayName() + ChatColor.AQUA + " in the name of " + ChatColor.GOLD + godName + ChatColor.AQUA + "!");
 			if ((ctx.settings().holyArtifacts().enabled()) && (ctx.settings().marriage().weddingFireworks()))
 			{
-				ctx.holyPowerManager().shootFirework(player, 16);
-				ctx.holyPowerManager().shootFirework(partner, 16);
+				ctx.holyPowerService().shootFirework(player, 16);
+				ctx.holyPowerService().shootFirework(partner, 16);
 			}
 		}
 		else

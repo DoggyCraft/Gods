@@ -5,8 +5,6 @@ import org.bukkit.plugin.PluginManager;
 
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
-import com.dogonfire.gods.managers.HolyArtifactManager;
-import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
@@ -16,8 +14,10 @@ import com.dogonfire.gods.service.CommandmentService;
 import com.dogonfire.gods.service.GodListService;
 import com.dogonfire.gods.service.GodService;
 import com.dogonfire.gods.service.GodSpeech;
+import com.dogonfire.gods.service.HolyArtifactService;
 import com.dogonfire.gods.service.HolyBookService;
 import com.dogonfire.gods.service.HolyLandService;
+import com.dogonfire.gods.service.HolyPowerService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.service.MoodService;
 import com.dogonfire.gods.service.Permissions;
@@ -58,8 +58,8 @@ public final class GodsContext
 	private final HolyLandService			holyLandService;
 	private final HolyBookService			holyBookService;
 	private final MarriageService			marriageService;
-	private final HolyArtifactManager		holyArtifactManager;
-	private final HolyPowerManager			holyPowerManager;
+	private final HolyArtifactService		holyArtifactService;
+	private final HolyPowerService			holyPowerService;
 	private final GodListService			godListService;
 	private final ChatService				chatService;
 	private final Titles					titles;
@@ -88,8 +88,8 @@ public final class GodsContext
 		this.holyLandService = new HolyLandService(this, storage.holyLands());
 		this.holyBookService = new HolyBookService(this, storage.bibles());
 		this.marriageService = new MarriageService(this, storage.marriages());
-		this.holyArtifactManager = new HolyArtifactManager(this);
-		this.holyPowerManager = new HolyPowerManager(this);
+		this.holyArtifactService = new HolyArtifactService(this);
+		this.holyPowerService = new HolyPowerService(this);
 		this.godListService = new GodListService(this, storage.whitelist(), storage.blacklist());
 		this.chatService = new ChatService(this);
 		this.titles = new Titles(plugin.getServer().getPluginManager());
@@ -207,14 +207,16 @@ public final class GodsContext
 		return this.marriageService;
 	}
 
-	public HolyArtifactManager holyArtifactManager()
+	/** Holy artifacts: making, recognizing and using them */
+	public HolyArtifactService holyArtifactService()
 	{
-		return this.holyArtifactManager;
+		return this.holyArtifactService;
 	}
 
-	public HolyPowerManager holyPowerManager()
+	/** Holy powers (the effects of holy artifacts) and their cooldowns */
+	public HolyPowerService holyPowerService()
 	{
-		return this.holyPowerManager;
+		return this.holyPowerService;
 	}
 
 	/** The god whitelist and blacklist */

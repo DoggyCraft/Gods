@@ -266,7 +266,7 @@ public class BlessingService
 	public void giveHolyArtifact(String godName, GodType godType, Player player, boolean speak)
 	{
 		// A second artifact would only drop at their feet: the pickup is refused while they carry one
-		if (ctx.holyArtifactManager().hasHolyArtifact(player))
+		if (ctx.holyArtifactService().hasHolyArtifact(player))
 		{
 			return;
 		}

@@ -44,7 +44,7 @@ public class GiveHolyArtifactTask extends Task
 		{
 			getPlugin().logDebug("Creating holy artifact for " + this.player.getName());
 
-			ctx.holyArtifactManager().createHolyArtifact(this.godType, this.godName, spawnLocation);
+			ctx.holyArtifactService().createHolyArtifact(this.godType, this.godName, spawnLocation);
 
 			spawnLocation.getWorld().playEffect(spawnLocation, Effect.MOBSPAWNER_FLAMES, 25);
 		}

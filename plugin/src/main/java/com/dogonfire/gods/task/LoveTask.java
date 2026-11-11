@@ -47,7 +47,7 @@ public class LoveTask extends Task
 
 			if (firework)
 			{
-				ctx.holyPowerManager().shootFirework(player1, 16);
+				ctx.holyPowerService().shootFirework(player1, 16);
 			}
 		}
 
@@ -58,7 +58,7 @@ public class LoveTask extends Task
 
 			if (firework)
 			{
-				ctx.holyPowerManager().shootFirework(player2, 16);
+				ctx.holyPowerService().shootFirework(player2, 16);
 			}
 		}
 
