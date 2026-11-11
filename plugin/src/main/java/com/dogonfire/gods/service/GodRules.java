@@ -1,6 +1,7 @@
 package com.dogonfire.gods.service;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Random;
 
 import org.bukkit.ChatColor;
@@ -22,7 +23,7 @@ public final class GodRules
 	/** "tHOR" becomes "Thor" */
 	public static String formatGodName(String godName)
 	{
-		return godName.substring(0, 1).toUpperCase() + godName.substring(1).toLowerCase();
+		return godName.substring(0, 1).toUpperCase(Locale.ROOT) + godName.substring(1).toLowerCase(Locale.ROOT);
 	}
 
 	/** The chat color of a god type; white for none */

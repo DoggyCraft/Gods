@@ -2,6 +2,7 @@ package com.dogonfire.gods.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -68,7 +69,7 @@ public class CommandmentService
 		}
 		try
 		{
-			return EntityType.valueOf(mobTypeString.toUpperCase());
+			return EntityType.valueOf(mobTypeString.toUpperCase(Locale.ROOT));
 		}
 		catch (IllegalArgumentException ex)
 		{
@@ -365,11 +366,11 @@ public class CommandmentService
 
 				if (ctx.settings().commandments().broadcastFoodEaten())
 				{
-					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_NOT_EAT_FOOD_CURSING, 2 + this.random.nextInt(10), Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().itemName(notEatFoodType)));
+					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_NOT_EAT_FOOD_CURSING, 2 + this.random.nextInt(10), Messages.displayName(player.getDisplayName().toUpperCase(Locale.ROOT)), Messages.type(ctx.messages().itemName(notEatFoodType)));
 				}
 				else
 				{
-					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_NOT_EAT_FOOD_CURSING, Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().itemName(notEatFoodType)));
+					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_NOT_EAT_FOOD_CURSING, Messages.displayName(player.getDisplayName().toUpperCase(Locale.ROOT)), Messages.type(ctx.messages().itemName(notEatFoodType)));
 				}
 			}
 		}
@@ -409,11 +410,11 @@ public class CommandmentService
 				
 				if (ctx.settings().commandments().broadcastMobSlain())
 				{
-					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_NOT_SLAY_MOB_CURSING, 2 + this.random.nextInt(10), Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().mobName(holyMobType)));
+					ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_NOT_SLAY_MOB_CURSING, 2 + this.random.nextInt(10), Messages.displayName(player.getDisplayName().toUpperCase(Locale.ROOT)), Messages.type(ctx.messages().mobName(holyMobType)));
 				}
 				else
 				{
-					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_NOT_SLAY_MOB_CURSING, Messages.displayName(player.getDisplayName().toUpperCase()), Messages.type(ctx.messages().mobName(holyMobType)));
+					ctx.godSpeech().sayToBeliever(godName, player.getUniqueId(), Voice.BELIEVERS_NOT_SLAY_MOB_CURSING, Messages.displayName(player.getDisplayName().toUpperCase(Locale.ROOT)), Messages.type(ctx.messages().mobName(holyMobType)));
 				}
 			}
 		}

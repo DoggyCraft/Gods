@@ -2,6 +2,7 @@ package com.dogonfire.gods.message;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -48,7 +49,7 @@ public final class GodVoices
 	/** The name of a voice ("sun_female"): the god's type and gender (Male or Female) */
 	public static String name(GodType type, GodGender gender)
 	{
-		return type.name().toLowerCase() + "_" + gender.name().toLowerCase();
+		return type.name().toLowerCase(Locale.ROOT) + "_" + gender.name().toLowerCase(Locale.ROOT);
 	}
 
 	/** Every line the voice has for the situation (MiniMessage); empty if it has none */

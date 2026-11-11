@@ -1,5 +1,7 @@
 package com.dogonfire.gods.model;
 
+import java.util.Locale;
+
 /**
  * The kinds of quest a god can give. Only PILGRIMAGE, SLAY, ITEMSACRIFICE and GIVEITEMS are generated now, but every
  * constant may be stored in quests.yml (Gods 0.9.x made the others), so they all stay. Stored as {@code Type} in the
@@ -18,7 +20,7 @@ public enum QuestType
 		}
 		try
 		{
-			return valueOf(name.toUpperCase());
+			return valueOf(name.toUpperCase(Locale.ROOT));
 		}
 		catch (IllegalArgumentException ex)
 		{
@@ -31,6 +33,6 @@ public enum QuestType
 	public String toString()
 	{
 		String output = name();
-		return output.charAt(0) + output.substring(1).toLowerCase();
+		return output.charAt(0) + output.substring(1).toLowerCase(Locale.ROOT);
 	}
 }

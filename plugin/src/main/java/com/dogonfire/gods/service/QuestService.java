@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -511,7 +512,7 @@ public class QuestService
 			switch (questType)
 			{
 			case SLAY:
-				return ctx.messages().mobName(EntityType.valueOf(targetType.toUpperCase()));
+				return ctx.messages().mobName(EntityType.valueOf(targetType.toUpperCase(Locale.ROOT)));
 			case ITEMSACRIFICE:
 			case BURNBIBLES:
 				Material material = Material.matchMaterial(targetType);

@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -108,7 +109,7 @@ public final class QuestRules
 			name.append(letters[random.nextInt(letters.length)]);
 			wasVowel = !wasVowel;
 		}
-		return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+		return name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1).toLowerCase(Locale.ROOT);
 	}
 
 	/** The pilgrimage target's name */

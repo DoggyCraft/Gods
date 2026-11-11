@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -262,7 +263,7 @@ public final class Messages
 	/** {@code <name>...</name>} colors the text between in a {@link ChatColor} (e.g. a god type's color) */
 	public static TagResolver color(String name, ChatColor color)
 	{
-		NamedTextColor textColor = NamedTextColor.NAMES.value(color.name().toLowerCase());
+		NamedTextColor textColor = NamedTextColor.NAMES.value(color.name().toLowerCase(Locale.ROOT));
 		return TagResolver.resolver(name, Tag.styling(textColor != null ? textColor : NamedTextColor.WHITE));
 	}
 
