@@ -175,6 +175,21 @@ class RepositoryTest
 	}
 
 	@Test
+	void aFileFromANewerGodsIsUsedButNeverWritten() throws IOException
+	{
+		String newer = "data-version: 3\nThor:\n  Power: 3\n  Shape: new\n";
+		Files.writeString(this.dir.resolve("data.yml"), newer);
+		PowerRepository repository = repository(new VersionedYaml("data-version", 2, 1, List.of()));
+		assertFalse(repository.load());
+		assertTrue(repository.isReadOnly());
+		assertEquals(Map.of("Thor", 3), repository.powers);
+		repository.powers.put("Odin", 1);
+		repository.save();
+		assertTrue(this.queued.isEmpty());
+		assertEquals(newer, read());
+	}
+
+	@Test
 	void aBrokenFirstLoadStartsEmptyAndNeverWrites() throws IOException
 	{
 		Files.writeString(this.dir.resolve("data.yml"), "Thor: [unclosed\n");

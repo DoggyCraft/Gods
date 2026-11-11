@@ -1,6 +1,7 @@
 package com.dogonfire.gods.migration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -104,8 +105,59 @@ class VersionedYamlTest
 		File file = write("a: 1\n");
 		VersionedYaml format = new VersionedYaml("version", 3, 1, List.of(rename(2, "b", "c")));
 		assertThrows(VersionedYaml.LoadException.class, () -> format.load(file, LOG));
-		// The file itself is not touched
+		// The file itself is not touched, and no backup is made (it would be made again on every start)
 		assertEquals("a: 1\n", Files.readString(file.toPath()));
+		try (var files = Files.list(this.dir))
+		{
+			assertEquals(List.of("test.yml"), files.map(path -> path.getFileName().toString()).toList(), "no backups");
+		}
+	}
+
+	@Test
+	void aVersionWithoutMigrationsMakesNoBackup() throws Exception
+	{
+		// Like a messages file with a wrong messages-version: no migration chain at all
+		File file = write("version: 1\nz: 1\n");
+		for (int i = 0; i < 2; i++)
+		{
+			assertThrows(VersionedYaml.LoadException.class, () -> new VersionedYaml("version", 2, 2, List.of()).load(file, LOG));
+		}
+		try (var files = Files.list(this.dir))
+		{
+			assertEquals(List.of("test.yml"), files.map(path -> path.getFileName().toString()).toList(), "no backups");
+		}
+	}
+
+	@Test
+	void aQuotedVersionIsANumber() throws Exception
+	{
+		File file = write("version: '3'\nz: 1\n");
+		YamlConfiguration yaml = new VersionedYaml("version", 3, 1, MIGRATIONS).load(file, LOG);
+		assertEquals(1, yaml.getInt("z"));
+		assertEquals("version: '3'\nz: 1\n", Files.readString(file.toPath()));
+
+		File unreadable = write("version: soon\nz: 1\n");
+		assertThrows(VersionedYaml.LoadException.class, () -> new VersionedYaml("version", 3, 1, MIGRATIONS).load(unreadable, LOG));
+	}
+
+	@Test
+	void newerDataIsMarked() throws Exception
+	{
+		YamlConfiguration yaml = new YamlConfiguration();
+		yaml.set("version", 4);
+		VersionedYaml.Upgraded upgraded = new VersionedYaml("version", 3, 1, MIGRATIONS).upgrade(yaml, this.dir.resolve("test.yml"), LOG);
+		assertTrue(upgraded.newer());
+		assertFalse(upgraded.changed());
+	}
+
+	@Test
+	void aFileInTheCurrentLayoutWithoutItsVersionGetsTheVersion() throws Exception
+	{
+		File file = write("c: 5\n");
+		YamlConfiguration yaml = new VersionedYaml("version", 3, 1, MIGRATIONS, data -> data.contains("c")).load(file, LOG);
+		assertEquals(5, yaml.getInt("c"));
+		assertEquals(3, YamlConfiguration.loadConfiguration(file).getInt("version"));
+		assertEquals(5, YamlConfiguration.loadConfiguration(file).getInt("c"));
 	}
 
 	@Test

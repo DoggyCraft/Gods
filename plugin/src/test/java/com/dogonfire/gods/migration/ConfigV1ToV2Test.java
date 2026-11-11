@@ -217,4 +217,54 @@ class ConfigV1ToV2Test
 		format.load(file.toFile(), this.log.logger());
 		assertEquals(upgraded, Files.readString(file));
 	}
+
+	/** What Gods.loadSettings uses */
+	private VersionedYaml format()
+	{
+		return new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger())), ConfigV1ToV2::isVersion2Layout);
+	}
+
+	/** A version 2 config whose config-version was removed by hand is not reset to the defaults */
+	@Test
+	void aVersion2ConfigWithoutItsVersionKeepsItsSettings() throws Exception
+	{
+		Path file = this.dir.resolve("config.yml");
+		Files.writeString(file, "# My server\ngeneral:\n  debug: true\n  language: danish\nblessings:\n  blessed-seconds: 77\n");
+
+		YamlConfiguration loaded = format().load(file.toFile(), this.log.logger());
+
+		assertEquals("danish", loaded.getString("general.language"));
+		assertEquals(77, loaded.getInt("blessings.blessed-seconds"));
+		assertEquals(Gods.CONFIG_VERSION, loaded.getInt("config-version"));
+		YamlConfiguration onDisk = YamlConfiguration.loadConfiguration(file.toFile());
+		assertEquals(Gods.CONFIG_VERSION, onDisk.getInt("config-version"));
+		assertEquals(77, onDisk.getInt("blessings.blessed-seconds"));
+		assertTrue(Files.readString(file).contains("# My server"), "comments stay");
+		try (var files = Files.list(this.dir))
+		{
+			assertEquals(List.of("config.yml"), files.map(path -> path.getFileName().toString()).toList(), "nothing was upgraded");
+		}
+	}
+
+	@Test
+	void aConfigFromANewerGodsIsReadButNeverWritten() throws Exception
+	{
+		Path file = this.dir.resolve("config.yml");
+		String newer = "config-version: " + (Gods.CONFIG_VERSION + 1) + "\ngeneral:\n  language: danish\n";
+		Files.writeString(file, newer);
+
+		VersionedYaml format = format();
+		YamlConfiguration loaded = format.load(file.toFile(), this.log.logger());
+
+		assertEquals("danish", loaded.getString("general.language"));
+		assertTrue(format.isNewer(loaded), "Gods then skips adding missing settings");
+		assertEquals(newer, Files.readString(file));
+	}
+
+	@Test
+	void anOldConfigIsNotMistakenForVersion2() throws Exception
+	{
+		assertFalse(ConfigV1ToV2.isVersion2Layout(TestConfigs.yaml("Settings:\n  Debug: true\nHolyLand:\n  Enabled: true\n")));
+		assertTrue(ConfigV1ToV2.isVersion2Layout(TestConfigs.yaml("general:\n  debug: true\n")));
+	}
 }

@@ -392,11 +392,15 @@ public class Gods extends JavaPlugin
 		{
 			saveResource("config.yml", false);
 		}
-		VersionedYaml format = new VersionedYaml("config-version", CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(this::getResource, getLogger())));
-		YamlConfiguration config = format.load(file, getLogger());
+		YamlConfiguration config = configFormat().load(file, getLogger());
 		YamlConfiguration defaults = bundledConfig();
 
-		if (ConfigDefaults.addMissing(config, defaults))
+		if (configFormat().isNewer(config))
+		{
+			// From a newer Gods: read what this version knows, but never write it back in the old shape
+			getLogger().warning("config.yml is from a newer version of Gods; it is used as it is, and no missing settings are added to it.");
+		}
+		else if (ConfigDefaults.addMissing(config, defaults))
 		{
 			try
 			{
@@ -412,6 +416,15 @@ public class Gods extends JavaPlugin
 		config.setDefaults(defaults);
 		List<String> serverWorlds = getServer().getWorlds().stream().map(World::getName).toList();
 		return new SettingsLoader(config, getLogger(), serverWorlds).load();
+	}
+
+	/**
+	 * config.yml's versions: 1 (no config-version, CamelCase sections) is upgraded by {@link ConfigV1ToV2}; a file
+	 * without config-version that already has the kebab-case sections is taken as version 2
+	 */
+	private VersionedYaml configFormat()
+	{
+		return new VersionedYaml("config-version", CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(this::getResource, getLogger())), ConfigV1ToV2::isVersion2Layout);
 	}
 
 	private YamlConfiguration bundledConfig() throws VersionedYaml.LoadException

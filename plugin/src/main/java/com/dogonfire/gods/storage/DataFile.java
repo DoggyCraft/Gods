@@ -193,6 +193,14 @@ public final class DataFile
 				VersionedYaml.Upgraded upgraded = this.format.upgrade(loadedYaml, this.file, this.logger);
 				loadedYaml = upgraded.yaml();
 				repaired |= upgraded.changed();
+				if (upgraded.newer())
+				{
+					// Written by a newer Gods: this one would write it back in the old shape under the new version
+					this.yaml = loadedYaml;
+					this.readOnly = true;
+					this.dirty = false;
+					return false;
+				}
 			}
 			catch (VersionedYaml.LoadException | RuntimeException ex)
 			{

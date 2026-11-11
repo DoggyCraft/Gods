@@ -125,7 +125,22 @@ public final class ConfigV1ToV2 implements Migration
 			"Quests.HolywarQuests",
 			"Quests.GlobalQuestsPercentChance",
 			"Prophecies.Enabled",
-			"HolyLand.RadiusPrPower");
+			"HolyLand.RadiusPrPower",
+			"HolyLand.MinRadius",
+			"HolyLand.MaxRadius");
+
+	/** The sections of a version 2 config.yml; no version 1 file has any of them (its sections are CamelCase) */
+	static final List<String> VERSION_2_SECTIONS = List.of("general", "gods", "believers", "priests", "altars", "prayers", "sacrifices", "commandments", "blessings", "curses",
+			"item-blessings", "holy-artifacts", "quests", "holy-land", "marriage", "bibles", "chat");
+
+	/**
+	 * Whether a config.yml without {@code config-version} is already in the version 2 layout (the key was removed by
+	 * hand): it must not be "upgraded" from version 1, which would reset every setting to the defaults.
+	 */
+	public static boolean isVersion2Layout(YamlConfiguration config)
+	{
+		return VERSION_2_SECTIONS.stream().anyMatch(config::isConfigurationSection);
+	}
 
 	private final Function<String, InputStream>	resources;
 	private final Logger						log;

@@ -94,6 +94,8 @@ Commandments:
 HolyLand:
   Enabled: true
   RadiusPrPower: 1.25
+  MinRadius: 1
+  MaxRadius: 10
   DefaultPvP: false
   DefaultMobDamage: true
   Lightning: false
