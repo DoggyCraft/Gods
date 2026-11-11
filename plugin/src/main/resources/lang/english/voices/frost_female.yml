@@ -534,3 +534,9 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'The winds have turned! From now on I am your <gender> of Frost!'
+# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+believers-god-descended:
+- 'The cold winds have carried me down to you! Come, see me at my altar!'
+# Said to all believers when the god that had descended ascends again (no priest, or too few believers)
+believers-god-ascended:
+- 'Your faith has thawed. I return to the frozen heights, until you call me again.'

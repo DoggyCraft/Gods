@@ -479,6 +479,42 @@ public class GodService
 		ctx.godNpcs().refreshGod(godName);
 	}
 
+	/** When the god descended to its main altar (its NPC shows there), or null if it hasn't */
+	public Instant getDescendedTime(String godName)
+	{
+		God god = god(godName);
+		return god != null ? god.descended() : null;
+	}
+
+	/** What gods.yml keeps about the god's descent, or null for a god that doesn't exist */
+	public DescentRules.State getDescentState(String godName)
+	{
+		God god = god(godName);
+		return god != null ? new DescentRules.State(god.priestSince(), god.descended(), god.ascendingSince()) : null;
+	}
+
+	/** Stores the god's descent state: saved now when it descended or ascended, else with the next autosave */
+	public void setDescentState(String godName, DescentRules.State state)
+	{
+		God god = god(godName);
+		if (god == null || state.equals(new DescentRules.State(god.priestSince(), god.descended(), god.ascendingSince())))
+		{
+			return;
+		}
+		boolean descentChanged = !Objects.equals(god.descended(), state.descended());
+		god.setPriestSince(state.priestSince());
+		god.setDescended(state.descended());
+		god.setAscendingSince(state.ascendingSince());
+		if (descentChanged)
+		{
+			this.repository.save();
+		}
+		else
+		{
+			this.repository.markDirty();
+		}
+	}
+
 	/** The skin of the god's NPC set with /g godskin, or null for its god type's (themes.yml) */
 	public NpcSkin getNpcSkin(String godName)
 	{

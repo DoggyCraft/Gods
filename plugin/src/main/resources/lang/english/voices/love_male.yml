@@ -537,3 +537,9 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'Love takes many forms, my children: from now on I am your <gender> of Love!'
+# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+believers-god-descended:
+- 'My children, your love has brought me to you! Come to my altar and embrace me!'
+# Said to all believers when the god that had descended ascends again (no priest, or too few believers)
+believers-god-ascended:
+- 'My heart aches, my children. I must leave you, until your love is strong again.'

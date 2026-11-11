@@ -94,6 +94,10 @@ public enum Voice
 	BELIEVERS_EAT_FOOD_BLESSING("believers-eat-food-blessing"),
 	/** A priest (or a plugin) changed the god's gender; {@code <gender>} is its new one ("God", "Goddess", "Deity") */
 	BELIEVERS_GENDER_CHANGED("believers-gender-changed"),
+	/** The god descended to its main altar and appears there as an NPC (config.yml npc.descend) */
+	BELIEVERS_GOD_DESCENDED("believers-god-descended"),
+	/** The god that had descended ascended again: no priest, or too few believers for too long */
+	BELIEVERS_GOD_ASCENDED("believers-god-ascended"),
 	BELIEVERS_GIVE_BIBLES_QUEST_PROGRESS("believers-give-bibles-quest-progress"),
 	BELIEVERS_GIVE_ITEMS_QUEST_COMPLETED("believers-give-items-quest-completed"),
 	BELIEVERS_GIVE_ITEMS_QUEST_FAILED("believers-give-items-quest-failed"),

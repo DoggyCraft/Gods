@@ -82,6 +82,33 @@ public class EffectService
 	}
 
 	/**
+	 * The god descends to its main altar (its NPC appears there): the theme's pleased particles and sound rise around
+	 * the spot and its symbol floats up high. With effects switched off nothing is shown (the lightning that comes with
+	 * it is the caller's).
+	 */
+	public void descent(String godName, Location at)
+	{
+		if (!effects().enabled() || at == null)
+		{
+			return;
+		}
+		List<Player> viewers = viewers(at);
+		if (viewers.isEmpty())
+		{
+			return;
+		}
+		Theme.Effects theme = themeOf(godName).effects();
+		Theme.EffectStyle style = theme.of(Theme.EffectMood.PLEASED);
+		EffectRules.Waves waves = EffectRules.prayer(Theme.EffectMood.PLEASED);
+		sound(viewers, at, style, SoundCategory.BLOCKS, waves.pitch());
+		waves(viewers, () -> at, style, waves);
+		if (EffectRules.showsSymbol(Theme.EffectMood.PLEASED, theme.symbol()))
+		{
+			symbol(at.clone().add(0, 2.2, 0), theme.symbol(), firstColor(style), 1.6);
+		}
+	}
+
+	/**
 	 * A sacrifice burns: the item floats up from the fire, spins and shrinks away, with the god's pleased (wanted),
 	 * neutral or angry (unwanted) particles and sound.
 	 */

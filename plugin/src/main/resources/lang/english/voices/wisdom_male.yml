@@ -534,3 +534,9 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'After long thought I have changed, believers: I am your <gender> of Wisdom now.'
+# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+believers-god-descended:
+- 'Your devotion has earned it: I have descended to walk among you. Seek me at my altar.'
+# Said to all believers when the god that had descended ascends again (no priest, or too few believers)
+believers-god-ascended:
+- 'Wisdom is seeking, not keeping. I withdraw until you are ready for me again.'

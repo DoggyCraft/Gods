@@ -530,3 +530,9 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'Tremble, mortals! I am your <gender> now, and I am still not kind.'
+# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+believers-god-descended:
+- 'Your devotion has summoned me, mortals. I walk among you now. Come to my altar, if you dare.'
+# Said to all believers when the god that had descended ascends again (no priest, or too few believers)
+believers-god-ascended:
+- 'You have grown weak and few. I leave you to the dark, until you prove worthy again.'

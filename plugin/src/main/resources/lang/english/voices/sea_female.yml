@@ -537,3 +537,9 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'Like the tide, I have turned: from now on I am your <gender> of the Sea!'
+# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+believers-god-descended:
+- 'Like a great wave I have come ashore! Come to my altar and behold me!'
+# Said to all believers when the god that had descended ascends again (no priest, or too few believers)
+believers-god-ascended:
+- 'The tide goes out, and so do I. I return to the deep, until you call me again.'

@@ -538,3 +538,9 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'All creatures, hear me! From now on I am your <gender> of Mobs!'
+# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+believers-god-descended:
+- 'Your faith has called me down, creatures of the world! Come to my altar and see me!'
+# Said to all believers when the god that had descended ascends again (no priest, or too few believers)
+believers-god-ascended:
+- 'The world is quiet without my flock. I return to the wilds above, until you call me again.'

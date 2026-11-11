@@ -119,7 +119,13 @@ public class SettingsLoader
 						between("altars.floating-text-view-distance-blocks", 1, 128)),
 				new Settings.Npc(
 						bool("npc.enabled"),
-						npcProvider("npc.provider")));
+						npcProvider("npc.provider"),
+						new Settings.Descend(
+								bool("npc.descend.requires-priest"),
+								atLeast("npc.descend.min-believers", 0),
+								atLeast("npc.descend.hours-after-priest", 0),
+								atLeast("npc.descend.min-power", 0),
+								atLeast("npc.descend.ascend-grace-hours", 0))));
 	}
 
 	private Settings.General loadGeneral()

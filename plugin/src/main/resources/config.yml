@@ -242,3 +242,17 @@ npc:
   # Who makes the figure: auto, builtin, citizens, fancynpcs or off. auto uses Citizens if it is installed, else
   # FancyNpcs if it is installed, else the built-in figure (a vanilla mannequin, Minecraft 1.21.9 and newer), else none.
   provider: auto
+  # A god appears at its altar only once it has descended, a milestone its religion has to reach. It descends (with
+  # lightning and its effects, and tells its believers) when all of these hold, and it has a main altar.
+  descend:
+    # It needs a priest. When it has none any more, it ascends again.
+    requires-priest: true
+    # It needs at least this many believers.
+    min-believers: 3
+    # With a priest required: how long the god must have had one, in hours.
+    hours-after-priest: 24
+    # The power it needs (the power its believers give it). 0 for no minimum.
+    min-power: 0
+    # When its believers stay fewer than min-believers this long, in hours, it ascends (it doesn't come and go when a
+    # believer leaves for a moment). It descends again when all of the above hold again.
+    ascend-grace-hours: 24

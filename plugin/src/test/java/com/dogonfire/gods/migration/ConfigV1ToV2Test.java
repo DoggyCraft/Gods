@@ -92,7 +92,7 @@ class ConfigV1ToV2Test
 				new Settings.Chat(true),
 				new Settings.Effects(true, true, true, true, 32),
 				new Settings.AltarTexts(Settings.FloatingText.ALL, 32),
-				new Settings.Npc(true, Settings.NpcProvider.AUTO));
+				new Settings.Npc(true, Settings.NpcProvider.AUTO, new Settings.Descend(true, 3, 24, 0, 24)));
 
 		assertEquals(expected, settings);
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());

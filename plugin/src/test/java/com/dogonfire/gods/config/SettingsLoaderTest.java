@@ -211,7 +211,7 @@ class SettingsLoaderTest
 	@Test
 	void npcProviderIsOneOfTheKnownOnes() throws Exception
 	{
-		assertEquals(new Settings.Npc(true, Settings.NpcProvider.AUTO), load("").npc());
+		assertEquals(new Settings.Npc(true, Settings.NpcProvider.AUTO, new Settings.Descend(true, 3, 24, 0, 24)), load("").npc());
 		assertEquals(Settings.NpcProvider.CITIZENS, load("npc:\n  provider: Citizens\n").npc().provider());
 		assertEquals(Settings.NpcProvider.FANCYNPCS, load("npc:\n  provider: fancynpcs\n").npc().provider());
 		assertEquals(Settings.NpcProvider.BUILTIN, load("npc:\n  provider: builtin\n").npc().provider());

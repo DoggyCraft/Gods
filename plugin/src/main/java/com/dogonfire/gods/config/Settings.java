@@ -218,8 +218,22 @@ public record Settings(
 	 *
 	 * @param enabled  whether gods appear at their main altars at all
 	 * @param provider who makes the NPC; {@code auto} picks one (see {@code integration/npc/NpcProviders})
+	 * @param descend  when a god descends to its altar (and its NPC appears) and when it ascends again
 	 */
-	public record Npc(boolean enabled, NpcProvider provider)
+	public record Npc(boolean enabled, NpcProvider provider, Descend descend)
+	{
+	}
+
+	/**
+	 * When a god descends to its main altar ({@code npc.descend}; see {@code service/DescentRules}).
+	 *
+	 * @param requiresPriest   it needs a priest to descend, and ascends when it has none
+	 * @param minBelievers     it needs this many believers to descend; below it for {@code ascendGraceHours} it ascends
+	 * @param hoursAfterPriest with a priest required: how long it must have had one
+	 * @param minPower         the power it needs to descend; 0 for none
+	 * @param ascendGraceHours how long its believers may stay too few before it ascends
+	 */
+	public record Descend(boolean requiresPriest, int minBelievers, int hoursAfterPriest, int minPower, int ascendGraceHours)
 	{
 	}
 

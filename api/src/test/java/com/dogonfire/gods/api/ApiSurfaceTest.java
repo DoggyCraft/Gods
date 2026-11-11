@@ -18,9 +18,11 @@ import org.junit.jupiter.api.Test;
 import com.dogonfire.gods.api.event.BelieverJoinGodEvent;
 import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
 import com.dogonfire.gods.api.event.BelieverPrayEvent;
+import com.dogonfire.gods.api.event.GodAscendEvent;
 import com.dogonfire.gods.api.event.GodBlessPlayerEvent;
 import com.dogonfire.gods.api.event.GodCreateEvent;
 import com.dogonfire.gods.api.event.GodCursePlayerEvent;
+import com.dogonfire.gods.api.event.GodDescendEvent;
 import com.dogonfire.gods.api.event.GodGenderChangeEvent;
 import com.dogonfire.gods.api.event.GodEvent;
 import com.dogonfire.gods.api.event.GodMoodChangeEvent;
@@ -47,7 +49,7 @@ class ApiSurfaceTest
 			GodEvent.class, GodSpeakEvent.class, BelieverPrayEvent.class, BelieverJoinGodEvent.class, BelieverLeaveGodEvent.class,
 			GodCreateEvent.class, GodMoodChangeEvent.class, GodGenderChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
 			GodCursePlayerEvent.class, QuestEvent.class, QuestStartEvent.class, QuestCompleteEvent.class, QuestFailEvent.class,
-			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class);
+			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class, GodDescendEvent.class, GodAscendEvent.class);
 
 	@Test
 	void onlyExposesJavaBukkitAndApiTypes()

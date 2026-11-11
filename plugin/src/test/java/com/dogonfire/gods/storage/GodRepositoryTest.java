@@ -291,6 +291,33 @@ class GodRepositoryTest
 		again.close();
 	}
 
+	/** A god's descent: PriestSince, DescendedTime and AscendingSince, written only while set */
+	@Test
+	void descentTimesRoundTrip() throws IOException
+	{
+		Files.writeString(this.dir.resolve("gods.yml"), """
+				data-version: 2
+				Zeus:
+				  PriestSince: 08:00:00 09-11-2026
+				  DescendedTime: 09:30:00 10-11-2026
+				  AscendingSince: 10:00:00 11-11-2026
+				""");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.gods().load());
+		God zeus = storage.gods().find("Zeus");
+		assertEquals(LegacyDates.SECONDS.parse("08:00:00 09-11-2026"), zeus.priestSince());
+		assertEquals(LegacyDates.SECONDS.parse("09:30:00 10-11-2026"), zeus.descended());
+		assertEquals(LegacyDates.SECONDS.parse("10:00:00 11-11-2026"), zeus.ascendingSince());
+		zeus.setAscendingSince(null);
+		storage.gods().markDirty();
+		storage.close();
+
+		YamlConfiguration written = written();
+		assertEquals("09:30:00 10-11-2026", written.getString("Zeus.DescendedTime"));
+		assertEquals("08:00:00 09-11-2026", written.getString("Zeus.PriestSince"));
+		assertFalse(written.contains("Zeus.AscendingSince"));
+	}
+
 	/** The NPC skin (/g godskin) is NpcSkin.Name/Value/Signature; one that isn't a section is kept as it was */
 	@Test
 	void npcSkinsRoundTrip() throws IOException

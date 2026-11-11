@@ -60,6 +60,9 @@ public final class God
 
 	private Instant				lastQuestTime;				// LastQuestTime
 	private Instant				genderChangedTime;			// GenderChangedTime: when a priest (or a plugin) last changed its gender
+	private Instant				priestSince;				// PriestSince: since when it has had a priest (null: none); for its descent
+	private Instant				descended;					// DescendedTime: when it descended to its main altar (null: it hasn't, or ascended)
+	private Instant				ascendingSince;			// AscendingSince: since when it has had too few believers while descended
 
 	/** Keys of the entry this version doesn't know (or values it can't read), written back unchanged */
 	private Map<String, Object>	extras			= new LinkedHashMap<String, Object>();
@@ -362,6 +365,39 @@ public final class God
 	public void setGenderChangedTime(Instant genderChangedTime)
 	{
 		this.genderChangedTime = genderChangedTime;
+	}
+
+	/** Since when the god has had a priest, or null (see {@code DescentRules}) */
+	public Instant priestSince()
+	{
+		return this.priestSince;
+	}
+
+	public void setPriestSince(Instant priestSince)
+	{
+		this.priestSince = priestSince;
+	}
+
+	/** When the god descended to its main altar (its NPC shows), or null */
+	public Instant descended()
+	{
+		return this.descended;
+	}
+
+	public void setDescended(Instant descended)
+	{
+		this.descended = descended;
+	}
+
+	/** Since when the descended god has had too few believers, or null */
+	public Instant ascendingSince()
+	{
+		return this.ascendingSince;
+	}
+
+	public void setAscendingSince(Instant ascendingSince)
+	{
+		this.ascendingSince = ascendingSince;
 	}
 
 	public Map<String, Object> extras()
