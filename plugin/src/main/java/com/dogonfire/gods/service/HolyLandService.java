@@ -201,8 +201,13 @@ public class HolyLandService
 
 		for (HolyLand land : lands)
 		{
-			// No valid prayer time: treated as abandoned
 			Instant lastPrayer = land.lastPrayerTime();
+			// A time that couldn't be read (kept as it was in the extras, under its key in holyland.yml) proves nothing
+			if (lastPrayer == null && land.extras().containsKey("LastPrayerTime"))
+			{
+				continue;
+			}
+			// No prayer time at all: treated as abandoned
 			if (lastPrayer == null || (now - lastPrayer.toEpochMilli()) / 60000L > maxMinutes)
 			{
 				this.repository.remove(land.region());

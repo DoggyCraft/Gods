@@ -164,6 +164,16 @@ public class BelieverService
 		return new Date(BelieverRules.millis(believer != null ? believer.lastPrayer() : null));
 	}
 
+	/**
+	 * Whether the believer's last prayer time couldn't be read from believers.yml (it is kept as it was in the extras), so
+	 * nobody can tell how long ago they prayed
+	 */
+	public boolean hasUnreadableLastPrayer(UUID believerId)
+	{
+		Believer believer = find(believerId);
+		return believer != null && believer.lastPrayer() == null && believer.extras().containsKey("LastPrayer");
+	}
+
 	private Instant lastPrayer(UUID believerId)
 	{
 		Believer believer = find(believerId);

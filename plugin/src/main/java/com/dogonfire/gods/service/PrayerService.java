@@ -483,7 +483,7 @@ public class PrayerService
 		for (int n = 0; n < 5; n++)
 		{
 			UUID believerId = (UUID) believers.toArray()[this.random.nextInt(believers.size())];
-			if (!managedBelievers.contains(believerId))
+			if (!managedBelievers.contains(believerId) && !ctx.believerService().hasUnreadableLastPrayer(believerId))
 			{
 				long timeDiff = System.currentTimeMillis() - ctx.believerService().getLastPrayerTime(believerId).getTime();
 
