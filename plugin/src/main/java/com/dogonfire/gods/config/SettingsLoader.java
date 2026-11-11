@@ -116,7 +116,10 @@ public class SettingsLoader
 						between("effects.view-distance-blocks", 1, 128)),
 				new Settings.AltarTexts(
 						floatingText("altars.floating-text"),
-						between("altars.floating-text-view-distance-blocks", 1, 128)));
+						between("altars.floating-text-view-distance-blocks", 1, 128)),
+				new Settings.Npc(
+						bool("npc.enabled"),
+						npcProvider("npc.provider")));
 	}
 
 	private Settings.General loadGeneral()
@@ -215,6 +218,29 @@ public class SettingsLoader
 			}
 		}
 		Settings.FloatingText fallback = Settings.FloatingText.valueOf(defaults().getString(path, "all").toUpperCase(Locale.ROOT));
+		warn(path, value, fallback.name().toLowerCase(Locale.ROOT));
+		return fallback;
+	}
+
+	/** auto, builtin, citizens, fancynpcs or off (YAML reads a bare off as false) */
+	private Settings.NpcProvider npcProvider(String path)
+	{
+		Object value = this.config.get(path);
+		if (value instanceof Boolean on)
+		{
+			return on ? Settings.NpcProvider.AUTO : Settings.NpcProvider.OFF;
+		}
+		if (value instanceof String text)
+		{
+			for (Settings.NpcProvider provider : Settings.NpcProvider.values())
+			{
+				if (provider.name().equalsIgnoreCase(text.trim()))
+				{
+					return provider;
+				}
+			}
+		}
+		Settings.NpcProvider fallback = Settings.NpcProvider.valueOf(defaults().getString(path, "auto").toUpperCase(Locale.ROOT));
 		warn(path, value, fallback.name().toLowerCase(Locale.ROOT));
 		return fallback;
 	}

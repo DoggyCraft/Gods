@@ -233,3 +233,12 @@ effects:
   blessings: true
   # Only players this close (in blocks) see and hear the effects; nothing is shown when nobody is near. 1 to 128.
   view-distance-blocks: 32
+
+npc:
+  # The god stands as a figure (an NPC) in front of its main altar (/g setaltar), at the spot before the altar sign.
+  # Right-clicking it prays to the god as praying at the altar does. Priests give it a player's skin with /g godskin;
+  # otherwise it wears its god type's skin from themes.yml (if that has one).
+  enabled: true
+  # Who makes the figure: auto, builtin, citizens, fancynpcs or off. auto uses Citizens if it is installed, else
+  # FancyNpcs if it is installed, else the built-in figure (a vanilla mannequin, Minecraft 1.21.9 and newer), else none.
+  provider: auto

@@ -206,4 +206,20 @@ class SettingsLoaderTest
 		assertWarned("altars.floating-text");
 		assertEquals(128, load("altars:\n  floating-text-view-distance-blocks: 1000\n").altarTexts().viewDistanceBlocks());
 	}
+
+	/** auto, builtin, citizens, fancynpcs or off, in any case; a bare off is what YAML reads as false */
+	@Test
+	void npcProviderIsOneOfTheKnownOnes() throws Exception
+	{
+		assertEquals(new Settings.Npc(true, Settings.NpcProvider.AUTO), load("").npc());
+		assertEquals(Settings.NpcProvider.CITIZENS, load("npc:\n  provider: Citizens\n").npc().provider());
+		assertEquals(Settings.NpcProvider.FANCYNPCS, load("npc:\n  provider: fancynpcs\n").npc().provider());
+		assertEquals(Settings.NpcProvider.BUILTIN, load("npc:\n  provider: builtin\n").npc().provider());
+		assertEquals(Settings.NpcProvider.OFF, load("npc:\n  provider: off\n").npc().provider());
+		assertFalse(load("npc:\n  enabled: false\n").npc().enabled());
+		assertTrue(this.log.warnings().isEmpty(), "" + this.log.warnings());
+
+		assertEquals(Settings.NpcProvider.AUTO, load("npc:\n  provider: znpcs\n").npc().provider());
+		assertWarned("npc.provider");
+	}
 }

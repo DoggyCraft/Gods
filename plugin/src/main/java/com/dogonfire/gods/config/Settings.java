@@ -35,7 +35,8 @@ public record Settings(
 		Bibles bibles,
 		Chat chat,
 		Effects effects,
-		AltarTexts altarTexts)
+		AltarTexts altarTexts,
+		Npc npc)
 {
 	/** @param worlds the worlds Gods is active in; empty for every world (also worlds loaded later) */
 	public record General(boolean debug, String language, String serverName, List<String> worlds)
@@ -210,5 +211,28 @@ public record Settings(
 	public enum FloatingText
 	{
 		ALL, MAIN, OFF
+	}
+
+	/**
+	 * The god standing as an NPC at its main altar (the npc section of config.yml).
+	 *
+	 * @param enabled  whether gods appear at their main altars at all
+	 * @param provider who makes the NPC; {@code auto} picks one (see {@code integration/npc/NpcProviders})
+	 */
+	public record Npc(boolean enabled, NpcProvider provider)
+	{
+	}
+
+	/** {@code npc.provider}: who makes the god's NPC */
+	public enum NpcProvider
+	{
+		/** Citizens if installed, else FancyNpcs if installed, else the built-in one where the server has mannequins */
+		AUTO,
+		/** The vanilla mannequin (Minecraft 1.21.9+) */
+		BUILTIN,
+		CITIZENS,
+		FANCYNPCS,
+		/** No NPC */
+		OFF
 	}
 }

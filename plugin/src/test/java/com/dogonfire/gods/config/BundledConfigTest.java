@@ -69,7 +69,8 @@ class BundledConfigTest
 				new Settings.Bibles(true, false),
 				new Settings.Chat(false),
 				new Settings.Effects(true, true, true, true, 32),
-				new Settings.AltarTexts(Settings.FloatingText.ALL, 32));
+				new Settings.AltarTexts(Settings.FloatingText.ALL, 32),
+				new Settings.Npc(true, Settings.NpcProvider.AUTO));
 	}
 
 	@Test
