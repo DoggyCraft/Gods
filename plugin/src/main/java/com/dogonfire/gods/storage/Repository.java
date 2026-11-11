@@ -1,5 +1,6 @@
 package com.dogonfire.gods.storage;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +9,8 @@ import java.util.logging.Logger;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.dogonfire.gods.util.LegacyDates;
 
 /**
  * The models of one data file, held in memory. {@link #load()} reads the {@link DataFile} into models
@@ -163,6 +166,26 @@ public abstract class Repository
 			}
 		}
 		return extras;
+	}
+
+	/**
+	 * The time at {@code key}, or null if it is missing or can't be parsed. One that can't be parsed reads as never but
+	 * is kept in {@code extras} as it was, so it is written back unchanged (unless a new time replaces it) instead of
+	 * being lost.
+	 */
+	protected static Instant readTime(ConfigurationSection section, String key, LegacyDates dates, Map<String, Object> extras)
+	{
+		Object raw = section.get(key);
+		if (raw == null)
+		{
+			return null;
+		}
+		Instant time = dates.parse(raw.toString());
+		if (time == null)
+		{
+			extras.put(key, toPlain(raw));
+		}
+		return time;
 	}
 
 	protected static void writeExtras(ConfigurationSection section, Map<String, Object> extras)

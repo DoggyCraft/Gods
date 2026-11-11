@@ -45,6 +45,9 @@ public final class MarriageRepository extends Repository
 	private static final LegacyDates		DATES		= LegacyDates.SECONDS;
 
 	private final Map<UUID, Marriage>		marriages	= new LinkedHashMap<UUID, Marriage>();
+	// Times that could not be parsed, by player and "<section>.<key>": written back as they were while that part of
+	// the marriage has no time
+	private final Map<UUID, Map<String, Object>>	rawTimes	= new LinkedHashMap<UUID, Map<String, Object>>();
 
 	/** The data version and migrations of marriages.yml */
 	static VersionedYaml format()
@@ -89,6 +92,7 @@ public final class MarriageRepository extends Repository
 	protected void clear()
 	{
 		this.marriages.clear();
+		this.rawTimes.clear();
 	}
 
 	@Override
@@ -118,17 +122,17 @@ public final class MarriageRepository extends Repository
 			ConfigurationSection proposal = section.getConfigurationSection(Marriage.PROPOSAL);
 			if (proposal != null && readablePartner(key, proposal))
 			{
-				marriage.setProposal(new Marriage.Proposal(partner(proposal), time(proposal, TIME)));
+				marriage.setProposal(new Marriage.Proposal(partner(proposal), time(playerId, proposal, TIME)));
 			}
 			ConfigurationSection engagement = section.getConfigurationSection(Marriage.ENGAGEMENT);
 			if (engagement != null && readablePartner(key, engagement))
 			{
-				marriage.setEngagement(new Marriage.Engagement(partner(engagement), time(engagement, TIME), engagement.contains(TOKEN)));
+				marriage.setEngagement(new Marriage.Engagement(partner(engagement), time(playerId, engagement, TIME), engagement.contains(TOKEN)));
 			}
 			ConfigurationSection wedlock = section.getConfigurationSection(Marriage.WEDLOCK);
 			if (wedlock != null && readablePartner(key, wedlock))
 			{
-				marriage.setWedlock(new Marriage.Wedlock(partner(wedlock), time(wedlock, TIME), time(wedlock, LAST_LOVE)));
+				marriage.setWedlock(new Marriage.Wedlock(partner(wedlock), time(playerId, wedlock, TIME), time(playerId, wedlock, LAST_LOVE)));
 			}
 
 			// Sections that couldn't be read stay as they are (the setters above dropped readable ones from extras)
@@ -172,9 +176,35 @@ public final class MarriageRepository extends Repository
 		return partner != null ? parseId(partner) : null;
 	}
 
-	private static Instant time(ConfigurationSection section, String key)
+	/** The time, or null; one that can't be parsed is remembered as it was ({@link #rawTimes}) */
+	private Instant time(UUID playerId, ConfigurationSection section, String key)
 	{
-		return DATES.parse(section.getString(key));
+		Object raw = section.get(key);
+		if (raw == null)
+		{
+			return null;
+		}
+		Instant time = DATES.parse(raw.toString());
+		if (time == null)
+		{
+			this.rawTimes.computeIfAbsent(playerId, id -> new LinkedHashMap<String, Object>()).put(section.getName() + "." + key, toPlain(raw));
+		}
+		return time;
+	}
+
+	/** Writes the time, or, if there is none, the text that could not be parsed when it was read */
+	private void setTime(ConfigurationSection out, UUID playerId, String key, Instant time)
+	{
+		if (time != null)
+		{
+			out.set(key, DATES.format(time));
+			return;
+		}
+		Map<String, Object> raw = this.rawTimes.get(playerId);
+		if (raw != null && raw.get(out.getName() + "." + key) != null)
+		{
+			out.set(key, raw.get(out.getName() + "." + key));
+		}
 	}
 
 	private static UUID parseId(String value)
@@ -200,14 +230,14 @@ public final class MarriageRepository extends Repository
 			if (proposal != null)
 			{
 				ConfigurationSection out = section.createSection(Marriage.PROPOSAL);
-				out.set(TIME, DATES.format(proposal.time()));
+				setTime(out, marriage.playerId(), TIME, proposal.time());
 				out.set(PARTNER, idString(proposal.partner()));
 			}
 			Marriage.Engagement engagement = marriage.engagement();
 			if (engagement != null)
 			{
 				ConfigurationSection out = section.createSection(Marriage.ENGAGEMENT);
-				out.set(TIME, DATES.format(engagement.since()));
+				setTime(out, marriage.playerId(), TIME, engagement.since());
 				out.set(PARTNER, idString(engagement.partner()));
 				if (engagement.tokenPickedUp())
 				{
@@ -218,9 +248,9 @@ public final class MarriageRepository extends Repository
 			if (wedlock != null)
 			{
 				ConfigurationSection out = section.createSection(Marriage.WEDLOCK);
-				out.set(TIME, DATES.format(wedlock.since()));
+				setTime(out, marriage.playerId(), TIME, wedlock.since());
 				out.set(PARTNER, idString(wedlock.partner()));
-				out.set(LAST_LOVE, DATES.format(wedlock.lastLove()));
+				setTime(out, marriage.playerId(), LAST_LOVE, wedlock.lastLove());
 			}
 			writeExtras(section, marriage.extras());
 		}

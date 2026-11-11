@@ -1,5 +1,6 @@
 package com.dogonfire.gods.storage;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -56,6 +57,8 @@ public final class HolyLandRepository extends Repository
 	private final Map<RegionKey, NeutralLand>	neutralLands	= new LinkedHashMap<RegionKey, NeutralLand>();
 	// Entries under Holylands/NeutralLands whose key is not a region hash: "Holylands.<world>.<key>" -> value
 	private final Map<String, Object>			unknownEntries	= new LinkedHashMap<String, Object>();
+	// Neutral lands whose time could not be parsed: the value as it was, written back while the land has no time
+	private final Map<RegionKey, Object>		rawNeutralTimes	= new LinkedHashMap<RegionKey, Object>();
 
 	/** The data version and migrations of holyland.yml */
 	static VersionedYaml format(Logger logger)
@@ -123,6 +126,7 @@ public final class HolyLandRepository extends Repository
 		this.lands.clear();
 		this.neutralLands.clear();
 		this.unknownEntries.clear();
+		this.rawNeutralTimes.clear();
 	}
 
 	@Override
@@ -148,7 +152,12 @@ public final class HolyLandRepository extends Repository
 					{
 						return false;
 					}
-					this.neutralLands.put(region, new NeutralLand(region, DATES.parse(value != null ? value.toString() : null)));
+					Instant since = DATES.parse(value != null ? value.toString() : null);
+					if (since == null && value != null && !value.toString().isEmpty())
+					{
+						this.rawNeutralTimes.put(region, value);
+					}
+					this.neutralLands.put(region, new NeutralLand(region, since));
 					return true;
 				});
 			}
@@ -209,17 +218,19 @@ public final class HolyLandRepository extends Repository
 	private static HolyLand readLand(RegionKey region, ConfigurationSection section)
 	{
 		HolyLand land = new HolyLand(region);
+		// Times that can't be parsed are kept in the extras and written back as they were
+		Map<String, Object> extras = extraKeys(section, KNOWN);
 		land.setGodName(section.getString(GOD_NAME));
 		land.setName(section.getString(NAME));
-		land.setFirstPrayerTime(DATES.parse(section.getString(FIRST_PRAYER_TIME)));
-		land.setLastPrayerTime(DATES.parse(section.getString(LAST_PRAYER_TIME)));
+		land.setFirstPrayerTime(readTime(section, FIRST_PRAYER_TIME, DATES, extras));
+		land.setLastPrayerTime(readTime(section, LAST_PRAYER_TIME, DATES, extras));
 		land.setWorldName(section.getString(WORLD));
 		land.setAttackingGodName(section.getString(ATTACKING_GOD_NAME));
-		land.setContestedTime(DATES.parse(section.getString(CONTESTED_TIME)));
+		land.setContestedTime(readTime(section, CONTESTED_TIME, DATES, extras));
 		land.setAttackerKills(section.getInt(ATTACKER_KILLS));
 		land.setDefenderKills(section.getInt(DEFENDER_KILLS));
 		land.setDesecration(section.getInt(DESECRATION));
-		land.setExtras(extraKeys(section, KNOWN));
+		land.setExtras(extras);
 		return land;
 	}
 
@@ -247,7 +258,8 @@ public final class HolyLandRepository extends Repository
 		for (NeutralLand land : this.neutralLands.values())
 		{
 			String since = DATES.format(land.since());
-			yaml.set(path(NEUTRAL_LANDS, land.region()), since != null ? since : "");
+			Object raw = this.rawNeutralTimes.get(land.region());
+			yaml.set(path(NEUTRAL_LANDS, land.region()), since != null ? since : raw != null ? raw : "");
 		}
 		for (Map.Entry<String, Object> entry : this.unknownEntries.entrySet())
 		{

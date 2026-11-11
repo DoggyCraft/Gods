@@ -139,21 +139,23 @@ public final class BelieverRepository extends Repository
 			}
 
 			Believer believer = new Believer(id);
+			// Times that can't be parsed are kept in the extras and written back as they were
+			Map<String, Object> extras = extraKeys(section, KNOWN);
 			believer.setGodName(section.getString(GOD));
 			believer.setPrayers(section.getInt(PRAYERS));
-			believer.setLastPrayer(DATES.parse(section.getString(LAST_PRAYER)));
-			believer.setJoined(DATES.parse(section.getString(JOINED)));
+			believer.setLastPrayer(readTime(section, LAST_PRAYER, DATES, extras));
+			believer.setJoined(readTime(section, JOINED, DATES, extras));
 			believer.setPrayerPower(section.getInt(PRAYER_POWER));
 			believer.setReligionChat(section.getBoolean(RELIGION_CHAT));
 			believer.setHunting(section.getBoolean(HUNTING));
-			believer.setInvitation(section.getString(INVITATION_GOD), DATES.parse(section.getString(INVITATION_TIME)));
-			believer.setLastPriestOffer(DATES.parse(section.getString(LAST_PRIEST_OFFER)));
-			believer.setChangingGod(DATES.parse(section.getString(CHANGING_GOD)));
-			believer.setLastBlessing(DATES.parse(section.getString(LAST_BLESSING)));
-			believer.setLastCursing(DATES.parse(section.getString(LAST_CURSING)));
-			believer.setLastItemBlessing(DATES.parse(section.getString(LAST_ITEM_BLESSING)));
-			believer.setLastHolyArtifactBlessing(DATES.parse(section.getString(LAST_ARTIFACT_BLESSING)));
-			believer.setExtras(extraKeys(section, KNOWN));
+			believer.setInvitation(section.getString(INVITATION_GOD), readTime(section, INVITATION_TIME, DATES, extras));
+			believer.setLastPriestOffer(readTime(section, LAST_PRIEST_OFFER, DATES, extras));
+			believer.setChangingGod(readTime(section, CHANGING_GOD, DATES, extras));
+			believer.setLastBlessing(readTime(section, LAST_BLESSING, DATES, extras));
+			believer.setLastCursing(readTime(section, LAST_CURSING, DATES, extras));
+			believer.setLastItemBlessing(readTime(section, LAST_ITEM_BLESSING, DATES, extras));
+			believer.setLastHolyArtifactBlessing(readTime(section, LAST_ARTIFACT_BLESSING, DATES, extras));
+			believer.setExtras(extras);
 			this.believers.put(id, believer);
 		}
 

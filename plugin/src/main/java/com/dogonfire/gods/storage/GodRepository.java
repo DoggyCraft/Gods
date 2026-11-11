@@ -182,7 +182,7 @@ public final class GodRepository extends Repository
 		Map<String, Object> extras = extraKeys(section, KNOWN);
 
 		String created = section.getString(CREATED);
-		god.setCreated(created != null ? orEpoch(DATES.parse(created)) : null);
+		god.setCreated(created != null ? orEpoch(readTime(section, CREATED, DATES, extras)) : null);
 
 		god.setType(parseEnum(GodType.class, section, DIVINE_FORCE, extras));
 		god.setGender(parseEnum(GodGender.class, section, GENDER, extras));
@@ -200,7 +200,8 @@ public final class GodRepository extends Repository
 
 		god.setMood((float) section.getDouble(MOOD));
 		god.setSeed(section.getLong(SEED));
-		god.setVerbosity(section.getInt(VERBOSITY));
+		// 0 is generated again; a negative one would break the random draws that divide by it
+		god.setVerbosity(Math.max(0, section.getInt(VERBOSITY)));
 
 		List<String> unresolved = new ArrayList<String>(section.getStringList(GodsV1ToV2.UNRESOLVED_PRIESTS));
 		for (String priest : section.getStringList(PRIESTS))
@@ -223,7 +224,7 @@ public final class GodRepository extends Repository
 			extras.put(GodsV1ToV2.UNRESOLVED_PRIESTS, unresolved);
 		}
 		god.setPendingPriest(parseUUID(section.getString(PENDING_PRIEST)));
-		god.setPendingPriestTime(DATES.parse(section.getString(PENDING_PRIEST_TIME)));
+		god.setPendingPriestTime(readTime(section, PENDING_PRIEST_TIME, DATES, extras));
 
 		god.allies().addAll(section.getStringList(ALLIES));
 		god.enemies().addAll(section.getStringList(ENEMIES));
@@ -238,8 +239,8 @@ public final class GodRepository extends Repository
 			extras.put(CONTESTED_LAND, toPlain(section.get(CONTESTED_LAND)));
 		}
 
-		god.setBlessed(parseUUID(section.getString(BLESSED_PLAYER)), DATES.parse(section.getString(BLESSED_TIME)));
-		god.setCursed(parseUUID(section.getString(CURSED_PLAYER)), DATES.parse(section.getString(CURSED_TIME)));
+		god.setBlessed(parseUUID(section.getString(BLESSED_PLAYER)), readTime(section, BLESSED_TIME, DATES, extras));
+		god.setCursed(parseUUID(section.getString(CURSED_PLAYER)), readTime(section, CURSED_TIME, DATES, extras));
 
 		god.setHolyFood(section.getString(HOLY_FOOD));
 		god.setUnholyFood(section.getString(UNHOLY_FOOD));
@@ -259,7 +260,7 @@ public final class GodRepository extends Repository
 		god.setMobDamage(readBoolean(section, MOB_DAMAGE, extras));
 		god.setMobSpawning(readBoolean(section, MOB_SPAWNING, extras));
 
-		god.setLastQuestTime(DATES.parse(section.getString(LAST_QUEST_TIME)));
+		god.setLastQuestTime(readTime(section, LAST_QUEST_TIME, DATES, extras));
 
 		god.setExtras(extras);
 		return god;
@@ -327,7 +328,11 @@ public final class GodRepository extends Repository
 		for (God god : this.gods.values())
 		{
 			ConfigurationSection section = yaml.createSection(god.name());
-			setTime(section, CREATED, god.created());
+			if (!(Instant.EPOCH.equals(god.created()) && god.extras().containsKey(CREATED)))
+			{
+				// A Created that couldn't be parsed (EPOCH in memory) is written back as it was, from the extras
+				setTime(section, CREATED, god.created());
+			}
 			if (god.type() != null)
 			{
 				section.set(DIVINE_FORCE, god.type().name());

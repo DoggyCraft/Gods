@@ -207,7 +207,8 @@ public final class QuestRepository extends Repository
 		{
 			extras.put(PLAYERS, toPlain(section.get(PLAYERS)));
 		}
-		quest.setCreatedTime(DATES.parse(section.getString(CREATED_TIME)));
+		// One that can't be parsed is kept in the extras and written back as it was
+		quest.setCreatedTime(readTime(section, CREATED_TIME, DATES, extras));
 
 		QuestLocation location = readLocation(section);
 		if (location != null)
