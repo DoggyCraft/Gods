@@ -119,6 +119,19 @@ class MessagesTest
 		assertNull(messages.voices().randomLine("moon_female", Voice.BELIEVER_PRAYING));
 	}
 
+	/** A god's words with the bundled god.speech look as before, and a god or player name can't inject tags */
+	@Test
+	void godSpeechLooksAsBeforeAndNamesAreNotParsed()
+	{
+		Messages messages = new Messages(this.lang, path -> getClass().getClassLoader().getResourceAsStream(path), Logger.getLogger("test"));
+		messages.load("english", "Doggycraft");
+		String line = messages.voices().lines("sun_male", Voice.BELIEVER_MARRIED_COUPLE).getFirst();
+		String said = Messages.legacy(messages.component("god.speech", Messages.god("<red>Thor"), Messages.player("<b>Bob"),
+				net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("message", line)));
+		// §r§6 looks the same as the old §f§l§6
+		assertEquals("§6<<red>Thor>: §r§6<b>Bob§f§l, your love is making §6Doggycraft§f§l a better place!", said);
+	}
+
 	@Test
 	void plainTextHasNoHighlight()
 	{
