@@ -10,7 +10,9 @@
     <url>https://github.com/${github.repo}</url>
 
     <modules>
-        <!-- The plugin itself -->
+        <!-- The API other plugins compile against (com.dogonfire.gods.api) -->
+        <module>api</module>
+        <!-- The plugin itself, with the API bundled -->
         <module>plugin</module>
     </modules>
 
@@ -23,7 +25,7 @@
 
     <properties>
         <github.repo>DoggyCraft/Gods</github.repo>
-        <!-- The oldest Spigot Gods supports; -Pspigot compiles against it -->
+        <!-- The oldest Spigot Gods supports; the API is compiled against it, and -Pspigot compiles the plugin against it -->
         <spigotAPIVersion>26.1-R0.1-SNAPSHOT</spigotAPIVersion>
         <paperAPIVersion>26.3.build.246-stable</paperAPIVersion>
         <adventureVersion>5.2.0</adventureVersion>
@@ -42,7 +44,7 @@
     </scm>
 
     <repositories>
-        <!-- Spigot API, for the -Pspigot compile check -->
+        <!-- Spigot API, for the API module and the -Pspigot compile check -->
         <repository>
             <id>spigotmc</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>

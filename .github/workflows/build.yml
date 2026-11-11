@@ -27,7 +27,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Gods-${{ github.sha }}
-          path: plugin/target/Gods-*.jar
+          path: |
+            plugin/target/Gods-*.jar
+            api/target/gods-api-*.jar
           if-no-files-found: error
 
       # Gods has to run on Spigot, so it may not use Paper-only API
@@ -35,7 +37,7 @@ jobs:
         run: mvn -B -Pspigot -pl plugin -am clean compile
 
   # Pushing a tag like v1.0.0 publishes a GitHub release with the jar attached.
-  # The tag (without the "v") has to match <version> in pom.xml.
+  # The tag (without the "v") has to match <version> in pom.xml. JitPack builds the API from the same tag.
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs: build
@@ -65,4 +67,4 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" plugin/target/Gods-*.jar --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" plugin/target/Gods-*.jar api/target/gods-api-*.jar --title "$GITHUB_REF_NAME" --generate-notes

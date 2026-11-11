@@ -26,6 +26,12 @@
     </repositories>
 
     <dependencies>
+        <!-- The API, bundled into the plugin jar (not relocated: other plugins use its classes) -->
+        <dependency>
+            <groupId>com.dogonfire</groupId>
+            <artifactId>gods-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- bStats Bukkit for plugin statistics, shaded and relocated -->
         <dependency>
             <groupId>org.bstats</groupId>
