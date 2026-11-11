@@ -22,6 +22,8 @@ import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.GodHome;
+import com.dogonfire.gods.model.GodRank;
+import com.dogonfire.gods.model.GodStats;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.util.LegacyDates;
@@ -37,7 +39,8 @@ import com.dogonfire.gods.util.LegacyDates;
  *              Priests, PendingPriest, PendingPriestTime, Allies, Enemies, ContestedLand.World/X/Y/Z/Hash,
  *              BlessedPlayer, BlessedTime, CursedPlayer, CursedTime, EatFoodType, NotEatFoodType, NotSlayMobType,
  *              SlayMobType, SacrificeValues.&lt;material&gt;, PvP, MobDamage, MobSpawning, LastQuestTime,
- *              GenderChangedTime, PriestSince, DescendedTime, AscendingSince
+ *              GenderChangedTime, PriestSince, DescendedTime, AscendingSince, Rank, RankSince,
+ *              Stats.Prayers/Sacrifices/Quests/Converts, StatsSeeded
  * </pre>
  * Version 1 (no {@code data-version}: Gods 0.9.x, and this branch before data versions) is upgraded by
  * {@link GodsV1ToV2}. The {@code !!java.util.UUID} tags older versions wrote are repaired before parsing
@@ -83,6 +86,14 @@ public final class GodRepository extends Repository
 	private static final String			PRIEST_SINCE			= "PriestSince";
 	private static final String			DESCENDED_TIME			= "DescendedTime";
 	private static final String			ASCENDING_SINCE			= "AscendingSince";
+	private static final String			RANK					= "Rank";
+	private static final String			RANK_SINCE				= "RankSince";
+	private static final String			STATS					= "Stats";
+	private static final String			STATS_SEEDED			= "StatsSeeded";
+	private static final String			STAT_PRAYERS			= "Prayers";
+	private static final String			STAT_SACRIFICES			= "Sacrifices";
+	private static final String			STAT_QUESTS				= "Quests";
+	private static final String			STAT_CONVERTS			= "Converts";
 
 	/** Kept by older versions next to ContestedLand; cleared with it ({@link #clearContestedLand}) */
 	private static final List<String>	LEGACY_CONTESTED		= List.of("ContestedKills", "ContestedDesecration");
@@ -90,7 +101,7 @@ public final class GodRepository extends Repository
 	private static final Set<String>	KNOWN					= Set.of(CREATED, DIVINE_FORCE, GENDER, PRIVATE_ACCESS, DESCRIPTION, HOME, MAIN_ALTAR, NPC_SKIN, MOOD, SEED, VERBOSITY,
 			PRIESTS, PENDING_PRIEST, PENDING_PRIEST_TIME, ALLIES, ENEMIES, CONTESTED_LAND, BLESSED_PLAYER, BLESSED_TIME, CURSED_PLAYER, CURSED_TIME,
 			HOLY_FOOD, UNHOLY_FOOD, HOLY_MOB, UNHOLY_MOB, SACRIFICE_VALUES, PVP, MOB_DAMAGE, MOB_SPAWNING, LAST_QUEST_TIME, GENDER_CHANGED_TIME,
-			PRIEST_SINCE, DESCENDED_TIME, ASCENDING_SINCE);
+			PRIEST_SINCE, DESCENDED_TIME, ASCENDING_SINCE, RANK, RANK_SINCE, STATS, STATS_SEEDED);
 
 	private static final LegacyDates	DATES					= LegacyDates.SECONDS;
 
@@ -298,8 +309,41 @@ public final class GodRepository extends Repository
 		god.setDescended(readTime(section, DESCENDED_TIME, DATES, extras));
 		god.setAscendingSince(readTime(section, ASCENDING_SINCE, DATES, extras));
 
+		god.setRank(parseEnum(GodRank.class, section, RANK, extras));
+		god.setRankSince(readTime(section, RANK_SINCE, DATES, extras));
+		if (section.isConfigurationSection(STATS))
+		{
+			ConfigurationSection stats = section.getConfigurationSection(STATS);
+			god.setStats(new GodStats(count(stats, STAT_PRAYERS), count(stats, STAT_SACRIFICES), count(stats, STAT_QUESTS), count(stats, STAT_CONVERTS)));
+			for (String key : stats.getKeys(false))
+			{
+				if (!List.of(STAT_PRAYERS, STAT_SACRIFICES, STAT_QUESTS, STAT_CONVERTS).contains(key))
+				{
+					extras.put(STATS + "." + key, toPlain(stats.get(key)));
+				}
+			}
+		}
+		else if (section.contains(STATS))
+		{
+			extras.put(STATS, toPlain(section.get(STATS)));
+		}
+		if (section.isBoolean(STATS_SEEDED))
+		{
+			god.setStatsSeeded(section.getBoolean(STATS_SEEDED));
+		}
+		else if (section.contains(STATS_SEEDED))
+		{
+			extras.put(STATS_SEEDED, toPlain(section.get(STATS_SEEDED)));
+		}
+
 		god.setExtras(extras);
 		return god;
+	}
+
+	/** A counter of Stats: 0 when missing, never negative */
+	private static int count(ConfigurationSection stats, String key)
+	{
+		return Math.max(0, stats.getInt(key));
 	}
 
 	/** A time that is there but can't be read still counts as set */
@@ -463,6 +507,22 @@ public final class GodRepository extends Repository
 			setTime(section, PRIEST_SINCE, god.priestSince());
 			setTime(section, DESCENDED_TIME, god.descended());
 			setTime(section, ASCENDING_SINCE, god.ascendingSince());
+			if (god.rank() != null)
+			{
+				section.set(RANK, god.rank().name());
+			}
+			setTime(section, RANK_SINCE, god.rankSince());
+			if (god.statsSeeded() || !god.stats().equals(GodStats.ZERO))
+			{
+				section.set(STATS + "." + STAT_PRAYERS, god.stats().prayers());
+				section.set(STATS + "." + STAT_SACRIFICES, god.stats().sacrifices());
+				section.set(STATS + "." + STAT_QUESTS, god.stats().quests());
+				section.set(STATS + "." + STAT_CONVERTS, god.stats().converts());
+			}
+			if (god.statsSeeded())
+			{
+				section.set(STATS_SEEDED, true);
+			}
 			writeExtras(section, god.extras());
 		}
 	}

@@ -22,6 +22,8 @@ import com.dogonfire.gods.model.ContestedLand;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
+import com.dogonfire.gods.model.GodRank;
+import com.dogonfire.gods.model.GodStats;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.util.LegacyDates;
@@ -357,6 +359,73 @@ class GodRepositoryTest
 		assertTrue(again.gods().load());
 		assertEquals(new NpcSkin("Notch", "abc", "def"), again.gods().find("Zeus").npcSkin());
 		assertEquals(new NpcSkin(null, "xyz", null), again.gods().find("Thor").npcSkin());
+		again.close();
+	}
+
+	/** A god's rank and its religion's lifetime stats: Rank, RankSince, Stats.*, StatsSeeded; odd values are kept */
+	@Test
+	void ranksAndStatsRoundTrip() throws IOException
+	{
+		Files.writeString(this.dir.resolve("gods.yml"), """
+				data-version: 2
+				Zeus:
+				  Rank: EXALTED
+				  RankSince: 08:00:00 09-11-2026
+				  Stats:
+				    Prayers: 120
+				    Sacrifices: 31
+				    Quests: 2
+				    Converts: 4
+				    Miracles: 3
+				  StatsSeeded: true
+				Hera:
+				  Rank: DEMIGOD
+				  Stats: lots
+				Odin:
+				  Created: 10:00:00 01-01-2019
+				""");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.gods().load());
+		God zeus = storage.gods().find("Zeus");
+		assertEquals(GodRank.EXALTED, zeus.rank());
+		assertEquals(LegacyDates.SECONDS.parse("08:00:00 09-11-2026"), zeus.rankSince());
+		assertEquals(new GodStats(120, 31, 2, 4), zeus.stats());
+		assertTrue(zeus.statsSeeded());
+		God hera = storage.gods().find("Hera");
+		assertNull(hera.rank());
+		assertEquals(GodStats.ZERO, hera.stats());
+		assertFalse(hera.statsSeeded());
+		// A god from before ranks has none of it
+		God odin = storage.gods().find("Odin");
+		assertNull(odin.rank());
+		assertNull(odin.rankSince());
+		assertEquals(GodStats.ZERO, odin.stats());
+		assertFalse(odin.statsSeeded());
+
+		zeus.setStats(zeus.stats().withPrayers(121));
+		odin.setRank(GodRank.RECOGNIZED);
+		odin.setStatsSeeded(true);
+		storage.gods().markDirty();
+		storage.close();
+
+		YamlConfiguration written = written();
+		assertEquals("EXALTED", written.getString("Zeus.Rank"));
+		assertEquals("08:00:00 09-11-2026", written.getString("Zeus.RankSince"));
+		assertEquals(121, written.getInt("Zeus.Stats.Prayers"));
+		assertEquals(31, written.getInt("Zeus.Stats.Sacrifices"));
+		assertEquals(3, written.getInt("Zeus.Stats.Miracles"));
+		assertTrue(written.getBoolean("Zeus.StatsSeeded"));
+		assertEquals("DEMIGOD", written.getString("Hera.Rank"));
+		assertEquals("lots", written.getString("Hera.Stats"));
+		assertFalse(written.contains("Hera.StatsSeeded"));
+		assertEquals("RECOGNIZED", written.getString("Odin.Rank"));
+		assertEquals(0, written.getInt("Odin.Stats.Prayers", -1));
+		assertTrue(written.getBoolean("Odin.StatsSeeded"));
+
+		Storage again = Fixtures.storage(this.dir);
+		assertTrue(again.gods().load());
+		assertEquals(new GodStats(121, 31, 2, 4), again.gods().find("Zeus").stats());
+		assertEquals(GodRank.RECOGNIZED, again.gods().find("Odin").rank());
 		again.close();
 	}
 }

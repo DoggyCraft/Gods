@@ -62,7 +62,11 @@ public final class God
 	private Instant				genderChangedTime;			// GenderChangedTime: when a priest (or a plugin) last changed its gender
 	private Instant				priestSince;				// PriestSince: since when it has had a priest (null: none); for its descent
 	private Instant				descended;					// DescendedTime: when it descended to its main altar (null: it hasn't, or ascended)
-	private Instant				ascendingSince;			// AscendingSince: since when it has had too few believers while descended
+	private Instant				ascendingSince;			// AscendingSince: since when it has had too few believers for its rank (see RankRules)
+	private GodRank				rank;						// Rank: null until it was first ranked (read as SPIRIT)
+	private Instant				rankSince;					// RankSince: when it reached its rank
+	private GodStats			stats			= GodStats.ZERO;	// Stats.Prayers/Sacrifices/Quests/Converts
+	private boolean				statsSeeded;				// StatsSeeded: its stats were set for a god from before ranks (or it is new)
 
 	/** Keys of the entry this version doesn't know (or values it can't read), written back unchanged */
 	private Map<String, Object>	extras			= new LinkedHashMap<String, Object>();
@@ -389,7 +393,7 @@ public final class God
 		this.descended = descended;
 	}
 
-	/** Since when the descended god has had too few believers, or null */
+	/** Since when the god has had fewer believers than its rank needs, or null (see {@code RankRules}) */
 	public Instant ascendingSince()
 	{
 		return this.ascendingSince;
@@ -398,6 +402,50 @@ public final class God
 	public void setAscendingSince(Instant ascendingSince)
 	{
 		this.ascendingSince = ascendingSince;
+	}
+
+	/** Its rank, or null for a god that was never ranked (it is a spirit) */
+	public GodRank rank()
+	{
+		return this.rank;
+	}
+
+	public void setRank(GodRank rank)
+	{
+		this.rank = rank;
+	}
+
+	/** When it reached its rank, or null */
+	public Instant rankSince()
+	{
+		return this.rankSince;
+	}
+
+	public void setRankSince(Instant rankSince)
+	{
+		this.rankSince = rankSince;
+	}
+
+	/** What its religion has done (never null) */
+	public GodStats stats()
+	{
+		return this.stats;
+	}
+
+	public void setStats(GodStats stats)
+	{
+		this.stats = stats != null ? stats : GodStats.ZERO;
+	}
+
+	/** Whether its stats were seeded (a god from before ranks) or it was created with them */
+	public boolean statsSeeded()
+	{
+		return this.statsSeeded;
+	}
+
+	public void setStatsSeeded(boolean statsSeeded)
+	{
+		this.statsSeeded = statsSeeded;
 	}
 
 	public Map<String, Object> extras()
