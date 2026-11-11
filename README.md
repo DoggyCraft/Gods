@@ -34,10 +34,12 @@ Building an altar
 ---------
 1. Place an altar block. The block decides the type of god: snow, packed or blue ice for a god of frost, prismarine or sea lanterns for the sea, copper for thunder, amethyst or bookshelves for wisdom, moss or azalea for nature, and so on. `/g help blocks` lists them all.
 2. Put a light on top: a torch (any kind), a lantern or a candle.
-3. Place a wall sign on the side of the block and write the name of your god on it. To choose its gender, write `God` or `Goddess` on another line; otherwise the god chooses and tells you.
+3. Place a wall sign on the side of the block and write the name of your god on it. To choose its gender, write `God`, `Goddess` or `Deity` (non-binary) on another line; otherwise the god chooses and tells you.
 4. Right-click the sign to pray.
 
 Gods writes the sign in the style of the god's type and remembers it, so the text can't be changed. Signs with `Curses` or `Blessings` on the first line and a player's name on the third let priests curse or bless that player.
+
+A god's priests can change its gender later with `/g gender <god|goddess|deity>`, once every 24 hours (`priests.gender-change-cooldown-hours` in config.yml); the god tells its believers. A Deity, a non-binary god, has no voice of its own: each thing it says comes from its type's male or female voice, picked at random. The gender words on signs and for `/g gender` are `altar.gender-words` in `lang/<language>/messages.yml`; the English ones always work.
 
 Themes
 ---------
@@ -108,8 +110,8 @@ if (gods != null) {
 
 - **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest), believers (`getBeliever(uuid)`), and whose holy land a location is.
 - **Speak as a god**: `say(god, player, text)` with a [MiniMessage](https://docs.advntr.dev/minimessage/format.html) text, `sayToBelievers(god, text)`, and the god's own voice lines with `sayVoiceLine(god, player, situation)` / `getVoiceLine(god, situation)`. The situations are the keys of the voice files (`getVoiceSituations()`, e.g. `believer-random-pleased-speech`).
-- **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood, start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars. Each returns an `ActionResult`.
-- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent` and `GodRelationChangeEvent`. Most can be cancelled.
+- **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood or its gender (`setGender`, which ignores the priests' cooldown), start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars. Each returns an `ActionResult`.
+- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent` and `GodRelationChangeEvent`. Most can be cancelled.
 
 Everything a god says to a player fires a `GodSpeakEvent` first, so a plugin can, for example, let a god speak through an NPC instead of the chat:
 
