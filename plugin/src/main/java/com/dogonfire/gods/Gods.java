@@ -279,6 +279,8 @@ public class Gods extends JavaPlugin
 		this.ctx.godListService().load();
 
 		this.knownPlayerIds = null;
+		// Nothing is removed because of what another file says for a few minutes, in case an edit is still going on
+		this.storage.dataLoaded();
 	}
 
 	/** The UUID of a player the server has seen, by name (any case), or null; for upgrading old data files */

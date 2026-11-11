@@ -16,6 +16,7 @@ import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.MarriedCouple;
+import com.dogonfire.gods.storage.CleanupGuard;
 
 /**
  * The gods' update loop, run every {@link #PERIOD_TICKS} ticks for the life of the plugin (started by {@code Gods}).
@@ -34,6 +35,7 @@ public final class GodUpdateTask implements Runnable
 
 	private final Random		random			= new Random();
 	private final GodsContext	ctx;
+	private CleanupGuard.Verdict	lastCleanupVerdict;
 
 	public GodUpdateTask(GodsContext ctx)
 	{
@@ -456,11 +458,36 @@ public final class GodUpdateTask implements Runnable
 		ctx.altarService().clearDroppedItems();
 	}
 
+	/**
+	 * Whether dead gods (and priests who stopped praying) may be removed now; see {@link CleanupGuard}. Says why not
+	 * once, when that starts.
+	 */
+	private boolean mayRemoveDeadGods()
+	{
+		CleanupGuard.Verdict verdict = ctx.storage().cleanupVerdict();
+		if (verdict != this.lastCleanupVerdict)
+		{
+			this.lastCleanupVerdict = verdict;
+			switch (verdict)
+			{
+			case FILE_NOT_READABLE:
+				ctx.plugin().getLogger().warning("Not removing dead gods or inactive priests: a data file could not be read. Fix it and run /g reload.");
+				break;
+			case NO_BELIEVERS:
+				ctx.plugin().getLogger().warning("Not removing dead gods or inactive priests: there are gods but believers.yml has no believers.");
+				break;
+			default:
+				break;
+			}
+		}
+		return verdict == CleanupGuard.Verdict.ALLOWED;
+	}
+
 	/** One god's turn (every 10 seconds); now and then, dead offline gods are removed */
 	@Override
 	public void run()
 	{
-		if (this.random.nextInt(50) == 0)
+		if (this.random.nextInt(50) == 0 && mayRemoveDeadGods())
 		{
 			ctx.plugin().logDebug("Processing dead offline Gods...");
 

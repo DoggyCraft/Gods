@@ -16,6 +16,7 @@ import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.storage.CleanupGuard;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.util.LegacyDates;
 
@@ -116,9 +117,17 @@ public class GodService
 		this.repository.save();
 	}
 
-	/** Removes the god if nobody believes in it and it has no power left; returns whether it did */
+	/**
+	 * Removes the god if nobody believes in it and it has no power left; returns whether it did. Never while
+	 * {@link com.dogonfire.gods.storage.Storage#cleanupVerdict()} says the believers can't be trusted for that (a file
+	 * could not be read, no believers loaded, just after a (re)load): every god would look dead then.
+	 */
 	public boolean isDeadGod(String godName)
 	{
+		if (ctx.storage().cleanupVerdict() != CleanupGuard.Verdict.ALLOWED)
+		{
+			return false;
+		}
 		if (GodRules.isDead(ctx.believerService().getBelieversForGod(godName).size(), getGodPower(godName)))
 		{
 			removeGod(godName);

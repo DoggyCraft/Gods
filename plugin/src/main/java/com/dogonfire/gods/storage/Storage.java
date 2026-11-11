@@ -1,6 +1,7 @@
 package com.dogonfire.gods.storage;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +43,8 @@ public final class Storage
 	private final GodListRepository	whitelist;
 	private final GodListRepository	blacklist;
 	private final List<DataFile>	files;
+	// System.nanoTime() when the data was last (re)loaded, or null; starts the cleanup grace period
+	private Long					loadedAt;
 
 	/**
 	 * The data files in {@code dataFolder}, written by a background thread of their own.
@@ -133,6 +136,24 @@ public final class Storage
 	public List<DataFile> files()
 	{
 		return this.files;
+	}
+
+	/** After the data files were (re)loaded: starts the {@link CleanupGuard#GRACE_PERIOD} */
+	public void dataLoaded()
+	{
+		this.loadedAt = System.nanoTime();
+	}
+
+	/**
+	 * Whether records may be removed because of what other files say (dead gods, inactive priests): not while a file
+	 * that is read or changed by that could not be read, not while there are gods but no believers, and not in the
+	 * first minutes after a (re)load. See {@link CleanupGuard}.
+	 */
+	public CleanupGuard.Verdict cleanupVerdict()
+	{
+		boolean readOnly = this.gods.isReadOnly() || this.believers.isReadOnly() || this.holyLands.isReadOnly() || this.bibles.isReadOnly();
+		Duration sinceLoad = this.loadedAt != null ? Duration.ofNanos(System.nanoTime() - this.loadedAt) : null;
+		return CleanupGuard.check(readOnly, this.gods.size(), this.believers.size(), sinceLoad);
 	}
 
 	/** Main thread: queues a write for every file with unsaved changes. Does not wait. */

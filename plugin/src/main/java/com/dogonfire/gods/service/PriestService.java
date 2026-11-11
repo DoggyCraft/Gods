@@ -18,13 +18,15 @@ import com.dogonfire.gods.api.event.PriestRemoveEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.God;
+import com.dogonfire.gods.storage.CleanupGuard;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
  * Priests: who they are, offering priesthood to a believer and their answer, assigning and removing them (with the
  * console commands config.yml sets for that), dropping priests who stopped praying, and a god reminding its priests of
- * its commandments. The rules are in {@link PriestRules}. Main thread only.
+ * its commandments. Reads ({@link #getPriestsForGod}, {@link #isPriest}) change nothing; only the update loop removes
+ * priests ({@link #removeInactivePriests}). The rules are in {@link PriestRules}. Main thread only.
  */
 public class PriestService
 {
@@ -173,6 +175,11 @@ public class PriestService
 		return player.getUniqueId();
 	}
 
+	/**
+	 * The god's priests who still pray, in the order they were appointed. Changes nothing: priests who stopped praying
+	 * are left out here and removed by {@link #removeInactivePriests} (the update loop). While believers.yml can't be
+	 * read, nobody's prayers are known, so every stored priest counts.
+	 */
 	public List<UUID> getPriestsForGod(String godName)
 	{
 		God god = this.repository.find(godName);
@@ -182,20 +189,44 @@ public class PriestService
 			return list;
 		}
 
-		for (UUID believerId : new ArrayList<UUID>(god.priests()))
+		boolean prayersKnown = !ctx.storage().believers().isReadOnly();
+		for (UUID believerId : god.priests())
 		{
-			if (PriestRules.isInactive(ctx.believerService().getLastPrayerTime(believerId).getTime(), System.currentTimeMillis(), ctx.settings().priests().maxHoursWithoutPrayer()))
-			{
-				String priestName = ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
-				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_REMOVED_PRIEST, 2 + this.random.nextInt(40), priestName != null ? Messages.player(priestName) : Messages.component("player", ctx.messages().component("god.our-priest")));
-				removePriest(godName, believerId);
-			}
-			else
+			if (!prayersKnown || !isInactive(believerId))
 			{
 				list.add(believerId);
 			}
 		}
 		return list;
+	}
+
+	private boolean isInactive(UUID believerId)
+	{
+		return PriestRules.isInactive(ctx.believerService().getLastPrayerTime(believerId).getTime(), System.currentTimeMillis(), ctx.settings().priests().maxHoursWithoutPrayer());
+	}
+
+	/**
+	 * The update loop: removes the god's priests who stopped praying (with the remove command and a word to the
+	 * believers). Nothing is removed while {@link com.dogonfire.gods.storage.Storage#cleanupVerdict()} says the data
+	 * can't be trusted for that (a file could not be read, no believers loaded, just after a (re)load).
+	 */
+	public void removeInactivePriests(String godName)
+	{
+		God god = this.repository.find(godName);
+		if (god == null || ctx.storage().cleanupVerdict() != CleanupGuard.Verdict.ALLOWED)
+		{
+			return;
+		}
+
+		for (UUID believerId : new ArrayList<UUID>(god.priests()))
+		{
+			if (isInactive(believerId))
+			{
+				String priestName = ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
+				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_REMOVED_PRIEST, 2 + this.random.nextInt(40), priestName != null ? Messages.player(priestName) : Messages.component("player", ctx.messages().component("god.our-priest")));
+				removePriest(godName, believerId);
+			}
+		}
 	}
 
 	public boolean isPriest(UUID believerId)
@@ -235,8 +266,11 @@ public class PriestService
 		return false;
 	}
 
+	/** The god's turn in the update loop: drops priests who stopped praying, looks for new ones, reminds them */
 	public boolean managePriests(String godName)
 	{
+		removeInactivePriests(godName);
+
 		int numberOfBelievers = ctx.believerService().getBelieversForGod(godName).size();
 
 		List<UUID> priestNames = getPriestsForGod(godName);
