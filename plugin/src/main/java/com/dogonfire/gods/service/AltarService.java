@@ -546,6 +546,58 @@ public class AltarService
 		return false;
 	}
 
+	/**
+	 * What part of an altar the block is: an altar block (a block of an altar type with a light on top), the light on
+	 * top of one, or neither ({@link AltarClicks}).
+	 */
+	public AltarClicks.Part altarPart(Block block)
+	{
+		if (block == null)
+		{
+			return AltarClicks.Part.NONE;
+		}
+		if (isAltarLight(block.getType()))
+		{
+			return isLitAltarBlock(block.getRelative(BlockFace.DOWN)) ? AltarClicks.Part.LIGHT : AltarClicks.Part.NONE;
+		}
+		return isLitAltarBlock(block) ? AltarClicks.Part.BLOCK : AltarClicks.Part.NONE;
+	}
+
+	/** A block of an altar type with a light on top (without looking for signs) */
+	private boolean isLitAltarBlock(Block block)
+	{
+		return !ctx.themes().altars().godTypesFor(block.getType()).isEmpty() && isAltarLight(block.getRelative(BlockFace.UP).getType());
+	}
+
+	/**
+	 * The praying sign of the altar whose block or light this is ({@link AltarClicks#chooseSign}: a tagged praying
+	 * sign first), or null if it has none. Only wall signs hanging on the altar block count.
+	 */
+	public Block findPrayingSign(Block clicked)
+	{
+		AltarClicks.Part part = altarPart(clicked);
+		if (part == AltarClicks.Part.NONE)
+		{
+			return null;
+		}
+		Block altarBlock = part == AltarClicks.Part.LIGHT ? clicked.getRelative(BlockFace.DOWN) : clicked;
+		List<AltarClicks.Candidate<Block>> candidates = new ArrayList<>();
+		for (BlockFace side : AltarClicks.SIDES)
+		{
+			Block sign = altarBlock.getRelative(side);
+			if (!isWallSign(sign) || !(sign.getBlockData() instanceof Directional directional) || !AltarClicks.hangsOn(side, directional.getFacing()))
+			{
+				continue;
+			}
+			AltarSigns.AltarSign altar = readAltarSign(sign);
+			if (altar != null)
+			{
+				candidates.add(new AltarClicks.Candidate<>(sign, altar.kind(), altar.tagged()));
+			}
+		}
+		return AltarClicks.chooseSign(candidates);
+	}
+
 	/** A wall sign on an altar block (a block with an altar type and a light on top). */
 	public boolean isAltarSign(Block block)
 	{

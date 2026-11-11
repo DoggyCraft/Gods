@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.service.AltarClicks;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.AltarSigns;
 
@@ -43,7 +44,10 @@ public class AltarListener implements Listener
 		this.ctx = ctx;
 	}
 
-	/** Right-clicking altar signs: praying, cursing, blessing */
+	/**
+	 * Right-clicking altar signs: praying, cursing, blessing. Right-clicking the altar block or its light prays as
+	 * clicking its praying sign does, unless the click has a vanilla use there ({@link AltarClicks#praysOnClick}).
+	 */
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
@@ -53,8 +57,6 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
-
 		if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
 		{
 			return;
@@ -62,19 +64,62 @@ public class AltarListener implements Listener
 
 		Block block = event.getClickedBlock();
 
-		if (!ctx.altarService().isAltarSign(block))
+		if (ctx.altarService().isAltarSign(block))
 		{
+			// Right-clicking a sign opens the sign editor (1.20+); altar signs must keep their text
+			event.setUseInteractedBlock(Event.Result.DENY);
+
+			// The event fires once per hand; only act once
+			if (event.getHand() == EquipmentSlot.HAND)
+			{
+				useAltarSign(player, block);
+			}
 			return;
 		}
 
-		// Right-clicking a sign opens the sign editor (1.20+); altar signs must keep their text
+		prayAtAltar(event, player, block);
+	}
+
+	/**
+	 * A right click on an altar block or its light: prays with the altar's praying sign. Both hands' events are
+	 * decided by the main hand's item, so the off hand doesn't place or use anything after the main hand prayed.
+	 * Clicks that don't pray are left alone.
+	 */
+	private void prayAtAltar(PlayerInteractEvent event, Player player, Block block)
+	{
+		// Another plugin (a protection plugin) refused the click
+		if (event.useInteractedBlock() == Event.Result.DENY)
+		{
+			return;
+		}
+		AltarClicks.Part part = ctx.altarService().altarPart(block);
+		if (part == AltarClicks.Part.NONE)
+		{
+			return;
+		}
+		boolean ownUse = part == AltarClicks.Part.BLOCK && block.getType().isInteractable();
+		String held = player.getInventory().getItemInMainHand().getType().name();
+		if (!AltarClicks.praysOnClick(part, true, player.isSneaking(), ownUse, block.getType().name(), held))
+		{
+			return;
+		}
+		Block sign = ctx.altarService().findPrayingSign(block);
+		if (sign == null)
+		{
+			return;
+		}
 		event.setUseInteractedBlock(Event.Result.DENY);
-
-		// The event fires once per hand; only act once
-		if (event.getHand() != EquipmentSlot.HAND)
+		event.setUseItemInHand(Event.Result.DENY);
+		if (event.getHand() == EquipmentSlot.HAND)
 		{
-			return;
+			useAltarSign(player, sign);
 		}
+	}
+
+	/** Using an altar sign (clicked, or the praying sign of a clicked altar): praying, cursing, blessing */
+	private void useAltarSign(Player player, Block block)
+	{
+		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
 		// By its tags, or by the text of an altar from before tags (which gets tagged and styled now)
 		AltarSigns.AltarSign altar = ctx.altarService().readAltarSign(block);
