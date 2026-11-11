@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -28,6 +27,7 @@ import com.dogonfire.gods.task.GiveItemTask;
 import com.dogonfire.gods.task.HealPlayerTask;
 import com.dogonfire.gods.task.SpawnHostileMobsTask;
 import com.dogonfire.gods.util.LegacyDates;
+import com.dogonfire.gods.util.Lightning;
 
 /**
  * What gods do to players: blessings (potion effects, items, healing, holy artifacts) and curses (bad effects,
@@ -484,8 +484,8 @@ public class BlessingService
 			}
 			else
 			{
-				LightningStrike strike = player.getWorld().strikeLightning(player.getLocation());
-				player.damage(damage - 1, strike);
+				// Lightning that sets no fire and changes no creature; 1 hurts as much as a real bolt, each point more half a heart more
+				Lightning.strike(player, Lightning.LIGHTNING_DAMAGE + damage - 1);
 			}
 		}
 		return true;

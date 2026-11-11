@@ -2,12 +2,14 @@ package com.dogonfire.gods.service.power;
 
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.task.CallMoonTask;
 import com.dogonfire.gods.task.CallSunTask;
 import com.dogonfire.gods.task.ThunderStormTask;
+import com.dogonfire.gods.util.Lightning;
 import com.dogonfire.gods.util.NearbyEntities;
 
 /** The powers of the sky: calling the moon or the sun, a thunderstorm, and lightning on the enemies around */
@@ -60,7 +62,7 @@ public final class SkyPowers
 			}
 			if (entity.getEntityId() != player.getEntityId())
 			{
-				entity.getWorld().strikeLightning(entity.getLocation());
+				Lightning.strike((LivingEntity) entity, Lightning.LIGHTNING_DAMAGE);
 
 				strikes++;
 			}

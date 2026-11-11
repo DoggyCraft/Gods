@@ -195,9 +195,11 @@ public interface GodsApi
 	ActionResult giveHolyArtifact(String godName, Player player);
 
 	/**
-	 * The god strikes the player with lightning. Fires a {@link com.dogonfire.gods.api.event.GodCursePlayerEvent}.
+	 * The god strikes the player with lightning. Fires a {@link com.dogonfire.gods.api.event.GodCursePlayerEvent}. The
+	 * lightning sets no fire and changes no creature; holy land and neutral land protect against it as against lightning.
 	 *
-	 * @param damage how much damage it does on top of the lightning's fire; 0 or less only looks like lightning
+	 * @param damage 1 hurts as much as a bolt of lightning, each point more half a heart more; 0 or less only looks like
+	 *            lightning
 	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#CANCELLED}
 	 */
 	ActionResult smite(String godName, Player player, int damage);
