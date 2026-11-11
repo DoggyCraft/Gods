@@ -290,6 +290,7 @@ class ThemesLoaderTest
 		assertBundledSkin(themes.of(GodType.MOON).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.MOON).npcSkins().deity(), false);
 		assertBundledSkin(themes.of(GodType.SUN).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().god(), false);
 		// The werewolf alpha is the account WerewolfAlpha's texture
 		assertTrue(new String(Base64.getDecoder().decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()), StandardCharsets.UTF_8).contains("\"WerewolfAlpha\""));
 		Map<GodType, Theme.NpcSkins> expected = Map.ofEntries(
@@ -302,7 +303,8 @@ class ThemesLoaderTest
 				Map.entry(GodType.WAR, new Theme.NpcSkins(themes.of(GodType.WAR).npcSkins().god(), null, null)),
 				Map.entry(GodType.FROST, new Theme.NpcSkins(themes.of(GodType.FROST).npcSkins().god(), themes.of(GodType.FROST).npcSkins().goddess(), null)),
 				Map.entry(GodType.MOON, themes.of(GodType.MOON).npcSkins()),
-				Map.entry(GodType.SUN, new Theme.NpcSkins(themes.of(GodType.SUN).npcSkins().god(), null, null)));
+				Map.entry(GodType.SUN, new Theme.NpcSkins(themes.of(GodType.SUN).npcSkins().god(), null, null)),
+				Map.entry(GodType.WISDOM, new Theme.NpcSkins(themes.of(GodType.WISDOM).npcSkins().god(), null, null)));
 		for (GodType type : GodType.values())
 		{
 			assertEquals(expected.getOrDefault(type, Theme.NpcSkins.NONE), themes.of(type).npcSkins(), type.name());
@@ -472,7 +474,8 @@ class ThemesLoaderTest
 		assertEquals(bundledThemes.of(GodType.LOVE).npcSkins(), themes.of(GodType.LOVE).npcSkins());
 		assertTrue(themes.of(GodType.PARTY).npcSkins().isEmpty());
 		assertTrue(themes.of(GodType.CREATURES).npcSkins().isEmpty());
-		assertTrue(themes.of(GodType.WISDOM).npcSkins().isEmpty());
+		// A skin without a gender is ignored, so Gods' own wisdom god stays
+		assertEquals(bundledThemes.of(GodType.WISDOM).npcSkins(), themes.of(GodType.WISDOM).npcSkins());
 		for (String expected : new String[] { "sun.npc.skin is a player name ('Notch')", "werewolves.npc.skin.god is a player name", "godess",
 				"love.npc.skin.goddess has no signature", "party.npc.skin.deity is a player name", "creatures.npc.skin.deity.value is not a skin texture", "'add'",
 				"wisdom.npc.skin needs a skin per gender", "moon.npc", "skn" })

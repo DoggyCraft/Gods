@@ -509,6 +509,12 @@ wisdom:
       particles: [witch, smoke]
       sounds: [entity.villager.no]
       colors: ['#202060', black]
+  npc:
+    skin:
+      # A god of wisdom, from MineSkin: https://mineskin.org/skins/e9ffabe7975b4bbb8323bc24a496e0ba
+      god:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTc2MjUwODMzMDI0MiwKICAicHJvZmlsZUlkIiA6ICIyYjcyZWYyYWUzMmQ0Zjc1OGEyMThlMDI4MTViYmNjZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJ2b2xrb2RhZl82MyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS80OTdjMDY5NTgyYTZhZjM2Nzk5ZjM5OGQxZGFiZjUwMTExZGE5ZTA1YjE2ODliMjQyMGM2YjMyMWU2ZWVhNjIxIgogICAgfQogIH0KfQ==
+        signature: WucP3s6OwEtbWT3rKwxvSkQG4+bxT9huLR5gmgCpVu0H/KHgh4phdW6BnwBj5nB727G2mHDDqvUPPmMP1adPoUbb3TGgCLDWqurEivXvL/lYN2aFwBw78z0xA2w7eDTFsX+o0VZyynzWJ4YHrV+bdZ2PJ+pezv+MOPRDfk3Lwe2hTo1hUyVq4ALLGUSaGOxcJAu0KV3+n9msPmonafvKj6ix0BB+ZBFCZyQKXCfLY/4JorUkSbNjfMiv4LR53CYxT+XElFUQuk3IzCKaOkmmkvRoivGvpYhUhUV6pN8yGD1+EDa64d/HSgBrm0Oi6prdBzrp+TM3AXkE9VLX62HC+kI5jUCXBXuZKYOJNFAX7pIsmOek+VLbs7tV/7e4kyZ2P8B8LOMvL1G42PF87Lp/peBKo2pAR/8rAn0TT0D26WfsR5va2U21C8PYCotka5T38OZyaZtHukGSXwuirP/zCWkDVwpyJTu3NfpgUS+6o5NBQKUWlvesin7pxm+xhYkc2z/ScZuFMS8/nAYbp+Z8kOjVBg8CUE89AAVODEm+1KJ4SJYNegWgaHaJscAv7/QxR4hpwvymtkztWUi6UAJYbMLZ+6KMgTZcLmdKefrN31fzdpsnfVonhEG9M8RSak5LcrcGdpICupEKfOlq3Nym11J5KhE7QsV2+TM46Z41TKE=
 
 # Nature: bees, foxes and frogs are holy, berries and honey please; what tramples and blights must go
 nature:
