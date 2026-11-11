@@ -30,7 +30,7 @@ public class HolyPowerService
 		this.ctx = ctx;
 		this.sky = new SkyPowers(ctx);
 		this.gifts = new GiftPowers(ctx);
-		this.nature = new NaturePowers();
+		this.nature = new NaturePowers(ctx);
 		this.attacks = new AttackPowers(ctx.plugin());
 	}
 

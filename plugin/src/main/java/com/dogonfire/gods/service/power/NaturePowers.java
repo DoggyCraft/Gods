@@ -2,22 +2,31 @@ package com.dogonfire.gods.service.power;
 
 import java.util.Random;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 
+import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.service.HolyPowerRules;
 import com.dogonfire.gods.util.NearbyEntities;
 
 /** The powers over nature: freezing water, growing plants and taming beasts */
 public final class NaturePowers
 {
-	private final Random random = new Random();
+	private final GodsContext	ctx;
+	private final Random		random	= new Random();
+
+	public NaturePowers(GodsContext ctx)
+	{
+		this.ctx = ctx;
+	}
 
 	/** FREEZE: water around and below the player turns to ice */
 	public void freeze(Player player, int power)
@@ -32,7 +41,7 @@ public final class NaturePowers
 				for (int z = -radius; z <= radius; z++)
 				{
 					Block block = center.getRelative(x, y, z);
-					if (block.getType() == Material.WATER)
+					if (block.getType() == Material.WATER && mayChange(player, block))
 					{
 						block.setType(Material.ICE);
 					}
@@ -56,7 +65,7 @@ public final class NaturePowers
 					Block block = center.getRelative(x, y, z);
 					if (block.getType() == Material.DIRT)
 					{
-						if (block.getRelative(BlockFace.UP).getType() == Material.AIR)
+						if (block.getRelative(BlockFace.UP).getType() == Material.AIR && mayChange(player, block))
 						{
 							block.setType(Material.GRASS_BLOCK);
 						}
@@ -65,13 +74,17 @@ public final class NaturePowers
 					{
 						for (BlockFace face : new BlockFace[] { BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH })
 						{
-							if (block.getRelative(face).getType() == Material.AIR)
+							Block beside = block.getRelative(face);
+							if (beside.getType() == Material.AIR && mayChange(player, beside))
 							{
-								block.getRelative(face).setType(Material.VINE, false);
+								// The vine hangs on the stone it grows from
+								MultipleFacing vine = (MultipleFacing) Material.VINE.createBlockData();
+								vine.setFace(face.getOppositeFace(), true);
+								beside.setBlockData(vine, false);
 							}
 						}
 					}
-					if ((block.getType() == Material.GRASS_BLOCK) && (block.getRelative(BlockFace.UP).getType() == Material.AIR))
+					if ((block.getType() == Material.GRASS_BLOCK) && (block.getRelative(BlockFace.UP).getType() == Material.AIR) && mayChange(player, block.getRelative(BlockFace.UP)))
 					{
 						Block above = block.getRelative(BlockFace.UP);
 						switch (this.random.nextInt(5))
@@ -95,6 +108,25 @@ public final class NaturePowers
 				}
 			}
 		}
+	}
+
+	/** Powers only change blocks outside other gods' holy land, neutral land and WorldGuard regions */
+	private boolean mayChange(Player player, Block block)
+	{
+		if (this.ctx.settings().holyLand().enabled())
+		{
+			Location location = block.getLocation();
+			if (this.ctx.holyLandService().isNeutralLandLocation(location))
+			{
+				return false;
+			}
+			String landGod = this.ctx.holyLandService().getGodAtHolyLandLocation(location);
+			if (landGod != null && !landGod.equals(this.ctx.believerService().getGodForBeliever(player.getUniqueId())))
+			{
+				return false;
+			}
+		}
+		return this.ctx.worldGuard() == null || !this.ctx.worldGuard().isInRegion(block);
 	}
 
 	// Two-block plants need both halves, or the lower half pops off as an item
