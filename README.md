@@ -27,7 +27,7 @@ Installation
 ---------
 *	Run a [Paper](https://papermc.io/) or Spigot server on Minecraft 1.21.3 or newer (including 26.x), with Java 21 or newer.
 *	Download `Gods-<version>.jar` from the [releases](https://github.com/DoggyCraft/Gods/releases) and drop it into the `plugins` folder.
-*	Optional: [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/).
+*	Optional: [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/), [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/) (new altars only in claims, see below).
 *	Start the server. Commands and permissions are listed in [plugin.yml](plugin/src/main/resources/plugin.yml).
 
 Building an altar
@@ -35,9 +35,11 @@ Building an altar
 1. Place an altar block. The block decides the type of god: snow, packed or blue ice for a god of frost, prismarine or sea lanterns for the sea, copper for thunder, amethyst or bookshelves for wisdom, moss or azalea for nature, and so on. `/g help blocks` lists them all.
 2. Put a light on top: a torch (any kind), a lantern or a candle.
 3. Place a wall sign on the side of the block and write the name of your god on it. To choose its gender, write `God`, `Goddess` or `Deity` (non-binary) on another line; otherwise the god chooses and tells you.
-4. Right-click the sign to pray.
+4. Right-click the sign to pray, or the altar block or its light. Sneak to use the block as usual (placing blocks against it); items that do something to the block (flint and steel on a candle, an axe, honeycomb, ...) and blocks with a use of their own (note blocks, jukeboxes, chiseled bookshelves, candle cakes) keep it.
 
 Gods writes the sign in the style of the god's type and remembers it, so the text can't be changed. Signs with `Curses` or `Blessings` on the first line and a player's name on the third let priests curse or bless that player.
+
+With [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/) installed, new altars (praying, curse and blessing signs) can only be built inside a claim where you have build trust (your own, or one you are trusted in); elsewhere the sign is refused. Altars that already stand keep working wherever they are. Set `altars.require-claim: false` in config.yml to allow altars anywhere. Without GriefPrevention the setting does nothing.
 
 A god's priests can change its gender later with `/g gender <god|goddess|deity>`, once every 24 hours (`priests.gender-change-cooldown-hours` in config.yml); the god tells its believers. A Deity, a non-binary god, has no voice of its own: each thing it says comes from its type's male or female voice, picked at random. The gender words on signs and for `/g gender` are `altar.gender-words` in `lang/<language>/messages.yml`; the English ones always work.
 
@@ -61,6 +63,25 @@ werewolves:
 ```
 
 Gods that already picked a holy or unholy mob or food keep it. `altars.block-types` in config.yml still works: a god type listed there uses exactly those blocks instead of its theme's. The sign texts are `altar.sign.*` in `lang/<language>/messages.yml`. Use `/g reload` after a change.
+
+Effects
+---------
+Prayers, sacrifices, blessings and curses have short effects in the style of the god's type: frost gods answer with snowflakes and chimes of ice, love gods with hearts and purring, thunder gods with sparks, and so on.
+
+*	Prayer: particles rise around the altar with the god's sound, higher and brighter when the god is pleased, low and dark when it is angry; the god's symbol (❄, ♥, ⚡, ...) floats up from the light unless it is angry.
+*	Sacrifice: the burning item floats up from the fire, spins and shrinks away, with a pleased effect when the god wanted it and an angry one when it didn't.
+*	Blessing and curse: a soft glow and a chime rise around a blessed player, a dark swirl and a low sound sink around a cursed one.
+
+Only players nearby see and hear them. In config.yml, `effects.enabled` switches them all off, `effects.prayer`, `effects.sacrifice` and `effects.blessings` each kind, and `effects.view-distance-blocks` (32) sets how close players must be. Each god type's look is the `effects` section of its theme (a `symbol`, and `pleased`, `neutral` and `angry` lists of `particles`, `sounds` (ids like `block.amethyst_block.chime`) and `colors` (dye colors or `"#RRGGBB"`)), changed in `plugins/Gods/themes.yml` like the rest:
+
+```yaml
+frost:
+  effects:
+    symbol: "*"
+    pleased:
+      sounds: [block.bell.use]
+      particles: {add: [cloud]}
+```
 
 Links
 ---------
