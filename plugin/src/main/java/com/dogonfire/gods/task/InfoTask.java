@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import java.util.UUID;
 
@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
-public class TaskInfo extends Task {
+public class InfoTask extends Task {
 	private UUID playerId;
 	private String name1;
 	private String name2;
@@ -16,7 +16,7 @@ public class TaskInfo extends Task {
 	private int amount;
 	private ChatColor color;
 
-	public TaskInfo(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, int amount, String name1) {
+	public InfoTask(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, int amount, String name1) {
 		super(ctx);
 		this.playerId = playerId;
 		this.message = m;
@@ -28,7 +28,7 @@ public class TaskInfo extends Task {
 	/**
 	 * $PlayerName is name, $Type is amount1 and $Amount is amount2.
 	 */
-	public TaskInfo(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name, int amount1, int amount2) {
+	public InfoTask(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name, int amount1, int amount2) {
 		super(ctx);
 		this.playerId = playerId;
 		this.name1 = name;
@@ -38,7 +38,7 @@ public class TaskInfo extends Task {
 		this.color = color;
 	}
 
-	public TaskInfo(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name1, String name2) {
+	public InfoTask(GodsContext ctx, ChatColor color, UUID playerId, LanguageManager.LANGUAGESTRING m, String name1, String name2) {
 		super(ctx);
 		this.playerId = playerId;
 		this.name1 = name1;

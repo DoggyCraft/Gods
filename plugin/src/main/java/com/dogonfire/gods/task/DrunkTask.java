@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -7,11 +7,11 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.GodsContext;
 
-public class TaskDrunk extends Task {
+public class DrunkTask extends Task {
 	private Player player;
 	private long seconds;
 
-	public TaskDrunk(GodsContext ctx, Player player, long seconds) {
+	public DrunkTask(GodsContext ctx, Player player, long seconds) {
 		super(ctx);
 		this.player = player;
 		this.seconds = seconds;

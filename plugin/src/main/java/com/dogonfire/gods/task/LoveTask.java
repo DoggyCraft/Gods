@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import java.util.Random;
 
@@ -8,20 +8,20 @@ import org.bukkit.entity.Wolf;
 
 import com.dogonfire.gods.GodsContext;
 
-public class TaskLove extends Task
+public class LoveTask extends Task
 {
 	private Player	player1;
 	private Player	player2;
 	private int		cycle	= 3;
 
-	public TaskLove(GodsContext ctx, Player player1, Player player2)
+	public LoveTask(GodsContext ctx, Player player1, Player player2)
 	{
 		super(ctx);
 		this.player1 = player1;
 		this.player2 = player2;
 	}
 
-	public TaskLove(GodsContext ctx, Player player1, Player player2, int cycle)
+	public LoveTask(GodsContext ctx, Player player1, Player player2, int cycle)
 	{
 		super(ctx);
 		this.player1 = player1;
@@ -65,7 +65,7 @@ public class TaskLove extends Task
 		int newcycle = this.cycle - 1;
 		if (newcycle > 0)
 		{
-			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new TaskLove(ctx, this.player1, this.player2, newcycle), 40L);
+			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new LoveTask(ctx, this.player1, this.player2, newcycle), 40L);
 		}
 	}
 }

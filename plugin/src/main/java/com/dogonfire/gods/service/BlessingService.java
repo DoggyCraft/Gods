@@ -20,10 +20,10 @@ import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.storage.GodRepository;
-import com.dogonfire.gods.tasks.TaskGiveHolyArtifact;
-import com.dogonfire.gods.tasks.TaskGiveItem;
-import com.dogonfire.gods.tasks.TaskHealPlayer;
-import com.dogonfire.gods.tasks.TaskSpawnHostileMobs;
+import com.dogonfire.gods.task.GiveHolyArtifactTask;
+import com.dogonfire.gods.task.GiveItemTask;
+import com.dogonfire.gods.task.HealPlayerTask;
+import com.dogonfire.gods.task.SpawnHostileMobsTask;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
@@ -270,12 +270,12 @@ public class BlessingService
 		{
 			return;
 		}
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskGiveHolyArtifact(ctx, godName, godType, player, speak), 2L);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GiveHolyArtifactTask(ctx, godName, godType, player, speak), 2L);
 	}
 
 	public void giveItem(String godName, Player player, Material material, boolean speak)
 	{
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskGiveItem(ctx, godName, player, material, speak), 2L);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GiveItemTask(ctx, godName, player, material, speak), 2L);
 	}
 
 	private boolean hasFood(Player player, String godName)
@@ -304,7 +304,7 @@ public class BlessingService
 
 	public void healPlayer(String godName, Player player)
 	{
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskHealPlayer(ctx, godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverHealthBlessing), 2L);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new HealPlayerTask(ctx, godName, player, LanguageManager.LANGUAGESTRING.GodToBelieverHealthBlessing), 2L);
 	}
 
 	public void manageBlessedPlayer(String godName)
@@ -405,7 +405,7 @@ public class BlessingService
 
 	public void spawnHostileMobs(String godName, Player player, EntityType mobType, int numberOfMobs)
 	{
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskSpawnHostileMobs(ctx, godName, player, mobType, numberOfMobs), 2L);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new SpawnHostileMobsTask(ctx, godName, player, mobType, numberOfMobs), 2L);
 	}
 
 	public boolean strikePlayerWithLightning(UUID playerId, int damage)

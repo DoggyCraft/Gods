@@ -34,13 +34,13 @@ import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.tasks.TaskBoostKnowledge;
-import com.dogonfire.gods.tasks.TaskCallMoon;
-import com.dogonfire.gods.tasks.TaskCallSun;
-import com.dogonfire.gods.tasks.TaskDrunk;
-import com.dogonfire.gods.tasks.TaskFirework;
-import com.dogonfire.gods.tasks.TaskHealRadius;
-import com.dogonfire.gods.tasks.ThunderStormTask;
+import com.dogonfire.gods.task.BoostKnowledgeTask;
+import com.dogonfire.gods.task.CallMoonTask;
+import com.dogonfire.gods.task.CallSunTask;
+import com.dogonfire.gods.task.DrunkTask;
+import com.dogonfire.gods.task.FireworkTask;
+import com.dogonfire.gods.task.HealRadiusTask;
+import com.dogonfire.gods.task.ThunderStormTask;
 
 public class HolyPowerManager
 {
@@ -130,21 +130,21 @@ public class HolyPowerManager
 	{
 		ctx.plugin().logDebug("Boosting " + powerValue + " xp of knowledge");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskBoostKnowledge(ctx, player, powerValue), 1L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new BoostKnowledgeTask(ctx, player, powerValue), 1L);
 	}
 
 	public void callMoon(Player player, int powerValue)
 	{
 		ctx.plugin().logDebug("Calling the moon for " + powerValue + " minutes");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskCallMoon(ctx, player, System.currentTimeMillis() + powerValue * 60000L), 1L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new CallMoonTask(ctx, player, System.currentTimeMillis() + powerValue * 60000L), 1L);
 	}
 
 	public void callSun(Player player, int powerValue)
 	{
 		ctx.plugin().logDebug("Calling the sun for " + powerValue + " minutes");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskCallSun(ctx, player, System.currentTimeMillis() + powerValue * 60000L), 1L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new CallSunTask(ctx, player, System.currentTimeMillis() + powerValue * 60000L), 1L);
 	}
 
 	private boolean checkBlock(double x1, double y1, double z1, double w1, double h1, double d1, double x2, double y2, double z2, double w2, double h2, double d2)
@@ -202,7 +202,7 @@ public class HolyPowerManager
 	{
 		ctx.plugin().logDebug("Getting " + player.getName() + " drunk for " + powerValue + " seconds");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskDrunk(ctx, player, powerValue), 1L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new DrunkTask(ctx, player, powerValue), 1L);
 	}
 
 	public void earthQuake(final Player player, int value)
@@ -467,7 +467,7 @@ public class HolyPowerManager
 	{
 		ctx.plugin().logDebug("Healing up to " + powerValue + " creatures");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskHealRadius(ctx, player, powerValue), 1L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new HealRadiusTask(ctx, player, powerValue), 1L);
 	}
 
 	public void ice(final Player player, int power)
@@ -621,7 +621,7 @@ public class HolyPowerManager
 	{
 		ctx.plugin().logDebug("Starting fireworks with " + powerValue + " rockets");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskFirework(ctx, player, powerValue), 1L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new FireworkTask(ctx, player, powerValue), 1L);
 	}
 
 	private void tame(Player player, int powerStrength)

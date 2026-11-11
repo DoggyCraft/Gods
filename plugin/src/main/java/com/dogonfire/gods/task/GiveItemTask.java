@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import java.util.Random;
 
@@ -12,13 +12,13 @@ import org.bukkit.util.Vector;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
-public class TaskGiveItem extends Task {
+public class GiveItemTask extends Task {
 	private Player player = null;
 	private Material itemType;
 	private String godName = null;
 	private boolean speak = false;
 
-	public TaskGiveItem(GodsContext ctx, String god, Player p, Material material, boolean godspeak) {
+	public GiveItemTask(GodsContext ctx, String god, Player p, Material material, boolean godspeak) {
 		super(ctx);
 		this.player = p;
 		this.godName = new String(god);

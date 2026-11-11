@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -9,7 +9,7 @@ import com.dogonfire.gods.GodsContext;
 /**
  * Speeds time up until night falls, then keeps it night until stopTime (System.currentTimeMillis()).
  */
-public class TaskCallMoon extends Task
+public class CallMoonTask extends Task
 {
 	private static final long	NIGHT_START	= 13000L;
 	private static final long	NIGHT_END	= 23000L;
@@ -18,7 +18,7 @@ public class TaskCallMoon extends Task
 	private Player				player;
 	private World				world;
 
-	public TaskCallMoon(GodsContext ctx, Player player, long stopTime)
+	public CallMoonTask(GodsContext ctx, Player player, long stopTime)
 	{
 		super(ctx);
 		this.stopTime = stopTime;

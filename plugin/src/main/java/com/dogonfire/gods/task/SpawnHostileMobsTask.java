@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -7,13 +7,13 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 
-public class TaskSpawnHostileMobs extends Task {
+public class SpawnHostileMobsTask extends Task {
 	private String godName;
 	private EntityType mobType;
 	private int numberOfMobs = 0;
 	private Player player;
 
-	public TaskSpawnHostileMobs(GodsContext ctx, String god, Player p, EntityType entityType, int n) {
+	public SpawnHostileMobsTask(GodsContext ctx, String god, Player p, EntityType entityType, int n) {
 		super(ctx);
 		this.godName = god;
 		this.numberOfMobs = n;

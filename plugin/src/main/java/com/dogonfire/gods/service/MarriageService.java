@@ -20,7 +20,7 @@ import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.model.Marriage;
 import com.dogonfire.gods.model.MarriedCouple;
 import com.dogonfire.gods.storage.MarriageRepository;
-import com.dogonfire.gods.tasks.TaskLove;
+import com.dogonfire.gods.task.LoveTask;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
@@ -139,7 +139,7 @@ public class MarriageService
 
 			if (player != null && partner != null)
 			{
-				ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new TaskLove(ctx, player, partner), 1L);
+				ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new LoveTask(ctx, player, partner), 1L);
 
 				ctx.godSpeech().sendInfo(partner.getUniqueId(), LanguageManager.LANGUAGESTRING.MarrigeLovesYou, ChatColor.GREEN, player.getDisplayName(), ChatColor.DARK_RED + "LOVES", 1);
 			}

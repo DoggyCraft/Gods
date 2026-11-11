@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import com.dogonfire.gods.Gods;
 import com.dogonfire.gods.GodsContext;

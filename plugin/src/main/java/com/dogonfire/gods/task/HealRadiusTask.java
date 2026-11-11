@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
@@ -14,11 +14,11 @@ import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
 /**
  * Heals up to maxPlayers other players within 20 blocks.
  */
-public class TaskHealRadius extends Task {
+public class HealRadiusTask extends Task {
 	private Player player;
 	private long maxPlayers;
 
-	public TaskHealRadius(GodsContext ctx, Player player, long maxPlayers) {
+	public HealRadiusTask(GodsContext ctx, Player player, long maxPlayers) {
 		super(ctx);
 		this.player = player;
 		this.maxPlayers = maxPlayers;

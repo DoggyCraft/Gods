@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -9,7 +9,7 @@ import com.dogonfire.gods.GodsContext;
 /**
  * Speeds time up until day breaks, then keeps it day until stopTime (System.currentTimeMillis()).
  */
-public class TaskCallSun extends Task
+public class CallSunTask extends Task
 {
 	private static final long	DAY_END	= 12000L;
 
@@ -17,7 +17,7 @@ public class TaskCallSun extends Task
 	private Player				player;
 	private World				world;
 
-	public TaskCallSun(GodsContext ctx, Player player, long stopTime)
+	public CallSunTask(GodsContext ctx, Player player, long stopTime)
 	{
 		super(ctx);
 		this.stopTime = stopTime;

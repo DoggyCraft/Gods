@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import java.util.Random;
 
@@ -10,13 +10,13 @@ import org.bukkit.potion.PotionEffectType;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
-public class TaskHealPlayer extends Task
+public class HealPlayerTask extends Task
 {
 	private Player							player	= null;
 	private String							godName	= null;
 	private LanguageManager.LANGUAGESTRING	languageString;
 
-	public TaskHealPlayer(GodsContext ctx, String god, Player p, LanguageManager.LANGUAGESTRING speak)
+	public HealPlayerTask(GodsContext ctx, String god, Player p, LanguageManager.LANGUAGESTRING speak)
 	{
 		super(ctx);
 		this.player = p;

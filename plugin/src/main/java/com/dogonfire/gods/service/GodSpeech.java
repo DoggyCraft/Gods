@@ -10,13 +10,13 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.managers.LanguageManager.LANGUAGESTRING;
-import com.dogonfire.gods.tasks.TaskGodSpeak;
-import com.dogonfire.gods.tasks.TaskInfo;
+import com.dogonfire.gods.task.GodSpeakTask;
+import com.dogonfire.gods.task.InfoTask;
 
 /**
  * Every message Gods sends to players about gods: a god speaking to a believer, its believers or its priests
- * ({@link TaskGodSpeak}, in the god's voice from its language file), and the plugin's info messages
- * ({@link TaskInfo}, from the general language file). Messages are sent a few ticks later, and only to players who
+ * ({@link GodSpeakTask}, in the god's voice from its language file), and the plugin's info messages
+ * ({@link InfoTask}, from the general language file). Messages are sent a few ticks later, and only to players who
  * are online, in an enabled world and (for a god's words) have {@code gods.listen}.
  * <p>
  * A god's message uses the player name, type and amount set on the {@link LanguageManager} right before the call;
@@ -58,7 +58,7 @@ public class GodSpeech
 			return;
 		}
 
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskGodSpeak(ctx, godName, player.getUniqueId(), playerNameString, typeNameString, amount, message), delay);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GodSpeakTask(ctx, godName, player.getUniqueId(), playerNameString, typeNameString, amount, message), delay);
 	}
 
 	/** Like {@link #say}, followed by how to answer (/gods yes or /gods no) */
@@ -83,7 +83,7 @@ public class GodSpeech
 			return;
 		}
 
-		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskGodSpeak(ctx, godName, player.getUniqueId(), playerNameString, typeNameString, amount, message), delay);
+		ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new GodSpeakTask(ctx, godName, player.getUniqueId(), playerNameString, typeNameString, amount, message), delay);
 
 		sendInfo(player.getUniqueId(), LANGUAGESTRING.GodToBelieverQuestionHelp, ChatColor.AQUA, ChatColor.WHITE + "/gods yes or /gods no", ChatColor.WHITE + "/gods yes or /gods no", delay + 80);
 	}
@@ -161,7 +161,7 @@ public class GodSpeech
 	{
 		if (isOnline(playerId))
 		{
-			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskInfo(ctx, color, playerId, message, amount, name), delay);
+			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new InfoTask(ctx, color, playerId, message, amount, name), delay);
 		}
 	}
 
@@ -170,7 +170,7 @@ public class GodSpeech
 	{
 		if (isOnline(playerId))
 		{
-			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskInfo(ctx, color, playerId, message, name, amount1, amount2), delay);
+			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new InfoTask(ctx, color, playerId, message, name, amount1, amount2), delay);
 		}
 	}
 
@@ -179,7 +179,7 @@ public class GodSpeech
 	{
 		if (isOnline(playerId))
 		{
-			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new TaskInfo(ctx, color, playerId, message, name1, name2), delay);
+			ctx.plugin().getServer().getScheduler().runTaskLater(ctx.plugin(), new InfoTask(ctx, color, playerId, message, name1, name2), delay);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import java.util.UUID;
 
@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 
-public class TaskGodSpeak extends Task {
+public class GodSpeakTask extends Task {
 	private UUID playerId;
 	private String godName;
 	private LanguageManager.LANGUAGESTRING message;
@@ -16,7 +16,7 @@ public class TaskGodSpeak extends Task {
 	private String playerNameString;
 	private String typeString;
 
-	public TaskGodSpeak(GodsContext ctx, String gname, UUID playerId, String player, String type, int a, LanguageManager.LANGUAGESTRING m) {
+	public GodSpeakTask(GodsContext ctx, String gname, UUID playerId, String player, String type, int a, LanguageManager.LANGUAGESTRING m) {
 		super(ctx);
 		this.playerId = playerId;
 		this.godName = gname;

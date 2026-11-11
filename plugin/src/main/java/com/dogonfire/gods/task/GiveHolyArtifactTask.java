@@ -1,4 +1,4 @@
-package com.dogonfire.gods.tasks;
+package com.dogonfire.gods.task;
 
 import java.util.Random;
 
@@ -12,14 +12,14 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.model.GodType;
 
-public class TaskGiveHolyArtifact extends Task
+public class GiveHolyArtifactTask extends Task
 {
 	private Player	player	= null;
 	private String	godName	= null;
 	private GodType	godType	= null;
 	private boolean	speak	= false;
 
-	public TaskGiveHolyArtifact(GodsContext ctx, String god, GodType godType, Player p, boolean godspeak)
+	public GiveHolyArtifactTask(GodsContext ctx, String god, GodType godType, Player p, boolean godspeak)
 	{
 		super(ctx);
 		this.player = p;
