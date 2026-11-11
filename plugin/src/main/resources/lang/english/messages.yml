@@ -730,8 +730,8 @@ command:
     # <god>, and <gender> ("God", "Goddess", "Deity"). The god tells its believers itself (believers-gender-changed).
     done: <aqua>You made <gold><god><aqua> your <yellow><gender>
   godskin:
-    parameters: \<player>|reset
-    description: Give your God's figure at its main altar a player's skin
+    parameters: '[player/reset]'
+    description: Give your God's figure at its main altar your skin, or a player's
     not-priest: <red>Only priests can choose the skin of your God
     # <player> as typed; sent while the skin is looked up
     looking: <gray>Looking for the skin of <player>...

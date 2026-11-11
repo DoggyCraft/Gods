@@ -11,9 +11,10 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
 
 /**
- * /g godskin &lt;player&gt; | reset: the priest gives their god's NPC (at its main altar) a player's skin, or gives it
- * back its god type's. The skin is looked up in the background (an online player's at once, anyone else's through
- * Mojang) and stored on the god with the name it came from, so the god keeps it.
+ * /g godskin [&lt;player&gt; | reset]: the priest gives their god's NPC (at its main altar) a player's skin (their own
+ * without a name: the skin they wear now), or gives it back its theme's. The skin is looked up in the background (an
+ * online player's current one at once, anyone else's through Mojang) and stored on the god as a texture, with the
+ * name it came from, so the god keeps it.
  */
 public final class GodSkinCommand extends SubCommand
 {
@@ -23,7 +24,7 @@ public final class GodSkinCommand extends SubCommand
 	{
 		super(ctx, "godskin", "gods.priest.godskin");
 		priestOnly("command.godskin.not-priest");
-		args(1, 1);
+		args(0, 1);
 	}
 
 	@Override
@@ -36,7 +37,7 @@ public final class GodSkinCommand extends SubCommand
 	public void execute(CommandSender sender, List<String> args) throws CommandException
 	{
 		String godName = believersGod((Player) sender);
-		String name = args.getFirst();
+		String name = skinOf(args, sender.getName());
 		if (name.equalsIgnoreCase(RESET))
 		{
 			this.ctx.godService().setNpcSkin(godName, null);
@@ -74,6 +75,31 @@ public final class GodSkinCommand extends SubCommand
 		});
 	}
 
+	/**
+	 * Whose skin the god gets: the player named, or without a name the priest's own ({@code priestName}); or
+	 * {@link #RESET}
+	 */
+	static String skinOf(List<String> args, String priestName)
+	{
+		return args.isEmpty() || args.getFirst().isBlank() ? priestName : args.getFirst();
+	}
+
+	/** The priest's own name first, the other online players, and reset */
+	static List<String> completions(String priestName, List<String> online)
+	{
+		List<String> names = new ArrayList<>();
+		names.add(priestName);
+		for (String name : online)
+		{
+			if (!name.equalsIgnoreCase(priestName))
+			{
+				names.add(name);
+			}
+		}
+		names.add(RESET);
+		return names;
+	}
+
 	@Override
 	public List<String> tabComplete(CommandSender sender, List<String> args)
 	{
@@ -81,8 +107,6 @@ public final class GodSkinCommand extends SubCommand
 		{
 			return List.of();
 		}
-		List<String> names = new ArrayList<>(onlinePlayerNames(sender));
-		names.add(RESET);
-		return names;
+		return completions(sender.getName(), onlinePlayerNames(sender));
 	}
 }

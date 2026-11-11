@@ -50,19 +50,14 @@ public final class SkinResolver
 	}
 
 	/**
-	 * Finds the skin of the player with this name and gives it (with a texture, and the name as the profile spells it)
+	 * Finds the skin of the player with this name (an online player's current one) and gives it (with a texture, and the name as the profile spells it)
 	 * to {@code then} on the main thread, or null if there is none (no such player, Mojang unreachable). Main thread
 	 * only.
 	 */
 	public void resolve(String name, Consumer<NpcSkin> then)
 	{
 		String key = name.toLowerCase(Locale.ROOT);
-		NpcSkin known = this.resolved.get(key);
-		if (known != null)
-		{
-			then.accept(known);
-			return;
-		}
+		// An online player's current skin, even if an older one is known
 		Player online = this.plugin.getServer().getPlayerExact(name);
 		if (online != null)
 		{
@@ -75,6 +70,12 @@ public final class SkinResolver
 				then.accept(skin);
 				return;
 			}
+		}
+		NpcSkin known = this.resolved.get(key);
+		if (known != null)
+		{
+			then.accept(known);
+			return;
 		}
 		Long failedAt = this.failed.get(key);
 		if (failedAt != null && System.currentTimeMillis() - failedAt < RETRY_MILLIS)
