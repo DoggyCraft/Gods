@@ -30,6 +30,36 @@ Installation
 *	Optional: [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/).
 *	Start the server. Commands and permissions are listed in [plugin.yml](plugin/src/main/resources/plugin.yml).
 
+Building an altar
+---------
+1. Place an altar block. The block decides the type of god: snow, packed or blue ice for a god of frost, prismarine or sea lanterns for the sea, copper for thunder, amethyst or bookshelves for wisdom, moss or azalea for nature, and so on. `/g help blocks` lists them all.
+2. Put a light on top: a torch (any kind), a lantern or a candle.
+3. Place a wall sign on the side of the block and write the name of your god on it. To choose its gender, write `God` or `Goddess` on another line; otherwise the god chooses and tells you.
+4. Right-click the sign to pray.
+
+Gods writes the sign in the style of the god's type and remembers it, so the text can't be changed. Signs with `Curses` or `Blessings` on the first line and a player's name on the third let priests curse or bless that player.
+
+Themes
+---------
+Each god type has a theme: the mobs it holds holy or wants slain, the foods it wants eaten or forbids, what it wants sacrificed, what its slay quests ask for, its altar blocks and how its altar signs look. Gods' own themes are built into the jar ([themes.yml](plugin/src/main/resources/themes.yml)) and use mobs, foods and blocks up to the newest Minecraft; whatever your server's version doesn't have is skipped.
+
+To change a theme, put only your changes in `plugins/Gods/themes.yml` (Gods writes a commented example there once and never touches it again). A list replaces Gods' list; `add:` and `remove:` change it:
+
+```yaml
+frost:
+  holy-mobs: [polar_bear, fox]
+  holy-foods:
+    add: [pumpkin_pie]
+    remove: [cooked_cod]
+  sign:
+    dye: blue
+    glowing: false
+werewolves:
+  altar-blocks: [mossy_cobblestone]   # werewolf gods can't be made at an altar unless you add blocks
+```
+
+Gods that already picked a holy or unholy mob or food keep it. `altars.block-types` in config.yml still works: a god type listed there uses exactly those blocks instead of its theme's. The sign texts are `altar.sign.*` in `lang/<language>/messages.yml`. Use `/g reload` after a change.
+
 Links
 ---------
 
