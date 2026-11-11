@@ -14,6 +14,7 @@ import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.BlessingService;
 import com.dogonfire.gods.service.ChatService;
 import com.dogonfire.gods.service.CommandmentService;
+import com.dogonfire.gods.service.EffectService;
 import com.dogonfire.gods.service.GodListService;
 import com.dogonfire.gods.service.GodService;
 import com.dogonfire.gods.service.GodSpeech;
@@ -67,6 +68,7 @@ public final class GodsContext
 	private final ChatService				chatService;
 	private final Titles					titles;
 	private final GodSpeech					godSpeech;
+	private final EffectService				effectService;
 
 	// Null when WorldGuard isn't installed; its classes must not be touched then
 	private final WorldGuardIntegration		worldGuard;
@@ -99,6 +101,7 @@ public final class GodsContext
 		this.chatService = new ChatService(this);
 		this.titles = new Titles(plugin.getServer().getPluginManager());
 		this.godSpeech = new GodSpeech(this);
+		this.effectService = new EffectService(this);
 
 		this.worldGuard = isEnabled(plugin.getServer().getPluginManager(), "WorldGuard") ? new WorldGuardIntegration() : null;
 		this.griefPrevention = isEnabled(plugin.getServer().getPluginManager(), "GriefPrevention") ? new GriefPreventionIntegration() : null;
@@ -258,6 +261,12 @@ public final class GodsContext
 	public GodSpeech godSpeech()
 	{
 		return this.godSpeech;
+	}
+
+	/** Themed effects at prayers, sacrifices, blessings and curses; their displays are removed by stop() */
+	public EffectService effectService()
+	{
+		return this.effectService;
 	}
 
 	/** Titles on the screen (holy land you enter and the like) */

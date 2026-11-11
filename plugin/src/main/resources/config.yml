@@ -213,3 +213,17 @@ bibles:
 chat:
   # Put the player's god in front of their chat messages.
   formatting: false
+
+effects:
+  # Short effects in the style of each god type (particles, sounds and floating items or symbols; see the effects
+  # section of themes.yml): at prayers, sacrifices, blessings and curses. Off means no effects at all.
+  enabled: true
+  # Particles rising around the altar and a sound when a believer prays: brighter when the god is pleased, darker and
+  # shorter when it is angry.
+  prayer: true
+  # A burning sacrifice floats up, spins and shrinks, with an effect showing whether the god wanted it.
+  sacrifice: true
+  # A soft glow and chime around blessed players, a dark swirl and a low sound around cursed ones.
+  blessings: true
+  # Only players this close (in blocks) see and hear the effects; nothing is shown when nobody is near. 1 to 128.
+  view-distance-blocks: 32

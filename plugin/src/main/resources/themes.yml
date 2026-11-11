@@ -14,6 +14,11 @@
 #                    them for the god types it lists)
 #   sign             how altar signs look: messages (the texts under altar.sign.<messages> in messages.yml), dye (the
 #                    sign's dye color) and glowing (glowing text)
+#   effects          how the gods' effects look and sound (config.yml's effects section switches them): symbol (text that
+#                    floats up at prayers), and pleased, neutral and angry, each with particles (particle ids),
+#                    sounds (sound ids like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB", for dust
+#                    particles and the symbol). Prayers use the god's mood, sacrifices pleased (wanted), neutral or
+#                    angry (unwanted), blessings pleased and curses angry.
 # Names are Minecraft ids. Names the server's Minecraft version doesn't have (newer mobs and blocks) are skipped.
 
 default:
@@ -29,6 +34,20 @@ default:
     messages: default
     dye: black
     glowing: false
+  effects:
+    symbol: "✦"
+    pleased:
+      particles: [end_rod, enchant]
+      sounds: [block.amethyst_block.chime]
+      colors: ['#FFD700', white]
+    neutral:
+      particles: [enchant]
+      sounds: [block.enchantment_table.use]
+      colors: [white]
+    angry:
+      particles: [smoke, ash]
+      sounds: [block.respawn_anchor.deplete]
+      colors: [gray, black]
 
 # Snow and ice: the creatures of cold biomes are holy, fire and heat are not
 frost:
@@ -44,6 +63,20 @@ frost:
     messages: frost
     dye: light_blue
     glowing: true
+  effects:
+    symbol: "❄"
+    pleased:
+      particles: [snowflake, end_rod, dust]
+      sounds: [block.amethyst_block.chime, block.amethyst_block.resonate]
+      colors: ['#AEE8FF', white]
+    neutral:
+      particles: [snowflake, dust]
+      sounds: [block.powder_snow.step]
+      colors: [light_blue]
+    angry:
+      particles: [white_ash, item_snowball]
+      sounds: [block.glass.break, entity.player.hurt_freeze]
+      colors: ['#5A7A8C', gray]
 
 # Love and kindness: cuddly animals are holy, sweets please; those who hurt the innocent must be slain
 love:
@@ -59,6 +92,20 @@ love:
     messages: love
     dye: pink
     glowing: true
+  effects:
+    symbol: "♥"
+    pleased:
+      particles: [heart, dust]
+      sounds: [entity.cat.purr, entity.allay.ambient_with_item]
+      colors: [pink, '#FF8AC8']
+    neutral:
+      particles: [dust, cherry_leaves]
+      sounds: [block.note_block.chime]
+      colors: [pink]
+    angry:
+      particles: [angry_villager, smoke]
+      sounds: [entity.cat.hiss]
+      colors: ['#6A1B3A', black]
 
 # Darkness: the undead, the nether and the sculk are holy; the innocent animals of the surface are prey
 evil:
@@ -75,6 +122,20 @@ evil:
     messages: evil
     dye: purple
     glowing: true
+  effects:
+    symbol: "☠"
+    pleased:
+      particles: [soul_fire_flame, sculk_soul, dust]
+      sounds: [entity.evoker.cast_spell]
+      colors: [purple, '#3A0050']
+    neutral:
+      particles: [smoke, portal, dust]
+      sounds: [ambient.cave]
+      colors: ['#2B0038']
+    angry:
+      particles: [large_smoke, squid_ink, soul]
+      sounds: [entity.wither.ambient]
+      colors: [black, '#1A001F']
 
 # The sea: the creatures of the water are holy, the drowned and the guardians are not
 sea:
@@ -90,6 +151,20 @@ sea:
     messages: sea
     dye: cyan
     glowing: true
+  effects:
+    symbol: "≈"
+    pleased:
+      particles: [nautilus, dolphin, glow]
+      sounds: [block.conduit.activate, entity.dolphin.play]
+      colors: [cyan, '#3FC1C9']
+    neutral:
+      particles: [splash, dripping_water]
+      sounds: [block.bubble_column.upwards_ambient]
+      colors: [cyan]
+    angry:
+      particles: [squid_ink, falling_water]
+      sounds: [entity.guardian.ambient]
+      colors: ['#0B3A4A', black]
 
 # The night and the End: night creatures and the moon rabbit are holy, the restless dead are not
 moon:
@@ -105,6 +180,20 @@ moon:
     messages: moon
     dye: light_gray
     glowing: true
+  effects:
+    symbol: "☾"
+    pleased:
+      particles: [end_rod, reverse_portal]
+      sounds: [block.end_portal_frame.fill, block.beacon.power_select]
+      colors: [light_gray, '#C8C8FF']
+    neutral:
+      particles: [portal, dust]
+      sounds: [block.beacon.ambient]
+      colors: [light_gray]
+    angry:
+      particles: [smoke, ash]
+      sounds: [entity.phantom.ambient]
+      colors: ['#303048', black]
 
 # The sun and the desert: creatures of the day are holy, the undead that burn in the sun are not
 sun:
@@ -121,6 +210,20 @@ sun:
     messages: sun
     dye: orange
     glowing: true
+  effects:
+    symbol: "☀"
+    pleased:
+      particles: [flame, wax_on, end_rod]
+      sounds: [block.beacon.power_select]
+      colors: [orange, yellow]
+    neutral:
+      particles: [small_flame, dust]
+      sounds: [block.fire.ambient]
+      colors: [yellow]
+    angry:
+      particles: [lava, large_smoke]
+      sounds: [item.firecharge.use]
+      colors: ['#8A3B00', black]
 
 # Storms and lightning: creepers and golems the lightning loves are holy; copper calls the storm
 thunder:
@@ -142,6 +245,20 @@ thunder:
     messages: thunder
     dye: yellow
     glowing: true
+  effects:
+    symbol: "⚡"
+    pleased:
+      particles: [electric_spark, end_rod, dust]
+      sounds: [block.respawn_anchor.charge, entity.lightning_bolt.impact]
+      colors: [yellow, white]
+    neutral:
+      particles: [electric_spark]
+      sounds: [block.respawn_anchor.charge]
+      colors: [yellow]
+    angry:
+      particles: [cloud, large_smoke]
+      sounds: [entity.lightning_bolt.thunder]
+      colors: ['#4A4A2A', gray]
 
 # Feasts and music: the dancers and the playful are holy, the party poopers must go
 party:
@@ -158,6 +275,20 @@ party:
     messages: party
     dye: lime
     glowing: true
+  effects:
+    symbol: "♫"
+    pleased:
+      particles: [firework, note, happy_villager]
+      sounds: [entity.firework_rocket.twinkle, block.note_block.pling]
+      colors: [lime, magenta]
+    neutral:
+      particles: [note, dust]
+      sounds: [block.note_block.bell]
+      colors: [lime]
+    angry:
+      particles: [poof, angry_villager]
+      sounds: [block.note_block.didgeridoo]
+      colors: [gray]
 
 # War: horses, war dogs and golems are holy, raiders must be slain
 war:
@@ -174,6 +305,20 @@ war:
     messages: war
     dye: red
     glowing: true
+  effects:
+    symbol: "⚔"
+    pleased:
+      particles: [crit, flame, dust]
+      sounds: [item.armor.equip_iron, block.anvil.use]
+      colors: [red, '#FFB000']
+    neutral:
+      particles: [crit]
+      sounds: [item.shield.block]
+      colors: [red]
+    angry:
+      particles: [large_smoke, damage_indicator]
+      sounds: [entity.ravager.roar]
+      colors: ['#3A0000', black]
 
 # The pack: wolves are holy, prey is hunted and eaten raw. Altars of the taiga, where the wolves live
 werewolves:
@@ -188,6 +333,20 @@ werewolves:
     messages: werewolves
     dye: gray
     glowing: true
+  effects:
+    symbol: "☽"
+    pleased:
+      particles: [white_ash, dust]
+      sounds: [entity.wolf.howl, entity.wolf.ambient]
+      colors: [gray, white]
+    neutral:
+      particles: [ash, white_ash]
+      sounds: [entity.wolf.pant]
+      colors: [gray]
+    angry:
+      particles: [damage_indicator, smoke]
+      sounds: [entity.wolf.growl]
+      colors: ['#3B2A1A', black]
 
 # All creatures: rare beasts are holy and must not be eaten, vermin must be slain
 creatures:
@@ -204,6 +363,20 @@ creatures:
     messages: creatures
     dye: brown
     glowing: true
+  effects:
+    symbol: "❦"
+    pleased:
+      particles: [happy_villager, composter]
+      sounds: [entity.sniffer.happy, entity.frog.ambient]
+      colors: [green, brown]
+    neutral:
+      particles: [composter, dust]
+      sounds: [entity.goat.ambient]
+      colors: [brown]
+    angry:
+      particles: [angry_villager, item_slime]
+      sounds: [entity.hoglin.angry]
+      colors: ['#3A2A10', black]
 
 # Wisdom: the villagers and the talkers are holy, those who corrupt knowledge are not
 wisdom:
@@ -219,6 +392,20 @@ wisdom:
     messages: wisdom
     dye: blue
     glowing: true
+  effects:
+    symbol: "✧"
+    pleased:
+      particles: [enchant, end_rod]
+      sounds: [block.enchantment_table.use, item.book.page_turn]
+      colors: [blue, '#9AC8FF']
+    neutral:
+      particles: [enchant]
+      sounds: [item.book.page_turn]
+      colors: [blue]
+    angry:
+      particles: [witch, smoke]
+      sounds: [entity.villager.no]
+      colors: ['#202060', black]
 
 # Nature: bees, foxes and frogs are holy, berries and honey please; what tramples and blights must go
 nature:
@@ -234,3 +421,17 @@ nature:
     messages: nature
     dye: green
     glowing: true
+  effects:
+    symbol: "❀"
+    pleased:
+      particles: [happy_villager, falling_spore_blossom, composter]
+      sounds: [entity.bee.pollinate, block.azalea_leaves.place]
+      colors: [green, lime]
+    neutral:
+      particles: [composter, dust]
+      sounds: [block.moss.place]
+      colors: [green]
+    angry:
+      particles: [ash, smoke]
+      sounds: [entity.bee.sting]
+      colors: ['#2A3A10', black]

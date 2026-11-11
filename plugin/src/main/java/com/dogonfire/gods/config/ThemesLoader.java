@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,8 +16,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
@@ -32,6 +37,10 @@ import com.dogonfire.gods.model.GodType;
  * can name mobs and blocks newer than the oldest Minecraft version Gods runs on: a name this server doesn't have is
  * skipped with a debug message when Gods' own file has it or some other Minecraft version has it, and with a warning
  * otherwise (a typo).
+ * <p>
+ * The {@code effects} section is merged the same way: {@code symbol}, and per mood (pleased, neutral, angry) the lists
+ * {@code particles} (particle ids), {@code sounds} (sound ids, checked against the server's sounds) and {@code colors}
+ * (dye colors or #RRGGBB).
  */
 public final class ThemesLoader
 {
@@ -50,7 +59,26 @@ public final class ThemesLoader
 	public static final List<String>	LIST_KEYS		= List.of(HOLY_MOBS, UNHOLY_MOBS, HOLY_FOODS, UNHOLY_FOODS, SACRIFICE_NEEDS, SLAY_TARGETS, ALTAR_BLOCKS);
 	public static final List<String>	SIGN_KEYS		= List.of("messages", "dye", "glowing");
 
+	public static final String			EFFECTS			= "effects";
+	public static final String			SYMBOL			= "symbol";
+	public static final List<String>	EFFECT_KINDS	= List.of("particles", "sounds", "colors");
+	/** The effect lists, as paths: effects.pleased.particles, ... */
+	public static final List<String>	EFFECT_KEYS		= effectKeys();
+
 	private static final Set<String>	MOB_KEYS		= Set.of(HOLY_MOBS, UNHOLY_MOBS, SLAY_TARGETS);
+
+	private static List<String> effectKeys()
+	{
+		List<String> keys = new ArrayList<>();
+		for (Theme.EffectMood mood : Theme.EffectMood.values())
+		{
+			for (String kind : EFFECT_KINDS)
+			{
+				keys.add(EFFECTS + "." + mood.key() + "." + kind);
+			}
+		}
+		return List.copyOf(keys);
+	}
 
 	/** What a name means on this server */
 	public interface Names
@@ -75,6 +103,37 @@ public final class ThemesLoader
 		{
 			return material.isItem();
 		}
+
+		/** The particle with this (normalized) name or id on this server, or null */
+		default Particle particle(String name)
+		{
+			for (Particle particle : Particle.values())
+			{
+				if (particle.name().equals(name) || particle.getKey().getKey().toUpperCase(Locale.ROOT).equals(name))
+				{
+					return particle;
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * The full id of the sound with this id ({@code block.amethyst_block.chime} or
+		 * {@code minecraft:block.amethyst_block.chime}) if this server has it, or null. Without a server only the
+		 * spelling is checked.
+		 */
+		default String sound(String id)
+		{
+			NamespacedKey key = soundKey(id);
+			return key != null ? key.toString() : null;
+		}
+	}
+
+	/** A sound id as a key, or null if it can't be one */
+	static NamespacedKey soundKey(String id)
+	{
+		String trimmed = id.trim().toLowerCase(Locale.ROOT);
+		return trimmed.isEmpty() ? null : NamespacedKey.fromString(trimmed);
 	}
 
 	/**
@@ -109,6 +168,13 @@ public final class ThemesLoader
 			{
 				return otherVersions.contains(name);
 			}
+
+			@Override
+			public String sound(String id)
+			{
+				NamespacedKey key = soundKey(id);
+				return key != null && Registry.SOUNDS.get(key) != null ? key.toString() : null;
+			}
 		};
 	}
 
@@ -134,8 +200,11 @@ public final class ThemesLoader
 		return names;
 	}
 
-	/** One section of themes.yml before its names are resolved: the lists by key, and the sign settings */
-	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign)
+	/**
+	 * One section of themes.yml before its names are resolved: the lists by key (the effect lists by their path, like
+	 * {@code effects.pleased.particles}), the sign settings and the effects' symbol (empty map: not set)
+	 */
+	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol)
 	{
 	}
 
@@ -231,7 +300,9 @@ public final class ThemesLoader
 			lists.putAll(own.lists());
 			Map<String, String> sign = new LinkedHashMap<>(defaults.sign());
 			sign.putAll(own.sign());
-			merged.put(name, new RawTheme(lists, sign));
+			Map<String, String> symbol = new LinkedHashMap<>(defaults.symbol());
+			symbol.putAll(own.symbol());
+			merged.put(name, new RawTheme(lists, sign, symbol));
 		}
 		return merged;
 	}
@@ -257,6 +328,7 @@ public final class ThemesLoader
 	{
 		Map<String, List<String>> lists = new LinkedHashMap<>();
 		Map<String, String> sign = new LinkedHashMap<>();
+		Map<String, String> symbol = new LinkedHashMap<>();
 		if (section != null)
 		{
 			for (String key : LIST_KEYS)
@@ -266,9 +338,17 @@ public final class ThemesLoader
 					lists.put(key, List.copyOf(section.getStringList(key)));
 				}
 			}
+			for (String key : EFFECT_KEYS)
+			{
+				if (section.isList(key))
+				{
+					lists.put(key, List.copyOf(section.getStringList(key)));
+				}
+			}
 			readSign(section, sign);
+			readSymbol(section, symbol);
 		}
-		return new RawTheme(lists, sign);
+		return new RawTheme(lists, sign, symbol);
 	}
 
 	private static void readSign(ConfigurationSection section, Map<String, String> sign)
@@ -286,6 +366,15 @@ public final class ThemesLoader
 		}
 	}
 
+	private static void readSymbol(ConfigurationSection section, Map<String, String> symbol)
+	{
+		String path = EFFECTS + "." + SYMBOL;
+		if (section.isSet(path) && !section.isConfigurationSection(path))
+		{
+			symbol.put(SYMBOL, String.valueOf(section.get(path)));
+		}
+	}
+
 	/** The admin's changes to one section; a key the base lacks starts from the fallback's (the default section) */
 	private static RawTheme apply(RawTheme base, ConfigurationSection override, RawTheme fallback, String name, Logger logger)
 	{
@@ -295,6 +384,7 @@ public final class ThemesLoader
 		}
 		Map<String, List<String>> lists = new LinkedHashMap<>(base.lists());
 		Map<String, String> sign = new LinkedHashMap<>(base.sign());
+		Map<String, String> symbol = new LinkedHashMap<>(base.symbol());
 		for (String key : override.getKeys(false))
 		{
 			if (key.equals(SIGN))
@@ -314,26 +404,70 @@ public final class ThemesLoader
 				readSign(override, sign);
 				continue;
 			}
+			if (key.equals(EFFECTS))
+			{
+				applyEffects(override, lists, symbol, fallback, name, logger);
+				continue;
+			}
 			if (!LIST_KEYS.contains(key))
 			{
 				logger.warning("Unknown key '" + key + "' in themes.yml " + name + ", ignoring it.");
 				continue;
 			}
-			if (override.isList(key))
+			applyList(override, key, lists, fallback, name, logger);
+		}
+		return new RawTheme(lists, sign, symbol);
+	}
+
+	/** The admin's changes to the effects: {@code symbol}, and a section per mood with the effect lists */
+	private static void applyEffects(ConfigurationSection override, Map<String, List<String>> lists, Map<String, String> symbol, RawTheme fallback, String name, Logger logger)
+	{
+		if (!override.isConfigurationSection(EFFECTS))
+		{
+			logger.warning("themes.yml " + name + ".effects must be a section (symbol, pleased, neutral, angry), ignoring it.");
+			return;
+		}
+		for (String key : override.getConfigurationSection(EFFECTS).getKeys(false))
+		{
+			String path = EFFECTS + "." + key;
+			if (key.equals(SYMBOL))
 			{
-				lists.put(key, List.copyOf(override.getStringList(key)));
+				readSymbol(override, symbol);
+				continue;
 			}
-			else if (override.isConfigurationSection(key))
+			if (!override.isConfigurationSection(path) || Arrays.stream(Theme.EffectMood.values()).noneMatch(mood -> mood.key().equals(key)))
 			{
-				List<String> start = lists.containsKey(key) ? lists.get(key) : (fallback != null ? fallback.lists().getOrDefault(key, List.of()) : List.of());
-				lists.put(key, addAndRemove(start, override.getConfigurationSection(key), name + "." + key, logger));
+				logger.warning("Unknown key '" + key + "' in themes.yml " + name + ".effects (symbol, pleased, neutral, angry), ignoring it.");
+				continue;
 			}
-			else
+			for (String kind : override.getConfigurationSection(path).getKeys(false))
 			{
-				logger.warning("themes.yml " + name + "." + key + " must be a list, or a section with add: and remove:, ignoring it.");
+				if (!EFFECT_KINDS.contains(kind))
+				{
+					logger.warning("Unknown key '" + kind + "' in themes.yml " + name + "." + path + " (particles, sounds, colors), ignoring it.");
+					continue;
+				}
+				applyList(override, path + "." + kind, lists, fallback, name, logger);
 			}
 		}
-		return new RawTheme(lists, sign);
+	}
+
+	/** The admin's change to one list (by its path): a list replaces it, add: and remove: change it */
+	private static void applyList(ConfigurationSection override, String key, Map<String, List<String>> lists, RawTheme fallback, String name, Logger logger)
+	{
+		if (override.isList(key))
+		{
+			lists.put(key, List.copyOf(override.getStringList(key)));
+		}
+		else if (override.isConfigurationSection(key))
+		{
+			List<String> start = lists.containsKey(key) ? lists.get(key) : (fallback != null ? fallback.lists().getOrDefault(key, List.of()) : List.of());
+			lists.put(key, addAndRemove(start, override.getConfigurationSection(key), name + "." + key, logger));
+		}
+		else
+		{
+			logger.warning("themes.yml " + name + "." + key + " must be a list, or a section with add: and remove:, ignoring it.");
+		}
 	}
 
 	private static List<String> addAndRemove(List<String> start, ConfigurationSection change, String path, Logger logger)
@@ -378,7 +512,115 @@ public final class ThemesLoader
 				new Theme.SignStyle(
 						sign.getOrDefault("messages", Theme.SignStyle.PLAIN.messages()).trim().toLowerCase(Locale.ROOT),
 						dye(section, sign.get("dye")),
-						glowing(section, sign.get("glowing"))));
+						glowing(section, sign.get("glowing"))),
+				effects(section, raw, bundledNames));
+	}
+
+	private Theme.Effects effects(String section, RawTheme raw, Set<String> bundledNames)
+	{
+		Map<Theme.EffectMood, Theme.EffectStyle> styles = new EnumMap<>(Theme.EffectMood.class);
+		for (Theme.EffectMood mood : Theme.EffectMood.values())
+		{
+			String path = EFFECTS + "." + mood.key() + ".";
+			styles.put(mood, new Theme.EffectStyle(particles(section, path + "particles", raw, bundledNames), sounds(section, path + "sounds", raw), colors(section, path + "colors", raw)));
+		}
+		return new Theme.Effects(raw.symbol().getOrDefault(SYMBOL, "").trim(), styles.get(Theme.EffectMood.PLEASED), styles.get(Theme.EffectMood.NEUTRAL), styles.get(Theme.EffectMood.ANGRY));
+	}
+
+	/** The kinds of particle data Gods can fill in: none, a color, dust (a color and a size), a color change, a number */
+	public static boolean isShowable(Particle particle)
+	{
+		Class<?> data = particle.getDataType();
+		return data == Void.class || data == Color.class || data == Particle.DustOptions.class || data == Particle.DustTransition.class || data == Float.class || data == Integer.class;
+	}
+
+	private List<Particle> particles(String section, String key, RawTheme raw, Set<String> bundledNames)
+	{
+		List<Particle> particles = new ArrayList<>();
+		for (String name : raw.lists().getOrDefault(key, List.of()))
+		{
+			String normalized = normalize(name);
+			Particle particle = this.names.particle(normalized);
+			if (particle == null)
+			{
+				missing(section, key, name, normalized, bundledNames);
+			}
+			else if (!isShowable(particle))
+			{
+				this.logger.warning("The particle '" + name + "' in themes.yml " + section + "." + key + " needs a block or an item, ignoring it.");
+			}
+			else if (!particles.contains(particle))
+			{
+				particles.add(particle);
+			}
+		}
+		return List.copyOf(particles);
+	}
+
+	private List<String> sounds(String section, String key, RawTheme raw)
+	{
+		List<String> sounds = new ArrayList<>();
+		for (String id : raw.lists().getOrDefault(key, List.of()))
+		{
+			String sound = this.names.sound(id);
+			if (sound == null)
+			{
+				// Sounds are many and change between versions; a missing one is only worth a debug message
+				this.debug.accept("This server has no sound '" + id + "' (themes.yml " + section + "." + key + "), skipping it.");
+			}
+			else if (!sounds.contains(sound))
+			{
+				sounds.add(sound);
+			}
+		}
+		return List.copyOf(sounds);
+	}
+
+	private List<Color> colors(String section, String key, RawTheme raw)
+	{
+		List<Color> colors = new ArrayList<>();
+		for (String name : raw.lists().getOrDefault(key, List.of()))
+		{
+			Color color = color(name);
+			if (color == null)
+			{
+				this.logger.warning("Unknown color '" + name + "' in themes.yml " + section + "." + key + " (a dye color like light_blue, or #RRGGBB), ignoring it.");
+			}
+			else if (!colors.contains(color))
+			{
+				colors.add(color);
+			}
+		}
+		return List.copyOf(colors);
+	}
+
+	/** A color: a dye color's name (light_blue) or #RRGGBB; null if it is neither */
+	public static Color color(String name)
+	{
+		String trimmed = name.trim();
+		if (trimmed.startsWith("#"))
+		{
+			if (trimmed.length() != 7)
+			{
+				return null;
+			}
+			try
+			{
+				return Color.fromRGB(Integer.parseInt(trimmed.substring(1), 16));
+			}
+			catch (NumberFormatException ex)
+			{
+				return null;
+			}
+		}
+		try
+		{
+			return DyeColor.valueOf(normalize(trimmed)).getColor();
+		}
+		catch (IllegalArgumentException ex)
+		{
+			return null;
+		}
 	}
 
 	private List<EntityType> mobs(String section, String key, RawTheme raw, Set<String> bundledNames)
@@ -436,7 +678,7 @@ public final class ThemesLoader
 		}
 		else
 		{
-			this.logger.warning("Unknown " + (MOB_KEYS.contains(key) ? "mob" : key.equals(ALTAR_BLOCKS) ? "block" : "item") + " '" + name + "' in themes.yml " + section + "." + key + ", ignoring it.");
+			this.logger.warning("Unknown " + (MOB_KEYS.contains(key) ? "mob" : key.equals(ALTAR_BLOCKS) ? "block" : key.endsWith(".particles") ? "particle" : "item") + " '" + name + "' in themes.yml " + section + "." + key + ", ignoring it.");
 		}
 	}
 

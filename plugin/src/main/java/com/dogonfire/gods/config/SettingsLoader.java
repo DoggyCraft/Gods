@@ -107,7 +107,13 @@ public class SettingsLoader
 				new Settings.Bibles(
 						bool("bibles.enabled"),
 						bool("bibles.give-on-join")),
-				new Settings.Chat(bool("chat.formatting")));
+				new Settings.Chat(bool("chat.formatting")),
+				new Settings.Effects(
+						bool("effects.enabled"),
+						bool("effects.prayer"),
+						bool("effects.sacrifice"),
+						bool("effects.blessings"),
+						between("effects.view-distance-blocks", 1, 128)));
 	}
 
 	private Settings.General loadGeneral()
@@ -348,6 +354,17 @@ public class SettingsLoader
 		{
 			warn(path, number, min);
 			return min;
+		}
+		return number;
+	}
+
+	private int between(String path, int min, int max)
+	{
+		int number = atLeast(path, min);
+		if (number > max)
+		{
+			warn(path, number, max);
+			return max;
 		}
 		return number;
 	}

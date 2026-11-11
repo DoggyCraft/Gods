@@ -19,6 +19,10 @@
 #                      messages  the texts under altar.sign.<messages> in lang/<language>/messages.yml
 #                      dye       the sign's dye color (black, white, red, light_blue, ...)
 #                      glowing   true or false
+#   effects          how the effects look and sound:
+#                      symbol    text that floats up at prayers (like ❄), "" for none
+#                      pleased, neutral, angry: each with particles (particle ids like end_rod), sounds (sound ids
+#                      like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB")
 #
 # A god keeps the holy and unholy mob and food it already picked; changes here only affect what gods pick from now on.
 # Names are Minecraft ids (polar_bear, cooked_cod). Names this server's Minecraft version doesn't have are skipped.
@@ -35,6 +39,11 @@
 #   sign:
 #     dye: blue
 #     glowing: false
+#   effects:
+#     pleased:
+#       sounds: [block.bell.use]
+#       particles:
+#         add: [cloud]
 #
 # werewolves:
 #   altar-blocks: [mossy_cobblestone]

@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
@@ -378,12 +379,17 @@ public class CommandmentService
 		}
 	}
 
-	public void handleSacrifice(String godName, Player believer, Material type)
+	/**
+	 * A believer's item burns as a sacrifice: the god judges it ({@link SacrificeRules}), and it floats up in the god's
+	 * style ({@link EffectService#sacrifice})
+	 */
+	public void handleSacrifice(String godName, Player believer, Item burning)
 	{
 		if (believer == null)
 		{
 			return;
 		}
+		Material type = burning.getItemStack().getType();
 
 		if (!ctx.plugin().isEnabledInWorld(believer.getWorld()))
 		{
@@ -417,6 +423,7 @@ public class CommandmentService
 				ctx.godSpeech().sayToBeliever(godName, believer.getUniqueId(), Voice.BELIEVER_HOLY_FOOD_SACRIFICE, Messages.displayName(believer.getDisplayName()), Messages.type(ctx.messages().itemName(eatFoodType)));
 			}
 
+			ctx.effectService().sacrifice(godName, burning, Theme.EffectMood.ANGRY);
 			ctx.blessingService().smite(godName, believer, 1 + this.random.nextInt(3));
 
 			return;
@@ -427,6 +434,7 @@ public class CommandmentService
 
 
 		SacrificeRules.Verdict verdict = SacrificeRules.verdict(value);
+		ctx.effectService().sacrifice(godName, burning, EffectRules.sacrificeMood(verdict));
 		if (verdict == SacrificeRules.Verdict.GOOD)
 		{
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));

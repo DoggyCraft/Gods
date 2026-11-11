@@ -33,7 +33,8 @@ public record Settings(
 		HolyLand holyLand,
 		Marriage marriage,
 		Bibles bibles,
-		Chat chat)
+		Chat chat,
+		Effects effects)
 {
 	/** @param worlds the worlds Gods is active in; empty for every world (also worlds loaded later) */
 	public record General(boolean debug, String language, String serverName, List<String> worlds)
@@ -160,5 +161,32 @@ public record Settings(
 
 	public record Chat(boolean formatting)
 	{
+	}
+
+	/**
+	 * Short themed effects (particles, sounds and display entities) for nearby players only.
+	 *
+	 * @param enabled            all effects; off means none at all
+	 * @param viewDistanceBlocks only players this close see and hear them
+	 */
+	public record Effects(boolean enabled, boolean prayer, boolean sacrifice, boolean blessings, int viewDistanceBlocks)
+	{
+		/** Effects when a believer prays at an altar */
+		public boolean prayerOn()
+		{
+			return this.enabled && this.prayer;
+		}
+
+		/** Effects for sacrifices */
+		public boolean sacrificeOn()
+		{
+			return this.enabled && this.sacrifice;
+		}
+
+		/** Effects on blessed and cursed players */
+		public boolean blessingsOn()
+		{
+			return this.enabled && this.blessings;
+		}
 	}
 }

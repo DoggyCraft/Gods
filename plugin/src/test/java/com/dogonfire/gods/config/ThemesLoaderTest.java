@@ -16,8 +16,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.junit.jupiter.api.Test;
@@ -270,6 +272,148 @@ class ThemesLoaderTest
 		assertEquals(List.of(), themes.altars().godTypesFor(Material.SNOW_BLOCK));
 		assertEquals(List.of(), themes.altars().godTypesFor(Material.LAPIS_BLOCK));
 		assertEquals(List.of(GodType.MOON), themes.altars().godTypesFor(Material.PURPUR_BLOCK));
+	}
+
+
+	/** Every god type has its own effects: a symbol and, for each mood, particles, sounds and colors */
+	@Test
+	void everyGodTypeHasEffects() throws Exception
+	{
+		Themes themes = load("");
+		for (GodType type : GodType.values())
+		{
+			Theme.Effects effects = themes.of(type).effects();
+			assertFalse(effects.symbol().isBlank(), type + " symbol");
+			for (Theme.EffectMood mood : Theme.EffectMood.values())
+			{
+				Theme.EffectStyle style = effects.of(mood);
+				assertFalse(style.particles().isEmpty(), type + " " + mood + " particles");
+				assertFalse(style.sounds().isEmpty(), type + " " + mood + " sounds");
+				assertFalse(style.colors().isEmpty(), type + " " + mood + " colors");
+				style.particles().forEach(particle -> assertTrue(ThemesLoader.isShowable(particle), type + " " + particle));
+			}
+			assertFalse(effects.equals(themes.of(null).effects()), type + " has the default effects");
+		}
+		Theme.Effects frost = themes.of(GodType.FROST).effects();
+		assertEquals("❄", frost.symbol());
+		assertTrue(frost.of(Theme.EffectMood.PLEASED).particles().contains(Particle.SNOWFLAKE));
+		assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().contains("minecraft:block.amethyst_block.chime"));
+		assertEquals(Color.fromRGB(0xAEE8FF), frost.of(Theme.EffectMood.PLEASED).colors().get(0));
+	}
+
+	/**
+	 * Every sound the bundled themes name exists in the newest API (a sound's constant is its id in upper case with _
+	 * for .), except the ones named for older servers next to a newer one
+	 */
+	@Test
+	void everyBundledSoundExists() throws Exception
+	{
+		Set<String> olderOnly = Set.of("entity.wolf.howl");
+		YamlConfiguration bundled = bundled();
+		List<String> missing = new ArrayList<>();
+		for (String key : bundled.getKeys(true))
+		{
+			if (!key.endsWith(".sounds"))
+			{
+				continue;
+			}
+			for (String sound : bundled.getStringList(key))
+			{
+				try
+				{
+					org.bukkit.Sound.class.getField(sound.toUpperCase(java.util.Locale.ROOT).replace('.', '_'));
+				}
+				catch (NoSuchFieldException ex)
+				{
+					if (!olderOnly.contains(sound))
+					{
+						missing.add(key + ": " + sound);
+					}
+				}
+			}
+		}
+		assertTrue(missing.isEmpty(), "" + missing);
+	}
+
+	@Test
+	void effectsAreChangedLikeTheOtherLists() throws Exception
+	{
+		Themes themes = load("""
+				frost:
+				  effects:
+				    symbol: "*"
+				    pleased:
+				      particles: [cloud, minecraft:end_rod]
+				      sounds:
+				        add: [block.bell.use]
+				      colors: ["#FF0000", red]
+				""");
+		Theme.Effects frost = themes.of(GodType.FROST).effects();
+		Theme.Effects bundled = load("").of(GodType.FROST).effects();
+		assertEquals("*", frost.symbol());
+		assertEquals(List.of(Particle.CLOUD, Particle.END_ROD), frost.of(Theme.EffectMood.PLEASED).particles());
+		assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().containsAll(bundled.of(Theme.EffectMood.PLEASED).sounds()));
+		assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().contains("minecraft:block.bell.use"));
+		assertEquals(List.of(Color.fromRGB(0xFF0000), DyeColor.RED.getColor()), frost.of(Theme.EffectMood.PLEASED).colors());
+		// The rest stays Gods' own
+		assertEquals(bundled.of(Theme.EffectMood.ANGRY), frost.of(Theme.EffectMood.ANGRY));
+		assertEquals(load("").of(GodType.SEA), themes.of(GodType.SEA));
+		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+	}
+
+	/** A god type that leaves out effects gets the default's */
+	@Test
+	void theDefaultFillsTheEffects() throws Exception
+	{
+		YamlConfiguration bundled = TestConfigs.yaml("""
+				default:
+				  effects:
+				    symbol: "+"
+				    angry:
+				      particles: [smoke]
+				sea:
+				  effects:
+				    angry:
+				      sounds: [entity.guardian.ambient]
+				""");
+		Themes themes = new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add).load(bundled, new YamlConfiguration(), Settings.Altars.of(Map.of()));
+		Theme.Effects sea = themes.of(GodType.SEA).effects();
+		assertEquals("+", sea.symbol());
+		assertEquals(List.of(Particle.SMOKE), sea.of(Theme.EffectMood.ANGRY).particles());
+		assertEquals(List.of("minecraft:entity.guardian.ambient"), sea.of(Theme.EffectMood.ANGRY).sounds());
+		assertEquals(Theme.EffectStyle.NONE, sea.of(Theme.EffectMood.PLEASED));
+	}
+
+	@Test
+	void unknownEffectsAreMentioned() throws Exception
+	{
+		load("""
+				sea:
+				  effects:
+				    happy:
+				      particles: [end_rod]
+				    pleased:
+				      particle: [end_rod]
+				      particles: [not_a_particle, block, end_rod]
+				      colors: [sky, "#12345"]
+				""");
+		List<String> warnings = this.log.warnings();
+		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'happy'")), "Warnings: " + warnings);
+		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'particle'")));
+		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("not_a_particle")));
+		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'block'") && warning.contains("needs a block")));
+		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("sky")));
+		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("#12345")));
+	}
+
+	/** Colors are dye colors or #RRGGBB */
+	@Test
+	void colorsAreParsed()
+	{
+		assertEquals(DyeColor.LIGHT_BLUE.getColor(), ThemesLoader.color("light_blue"));
+		assertEquals(Color.fromRGB(0xAEE8FF), ThemesLoader.color("#aee8ff"));
+		assertNull(ThemesLoader.color("#xyz123"));
+		assertNull(ThemesLoader.color("sky"));
 	}
 
 	@Test

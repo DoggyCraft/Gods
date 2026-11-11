@@ -133,7 +133,8 @@ class MessageKeysTest
 		List<String> missing = new ArrayList<>();
 		for (String key : themes.getKeys(true))
 		{
-			if (!themes.isList(key))
+			// Effects are never named to players
+			if (!themes.isList(key) || key.contains(".effects."))
 			{
 				continue;
 			}

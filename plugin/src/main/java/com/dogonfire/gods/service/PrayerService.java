@@ -450,7 +450,15 @@ public class PrayerService
 
 
 			ctx.godSpeech().say(godName, player, Voice.BELIEVER_PRAYING, 2 + this.random.nextInt(10), Messages.player(player.getName()));
-			location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 25);
+			if (ctx.settings().effects().prayerOn())
+			{
+				ctx.effectService().prayer(godName, altarBlock);
+			}
+			else
+			{
+				// The puff of flames prayers always had
+				location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 25);
+			}
 
 			return true;
 		}

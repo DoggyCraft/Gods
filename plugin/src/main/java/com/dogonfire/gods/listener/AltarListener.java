@@ -23,6 +23,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.service.AltarClicks;
@@ -401,9 +402,11 @@ public class AltarListener implements Listener
 
 		if (ctx.questService().handleSacrifice(player, godName, item.getItemStack().getType().name()))
 		{
+			// What the quest asked for
+			ctx.effectService().sacrifice(godName, item, Theme.EffectMood.PLEASED);
 			return;
 		}
 
-		ctx.commandmentService().handleSacrifice(godName, player, item.getItemStack().getType());
+		ctx.commandmentService().handleSacrifice(godName, player, item);
 	}
 }

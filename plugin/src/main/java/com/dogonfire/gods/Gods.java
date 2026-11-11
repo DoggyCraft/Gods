@@ -391,6 +391,8 @@ public class Gods extends JavaPlugin
 	{
 		// Ice spikes put back what they changed
 		this.ctx.holyPowerService().stop();
+		// The floating items and symbols of effects still running
+		this.ctx.effectService().stop();
 		for (Listener listener : this.featureListeners)
 		{
 			HandlerList.unregisterAll(listener);

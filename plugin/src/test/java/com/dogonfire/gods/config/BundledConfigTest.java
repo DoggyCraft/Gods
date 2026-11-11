@@ -67,7 +67,8 @@ class BundledConfigTest
 				new Settings.HolyLand(false, false, true, false, true, 14, Set.of(Material.SMOOTH_STONE)),
 				new Settings.Marriage(true, true),
 				new Settings.Bibles(true, false),
-				new Settings.Chat(false));
+				new Settings.Chat(false),
+				new Settings.Effects(true, true, true, true, 32));
 	}
 
 	@Test

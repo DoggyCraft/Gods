@@ -2,8 +2,10 @@ package com.dogonfire.gods.config;
 
 import java.util.List;
 
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 
 /**
@@ -20,6 +22,7 @@ import org.bukkit.entity.EntityType;
  * @param altarBlocks    the blocks an altar to this god type is built on (config.yml's altars.block-types may replace
  *                       them, see {@link Themes#altars()})
  * @param sign           how altar signs of these gods look
+ * @param effects        how the effects of these gods look and sound (prayers, sacrifices, blessings, curses)
  */
 public record Theme(
 		List<EntityType> holyMobs,
@@ -29,7 +32,8 @@ public record Theme(
 		List<Material> sacrificeNeeds,
 		List<EntityType> slayTargets,
 		List<Material> altarBlocks,
-		SignStyle sign)
+		SignStyle sign,
+		Effects effects)
 {
 	/**
 	 * How an altar sign looks once Gods has made it.
@@ -42,5 +46,49 @@ public record Theme(
 	public record SignStyle(String messages, DyeColor dye, boolean glowing)
 	{
 		public static final SignStyle PLAIN = new SignStyle("default", DyeColor.BLACK, false);
+	}
+
+	/** Which of a theme's effect styles an effect uses: the god's mood, or whether it accepts what it gets */
+	public enum EffectMood
+	{
+		PLEASED, NEUTRAL, ANGRY;
+
+		/** Its section under effects: in themes.yml */
+		public String key()
+		{
+			return name().toLowerCase(java.util.Locale.ROOT);
+		}
+	}
+
+	/**
+	 * The effects of a god type's gods: a style per {@link EffectMood}, and a symbol that floats up at prayers.
+	 *
+	 * @param symbol  the text of the symbol (like ❄), empty for none
+	 */
+	public record Effects(String symbol, EffectStyle pleased, EffectStyle neutral, EffectStyle angry)
+	{
+		public static final Effects NONE = new Effects("", EffectStyle.NONE, EffectStyle.NONE, EffectStyle.NONE);
+
+		public EffectStyle of(EffectMood mood)
+		{
+			return switch (mood)
+			{
+				case PLEASED -> this.pleased;
+				case NEUTRAL -> this.neutral;
+				case ANGRY -> this.angry;
+			};
+		}
+	}
+
+	/**
+	 * One effect style: what an effect picks its particles, sound and colors from (each list may be empty).
+	 *
+	 * @param particles particles this server has, and that Gods can show (no block or item particles)
+	 * @param sounds    sound ids ({@code minecraft:block.amethyst_block.chime})
+	 * @param colors    colors for the particles that take one (dust) and the symbol
+	 */
+	public record EffectStyle(List<Particle> particles, List<String> sounds, List<Color> colors)
+	{
+		public static final EffectStyle NONE = new EffectStyle(List.of(), List.of(), List.of());
 	}
 }

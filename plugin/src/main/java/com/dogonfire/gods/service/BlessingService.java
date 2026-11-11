@@ -103,6 +103,7 @@ public class BlessingService
 		}
 
 		ctx.believerService().setBlessingTime(player.getUniqueId());
+		ctx.effectService().blessing(godName, player);
 
 		return true;
 	}
@@ -187,6 +188,7 @@ public class BlessingService
 		}
 
 		ctx.believerService().setCursingTime(player.getUniqueId());
+		ctx.effectService().curse(godName, player);
 
 		return true;
 	}
