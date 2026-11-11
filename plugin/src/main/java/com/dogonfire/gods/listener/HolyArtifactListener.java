@@ -2,6 +2,7 @@ package com.dogonfire.gods.listener;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -28,6 +29,12 @@ public class HolyArtifactListener implements Listener
 	@EventHandler
 	public void onHolyArtifactUse(PlayerInteractEvent event)
 	{
+		// Using the item was denied, e.g. because the click prayed at an altar
+		if (event.useItemInHand() == Event.Result.DENY)
+		{
+			return;
+		}
+
 		Player player = event.getPlayer();
 		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
 		{
