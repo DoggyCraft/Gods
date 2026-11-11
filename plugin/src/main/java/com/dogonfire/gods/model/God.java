@@ -57,6 +57,7 @@ public final class God
 	private Boolean				mobSpawning;				// MobSpawning
 
 	private Instant				lastQuestTime;				// LastQuestTime
+	private Instant				genderChangedTime;			// GenderChangedTime: when a priest (or a plugin) last changed its gender
 
 	/** Keys of the entry this version doesn't know (or values it can't read), written back unchanged */
 	private Map<String, Object>	extras			= new LinkedHashMap<String, Object>();
@@ -327,6 +328,16 @@ public final class God
 	public void setLastQuestTime(Instant lastQuestTime)
 	{
 		this.lastQuestTime = lastQuestTime;
+	}
+
+	public Instant genderChangedTime()
+	{
+		return this.genderChangedTime;
+	}
+
+	public void setGenderChangedTime(Instant genderChangedTime)
+	{
+		this.genderChangedTime = genderChangedTime;
 	}
 
 	public Map<String, Object> extras()

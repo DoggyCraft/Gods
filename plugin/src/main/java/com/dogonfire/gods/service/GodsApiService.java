@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -26,6 +27,7 @@ import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Believer;
 import com.dogonfire.gods.model.God;
+import com.dogonfire.gods.model.GodGender;
 
 /**
  * {@link GodsApi} on top of the services, so what other plugins do follows the same rules, sends the same messages
@@ -333,6 +335,28 @@ public final class GodsApiService implements GodsApi
 		checkThread();
 		Optional<String> god = existing(godName);
 		return god.isEmpty() ? ActionResult.NO_SUCH_GOD : done(ctx.moodService().addMoodForGod(god.get(), amount));
+	}
+
+	@Override
+	public ActionResult setGender(String godName, com.dogonfire.gods.api.GodGender gender)
+	{
+		checkThread();
+		Objects.requireNonNull(gender, "gender");
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (gender == com.dogonfire.gods.api.GodGender.NONE)
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		GodGender newGender = ApiSnapshots.modelGender(gender);
+		if (ctx.godService().getGenderForGod(god.get()) == newGender)
+		{
+			return ActionResult.SUCCESS;
+		}
+		return done(ctx.godService().changeGender(god.get(), newGender));
 	}
 
 	@Override

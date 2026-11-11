@@ -21,6 +21,7 @@ import com.dogonfire.gods.api.event.BelieverPrayEvent;
 import com.dogonfire.gods.api.event.GodBlessPlayerEvent;
 import com.dogonfire.gods.api.event.GodCreateEvent;
 import com.dogonfire.gods.api.event.GodCursePlayerEvent;
+import com.dogonfire.gods.api.event.GodGenderChangeEvent;
 import com.dogonfire.gods.api.event.GodEvent;
 import com.dogonfire.gods.api.event.GodMoodChangeEvent;
 import com.dogonfire.gods.api.event.GodRelationChangeEvent;
@@ -44,7 +45,7 @@ class ApiSurfaceTest
 			GodType.class, GodGender.class, GodMood.class, QuestType.class,
 			ActionResult.class,
 			GodEvent.class, GodSpeakEvent.class, BelieverPrayEvent.class, BelieverJoinGodEvent.class, BelieverLeaveGodEvent.class,
-			GodCreateEvent.class, GodMoodChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
+			GodCreateEvent.class, GodMoodChangeEvent.class, GodGenderChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
 			GodCursePlayerEvent.class, QuestEvent.class, QuestStartEvent.class, QuestCompleteEvent.class, QuestFailEvent.class,
 			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class);
 

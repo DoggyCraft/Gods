@@ -533,3 +533,7 @@ believers-new-player-accepted:
 # <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
 - 'As the seasons choose their colors, I have chosen, <player>: I am your <gender> of Nature!'
+# Said to all believers when a priest (or a plugin) changed the god's gender. <gender> is the new one ("God",
+# "Goddess", "Deity")
+believers-gender-changed:
+- 'As the seasons change, so do I: from now on I am your <gender> of Nature!'

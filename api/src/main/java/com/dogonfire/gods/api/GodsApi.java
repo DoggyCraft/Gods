@@ -215,6 +215,20 @@ public interface GodsApi
 	ActionResult addMood(String godName, float amount);
 
 	/**
+	 * Changes the god's gender, as a priest's {@code /g gender} does: the god tells its believers in its new voice and
+	 * its title changes ("Deity of the Sea"). Unlike the command, this ignores the cooldown between changes in Gods'
+	 * config, but it does start a new one for the god's priests. Fires a
+	 * {@link com.dogonfire.gods.api.event.GodGenderChangeEvent} if it changes anything.
+	 *
+	 * @param gender {@link GodGender#MALE}, {@link GodGender#FEMALE} or {@link GodGender#NON_BINARY}
+	 * @return {@link ActionResult#SUCCESS} (also if the god has that gender already), {@link ActionResult#NO_SUCH_GOD},
+	 *         {@link ActionResult#NOT_POSSIBLE} (the gender is {@link GodGender#NONE}, which only gods from before
+	 *         genders could be chosen have) or {@link ActionResult#CANCELLED}
+	 * @throws NullPointerException if {@code gender} is null
+	 */
+	ActionResult setGender(String godName, GodGender gender);
+
+	/**
 	 * Gives the believer prayer power (or, with a negative amount, takes it; it never goes below 0), which they spend
 	 * on {@code /g prayfor}. They are told how much they have now. A god's own power comes from its believers' prayers
 	 * and can't be set.

@@ -530,3 +530,7 @@ believers-get-holy-artifact-quest-range:
 # <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
 - 'Under the moon I have chosen, <player>: I shall be your <gender>.'
+# Said to all believers when a priest (or a plugin) changed the god's gender. <gender> is the new one ("God",
+# "Goddess", "Deity")
+believers-gender-changed:
+- 'The moon changes its face, and so have I: I am your <gender> now.'

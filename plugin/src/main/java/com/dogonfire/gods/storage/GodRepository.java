@@ -32,7 +32,8 @@ import com.dogonfire.gods.util.LegacyDates;
  * &lt;god name&gt;: Created, DivineForce, Gender, PrivateAccess, Description, Home.World/X/Y/Z, Mood, Seed, Verbosity,
  *              Priests, PendingPriest, PendingPriestTime, Allies, Enemies, ContestedLand.World/X/Y/Z/Hash,
  *              BlessedPlayer, BlessedTime, CursedPlayer, CursedTime, EatFoodType, NotEatFoodType, NotSlayMobType,
- *              SlayMobType, SacrificeValues.&lt;material&gt;, PvP, MobDamage, MobSpawning, LastQuestTime
+ *              SlayMobType, SacrificeValues.&lt;material&gt;, PvP, MobDamage, MobSpawning, LastQuestTime,
+ *              GenderChangedTime
  * </pre>
  * Version 1 (no {@code data-version}: Gods 0.9.x, and this branch before data versions) is upgraded by
  * {@link GodsV1ToV2}. The {@code !!java.util.UUID} tags older versions wrote are repaired before parsing
@@ -72,13 +73,14 @@ public final class GodRepository extends Repository
 	private static final String			MOB_DAMAGE				= "MobDamage";
 	private static final String			MOB_SPAWNING			= "MobSpawning";
 	private static final String			LAST_QUEST_TIME			= "LastQuestTime";
+	private static final String			GENDER_CHANGED_TIME		= "GenderChangedTime";
 
 	/** Kept by older versions next to ContestedLand; cleared with it ({@link #clearContestedLand}) */
 	private static final List<String>	LEGACY_CONTESTED		= List.of("ContestedKills", "ContestedDesecration");
 
 	private static final Set<String>	KNOWN					= Set.of(CREATED, DIVINE_FORCE, GENDER, PRIVATE_ACCESS, DESCRIPTION, HOME, MOOD, SEED, VERBOSITY,
 			PRIESTS, PENDING_PRIEST, PENDING_PRIEST_TIME, ALLIES, ENEMIES, CONTESTED_LAND, BLESSED_PLAYER, BLESSED_TIME, CURSED_PLAYER, CURSED_TIME,
-			HOLY_FOOD, UNHOLY_FOOD, HOLY_MOB, UNHOLY_MOB, SACRIFICE_VALUES, PVP, MOB_DAMAGE, MOB_SPAWNING, LAST_QUEST_TIME);
+			HOLY_FOOD, UNHOLY_FOOD, HOLY_MOB, UNHOLY_MOB, SACRIFICE_VALUES, PVP, MOB_DAMAGE, MOB_SPAWNING, LAST_QUEST_TIME, GENDER_CHANGED_TIME);
 
 	private static final LegacyDates	DATES					= LegacyDates.SECONDS;
 
@@ -261,6 +263,7 @@ public final class GodRepository extends Repository
 		god.setMobSpawning(readBoolean(section, MOB_SPAWNING, extras));
 
 		god.setLastQuestTime(readTime(section, LAST_QUEST_TIME, DATES, extras));
+		god.setGenderChangedTime(readTime(section, GENDER_CHANGED_TIME, DATES, extras));
 
 		god.setExtras(extras);
 		return god;
@@ -410,6 +413,7 @@ public final class GodRepository extends Repository
 			section.set(MOB_DAMAGE, god.mobDamage());
 			section.set(MOB_SPAWNING, god.mobSpawning());
 			setTime(section, LAST_QUEST_TIME, god.lastQuestTime());
+			setTime(section, GENDER_CHANGED_TIME, god.genderChangedTime());
 			writeExtras(section, god.extras());
 		}
 	}

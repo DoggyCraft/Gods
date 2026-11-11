@@ -211,7 +211,7 @@ class GodRepositoryTest
 		assertFalse(written.contains("Freya.PvP"));
 	}
 
-	/** Non-binary gods are stored as NonBinary and read back; the old genders read as they always did */
+	/** Non-binary gods are stored as NonBinary and read back, with when the gender last changed; the old genders read as they always did */
 	@Test
 	void gendersRoundTrip() throws IOException
 	{
@@ -219,6 +219,7 @@ class GodRepositoryTest
 				data-version: 2
 				Loki:
 				  Gender: NonBinary
+				  GenderChangedTime: 09:30:00 10-11-2026
 				Thor:
 				  Gender: Male
 				Odin:
@@ -229,17 +230,23 @@ class GodRepositoryTest
 		Storage storage = Fixtures.storage(this.dir);
 		assertTrue(storage.gods().load());
 		assertEquals(GodGender.NonBinary, storage.gods().find("Loki").gender());
+		assertEquals(LegacyDates.SECONDS.parse("09:30:00 10-11-2026"), storage.gods().find("Loki").genderChangedTime());
+		assertNull(storage.gods().find("Thor").genderChangedTime());
 		assertEquals(GodGender.Male, storage.gods().find("Thor").gender());
 		assertEquals(GodGender.None, storage.gods().find("Odin").gender());
 		assertNull(storage.gods().find("Hel").gender());
 
 		storage.gods().find("Thor").setGender(GodGender.NonBinary);
+		storage.gods().find("Thor").setGenderChangedTime(LegacyDates.SECONDS.parse("18:00:05 11-11-2026"));
 		storage.gods().markDirty();
 		storage.close();
 
 		YamlConfiguration written = written();
 		assertEquals("NonBinary", written.getString("Loki.Gender"));
 		assertEquals("NonBinary", written.getString("Thor.Gender"));
+		assertEquals("09:30:00 10-11-2026", written.getString("Loki.GenderChangedTime"));
+		assertEquals("18:00:05 11-11-2026", written.getString("Thor.GenderChangedTime"));
+		assertFalse(written.contains("Odin.GenderChangedTime"));
 		assertEquals("None", written.getString("Odin.Gender"));
 		// A gender this version doesn't know is kept as it was
 		assertEquals("Unknown", written.getString("Hel.Gender"));

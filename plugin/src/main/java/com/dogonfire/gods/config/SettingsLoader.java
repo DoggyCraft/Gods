@@ -51,6 +51,7 @@ public class SettingsLoader
 						atLeast("priests.max-per-god", 0),
 						atLeast("priests.max-hours-without-prayer", 0),
 						bool("priests.only-priests-can-set-home"),
+						atLeast("priests.gender-change-cooldown-hours", 0),
 						string("priests.assign-command"),
 						string("priests.remove-command")),
 				loadAltars(),

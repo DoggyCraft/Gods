@@ -529,3 +529,7 @@ believers-get-holy-artifact-quest-range:
 # <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
 - 'Let the party begin, <player>! I have chosen to be your <gender> of Party!'
+# Said to all believers when a priest (or a plugin) changed the god's gender. <gender> is the new one ("God",
+# "Goddess", "Deity")
+believers-gender-changed:
+- 'New party, new me! From now on I am your <gender> of Party!'

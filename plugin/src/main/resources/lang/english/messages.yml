@@ -32,8 +32,8 @@ altar:
   invalid-god-name: <dark_red>That is not a proper name for a God!
   invalid-sign: <dark_red>Only write the name of a God on the sign
   # The words a player may write on a new altar sign, on another line than the God's name, to choose the God's gender
-  # (any case). English "God", "Goddess" and "Deity" always work too. Without one, a new God chooses its gender
-  # itself.
+  # (any case); /gods gender takes them too. English "God", "Goddess" and "Deity" always work. Without one, a new God
+  # chooses its gender itself.
   gender-words:
     male: [God]
     female: [Goddess]
@@ -662,6 +662,18 @@ command:
     you: <gold><player><aqua> Prayed <gold><when>
     # Below the list, when the player isn't in it
     you-below: <gold><player> Prayed <when>
+  gender:
+    parameters: \<god|goddess|deity>
+    description: Change the gender of your God
+    # <word> is what the priest wrote. The words are altar.gender-words, and English God, Goddess and Deity.
+    unknown: <red><word> is not a gender. Use God, Goddess or Deity
+    # <god>, and <gender> ("God", "Goddess", "Deity")
+    already: <red><god> is already your <gender>
+    # <god>, and <hours>: how many hours until the gender may change again (config.yml:
+    # priests.gender-change-cooldown-hours)
+    cooldown: <red>The gender of <god> changed recently. Wait <hl><hours></hl> more hours
+    # <god>, and <gender> ("God", "Goddess", "Deity"). The god tells its believers itself (believers-gender-changed).
+    done: <aqua>You made <gold><god><aqua> your <yellow><gender>
   help:
     parameters: '[altar/blocks]'
     description: Show the list of Gods commands

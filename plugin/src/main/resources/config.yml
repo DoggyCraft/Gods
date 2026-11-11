@@ -52,6 +52,8 @@ priests:
   max-hours-without-prayer: 72
   # Only priests can set their religion's home with /g sethome.
   only-priests-can-set-home: false
+  # How many hours a god's priests must wait between two changes of its gender with /g gender.
+  gender-change-cooldown-hours: 24
   # A console command to run when a player becomes a priest, e.g. "lp user $PlayerName parent add priest". Empty for none.
   assign-command: ""
   # A console command to run when a priest is removed, e.g. "lp user $PlayerName parent remove priest". Empty for none.

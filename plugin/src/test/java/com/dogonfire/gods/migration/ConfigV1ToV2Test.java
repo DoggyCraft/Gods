@@ -76,7 +76,7 @@ class ConfigV1ToV2Test
 				new Settings.General(true, "danish", "DoggyCraft", List.of("world", "world_nether")),
 				new Settings.GodSettings(false, true, false, 0.5D, 0.05D, true, false),
 				new Settings.Believers(true, 600, 200),
-				new Settings.Priests(5, 2, 48, true, "lp user $PlayerName parent add priest", "lp user $PlayerName parent remove priest"),
+				new Settings.Priests(5, 2, 48, true, 24, "lp user $PlayerName parent add priest", "lp user $PlayerName parent remove priest"),
 				Settings.Altars.of(altars),
 				new Settings.Prayers(false, 15, 25, 12, 15, 55),
 				new Settings.Sacrifices(false),

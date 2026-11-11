@@ -530,3 +530,7 @@ believers-get-holy-artifact-quest-range:
 # <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
 - 'Rejoice in the light, <player>! I have chosen to be your <gender> of the Sun!'
+# Said to all believers when a priest (or a plugin) changed the god's gender. <gender> is the new one ("God",
+# "Goddess", "Deity")
+believers-gender-changed:
+- 'A new dawn rises, believers! From now on I am your <gender> of the Sun!'

@@ -92,6 +92,8 @@ public enum Voice
 	BELIEVERS_DEFEND_HOLY_LAND_FAILED("believers-defend-holy-land-failed"),
 	BELIEVERS_DEFEND_HOLY_LAND_SUCCESS("believers-defend-holy-land-success"),
 	BELIEVERS_EAT_FOOD_BLESSING("believers-eat-food-blessing"),
+	/** A priest (or a plugin) changed the god's gender; {@code <gender>} is its new one ("God", "Goddess", "Deity") */
+	BELIEVERS_GENDER_CHANGED("believers-gender-changed"),
 	BELIEVERS_GIVE_BIBLES_QUEST_PROGRESS("believers-give-bibles-quest-progress"),
 	BELIEVERS_GIVE_ITEMS_QUEST_COMPLETED("believers-give-items-quest-completed"),
 	BELIEVERS_GIVE_ITEMS_QUEST_FAILED("believers-give-items-quest-failed"),

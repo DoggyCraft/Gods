@@ -41,6 +41,7 @@ import com.dogonfire.gods.command.DescriptionCommand;
 import com.dogonfire.gods.command.DivorceCommand;
 import com.dogonfire.gods.command.EditBibleCommand;
 import com.dogonfire.gods.command.FollowersCommand;
+import com.dogonfire.gods.command.GenderCommand;
 import com.dogonfire.gods.command.HelpCommand;
 import com.dogonfire.gods.command.HolyArtifactCommand;
 import com.dogonfire.gods.command.HomeCommand;
@@ -328,7 +329,7 @@ public class Gods extends JavaPlugin
 		for (SubCommand command : List.of(
 				new AcceptCommand(this.ctx), new AccessCommand(this.ctx), new AllyCommand(this.ctx), new AttackCommand(this.ctx),
 				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx),
-				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx),
+				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx), new GenderCommand(this.ctx),
 				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),
 				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LeaveCommand(this.ctx),
 				new ListCommand(this.ctx), new LoveCommand(this.ctx), new MarriagesCommand(this.ctx), new MarryCommand(this.ctx),

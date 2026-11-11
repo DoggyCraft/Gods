@@ -1,5 +1,6 @@
 package com.dogonfire.gods.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -13,7 +14,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.event.GodGenderChangeEvent;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
@@ -238,6 +241,41 @@ public class GodService
 		}
 
 		this.repository.markDirty();
+	}
+
+	/**
+	 * Changes the god's gender, for /g gender and the API (the cooldown is the caller's to check): fires
+	 * {@link GodGenderChangeEvent}, then sets the gender and when it changed, saves, and the god tells its believers in
+	 * its new voice. Its title and the altar signs that show it follow (signs when next used).
+	 *
+	 * @return false if a listener cancelled it (nothing changed)
+	 */
+	public boolean changeGender(String godName, GodGender gender)
+	{
+		GodGender oldGender = getGenderForGod(godName);
+		if (ctx.fire(new GodGenderChangeEvent(godName, ApiSnapshots.gender(oldGender), ApiSnapshots.gender(gender))).isCancelled())
+		{
+			return false;
+		}
+
+		God god = this.repository.forChange(godName);
+		if (god != null)
+		{
+			god.setGender(gender);
+			god.setGenderChangedTime(LegacyDates.SECONDS.now());
+		}
+		this.repository.save();
+
+		ctx.plugin().log("The gender of " + godName + " changed from " + oldGender + " to " + gender);
+		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GENDER_CHANGED, 2, genderTag(godName));
+		return true;
+	}
+
+	/** When the god's gender was last changed (/g gender or the API), or null for never */
+	public Instant getGenderChangedTime(String godName)
+	{
+		God god = god(godName);
+		return god != null ? god.genderChangedTime() : null;
 	}
 
 	/** {@code <gender>}: the name of the god's gender ("God", "Goddess", "Deity"), for its words and messages */
