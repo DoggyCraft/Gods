@@ -299,6 +299,12 @@ sun:
       particles: [lava, large_smoke]
       sounds: [item.firecharge.use]
       colors: ['#8A3B00', black]
+  npc:
+    skin:
+      # A god of the sun, from MineSkin: https://mineskin.org/skins/73d5b578649e48dca9bb51d49072a81a
+      god:
+        value: ewogICJ0aW1lc3RhbXAiIDogMTYxNzIwMDI2MzY2NiwKICAicHJvZmlsZUlkIiA6ICJmZDQ3Y2I4YjgzNjQ0YmY3YWIyYmUxODZkYjI1ZmMwZCIsCiAgInByb2ZpbGVOYW1lIiA6ICJDVUNGTDEyIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2Y4NmE2MTc4YzMxOWExZGYzNzY4NDM5NDgyNjc4M2I3ZWUzNDNjY2EwNDI3OTIyNTE3MDk5MTBlNTA0NjRiZDAiCiAgICB9CiAgfQp9
+        signature: GU3FmBXdbnwoTNiDyCVJW598FfE12RJyscumVKwNNRPl9DSFrsmPT4/O3HvdmqNI8VNUzagQlN+IsvhRj8rRg9kf8N8b8WBy3b85P40RW/dyE0CrGpPxXEkqB9fF7L8niH3mcrDLYZDUlXLGuEXUEjn5p0TcS/PoIGd7Kw/MfqJ3CuvH14WO+KjQxtpMTSqZHQIquT/n6tH/3pmYgb4K53TlGfviE/CHYKHplL7R4HK9RDoe/omN0JIEA26ri1a3YMUlrT7l6nDVl3zHSlDs3EhcR+47KDKC6CIsA4DwHcmkOC2QpbnqexQo7ZiOcUaNzi/2PAiUksWWYBKsISZ2z2Ny5LsqMHlvkSOs/OkAS/BobVAnwhn4KA0lKVSBwjKfGdQ5nFahtptXoPz7Wg4SIgwoSaJzL9GsN+rS07+0e3hoCEgnd5r9E+17+07i/6heEyUTs5tLW+PnoLyIql84x+2zTdA9ueMs9kcBi/RHlFkWJD2QGifvQK901f69nzX2x6DcWBTLZsyxxY9luQOxRKB3Y5EFGae5jZ1Rpg4zzhaIYLI64q0HkXOaK4iCUyLnzhbJflzigjHLDVKBw0+WFtkD70KV8ltG5V5QLTBE7v+J884fKRTWaa0WIyvr1Gx+PFYhkkpWT7RIyZ1XEi0UI8yVwgINhAWRNp5fsy6ULXY=
 
 # Storms and lightning: creepers and golems the lightning loves are holy; copper calls the storm
 thunder:
