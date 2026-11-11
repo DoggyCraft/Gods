@@ -215,7 +215,7 @@ public class Gods extends JavaPlugin
 	}
 
 	/**
-	 * Loads the language files and the data of every enabled feature, in the order the managers depend on each other.
+	 * Loads the language files and the data of every enabled feature, in the order the services depend on each other.
 	 * Data of a feature that is switched off is not read (and so not written).
 	 */
 	private void loadData()

@@ -133,15 +133,14 @@ public class HolyArtifactService
 	 * Each use counts towards the artifact's rank, and wears it like any other
 	 * use of a tool.
 	 */
-	public void handleActivate(String playerName, ItemStack item)
+	public void handleActivate(Player player, ItemStack item)
 	{
 		if (!isHolyArtifact(item))
 		{
 			return;
 		}
-		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
 		HolyPowerRules.PowerDescription holyPower = getHolyPower(item);
-		if (player == null || holyPower == null)
+		if (holyPower == null)
 		{
 			return;
 		}
@@ -207,15 +206,6 @@ public class HolyArtifactService
 			item.setAmount(item.getAmount() - 1);
 			player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F);
 		}
-	}
-
-	/**
-	 * True if the online player with this exact name carries a Holy artifact.
-	 */
-	public boolean hasHolyArtifact(String playerName)
-	{
-		Player player = ctx.plugin().getServer().getPlayerExact(playerName);
-		return player != null && hasHolyArtifact(player);
 	}
 
 	/**

@@ -40,7 +40,7 @@ public class HolyArtifactListener implements Listener
 			Material type = player.getInventory().getItemInMainHand().getType();
 			if ((event.getHand() == EquipmentSlot.HAND) && (type != Material.AIR) && (godName != null))
 			{
-				ctx.holyArtifactService().handleActivate(player.getName(), player.getInventory().getItemInMainHand());
+				ctx.holyArtifactService().handleActivate(player, player.getInventory().getItemInMainHand());
 			}
 		}
 	}
