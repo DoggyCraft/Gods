@@ -1,6 +1,5 @@
 package com.dogonfire.gods.service;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 
@@ -20,7 +19,9 @@ public class Titles
 	}
 
 	/**
-	 * Shows a title to a player. Times are in ticks; '&amp;' color codes and %player% are replaced.
+	 * Shows a title to a player. Times are in ticks. The texts are legacy text as {@code Messages.legacy} renders it, put
+	 * on the screen as they are: they hold what players wrote (god names, descriptions), so no '&amp;' code or
+	 * placeholder in them is read.
 	 */
 	public void send(Player player, Integer fadeIn, Integer stay, Integer fadeOut, String title, String subtitle)
 	{
@@ -37,16 +38,11 @@ public class Titles
 			return;
 		}
 
-		player.sendTitle(format(player, titleSendEvent.getTitle()), format(player, titleSendEvent.getSubtitle()), fadeIn, stay, fadeOut);
+		player.sendTitle(nullToEmpty(titleSendEvent.getTitle()), nullToEmpty(titleSendEvent.getSubtitle()), fadeIn, stay, fadeOut);
 	}
 
-	private static String format(Player player, String text)
+	private static String nullToEmpty(String text)
 	{
-		if (text == null)
-		{
-			return "";
-		}
-
-		return ChatColor.translateAlternateColorCodes('&', text).replace("%player%", player.getDisplayName());
+		return text != null ? text : "";
 	}
 }
