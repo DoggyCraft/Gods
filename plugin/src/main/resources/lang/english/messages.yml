@@ -1,0 +1,163 @@
+# The messages of Gods, in MiniMessage: https://docs.advntr.dev/minimessage/format.html
+#
+# A message can be one line, a list of lines, or '' to send nothing. Every message knows <server> (general.server-name
+# in config.yml) and <hl>...</hl>, the gold highlight Gods uses for names and numbers; the other tags a message knows
+# are listed next to it or its section. A message missing here falls back to the one bundled with Gods.
+#
+# What the gods themselves say is in voices/<type>_<gender>.yml.
+messages-version: 2
+
+god:
+  # How a god's words look. <god> is the god's name, <message> the line from its voice file.
+  speech: <gold>\<<god>>: <white><bold><message>
+  question-hint: <aqua>Use <white>/gods yes or /gods no</white> to answer the God
+
+# Hints sent a little while after something happens
+help:
+  commands-hint: <aqua>Use <white>/g help</white> for a list of commands
+  altar-hint: <aqua>Use <white>/g help altar</white> for info about how to build an altar
+  prayfor-hint: <aqua>Use <white>/g prayfor</white> for info about spending your prayer power
+  info-hint: <aqua>Use <white>/g info \<godname></white> to see information about a God
+
+altar:
+  # <god>
+  other-god: <dark_red>You cannot build altars to other Gods
+  no-access: <dark_red>You do not have access to that religion
+  # <god>
+  pray-hint: <aqua>Right click the sign on the altar to pray to your god.
+  god-not-allowed: <dark_red>You cannot pray to a God with such a name
+  praying-not-allowed: <dark_red>You do not have permission to pray at altars
+  invalid-god-name: <dark_red>That is not a proper name for a God!
+  invalid-sign: <dark_red>Only write the name of a God on the sign
+  blessing-hint: <aqua>Right click the sign on the altar to bless that player
+  curse-hint: <aqua>Right click the sign on the altar to curse that player
+  curse-not-allowed: <dark_red>You cannot curse players
+  blessing-not-allowed: <dark_red>You cannot bless players
+  build-not-allowed: <dark_red>You cannot build altars
+  create-god-not-allowed: <red>You cannot create a new God
+
+prayer:
+  power: <aqua>Your prayer power is now <hl><amount></hl>
+  left-religion: <red>You left the religion of <hl><god></hl>
+  confirm-change: <yellow>By praying to this God you will LEAVE the religion of <hl><god></hl>! Click again to confirm this action.
+  change-too-soon: <red>You cannot change god so soon! Try again later.
+  too-soon: <red>You cannot pray at an altar so soon! Gather your strength and try again in <hl><minutes></hl> minutes.
+  rejected-invitation: <red>You rejected the offer to join <hl><god></hl>!
+  # <amount> is the prayer power missing, <god>
+  not-enough-power: <aqua>You need <hl><amount></hl> more prayer power for that
+  # <amount> is the prayer power it costs, <god>
+  prayed-for-blessing: <aqua>You prayed to <hl><god></hl> for a blessing!
+  prayed-for-item: <aqua>You prayed to <hl><god></hl> for an item!
+  prayed-for-health: <aqua>You prayed to <hl><god></hl> for good health!
+  prayed-for-quest: <aqua>You prayed to <hl><god></hl> for a quest!
+
+priest:
+  invite-hint: <aqua>Use /g invite to invite a player to your religion!
+  followers-hint: <aqua>Use /g followers to keep track of your followers!
+  description-hint: <aqua>Use /g desc to set a description for your religion!
+
+believer:
+  # <amount> is the power earned, <god>
+  power-for-heathen-kill: <aqua>You earned <hl><amount></hl> power by slaying a non-believer in the name of <hl><god></hl>!
+  power-for-enemy-kill: <aqua>You earned <hl><amount></hl> power by slaying an enemy of <hl><god></hl>!
+
+holy-land:
+  size: <aqua>You religion now has claimed <hl><claimed></hl>/<hl><max></hl> Holyland
+  cannot-claim-more: <red>You cannot claim more Holyland
+  attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
+  attacking-hint: <aqua>Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
+  # <minutes> left of the battle
+  contested-kills: <aqua>The attackers need <hl><attacker_kills></hl> kills and the defenders need <hl><defender_kills></hl> kills to win this Holy Land
+  # <god> owning the land
+  contested-desecration: <aqua>This Holy Land has been desecrated <hl><desecrations></hl> times
+  no-teleport: <dark_red>You cannot teleport into the Holy Land of <hl><god></hl>
+
+marriage:
+  # <player> is the partner's display name
+  divorced-you: <red><hl><player></hl> just <hl>DIVORCED</hl> you!
+  loves-you: <green><hl><player></hl> <dark_red>LOVES</dark_red> you!
+
+quest:
+  sacrifice-hint: <aqua>Sacrifice items to your God by burning them
+  target-range: <aqua>You are <hl><distance></hl> blocks from the quest target
+  target-hint: <aqua>Use /g hunt to hunt for the quest target!
+
+power:
+  healed: <aqua>You healed <hl><amount></hl> beings
+
+# Names Gods puts into messages. An item or mob without a name here is shown by its Minecraft name (e.g. IRON_INGOT).
+names:
+  item:
+    AIR: air
+    STONE: stone
+    DIRT: dirt
+    COBBLESTONE: cobblestone
+    BEDROCK: bedrock
+    WATER: water
+    OAK_LOG: LOG
+    GOLD_BLOCK: goldblock
+    IRON_BLOCK: ironblock
+    OBSIDIAN: obsidian
+    CARROT: carrot
+    APPLE: apple
+    DIAMOND: diamond
+    BREAD: bread
+    BOOK: book
+    COOKED_COD: cooked cod
+    COOKED_SALMON: cooked salmon
+    CAKE: cake
+    COOKIE: cookie
+    MELON: melon
+    COOKED_BEEF: steak
+    COOKED_CHICKEN: chicken
+    GOLD_NUGGET: gold nugget
+    MAP: empty map
+  mob:
+    CHICKEN: chicken
+    CREEPER: creeper
+    SPIDER: spider
+    ENDER_DRAGON: dragon
+    ENDERMAN: enderman
+    COW: cow
+    BAT: bat
+    SHEEP: sheep
+    GHAST: ghast
+    SILVERFISH: silverfish
+    PIG: pig
+    SQUID: squid
+    WOLF: wolf
+    OCELOT: ocelot
+    IRON_GOLEM: iron golem
+    ZOMBIE: zombie
+    BLAZE: blaze
+    CAVE_SPIDER: cave spider
+    SLIME: slime
+    SKELETON: skeleton
+    VILLAGER: villager
+    UNKNOWN: unknown
+  # <gender> is the name below
+  god-type:
+    FROST: <gender> of Frost
+    SUN: <gender> of the Sun
+    MOON: <gender> of the Moon
+    LOVE: <gender> of Love
+    EVIL: <gender> of Evil
+    THUNDER: <gender> of Thunder
+    PARTY: <gender> of Party
+    WAR: <gender> of War
+    SEA: <gender> of the Sea
+    WISDOM: <gender> of Wisdom
+    WEREWOLVES: <gender> of Werewolves
+    CREATURES: <gender> of Mobs
+    NATURE: '<gender> of Nature '
+    none: <gender> of Nothing
+  gender:
+    None: God
+    Male: God
+    Female: Goddess
+  mood:
+    EXALTED: Exalted
+    PLEASED: Pleased
+    NEUTRAL: Neutral
+    DISPLEASED: Displeased
+    ANGRY: Angry

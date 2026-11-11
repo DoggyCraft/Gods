@@ -1,0 +1,528 @@
+# The voice of werewolves goddesses: what the god says in each situation. The god says one of the lines of a key, picked
+# at random. The text is MiniMessage (https://docs.advntr.dev/minimessage/format.html), shown after the god's name in
+# white bold (god.speech in messages.yml). '' or [] makes the god say nothing.
+# Tags: <player>, <type>, <amount> (what they are depends on the situation), <god> (the god's name), <server> (the
+# server name); <hl>...</hl> is the gold highlight. A key missing here falls back to the bundled file of this voice.
+
+messages-version: 2
+believers-claimed-holy-land:
+- <hl><player></hl> claimed more Holy land in our glory!
+believer-prayer-when-no-item-need:
+- <hl><player></hl>, you already have the items you need to do my work!
+believer-married-couple:
+- <hl><player></hl>, your love is making <hl><server></hl> a better place!
+- <hl><player></hl>, your love shows the light for everyone in <hl><server></hl>!
+- May you live happy forever after, <hl><player></hl>!
+believer-marriage-proposal:
+- I now ask of you, will you marry <hl><player></hl>?
+believer-accepted-marriage-proposal:
+- Very good, Now present your <hl><type></hl> to <hl><player></hl> as a symbol of your love!
+believer-accepted-your-marriage-proposal:
+- <hl><player></hl> accepted your marrige proposal! Now present your <hl><type></hl> to <hl><player></hl> as a symbol of your love!
+believer-marriage-token-pickup:
+- Very good. Now present a <hl><type></hl> to <hl><player></hl> to complete you wedding ceremony!
+believer-marriage-partner-token-pickup:
+- <hl><player></hl> has taken your <hl><type></hl>. Now let <hl><player></hl> give a <hl><type></hl> to you to complete you wedding ceremony!
+believer-married:
+- I now declare you both married in the Holy name of the BEAST!
+believer-random-exalted-speech:
+- I am proud of you my Children! You have showed true faith in me!
+- You make me proud, my children! You have followed my words and proven your faith!
+- Our faith is growing! You will all be rewarded!
+- <hl><player></hl>, I am proud of you! Your faith will be rewarded!
+- <hl><player></hl>, you make me proud! You shall be rewarded!
+- Yes! I can feel your faith in me! Our faith is a shining beacon for everyone to follow!
+- Very good! Your faith is strong! I am proud of you all!
+believer-random-pleased-speech:
+- I am pleased with you all, my children!
+- Very good, my Children! We are doing well!
+- Good my Children. Pray harder, and I shall reward you!
+- Good. You are showing faith in me. Listen to my words and we will all be stronger!
+- I can feel your faith, <hl><player></hl>!
+- Good <hl><player></hl>, your faith is strong!
+- You are doing well, my children! Keep praying to me!
+believer-random-neutral-speech:
+- I must have more believers. Get me more believers.
+- Help me to get more believers and i shall reward you!
+- More believers is more power!
+- Remember, the more believers we have the powerful we are!
+- Spread our religion, and i shall reward you!
+- We must make our religion known, go and tell others!
+- Pray at my altars!
+- Children, go forth and build altars in my name!
+- My children, do not listen to the words of the false gods!
+- I am the only true god for <hl><server></hl>
+- <hl><server></hl> needs my powers
+- Only I have the power to handle <hl><server></hl>!
+- Pray at my altars and i will show you the light!
+- Belief is power!
+- Believe in me and i will make you stronger!
+- Help me spreading my words to others in <hl><server></hl>!
+- My Children, only we hold the future of <hl><server></hl>!
+- Pray to me, and get stronger!
+- Do you believe in <hl><server></hl> ? Then pray to me!
+- My Children, i need your belief to get stronger!
+- My Children, only you can help me get stronger!
+- My Children, I will take care of you. Always!
+- Remember that I am always here, watching over each of you.
+- You are all my Children and I will always protect you!
+- My Children, make me proud!
+- My Children, we must get people to believe!
+- I know what is best for <hl><server></hl>!
+- Believe in me, my Children!
+- Pray to me, my Children!
+- Build altars and spread our religion!
+- Believe in me and i will take care of you, my Children!
+- Pray to me, and I will listen!
+- Make me proud, my Children!
+- Together, we are stronger!
+- Pray to me, and we will all become stronger!
+- Pray to me for a better world!
+- Do not listen to the words of false Gods! Pray to me!
+- Listen to the words of <hl><player></hl>, he will help you to understand!
+- If you feel lost, talk to <hl><player></hl>! He will show you the light!
+- Remember, <hl><player></hl> is our priest, he will guide you towards the light!
+believer-random-displeased-speech:
+- We are losing faith, my children... Pray harder!
+- I can sense your lack of faith... Pray to me and listen to my words!
+- <hl><player></hl>, we are losing faith! Help me to re-gain faith from our believers!
+- I am worried about <hl><player></hl>. My followers are losing faith! Please spread my words!
+- I am disturbed by your lack of faith! Pray harder!
+believer-random-angry-speech:
+- PRAY TO ME!!
+- NO! You must pray to me!!
+- I am VERY dissapointed with you!!
+- <hl><player></hl> have shown no faith in our cause!! You WILL ALL feel my wrath!
+- You have lost faith in me and lost your way!! I cannot allow this!
+believer-no-question:
+- I have not asked you for anything!
+believers-priest-accepted:
+- My Children, <hl><player></hl> has accepted to be my priest! A bright future awaits us!
+priest-eat-food-type:
+- 'Tell our believers of our most sacred food: The <hl><type></hl>!'
+- 'Tell our believers to eat our holy food: The <hl><type></hl>!'
+- Tell our believers about the joy of <hl><type></hl>! You must eat it!
+priest-not-eat-food-type:
+- <hl><player></hl>, never eat the <hl><type></hl>! It is the unclean food!
+- <hl><player></hl>, you are forbidden to eat <hl><type></hl>! It is the unholy food!
+- <hl><player></hl>, you must never eat <hl><type></hl>! It is unholy food!
+- <hl><player></hl>, tell our believers to never eat <hl><type></hl>! It is unclean!
+priest-not-slay-mob-type:
+- <hl><player></hl>, no harm must ever come to our beloved <hl><type></hl>!
+- 'Tell our believers of our most sacred creature: The <hl><type></hl>!'
+- 'Tell our believers to respect our holy creature: The <hl><type></hl>!'
+- '<hl><player></hl>, you must tell our believers about our holy creature: The <hl><type></hl>!'
+- <hl><player></hl>, nothing is as holy as the <hl><type></hl>!
+- '<hl><player></hl>, protect our holy of creature: The <hl><type></hl>!'
+priest-slay-mob-type:
+- <hl><player></hl>, we must get rid of the <hl><type></hl>! It is a plague to this world!
+- The <hl><type></hl> is a unholy creature. Tell our believers to slay it!
+- The <hl><type></hl> is a nasty creature. We must get rid of it!
+- <hl><player></hl>, tell our believers to slay the <hl><type></hl>. It is a unholy creature!
+priest-priest-accepted:
+- Good my child, you are now my priest. Let us work for a better world together!
+- Very well <hl><player></hl>, my priest. Let us work for a better world!
+priest-cursed-player-set:
+- Very well, I will bring down my curses upon <hl><player></hl>!
+priest-cursed-player-unset:
+- Very well, <hl><player></hl> will no longer be cursed by me!
+priest-blessed-player-set:
+- Very well, I will give my blessings to <hl><player></hl>!
+priest-blessed-player-unset:
+- Very well, <hl><player></hl> will no longer be blessed by me.
+believer-priest-rejected:
+- Very well my child. I will look for one more suited as my priest.
+believers-blessed-player-set:
+- My Children, I will now give my blessings to <hl><player></hl>!
+believers-blessed-player-unset:
+- My Children, <hl><player></hl> will no longer feel my blessings.
+player-cursed:
+- <hl><player></hl>, you are an insult to our glory. Feel my wrath!
+- <hl><player></hl>, you have angered me! Take this!
+- <hl><player></hl>, feel my wrath! Take this!
+- <hl><player></hl>, you have angered me and you must suffer!
+player-blessed:
+- Bless you, <hl><player></hl>!
+- Here <hl><player></hl>, receive my blessings!
+- <hl><player></hl>, go with my blessings!
+player-invite:
+- <hl><player></hl>, will you join our faith?
+- <hl><player></hl>, will you join our religion?
+player-accepted-invitation:
+- Welcome to our faith, <hl><player></hl>!
+believers-cursed-player-set:
+- My Children, I will bring down curses upon <hl><player></hl>!
+believers-cursed-player-unset:
+- My Children, <hl><player></hl> will no longer feel my curses.
+believers-player-blessed:
+- <hl><player></hl> has just been blessed by me!
+believers-player-cursed:
+- <hl><player></hl> has just been cursed by me!
+believer-offer-priest:
+- <hl><player></hl>, I have selected you as my priest in <hl><server></hl>. Do you accept this honor?
+believer-praying:
+- Thank you my child, for praying to me!
+- Thank you for praying to me, my child!
+- I hear your prayer, my child!
+believer-altar-built:
+- Thank you my child, for building this church in my name!
+believers-player-left-religion:
+- <hl><player></hl> has abandoned our religion!
+believers-player-joined-religion:
+- <hl><player></hl> has joined our religion!
+believer-health-blessing:
+- You look hurt my child. Let me bless you.
+believers-eat-food-blessing:
+- <hl><player></hl> has eaten the divine <hl><type></hl>. Recieve my blessings!
+- <hl><player></hl> has eaten the holy <hl><type></hl>. Be praised!
+- Well done, <hl><player></hl>! You have eaten the divine <hl><type></hl>!
+believers-not-eat-food-cursing:
+- <hl><player></hl> ate <hl><type></hl>! Feel my wrath!
+- <hl><player></hl>, never eat <hl><type></hl>! It is the cursed food!  It is feel my wrath!
+- <hl><type></hl> is the cursed food. <hl><player></hl>, feel my wrath!
+believers-slay-mob-blessing:
+- <hl><player></hl> has righteously slain the unholy <hl><type></hl>. Receive my blessings!
+- <hl><player></hl> has slain the unholy <hl><type></hl> with honor. Well done!
+believers-not-slay-mob-cursing:
+- <hl><player></hl>, the <hl><type></hl> is our holy creature! It must never be harmed!
+- <hl><player></hl>! Never do harm to the holy <hl><type></hl>! Feel my wrath!
+believer-item-blessing:
+- Here my child. Take this <hl><type></hl> with my blessings.
+- <hl><player></hl>, i see that you have no <hl><type></hl>. Take this with my blessings!
+- <hl><player></hl>, you seem to need a <hl><type></hl>. Take this.
+- <hl><player></hl>, you need some <hl><type></hl>. Take this with my blessings!
+- <hl><player></hl>, you should have a <hl><type></hl>. Take this with my blessings!
+believer-holy-artifact-blessing:
+- <hl><player></hl>, use this to protect the nature-born in <hl><server></hl>!
+believers-slay-quest-failed:
+- My Children, I am displeased in you. You have failed to perform this simple task for me...
+believers-lost-believer:
+- <hl><player></hl> has lost his faith in me. I do no longer feel him as part of our religion...
+believers-removed-priest:
+- Oh no! I find myself having no priest! I must find a priest to do my bidding!
+believers-slay-quest-completed:
+- Well done my children! You have shown your faith in my commands. Here is your reward!
+believers-slay-quest-started:
+- My children! I need you to slay <hl><amount></hl> <hl><type></hl> in my honor!
+- My children, show your faith in me! I need you to slay <hl><amount></hl> <hl><type></hl> in my honor!
+- The time has come to show your faith in me! I need you to slay <hl><amount></hl> <hl><type></hl> in my honor!
+- Now hear this, my Children! You must go forth and slay <hl><amount></hl> <hl><type></hl> in my honor!
+believers-slay-quest-progress:
+- Well done my children! Just <hl><amount></hl> <hl><type></hl> left to slay!
+believers-slay-quest-status:
+- My children, you still need to slay <hl><amount></hl> <hl><type></hl> in my honor!
+believers-build-altars-quest-started:
+- My children! I need you to build <hl><amount></hl> new altars in my honor!
+- My children, you must show your faith in me! I need you to build <hl><amount></hl> more altars in my honor!
+- The time has come to show your faith in me! I need you to build <hl><amount></hl> new altars in my honor!
+- Now hear this, my Children! You must go forth and build <hl><amount></hl> new altars in my honor!
+believers-build-altars-quest-status:
+- My children, you still need to build <hl><amount></hl> altars in my honor!
+- Remember, you must still build <hl><amount></hl> altars in my honor!
+believers-build-altars-quest-progress:
+- Well done my children! Only <hl><amount></hl> altars left to build in my honor!
+- Very good! You only need to build <hl><amount></hl> more altars in my honor!
+believers-build-altars-quest-completed:
+- Well done my children! You have shown your faith in my commands. Here is your reward!
+believers-build-altars-quest-failed:
+- My Children, I am displeased in you. You have failed to perform this simple task for me...
+believers-build-tower-quest-started:
+- My children! I need you to build a tower <hl><amount></hl> blocks tall in my honor!
+believers-build-tower-quest-status:
+- Remember, you must build my <hl><type></hl> tower of height <hl><amount></hl> in my honor!
+believers-build-tower-quest-progress:
+- Well done my children! Only <hl><amount></hl> blocks left to build on the tower in my honor!
+believers-build-tower-quest-completed:
+- Well done my children! You have shown your faith in my commands. Here is your reward!
+believers-build-tower-quest-failed:
+- My Children, I am displeased in you. You have failed to perform this simple task for me...
+believers-sacrifice-quest-started:
+- My children! I need you to burn <hl><amount></hl> <hl><type></hl> as a sacrifice to me!
+- My children! I ask you now to burn <hl><amount></hl> <hl><type></hl> as a sacrifice to me!
+believers-sacrifice-quest-status:
+- My children, you must sacrifice <hl><amount></hl> <hl><type></hl> to me! Burn them by fire!
+believers-sacrifice-quest-progress:
+- Well done my children! Only <hl><amount></hl> <hl><type></hl> left to sacrifice in my honor!
+believers-sacrifice-quest-completed:
+- Well done my children! You have shown your faith in my commands. Here is your reward!
+believers-sacrifice-quest-failed:
+- My Children, I am displeased in you. You have failed to perform this simple task for me...
+believers-convert-quest-started:
+- My children! I need you to turn <hl><amount></hl> non-believers away from the darkness and into our religion!
+- My children! I need you to convert <hl><amount></hl> people from their false beliefs and into our religion!
+- My children, you must show <hl><amount></hl> heathens the true ways of our faith!
+- My children, you must guide <hl><amount></hl> non-believers into the light of our religion!
+believers-convert-quest-status:
+- My children, you must still turn <hl><amount></hl> heathens from the dark side into our religion!
+- Remember, you must still convince <hl><amount></hl> non-believers to join our religion!
+believers-convert-quest-progress:
+- Well done, my children! <hl><amount></hl> heathens left to be converted to our side!
+- Glorius, another believer sees our light! Only <hl><amount></hl> left to convert!
+believers-convert-quest-completed:
+- Well done my children! You have shown your faith and gathered believers into our religion. Here is your reward!
+believers-convert-quest-failed:
+- My Children, I am displeased in you. You have failed to perform this simple task for me...
+believers-give-items-quest-started:
+- My children, hear this! You must now go and let <hl><amount></hl> heathens read our Holy Book!
+- My children, you must show <hl><amount></hl> non-believers the true path by letting them read our Holy Book!
+believers-give-items-quest-status:
+- My children, you must still let <hl><amount></hl> more non-believers read our Holy Book!
+- Remember, you must still let <hl><amount></hl> more non-believers read our Holy Book!
+believers-give-bibles-quest-progress:
+- Well done, my children! <hl><amount></hl> heathens left to be converted to our side!
+- Very good, another believer sees our light! Only <hl><amount></hl> more non-believers must read our Holy Book!
+- Very good, <hl><player></hl> has read <hl><type></hl>! Only <hl><amount></hl> more non-beleivers must read our Holy Book!
+believers-give-items-quest-completed:
+- Well done my children! You have shown your faith shown non-believers the light of our religion. Here is your reward!
+- I am proud of you, my children! You have shown our words of truth to the non-believers! Here is your reward!
+believers-give-items-quest-failed:
+- My Children, I am displeased in you. You have failed to perform this simple task for me...
+believers-burn-bibles-quest-started:
+- My children, you must BURN <hl><amount></hl> <hl><type></hl> in my honor!
+- The nasty of religion of <hl><player></hl> is a insult to us! Let us BURN their pityful holy book!
+- My Children, the time has come to BURN those nasty holy books of <hl><player></hl>!
+believers-burn-bibles-quest-status:
+- Remember, you must BURN <hl><amount></hl> more <hl><type></hl> in my honor!
+- My children, BURN their unholy books of <hl><player></hl>! Do not let them pollute this world!
+- You BURN the <hl><type></hl>! Do not let them pollute this world!
+believers-burn-bibles-quest-progress:
+- Well done, my children! Only <hl><amount></hl> <hl><type></hl> left to BURN in my honor!
+- Glorious, my children! Let us BURN <hl><amount></hl> more in my honor!
+believers-burn-bibles-quest-completed:
+- Well done my children! You have ridden the world of <hl><type></hl>! Here is your reward!
+believers-burn-bibles-quest-failed:
+- My Children, I am displeased in you. You have not shown respect for our holy food...
+believers-holy-feast-quest-started:
+- My children, you must hold a feast! Eat <hl><amount></hl> <hl><type></hl> in my honor!
+- My children, celebrate our faith and eat <hl><amount></hl> <hl><type></hl> in my honor!
+- Let us celebrate the wonder of <hl><type></hl>! You must eat <hl><amount></hl> of them in my honor!
+believers-holy-feast-quest-status:
+- My children, you must feast and eat <hl><amount></hl> more <hl><type></hl> in my honor!
+- My children, let us celebrate the glory of <hl><type></hl>! Eat <hl><amount></hl> <hl><type></hl> more in my honor!
+believers-holy-feast-quest-progress:
+- Well done, my children! Only <hl><amount></hl> <hl><type></hl> left to eat in my honor!
+- Glorious, my children! Only <hl><amount></hl> <hl><type></hl> left to eat in my honor!
+believers-holy-feast-quest-completed:
+- Well done my children! You have feasted well. Here is your reward!
+- That was a wonderful eating part and you have eaten well. Here is your reward!
+believers-holy-feast-quest-failed:
+- My Children, I am displeased in you. You have shown no respect for our holy food...
+believers-crusade-quest-started:
+- My children, it is time to show those non-believers who hold the truth in <hl><server></hl>!
+- Grab your swords, my children! We must rid <hl><server></hl> from the heathens!
+believers-crusade-quest-status:
+- My children, you must slay <hl><amount></hl> more non-believers in my honor!
+believers-crusade-quest-progress:
+- Well done, my children! Only <hl><amount></hl> non-believers left to kill in my honor!
+believers-crusade-quest-completed:
+- Well done my children! You have uphold the justice in <reset><gold><hl><server></hl><white>. Here is your reward!
+believers-crusade-quest-failed:
+- My Children, you have FAILED to get my <reset><gold><hl><type></hl><white> first. I am very dissapointed...
+- Oh no! You did not fetch me <reset><gold><hl><type></hl><white> in time...
+believers-holy-battle-quest-started:
+- My children, it is time to show those non-believers who hold the truth in <hl><server></hl>!
+- Grab your swords, my children! We must rid <hl><server></hl> from the heathens!
+believers-holy-battle-quest-status:
+- My children, you must slay <hl><amount></hl> more non-believers in my honor!
+believers-holy-battle-quest-progress:
+- Well done, my children! Kill those infidels!
+- Well done, my children! Slay them all!
+believers-holy-battle-quest-completed:
+- Well done my children! You have uphold the justice in <hl><server></hl>. Here is your reward!
+believers-holy-battle-quest-failed:
+- My Children, you have FAILED to reach the temple of <hl><player></hl> first. I am dissapointed...
+- Oh no! We did not reach the temple of <hl><player></hl> in time...
+believers-pilgrimage-quest-started:
+- My children, you must travel to the <hl><type></hl>! Go there and you shall be rewarded!
+believers-pilgrimage-quest-status:
+- My children, you must hurry! Travel to the <hl><type></hl>!
+- My children, when you arrive at the <hl><type></hl>, you will all be rewarded!
+- Show your faith in me by travelling to the <hl><type></hl>!
+- Remember, you must travel to our the holy <hl><type></hl>!
+believers-pilgrimage-quest-progress:
+- Well done, my children!
+believers-pilgrimage-quest-completed:
+- I am proud of you my children! You travelled far and completed your goal. Here is your reward!
+- Well done! You travelled far in the name of frost. Here are your rewards!
+believers-pilgrimage-quest-failed:
+- My Children, I am displeased in you. You have not shown respect for our faith...
+- My Children, I am displeased in you. You have failed to complete this simple task for me...
+believers-get-holy-artifact-quest-started:
+- My children, I have just remembered that I left a <hl><type></hl> while visiting my believers 500 years ago! Retrieve it before it fall into the wrong hands!
+- OH NO!, I have just remembered that I left a <hl><type></hl> while visiting my believers 500 years ago! Retrieve it before it fall into the wrong hands!
+believers-get-holy-artifact-quest-status:
+- My children, please hurry! Find my lost <hl><type></hl> before it is too late!
+- Our holy book will guide you to my lost <hl><type></hl>! Go now!
+- My children, you must follow our Holy Creature to my <hl><type></hl> before it is too late!
+- Hurry! Go to the lost temple and get my <hl><type></hl> before it is too late!
+- We must get to the temple and get the lost <hl><type></hl> before it is too late!
+- I cannot believe I was so careless to leave my <hl><type></hl> in that temple...
+- Use our Holy Book and let our Holy Creature show you the way to the lost temple!
+- Our Holy Book will show guide you to my <hl><type></hl>!
+- Please, do not let my <hl><type></hl> get into the hand of the false Gods!
+believers-get-holy-artifact-quest-progress:
+- Well done, my children! Only <hl><amount></hl> non-believers left to kill in my honor!
+believers-get-holy-artifact-quest-failed:
+- Oh no... My <hl><type></hl> have fallen into the hand of another faith... You have failed me...
+- Oh no... My <hl><type></hl> is lost to the false Gods... We have failed...
+believers-get-holy-artifact-other-quest-failed:
+- 'NOO... The <hl><type></hl> of was retrieved by the followers of <hl><player></hl> . Such a shame... '
+believers-claim-holy-land-quest-started:
+- My children, we must claim the Holy Land of <hl><type></hl>!
+believers-claim-holy-land-quest-status:
+- My children, you must hurry! Claim the Holy land of <hl><type></hl> before the false Gods!
+believers-claim-holy-land-quest-progress:
+- Well done, my children! Only <hl><amount></hl> more second to hold non-believers left to kill in my honor!
+believers-claim-holy-land-quest-completed:
+- I am proud of you my children! You travelled far and completed your goal. Here is your reward!
+believers-claim-holy-land-quest-failed:
+- My Children, I am displeased in you. You have not shown respect for our faith...
+believer-good-sacrifice:
+- <hl><player></hl>, you are a TRUE believer!
+- Thank you, <hl><player></hl>!
+- Well done, <hl><player></hl>!
+- Yes, <hl><player></hl>! Bring me more <hl><type></hl>
+- Excellent sacrifice, <hl><player></hl>!
+- Thank you <hl><player></hl>, for your sacrifice of <hl><type></hl>!
+- A most glorious sacrifice <hl><player></hl>!
+- Yes <hl><player></hl>! <hl><type></hl> is indeed a proper sacrifice!
+- This is perfect <hl><player></hl>! <hl><type></hl> is just what i require for our cause!
+believer-meh-sacrifice:
+- I require no <hl><type></hl> at this time, <hl><player></hl>.
+- <hl><player></hl>, please do not sacrifice more <hl><type></hl> for now.
+- Very genorous <hl><player></hl>, but i do not require this <hl><type></hl>.
+- That is a nice gesture <hl><player></hl>, but i do not require more <hl><type></hl>.
+- That is appreciated <hl><player></hl>, but do not give me more <hl><type></hl> for now.
+- A nice thought, <hl><player></hl>. But i do not requite <hl><type></hl> at this time.
+believer-bad-sacrifice:
+- <hl><player></hl>, stop giving me <hl><type></hl>!
+- <hl><player></hl>, stop sending me those dreaded <hl><type></hl>!
+- <hl><player></hl>, I had enough of your <hl><type></hl>!
+believer-holy-food-sacrifice:
+- <hl><player></hl>, <hl><type></hl> is our sacred food! You must NEVER burn that!
+- <hl><type></hl> is our most holy food! How dare you throw it into the flames!
+- <hl><player></hl>, how dare you insult our holy <hl><type></hl>!
+believer-cursed-angry:
+- I am dismayed at your lack of attention <hl><player></hl>! Feel my wrath!
+- You have NOT shown respect have angered me!
+- <hl><player></hl>, you have angered me! You must pray harder and listen to my words!
+- <hl><player></hl>, you have angered me and you must suffer!
+- 'You have not paid attention to my words! You have all angered me and you must suffer! '
+- I am very disturbed at your lack of faith! You will suffer!
+believer-smite-blessing:
+- Do NOT attack <hl><player></hl>! Take this!
+- No! Do not attack <hl><player></hl>!
+- Get away from <hl><player></hl>!
+believers-altar-destroyed-by-player:
+- <hl><player></hl> just destroyed our altar!
+- Our altar was destroyed by <hl><player></hl>!
+believers-altar-destroyed:
+- Our altar was destroyed!
+believers-set-home:
+- <hl><player></hl> just specified his location as our home!
+believers-war:
+- We are now at WAR with ungodly believers of <hl><player></hl>! Kill them and make me proud!
+- My children, we are now at WAR with <hl><player></hl>! Kill them all on sight!
+believers-alliance:
+- We have joined forces with <hl><player></hl>! Welcome our brothers!
+- The believers of <hl><player></hl> are now our allies! Let us work together!
+- The followers of <hl><player></hl> are now brothers and sisters in faith!
+believers-war-cancelled:
+- We are no longer at WAR with <hl><player></hl>!
+believers-alliance-cancelled:
+- We are no longer allied with <hl><player></hl>!
+believers-sacrifice-item-type:
+- Show your faith in me! Sacrifice some <hl><type></hl> in my name!
+- My children, i require some <hl><type></hl> from you! Sacrifice it to me!
+- My children, i must have some <hl><type></hl>! Sacrifice it to me!
+- My children, go forth and sacrifice some <hl><type></hl> in my name!
+- 'I ask of you all: Gather some <hl><type></hl> and Sacrifice it to me by fire!'
+default-bible-text-1:
+- 'Before time, there was a cold room. Then, through a door, <hl><player></hl> entered the room, booted up the server and installed minecraft. <hl><player></hl> nodded and thus spake: ''Let''s rock...'
+- 'In the beginning there was only darknesss. Then out of nothing, <hl><player></hl> created the BLOCKS. <hl><player></hl> saw it was good and thus spake: ''Cool'''
+- 'From the darknesss, <hl><player></hl> made light and from the light he made <hl><server></hl>. <hl><player></hl> saw it was good and thus spake: ''I rock!'
+- 'In only 3 days <hl><player></hl> made the world from a single block of dirt. <hl><player></hl> saw that it was good and thus spake: ''I shall call it ... <hl><server></hl>!'''
+default-bible-text-2:
+- Next, <hl><player></hl> decided to populate the fields with life. First among living things was the original mob. It was named '<hl><type></hl> - The firstborn'.
+- <hl><player></hl> gave life to the world and through infinite wisdom, decided to spawn some mobs. And first among them was the <hl><type></hl>.
+- '<hl><player></hl> mumbled to himself "Hmm, this map sux... Oh, I know: Let''s have some mobs!". And <hl><player></hl> started to spawn some <hl><type></hl>!'
+default-bible-text-3:
+- '<hl><player></hl> saw that his poor creation was starving and thus spake: "Lo and behold: A <hl><type></hl>! You must eat it!"'
+- '<hl><player></hl> could see that his poor creation hungry and therefore said to it: "Here, have some <hl><type></hl>! That is serious good eating, trust me!"'
+default-bible-text-4:
+- 'And thus <hl><player></hl> spoke upon his creation and said: "You are to eat all things in <hl><server></hl> except the <hl><type></hl>! That, you must never eat!"'
+- '<hl><player></hl> turned to his creation and spoke: "You may eat all things in <hl><server></hl> except the <hl><type></hl>! You must never eat the <hl><type></hl>! <hl><type></hl> is not for eating! Is that clear enough?"'
+- '<hl><player></hl> said: "Hey yo! You can eat whatever you want here in <hl><server></hl> but NOT any <hl><type></hl>! Keep your hands off <hl><type></hl> and all is cool, OK?"'
+- '<hl><player></hl> now said: "You can eat anything you want here in <hl><server></hl> but i pity the fool that eats any <hl><type></hl>! Anyone who eats <hl><type></hl> will feel my wrath!"'
+default-bible-text-5:
+- But alas, on <hl><player></hl>'s first and only fishing day, the foul <hl><type></hl> crept upon his innocent creation and tempted the firstborn to eat the very forbidden food which <hl><player></hl> had warned him about!
+- And so, <hl><player></hl>'s took a day off. But when he returned he saw a <hl><type></hl> sitting on his innocent creation laughing while shoving the forbidden food down the throat of the firstborn!
+default-bible-text-6:
+- '<hl><player></hl> was furious when learning about this event and cursed the <hl><type></hl> saying: "Forever will you and your kind be cursed! You shall be hunted down and slain whereever you are found!"'
+- '<hl><player></hl> went angered and took the <hl><type></hl> by the throat, saying: "You just messed with the wrong God, dude! You better watch your back when walking down the street in the future, PUNK!"'
+default-bible-text-7:
+- '"Never again shall anyone eat the nasty <hl><type></hl>!" said <hl><player></hl>. "Forever shall it be the cursed food!"'
+- '<hl><player></hl> thus spake: "Henceforth let it be known that <hl><type></hl> is the cursed food!". And behold: The very skies soon filled with burning <hl><type></hl> as a symbol of <hl><player></hl>''s will.'
+priest-use-bible:
+- <hl><player></hl>, use our Holy Book to let others see learn the ways of our religion!
+- <hl><player></hl>, spread the word using our Holy Book! Give it to non-believers to they may join us!
+- <hl><player></hl>, give our Holy Book to others so they may see the truth of our religion!
+- Remember <hl><player></hl>, you must spread the truth by giving out our Holy Book to others!
+- <hl><player></hl>, you must spread our words by giving the <hl><type></hl> to others!
+- <hl><player></hl>, read from <hl><type></hl> so that others may see the light!
+priest-use-prophecies:
+- <hl><player></hl>, I have seen what will happen! My prophecies are written in our Holy Book!
+- <hl><player></hl>, let our believers know about my prophecies! Read from our Holy Book!
+- <hl><player></hl>, read my prophecies to the non-believers so that they will see the truth of our religion!
+- Remember <hl><player></hl>, my prophecies are written in our Holy Book!
+prophecy-header-bible-text:
+- The Prophecies of <hl><player></hl>                                                       These are things I foreseen will come to happen in TestWorld.
+unholy-mob-will-be-slain-future-prophecy-bible-text:
+- A champion will slay the nasty <hl><type></hl> in the glory of my name.
+unholy-mob-will-be-slain-past-prophecy-bible-text:
+- The unholy <hl><type></hl> was slain by the mighty <hl><player></hl>
+storm-prophecy-effect-past-bible-text:
+- ' and the skies darkened and storms raged across the lands!'
+storm-prophecy-effect-future-bible-text:
+- ' and storms will sweep the lands!'
+dragon-boss-will-be-slain-future-prophecy-bible-text:
+- The Dragon Lord <hl><player></hl> will be slain by a mighty champion!
+dragon-boss-will-be-slain-past-prophecy-bible-text:
+- The Dragon Lord <hl><player></hl> was slain
+dragon-boss-prophecy-effect-past-bible-text:
+- ' and the Dragon Lord <hl><player></hl> appeared and ruled the land of <hl><server></hl> with terror'
+dragon-boss-prophecy-effect-future-bible-text:
+- ' and the Dragon Lord <hl><player></hl> will appear and rule the land of <hl><server></hl> with terror'
+holy-food-rain-prophecy-effect-bible-text:
+- Rejoice! All the prophecies in <hl><player></hl> has been fulfilled!
+darkness-prophecy-effect-bible-text:
+- Rejoice! All the prophecies in <hl><player></hl> has been fulfilled!
+heathen-will-be-slain-prophecy-effect-bible-text:
+- Rejoice! All the prophecies in <hl><player></hl> has been fulfilled!
+believer-will-leave-religion-prophecy-bible-text:
+- The cowardly <hl><player></hl> left our faith, turning to madness
+believers-prophecy-fulfilled:
+- <hl><player></hl> fullfilled a prophecy of <hl><type></hl>!
+believers-all-prophecies-fulfilled:
+- Rejoice! All the prophecies in <hl><player></hl> has been fulfilled!
+believer-prayer-recent-item-blessing:
+- You already got your share of the hunt! Do not be greedy, cub.
+believer-prayer-too-soon:
+- Patience, cub! The pack does not hunt every hour. Pray to me again later.
+believers-attack-holy-land-failed:
+- Our hunt has failed... The prey got away this time.
+believers-attack-holy-land-success:
+- The hunt is over! Their Holy Land is our territory now!
+believers-attack-started:
+- The pack hunts! We attack the Holy Land of <hl><player></hl>! Tear them apart!
+believers-defend-holy-land-failed:
+- Our territory is lost... The pack has failed me.
+believers-defend-holy-land-success:
+- The pack has defended its territory! Howl in victory, my children!
+believers-new-player-accepted:
+- A new wolf has joined the pack! Welcome them, my children!
+believers-get-holy-artifact-quest-help:
+- My children, you must find the Holy artifact of <hl><type></hl>! Use /gods hunt to join the search!
+believers-get-holy-artifact-quest-range:
+- You are only <hl><amount></hl> blocks away from the Holy artifact!
+- Hurry! You are <hl><amount></hl> blocks away from the Holy artifact!
