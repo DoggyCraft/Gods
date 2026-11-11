@@ -33,6 +33,20 @@
             <version>3.2.1</version>
             <scope>compile</scope>
         </dependency>
+        <!-- MiniMessage and the legacy serializer. Spigot has no Adventure, so it is shaded and relocated (Paper's own
+             copy is left alone). Messages are rendered to legacy text, which both platforms accept. -->
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>${adventureVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-legacy</artifactId>
+            <version>${adventureVersion}</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- WorldGuard -->
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>
@@ -117,10 +131,21 @@
                 <configuration>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
                     <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                    <artifactSet>
+                        <excludes>
+                            <!-- Annotation-only dependencies of Adventure -->
+                            <exclude>org.jetbrains:annotations</exclude>
+                            <exclude>org.jspecify:jspecify</exclude>
+                        </excludes>
+                    </artifactSet>
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
                             <shadedPattern>com.dogonfire.gods.libs.bstats</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.kyori</pattern>
+                            <shadedPattern>com.dogonfire.gods.libs.kyori</shadedPattern>
                         </relocation>
                     </relocations>
                     <!-- Exclude signature files and duplicate MANIFESTs -->
@@ -137,6 +162,10 @@
                             </excludes>
                         </filter>
                     </filters>
+                    <transformers>
+                        <!-- Adventure finds some of its parts through service files; rewrite them for the relocation -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    </transformers>
                 </configuration>
                 <executions>
                     <execution>
