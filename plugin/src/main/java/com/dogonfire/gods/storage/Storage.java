@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * Owns the data files in the plugin folder and the one writer thread they share (one thread, so writes land in the
  * order they were made). Every file (gods.yml, believers.yml, quests.yml, holyland.yml, marriages.yml, bibles.yml,
- * whitelist.yml and blacklist.yml) is held as models by a {@link Repository} (loaded and changed by its service), over a
+ * whitelist.yml, blacklist.yml and altars.yml) is held as models by a {@link Repository} (loaded and changed by its service), over a
  * {@link DataFile}. A change marks the file dirty;
  * {@link #flush()} queues a write for every changed file (main thread: on the autosave timer, on /g reload and on
  * disable), and {@link #close()} flushes and waits for the writes.
@@ -42,6 +42,7 @@ public final class Storage
 	private final HolyBookRepository	bibles;
 	private final GodListRepository	whitelist;
 	private final GodListRepository	blacklist;
+	private final AltarRepository	altars;
 	private final List<DataFile>	files;
 	// System.nanoTime() when the data was last (re)loaded, or null; starts the cleanup grace period
 	private Long					loadedAt;
@@ -81,7 +82,8 @@ public final class Storage
 		this.bibles = new HolyBookRepository(new DataFile(dataFolder.resolve("bibles.yml"), logger, writer, null, HolyBookRepository.format()), logger);
 		this.whitelist = new GodListRepository(file(dataFolder, "whitelist.yml", null), logger, "whitelisted");
 		this.blacklist = new GodListRepository(file(dataFolder, "blacklist.yml", null), logger, "blacklisted");
-		this.files = List.of(this.gods.file(), this.believers.file(), this.quests.file(), this.holyLands.file(), this.marriages.file(), this.bibles.file(), this.whitelist.file(), this.blacklist.file());
+		this.altars = new AltarRepository(new DataFile(dataFolder.resolve("altars.yml"), logger, writer, null, AltarRepository.format()), logger);
+		this.files = List.of(this.gods.file(), this.believers.file(), this.quests.file(), this.holyLands.file(), this.marriages.file(), this.bibles.file(), this.whitelist.file(), this.blacklist.file(), this.altars.file());
 	}
 
 	private DataFile file(Path dataFolder, String name, DataFile.Repair repair)
@@ -132,6 +134,12 @@ public final class Storage
 	public GodListRepository blacklist()
 	{
 		return this.blacklist;
+	}
+
+	/** altars.yml: where the altars are */
+	public AltarRepository altars()
+	{
+		return this.altars;
 	}
 
 	public List<DataFile> files()

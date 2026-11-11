@@ -129,6 +129,11 @@ public class AltarListener implements Listener
 			return;
 		}
 		altar = ctx.altarService().refreshAltarSign(block, altar, player);
+		if (altar.tagged())
+		{
+			// Known from now on (an altar from before tags, or one the registry hasn't found yet)
+			ctx.altarRegistry().register(block, altar, null);
+		}
 
 		if (ctx.settings().curses().enabled())
 		{
@@ -304,7 +309,7 @@ public class AltarListener implements Listener
 
 		if (created != null)
 		{
-			ctx.altarService().finishAltarSignLater(block, created);
+			ctx.altarService().finishAltarSignLater(block, created, player.getUniqueId());
 		}
 		else
 		{

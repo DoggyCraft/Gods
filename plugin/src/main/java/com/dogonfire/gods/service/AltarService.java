@@ -109,9 +109,17 @@ public class AltarService
 	 * Tags, styles and waxes the sign of a new altar one tick later (after the text from the sign editor has been
 	 * applied), so it is known by its tags and players can't open the sign editor on it.
 	 */
-	public void finishAltarSignLater(Block signBlock, AltarSigns.AltarSign altar)
+	public void finishAltarSignLater(Block signBlock, AltarSigns.AltarSign altar, UUID builder)
 	{
-		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> markAltarSign(signBlock, altar));
+		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> {
+			if (!isWallSign(signBlock))
+			{
+				// Gone within the tick
+				return;
+			}
+			markAltarSign(signBlock, altar);
+			ctx.altarRegistry().register(signBlock, altar, builder);
+		});
 	}
 
 	/** The altar a sign is (by its tags, or by its text for altars from before tags), or null if it is none */
@@ -124,6 +132,32 @@ public class AltarService
 		PersistentDataContainer tags = sign.getPersistentDataContainer();
 		return AltarSigns.recognize(tags.get(this.kindKey, PersistentDataType.STRING), tags.get(this.godKey, PersistentDataType.STRING), tags.get(this.playerNameKey, PersistentDataType.STRING),
 				tags.get(this.playerKey, PersistentDataType.STRING), sign.getSide(Side.FRONT).getLines());
+	}
+
+	/**
+	 * The altar a sign is by its tags only (no text check, no block lookups: for scanning a chunk's tile entities), or
+	 * null if it has no {@code gods:altar} tag
+	 */
+	public AltarSigns.AltarSign readTaggedAltar(Sign sign)
+	{
+		PersistentDataContainer tags = sign.getPersistentDataContainer();
+		String kind = tags.get(this.kindKey, PersistentDataType.STRING);
+		if (kind == null || AltarSigns.Kind.byKey(kind) == null)
+		{
+			return null;
+		}
+		return AltarSigns.recognize(kind, tags.get(this.godKey, PersistentDataType.STRING), tags.get(this.playerNameKey, PersistentDataType.STRING),
+				tags.get(this.playerKey, PersistentDataType.STRING), null);
+	}
+
+	/** The block a wall sign hangs on (whatever it is), or null if the block is no wall sign */
+	public static Block blockBehindSign(Block sign)
+	{
+		if (!isWallSign(sign) || !(sign.getBlockData() instanceof Directional directional))
+		{
+			return null;
+		}
+		return sign.getRelative(directional.getFacing().getOppositeFace());
 	}
 
 	/** The online player a curse or blessing sign is about, or null */

@@ -75,6 +75,7 @@ import com.dogonfire.gods.integration.GodsMetrics;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
 import com.dogonfire.gods.listener.ActionCooldown;
 import com.dogonfire.gods.listener.AltarListener;
+import com.dogonfire.gods.listener.AltarWorldListener;
 import com.dogonfire.gods.listener.BelieverListener;
 import com.dogonfire.gods.listener.ChatListener;
 import com.dogonfire.gods.listener.GodListener;
@@ -168,6 +169,7 @@ public class Gods extends JavaPlugin
 		pm.registerEvents(new BelieverListener(this.ctx), this);
 		pm.registerEvents(new AltarListener(this.ctx), this);
 		pm.registerEvents(new ChatListener(this.ctx), this);
+		pm.registerEvents(new AltarWorldListener(this.ctx), this);
 
 		if (pm.getPlugin("PlaceholderAPI") != null)
 		{
@@ -190,6 +192,8 @@ public class Gods extends JavaPlugin
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.chatService().refreshAll(), 1L, ChatService.REFRESH_TICKS));
 		// The numbers the bStats charts show (bStats reads them on its own thread)
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.metrics.refresh(), GodsMetrics.REFRESH_TICKS, GodsMetrics.REFRESH_TICKS));
+		// Scans a few chunks per tick for altars (queued as chunks load, and all loaded ones on enable and reload)
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.altarRegistry().processQueue(), 1L, 1L));
 
 		startFeatures();
 
@@ -298,6 +302,8 @@ public class Gods extends JavaPlugin
 		loadStep("the old language files", () -> LegacyLangFiles.migrate(getDataFolder().toPath().resolve("lang"), this::getResource, getLogger()));
 		loadStep("the message files", () -> this.ctx.messages().load(this.settings.general().language(), this.settings.general().serverName()));
 		complete &= loadStep("gods.yml", () -> this.ctx.godService().load());
+		// Where the altars are; not needed to judge dead gods, so it doesn't hold back cleanups
+		loadStep("altars.yml", () -> this.ctx.altarRegistry().load());
 		complete &= loadStep("quests.yml", () -> this.ctx.questService().load());
 		complete &= loadStep("believers.yml", () -> this.ctx.believerService().load());
 		complete &= loadStep("whitelist.yml and blacklist.yml", () -> this.ctx.godListService().load());

@@ -9,6 +9,7 @@ import com.dogonfire.gods.config.Themes;
 import com.dogonfire.gods.integration.GriefPreventionIntegration;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.service.AltarRegistry;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.BlessingService;
@@ -59,6 +60,7 @@ public final class GodsContext
 	private final BelieverService			believerService;
 	private final QuestService				questService;
 	private final AltarService				altarService;
+	private final AltarRegistry				altarRegistry;
 	private final HolyLandService			holyLandService;
 	private final HolyBookService			holyBookService;
 	private final MarriageService			marriageService;
@@ -92,6 +94,7 @@ public final class GodsContext
 		this.believerService = new BelieverService(this, storage.believers());
 		this.questService = new QuestService(this, storage.quests());
 		this.altarService = new AltarService(this);
+		this.altarRegistry = new AltarRegistry(this, storage.altars());
 		this.holyLandService = new HolyLandService(this, storage.holyLands());
 		this.holyBookService = new HolyBookService(this, storage.bibles());
 		this.marriageService = new MarriageService(this, storage.marriages());
@@ -213,6 +216,12 @@ public final class GodsContext
 	public AltarService altarService()
 	{
 		return this.altarService;
+	}
+
+	/** Where the altars are (altars.yml) */
+	public AltarRegistry altarRegistry()
+	{
+		return this.altarRegistry;
 	}
 
 	/** Its data is only loaded, and its listener (HolyLandListener) only registered, while holy land is enabled */
