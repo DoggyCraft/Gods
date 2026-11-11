@@ -439,26 +439,26 @@ public final class GodUpdateTask implements Runnable
 
 		int numberOfBelievers = ctx.believerService().getOnlineBelieversForGod(godName).size();
 
-		if (!ctx.questManager().hasQuest(godName))
+		if (!ctx.questService().hasQuest(godName))
 		{
 			if (numberOfBelievers < ctx.settings().quests().requiredBelievers() || ctx.godService().getMinutesSinceLastQuest(godName) < ctx.settings().quests().minMinutesBetweenQuests())
 			{
 				return;
 			}
 
-			ctx.questManager().generateQuest(godName);
+			ctx.questService().generateQuest(godName);
 		}
-		else if (ctx.questManager().hasExpiredQuest(godName))
+		else if (ctx.questService().hasExpiredQuest(godName))
 		{
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getAngryModifierForGod(godName));
 
-			ctx.questManager().godSayFailed(godName);
+			ctx.questService().godSayFailed(godName);
 
-			ctx.questManager().removeFailedQuestForGod(godName);
+			ctx.questService().removeFailedQuestForGod(godName);
 		}
 		else if (random.nextInt(5) == 0)
 		{
-			ctx.questManager().godSayStatus(godName);
+			ctx.questService().godSayStatus(godName);
 		}
 	}
 

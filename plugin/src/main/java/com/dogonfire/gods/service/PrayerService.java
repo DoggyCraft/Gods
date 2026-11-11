@@ -127,7 +127,7 @@ public class PrayerService
 				ctx.marriageService().divorce(player.getUniqueId());
 			}
 			
-			ctx.questManager().handleJoinReligion(player.getName(), godName);
+			ctx.questService().handleJoinReligion(player.getName(), godName);
 
 			if (ctx.settings().bibles().enabled() && ctx.settings().bibles().giveOnJoin())
 			{
@@ -151,7 +151,7 @@ public class PrayerService
 
 			ctx.believerService().incPrayer(player.getUniqueId(), godName);
 
-			List<ItemStack> rewards = ctx.questManager().getRewardsForQuestCompletion(godName);
+			List<ItemStack> rewards = ctx.questService().getRewardsForQuestCompletion(godName);
 
 			for (ItemStack items : rewards)
 			{
@@ -391,7 +391,7 @@ public class PrayerService
 				ctx.holyLandService().addPrayer(player, godName, altarBlock.getLocation());
 			}
 
-			ctx.questManager().handlePrayer(godName, player.getUniqueId());
+			ctx.questService().handlePrayer(godName, player.getUniqueId());
 
 			ctx.languageManager().setPlayerName(player.getName());
 

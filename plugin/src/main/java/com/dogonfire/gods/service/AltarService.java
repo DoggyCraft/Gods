@@ -285,7 +285,7 @@ public class AltarService
 				ctx.holyLandService().addAltar(player, godName, altarBlock.getLocation());
 			}
 			
-			ctx.questManager().handleBuiltPrayingAltar(godName);
+			ctx.questService().handleBuiltPrayingAltar(godName);
 
 			event.setLine(0, "Altar");
 			event.setLine(1, "of");

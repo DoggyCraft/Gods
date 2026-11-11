@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 
 /**
  * Owns the data files in the plugin folder and the one writer thread they share (one thread, so writes land in the
- * order they were made). gods.yml, believers.yml, holyland.yml, marriages.yml, whitelist.yml and blacklist.yml are held
- * as models by a {@link Repository} each (loaded and changed by their services); the other files are still raw {@link DataFile}s
+ * order they were made). gods.yml, believers.yml, quests.yml, holyland.yml, marriages.yml, whitelist.yml and blacklist.yml are
+ * held as models by a {@link Repository} each (loaded and changed by their services); the other files are still raw {@link DataFile}s
  * that their manager loads ({@link DataFile#load()}) and changes. Either way a change marks the file dirty;
  * {@link #flush()} queues a write for every changed file (main thread: on the autosave timer, on /g reload and on
  * disable), and {@link #close()} flushes and waits for the writes.
@@ -35,7 +35,7 @@ public final class Storage
 	private final ExecutorService	writer;
 	private final GodRepository		gods;
 	private final BelieverRepository	believers;
-	private final DataFile			quests;
+	private final QuestRepository	quests;
 	private final HolyLandRepository	holyLands;
 	private final MarriageRepository	marriages;
 	private final DataFile			bibles;
@@ -71,13 +71,13 @@ public final class Storage
 		this.writer = writer;
 		this.gods = new GodRepository(new DataFile(dataFolder.resolve("gods.yml"), logger, writer, UUID_TAGS, GodRepository.format(logger, playerIdByName)), logger);
 		this.believers = new BelieverRepository(file(dataFolder, "believers.yml", null), logger);
-		this.quests = file(dataFolder, "quests.yml", null);
+		this.quests = new QuestRepository(file(dataFolder, "quests.yml", null), logger);
 		this.holyLands = new HolyLandRepository(new DataFile(dataFolder.resolve("holyland.yml"), logger, writer, null, HolyLandRepository.format(logger)), logger);
 		this.marriages = new MarriageRepository(file(dataFolder, "marriages.yml", null), logger);
 		this.bibles = file(dataFolder, "bibles.yml", null);
 		this.whitelist = new GodListRepository(file(dataFolder, "whitelist.yml", null), logger, "whitelisted");
 		this.blacklist = new GodListRepository(file(dataFolder, "blacklist.yml", null), logger, "blacklisted");
-		this.files = List.of(this.gods.file(), this.believers.file(), this.quests, this.holyLands.file(), this.marriages.file(), this.bibles, this.whitelist.file(), this.blacklist.file());
+		this.files = List.of(this.gods.file(), this.believers.file(), this.quests.file(), this.holyLands.file(), this.marriages.file(), this.bibles, this.whitelist.file(), this.blacklist.file());
 	}
 
 	private DataFile file(Path dataFolder, String name, DataFile.Repair repair)
@@ -100,7 +100,7 @@ public final class Storage
 		return this.believers;
 	}
 
-	public DataFile quests()
+	public QuestRepository quests()
 	{
 		return this.quests;
 	}

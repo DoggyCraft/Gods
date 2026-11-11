@@ -169,13 +169,13 @@ public class CommandPrayFor extends GodsCommand
 			ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.NotEnoughPrayerPower, ChatColor.AQUA, ctx.settings().prayers().questCost() - currentPrayerPower, godName, 1);
 			return;
 		}
-		if (ctx.questManager().hasQuest(godName))
+		if (ctx.questService().hasQuest(godName))
 		{
 			sender.sendMessage(ChatColor.GOLD + godName + ChatColor.AQUA + " already has given a quest!");
 			return;
 		}
 		ctx.godSpeech().sendInfo(player.getUniqueId(), LanguageManager.LANGUAGESTRING.PrayedForQuest, ChatColor.AQUA, ctx.settings().prayers().questCost(), godName, 1);
-		if (ctx.questManager().generateQuest(godName))
+		if (ctx.questService().generateQuest(godName))
 		{
 			ctx.believerService().increasePrayerPower(player.getUniqueId(), -ctx.settings().prayers().questCost());
 		}

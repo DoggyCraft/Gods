@@ -339,7 +339,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		if (ctx.questManager().handleSacrifice(player, godName, item.getItemStack().getType().name()))
+		if (ctx.questService().handleSacrifice(player, godName, item.getItemStack().getType().name()))
 		{
 			return;
 		}

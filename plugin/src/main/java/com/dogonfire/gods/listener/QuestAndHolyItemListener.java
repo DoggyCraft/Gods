@@ -57,7 +57,7 @@ public class QuestAndHolyItemListener implements Listener
 
 		if (ctx.settings().quests().enabled())
 		{
-			ctx.questManager().handleKilledMob(godName, event.getEntityType().name());
+			ctx.questService().handleKilledMob(godName, event.getEntityType().name());
 		}
 	}
 
@@ -77,7 +77,7 @@ public class QuestAndHolyItemListener implements Listener
 		{
 			if (ctx.settings().quests().enabled())
 			{
-				ctx.questManager().handleEat(player.getName(), godName, type.name());
+				ctx.questService().handleEat(player.getName(), godName, type.name());
 			}
 		}
 	}
@@ -116,7 +116,7 @@ public class QuestAndHolyItemListener implements Listener
 			{
 				if (this.cooldown.ready(player.getUniqueId(), event))
 				{
-					ctx.questManager().handleReadBible(godName, player.getUniqueId());
+					ctx.questService().handleReadBible(godName, player.getUniqueId());
 				}
 			}
 		}
@@ -134,7 +134,7 @@ public class QuestAndHolyItemListener implements Listener
 
 		if (ctx.settings().quests().enabled())
 		{
-			if (event.getClickedBlock() != null && ctx.questManager().handleOpenChest(event.getPlayer().getUniqueId(), event.getClickedBlock().getLocation()))
+			if (event.getClickedBlock() != null && ctx.questService().handleOpenChest(event.getPlayer().getUniqueId(), event.getClickedBlock().getLocation()))
 			{
 				event.setCancelled(true);
 			}

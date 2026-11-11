@@ -9,7 +9,6 @@ import com.dogonfire.gods.managers.HolyArtifactManager;
 import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
-import com.dogonfire.gods.managers.QuestManager;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.BelieverService;
 import com.dogonfire.gods.service.BlessingService;
@@ -24,6 +23,7 @@ import com.dogonfire.gods.service.MoodService;
 import com.dogonfire.gods.service.Permissions;
 import com.dogonfire.gods.service.PrayerService;
 import com.dogonfire.gods.service.PriestService;
+import com.dogonfire.gods.service.QuestService;
 import com.dogonfire.gods.service.RelationService;
 import com.dogonfire.gods.service.Titles;
 import com.dogonfire.gods.storage.Storage;
@@ -53,7 +53,7 @@ public final class GodsContext
 	private final CommandmentService		commandmentService;
 	private final PrayerService				prayerService;
 	private final BelieverService			believerService;
-	private final QuestManager				questManager;
+	private final QuestService				questService;
 	private final AltarService				altarService;
 	private final HolyLandService			holyLandService;
 	private final HolyBookManager			holyBookManager;
@@ -83,7 +83,7 @@ public final class GodsContext
 		this.commandmentService = new CommandmentService(this, storage.gods());
 		this.prayerService = new PrayerService(this);
 		this.believerService = new BelieverService(this, storage.believers());
-		this.questManager = new QuestManager(this);
+		this.questService = new QuestService(this, storage.quests());
 		this.altarService = new AltarService(this);
 		this.holyLandService = new HolyLandService(this, storage.holyLands());
 		this.holyBookManager = new HolyBookManager(this);
@@ -178,9 +178,10 @@ public final class GodsContext
 		return this.believerService;
 	}
 
-	public QuestManager questManager()
+	/** Quests: new ones, progress, completion and failure; loads quests.yml */
+	public QuestService questService()
 	{
-		return this.questManager;
+		return this.questService;
 	}
 
 	public AltarService altarService()

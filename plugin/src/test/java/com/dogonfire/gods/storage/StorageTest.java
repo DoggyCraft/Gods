@@ -61,15 +61,15 @@ class StorageTest
 	{
 		Storage storage = storage();
 		storage.quests().load();
-		storage.quests().yaml().set("Thor.Power", 42.5);
-		storage.quests().yaml().set("Thor.Priests", List.of("8667ba71-b85a-4004-af54-457a9734eed7"));
+		storage.quests().getOrCreate("Thor").setAmount(42);
+		storage.quests().getOrCreate("Thor").setPlayers(List.of("8667ba71-b85a-4004-af54-457a9734eed7"));
 		storage.quests().markDirty();
 		storage.close();
 
 		Storage again = storage();
 		assertTrue(again.quests().load());
-		assertEquals(42.5, again.quests().yaml().getDouble("Thor.Power"));
-		assertEquals(List.of("8667ba71-b85a-4004-af54-457a9734eed7"), again.quests().yaml().getStringList("Thor.Priests"));
+		assertEquals(42, again.quests().find("Thor").amount());
+		assertEquals(List.of("8667ba71-b85a-4004-af54-457a9734eed7"), again.quests().find("Thor").players());
 		again.close();
 	}
 
@@ -121,9 +121,9 @@ class StorageTest
 		Storage storage = storage();
 		assertFalse(storage.quests().load());
 		assertTrue(storage.quests().isReadOnly());
-		assertTrue(storage.quests().yaml().getKeys(false).isEmpty());
+		assertEquals(0, storage.quests().size());
 
-		storage.quests().yaml().set("Odin.Power", 1);
+		storage.quests().getOrCreate("Odin").setAmount(1);
 		storage.quests().save();
 		storage.close();
 
@@ -208,20 +208,20 @@ class StorageTest
 	{
 		Storage storage = storage();
 		storage.quests().load();
-		storage.quests().yaml().set("Thor.Power", 1.0);
+		storage.quests().getOrCreate("Thor").setAmount(1);
 		storage.quests().markDirty();
 
 		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
 		assertTrue(storage.quests().load());
 		storage.finishReload();
 
-		assertTrue(storage.quests().lastLoadKept());
-		assertEquals(1.0, storage.quests().yaml().getDouble("Thor.Power"));
+		assertTrue(storage.quests().file().lastLoadKept());
+		assertEquals(1, storage.quests().find("Thor").amount());
 		storage.close();
 
 		Storage again = storage();
 		again.quests().load();
-		assertEquals(1.0, again.quests().yaml().getDouble("Thor.Power"));
+		assertEquals(1, again.quests().find("Thor").amount());
 		again.close();
 	}
 
@@ -230,28 +230,28 @@ class StorageTest
 	{
 		Storage storage = storage();
 		storage.quests().load();
-		storage.quests().yaml().set("Thor.Power", 1.0);
+		storage.quests().getOrCreate("Thor").setAmount(1);
 		storage.quests().save();
 		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
 
 		// A change that isn't saved yet, then an admin edits the file
-		storage.quests().yaml().set("Thor.Power", 2.0);
+		storage.quests().getOrCreate("Thor").setAmount(2);
 		storage.quests().markDirty();
 		Path file = this.dir.resolve("quests.yml");
-		Files.writeString(file, "Thor:\n  Power: 5.0\n");
+		Files.writeString(file, "Thor:\n  Amount: 5\n");
 		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
 
 		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
 		assertTrue(storage.quests().load());
 		storage.finishReload();
 
-		assertFalse(storage.quests().lastLoadKept());
-		assertEquals(5.0, storage.quests().yaml().getDouble("Thor.Power"));
+		assertFalse(storage.quests().file().lastLoadKept());
+		assertEquals(5, storage.quests().find("Thor").amount());
 		storage.close();
 
 		Storage again = storage();
 		again.quests().load();
-		assertEquals(5.0, again.quests().yaml().getDouble("Thor.Power"));
+		assertEquals(5, again.quests().find("Thor").amount());
 		again.close();
 	}
 

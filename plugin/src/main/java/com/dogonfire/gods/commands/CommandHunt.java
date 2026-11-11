@@ -38,7 +38,7 @@ public class CommandHunt extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "You do not believe in a God");
 			return;
 		}
-		Location pilgrimageLocation = ctx.questManager().getQuestLocation(godName);
+		Location pilgrimageLocation = ctx.questService().getQuestLocation(godName);
 		if (player == null || player.isFlying())
 		{
 			sender.sendMessage(ChatColor.RED + "No flying allowed.");
