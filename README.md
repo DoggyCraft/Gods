@@ -62,17 +62,29 @@ Who makes the figure is `npc.provider` in config.yml:
 
 The figures are never saved with the world: Gods puts them back when the altar's chunks load. The god's name shows above the figure only when `altars.floating-text` is `off` (otherwise the floating text already shows it).
 
-A god wears the skin of its god type: `npc.skin` in its theme, a player name or a signed texture (`value` and `signature`, e.g. from [mineskin.org](https://mineskin.org)). Gods' own themes give the werewolves the werewolf alpha; the other types have the default look. A priest can give the god a player's skin with `/g godskin <player>` (permission `gods.priest.godskin`) and give back its type's with `/g godskin reset`; Gods looks the skin up in the background and keeps it in gods.yml.
+A god wears a skin for its gender from its theme (`npc.skin`, with `god`, `goddess` and `deity` entries):
+
+*	a god (and a god from before genders): its type's `god` skin, else the `default` section's `god` skin;
+*	a goddess: its type's `goddess` skin, else the `default` section's `goddess` skin;
+*	a deity: its type's `deity` skin, its type's `god` skin, the `default` section's `deity` skin, else the `default` section's `god` skin.
+
+Gods' own themes have a god and a goddess in the `default` section, so every god has a skin; thunder (Zeus), love, the sea, nature, frost, war, evil and the werewolves have their own. When a priest changes the god's gender with `/g gender`, its figure changes skin too.
+
+A priest can give the god a skin of its own, which comes before all of these: `/g godskin` gives it the skin the priest wears now, `/g godskin <player>` a player's skin (permission `gods.priest.godskin`), and `/g godskin reset` gives back its theme's. Gods looks the skin up in the background and keeps it in gods.yml.
+
+To change the themes' skins, put them in `plugins/Gods/themes.yml`. A skin there must be a texture Mojang signed (its `value` and `signature`); player names don't work (Gods warns about them and ignores them). To get one, upload the skin's PNG to [mineskin.org](https://mineskin.org) and copy the value and signature it shows, or skip the file: wear the skin, run `/g godskin` as the god's priest, and change back. Each entry you give replaces Gods' skin for that gender; `''` removes it:
 
 ```yaml
-sun:
-  npc:
-    skin: Notch                 # a player's skin
 moon:
   npc:
     skin:
-      value: ewogICJ0aW1l...    # a signed texture
-      signature: Z8NgxOC7...
+      goddess:
+        value: ewogICJ0aW1l...    # a signed texture
+        signature: Z8NgxOC7...
+werewolves:
+  npc:
+    skin:
+      goddess: ''               # the default goddess instead of the werewolf alpha
 ```
 
 Themes
