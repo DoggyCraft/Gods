@@ -24,7 +24,6 @@ class ConfigDefaultsTest
 		assertTrue(config.getBoolean("marriage.enabled"));
 		assertFalse(config.getComments("marriage.enabled").isEmpty());
 		// A missing free-form section is added whole
-		assertEquals(List.of("end_stone"), config.getStringList("altars.block-types.moon"));
 		assertEquals(100, config.getInt("quests.reward-values.diamond"));
 	}
 

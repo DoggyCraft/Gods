@@ -83,6 +83,7 @@ import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
 import com.dogonfire.gods.listener.QuestListener;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
+import com.dogonfire.gods.migration.ConfigV2ToV3;
 import com.dogonfire.gods.migration.LegacyLangFiles;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.service.ChatService;
@@ -99,8 +100,8 @@ import com.dogonfire.gods.util.AtomicFiles;
  */
 public class Gods extends JavaPlugin
 {
-	/** The layout of config.yml this version writes; see {@link ConfigV1ToV2} */
-	public static final int					CONFIG_VERSION		= 2;
+	/** The layout of config.yml this version writes; see {@link ConfigV1ToV2} and {@link ConfigV2ToV3} */
+	public static final int					CONFIG_VERSION		= 3;
 
 	/** Replaced as a whole by /g reload */
 	private volatile Settings				settings;
@@ -511,12 +512,13 @@ public class Gods extends JavaPlugin
 	}
 
 	/**
-	 * config.yml's versions: 1 (no config-version, CamelCase sections) is upgraded by {@link ConfigV1ToV2}; a file
-	 * without config-version that already has the kebab-case sections is taken as version 2
+	 * config.yml's versions: 1 (no config-version, CamelCase sections) is upgraded by {@link ConfigV1ToV2}, 2 by
+	 * {@link ConfigV2ToV3} (altar blocks moved into the themes); a file without config-version that already has the
+	 * kebab-case sections only lost its key and is taken as the current version
 	 */
 	private VersionedYaml configFormat()
 	{
-		return new VersionedYaml("config-version", CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(this::getResource, getLogger())), ConfigV1ToV2::isVersion2Layout);
+		return new VersionedYaml("config-version", CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(this::getResource, getLogger()), new ConfigV2ToV3(this::getResource)), ConfigV1ToV2::isVersion2Layout);
 	}
 
 	private YamlConfiguration bundledConfig() throws VersionedYaml.LoadException

@@ -22,24 +22,12 @@ class BundledConfigTest
 	/**
 	 * What Gods 0.9.x and this branch before Settings ended up with on a fresh install: the defaults passed to
 	 * config.getX(key, default) in GodsConfiguration.loadSettings(), AltarManager.resetAltarBlockTypes(),
-	 * QuestManager.resetItemRewardValues() and smooth stone as the only breakable holy land block.
+	 * QuestManager.resetItemRewardValues() and smooth stone as the only breakable holy land block. The old altar blocks
+	 * are in the themes now (ThemesLoaderTest checks they make the same god types), so config.yml lists none.
 	 */
 	static Settings oldDefaults()
 	{
 		Map<GodType, List<Material>> altars = new EnumMap<>(GodType.class);
-		altars.put(GodType.FROST, List.of(Material.SNOW_BLOCK));
-		altars.put(GodType.LOVE, List.of(Material.DIAMOND_BLOCK));
-		altars.put(GodType.EVIL, List.of(Material.OBSIDIAN));
-		altars.put(GodType.SEA, List.of(Material.LAPIS_BLOCK));
-		altars.put(GodType.MOON, List.of(Material.END_STONE));
-		altars.put(GodType.SUN, List.of(Material.SANDSTONE));
-		altars.put(GodType.THUNDER, List.of(Material.QUARTZ_BLOCK));
-		altars.put(GodType.PARTY, List.of(Material.EMERALD_BLOCK));
-		altars.put(GodType.WAR, List.of(Material.NETHERRACK));
-		altars.put(GodType.WEREWOLVES, List.of());
-		altars.put(GodType.CREATURES, List.of(Material.OAK_LOG));
-		altars.put(GodType.WISDOM, List.of(Material.BOOKSHELF));
-		altars.put(GodType.NATURE, List.of(Material.MELON));
 
 		Map<Material, Integer> rewards = new LinkedHashMap<>();
 		rewards.put(Material.NETHER_WART, 33);

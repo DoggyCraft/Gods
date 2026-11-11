@@ -7,7 +7,7 @@
 # is kept as config.yml.v1.bak.
 
 # The version of this file's layout. Gods uses it to upgrade old configs; don't change it.
-config-version: 2
+config-version: 3
 
 general:
   # Log extra information to the console, for finding problems.
@@ -58,23 +58,16 @@ priests:
   remove-command: ""
 
 altars:
-  # The block an altar is built on decides the type of god it makes. For each god type, the blocks that make it
-  # (Minecraft ids, e.g. end_stone). A block listed for several god types makes one of them at random.
-  # A god type with no blocks (like werewolves) can't be made from an altar.
-  block-types:
-    frost: [snow_block]
-    love: [diamond_block]
-    evil: [obsidian]
-    sea: [lapis_block]
-    moon: [end_stone]
-    sun: [sandstone]
-    thunder: [quartz_block]
-    party: [emerald_block]
-    war: [netherrack]
-    werewolves: []
-    creatures: [oak_log]
-    wisdom: [bookshelf]
-    nature: [melon]
+  # An altar is a block with a light on top (a torch, lantern or candle) and a wall sign on its side. The block decides
+  # the type of god it makes. Each god type's blocks come from its theme (Gods' own themes.yml, changed by
+  # plugins/Gods/themes.yml), e.g. snow_block, packed_ice and blue_ice for frost; /g help blocks lists them.
+  # To choose a god type's blocks here instead, list them (Minecraft ids): the list replaces the theme's blocks for that
+  # type, and an empty list means no altar makes it. A block listed for several god types makes one of them at random.
+  # For example:
+  #   block-types:
+  #     frost: [snow_block, ice]
+  #     werewolves: [mossy_cobblestone]
+  block-types: {}
 
 prayers:
   # Players can pray for things with /g pray (an item, health, a blessing or a quest), paid with prayer power.

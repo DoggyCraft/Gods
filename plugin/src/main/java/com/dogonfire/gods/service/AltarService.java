@@ -3,6 +3,7 @@ package com.dogonfire.gods.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Material;
@@ -25,15 +26,17 @@ import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
 /**
- * Altars: a block of an altar type with a torch on top and a wall sign on it. Recognizes altar blocks and signs, turns
- * newly written signs into praying, cursing and blessing altars (the text rules are in {@link AltarSigns}), and
- * remembers who dropped which item, for sacrifices. Has no data file. The events are handled by
- * {@code listener/AltarListener}. Main thread only.
+ * Altars: a block of an altar type (its god type's theme, or config.yml) with a light on top ({@link AltarLights}) and
+ * a wall sign on it. Recognizes altar blocks and signs, turns newly written signs into praying, cursing and blessing
+ * altars (the text rules are in {@link AltarSigns}), and remembers who dropped which item, for sacrifices. Has no data
+ * file. The events are handled by {@code listener/AltarListener}. Main thread only.
  */
 public class AltarService
 {
 	private Random							random			= new Random();
 	private final DroppedItems			droppedItems	= new DroppedItems();
+	// The altar lights this server has; resolved when first needed
+	private Set<Material>				altarLights;
 
 	private final GodsContext ctx;
 
@@ -128,26 +131,29 @@ public class AltarService
 		{
 			return null;
 		}
-		if (!isAltarTorch(altarBlock.getRelative(BlockFace.UP).getType()))
+		if (!isAltarLight(altarBlock.getRelative(BlockFace.UP).getType()))
 		{
 			return null;
 		}
 		return altarBlock;
 	}
 
-	private static boolean isAltarTorch(Material type)
+	/** True if the block is a light that marks an altar when it stands on top of the altar block ({@link AltarLights}) */
+	public boolean isAltarLight(Material type)
 	{
-		return type == Material.TORCH || type == Material.REDSTONE_TORCH;
+		if (this.altarLights == null)
+		{
+			List<Material> candles = new ArrayList<Material>(Tag.CANDLES.getValues());
+			candles.addAll(Tag.CANDLE_CAKES.getValues());
+			this.altarLights = AltarLights.resolve(Material::getMaterial, candles, name -> ctx.plugin().logDebug("This server has no " + name + "; it can't light altars here"));
+		}
+		return this.altarLights.contains(type);
 	}
 
-	public List<String> getAltarBlockTypesFromGodType(GodType godType)
+	/** The blocks altars to this god type are built on (config.yml's list for it, or its theme's) */
+	public List<Material> getAltarBlocks(GodType godType)
 	{
-		List<String> list = new ArrayList<String>();
-		for (Material blockMaterial : ctx.settings().altars().blocksFor(godType))
-		{
-			list.add(blockMaterial.name());
-		}
-		return list;
+		return ctx.themes().altars().blocksFor(godType);
 	}
 
 	public Player getBlessedPlayerFromAltarSign(Block block, String[] lines)
@@ -194,7 +200,7 @@ public class AltarService
 
 	public GodType getGodTypeForAltarBlockType(Material altarBlockType)
 	{
-		List<GodType> godTypes = ctx.settings().altars().godTypesFor(altarBlockType);
+		List<GodType> godTypes = ctx.themes().altars().godTypesFor(altarBlockType);
 		if (godTypes.isEmpty())
 		{
 			ctx.plugin().logDebug("No god types available for block type " + altarBlockType.name() + "!");
@@ -331,7 +337,7 @@ public class AltarService
 		{
 			return false;
 		}
-		if (!isAltarTorch(block.getRelative(BlockFace.UP).getType()))
+		if (!isAltarLight(block.getRelative(BlockFace.UP).getType()))
 		{
 			return false;
 		}
@@ -347,7 +353,7 @@ public class AltarService
 		return false;
 	}
 
-	/** A wall sign on an altar block (a block with an altar type and a torch on top). */
+	/** A wall sign on an altar block (a block with an altar type and a light on top). */
 	public boolean isAltarSign(Block block)
 	{
 		return getAltarBlockFromSign(block) != null;

@@ -606,11 +606,10 @@ command:
     - <yellow>--------------- How to build an Altar ---------------
     - <aqua>Build an altar to your God by following these simple steps:
     - ''
-    - <white>  1  - Place a block
-    - <white>  2a - Place a torch on top for a male god
-    - <white>  2b - Place a redstone torch on top for a female god
-    - <white>  3  - Place a sign on the side of the block
-    - <white>  4  - Write the name of your God on the sign
+    - <white>  1 - Place a block (the block decides the type of God)
+    - <white>  2 - Place a torch, lantern or candle on top
+    - <white>  3 - Place a wall sign on the side of the block
+    - <white>  4 - Write the name of your God on the sign
     - ''
     - <aqua>You can now pray to your God by right-clicking the sign!
     - <aqua>Check what type of god you can make with <white>/g help blocks
@@ -618,8 +617,8 @@ command:
     - <yellow>--------------- God Types ---------------
     - <aqua>These are the block types you can use for making Gods:
     - ''
-    # One per altar block: <block>, <god_type> in the god type's color (<type_color>)
-    block: '<white><block>  --->  <type_color><god_type>'
+    # One per god type that altars can make: <god_type> in the god type's color (<type_color>) and its <blocks>
+    block-type: '<type_color><god_type><white>: <blocks>'
     blocks-footer:
     - ''
     - <aqua>Check how to build an altar with <white>/g help altar

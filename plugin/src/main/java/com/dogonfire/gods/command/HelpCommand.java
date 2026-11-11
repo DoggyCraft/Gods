@@ -2,6 +2,10 @@ package com.dogonfire.gods.command;
 
 import java.util.List;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 
 import com.dogonfire.gods.GodsContext;
@@ -47,13 +51,11 @@ public final class HelpCommand extends SubCommand
 		send(sender, "command.help.blocks-header");
 		for (GodType godType : GodType.values())
 		{
-			List<String> materials = this.ctx.altarService().getAltarBlockTypesFromGodType(godType);
-			if (materials != null)
+			List<Material> blocks = this.ctx.altarService().getAltarBlocks(godType);
+			if (!blocks.isEmpty())
 			{
-				for (String blockMaterial : materials)
-				{
-					send(sender, "command.help.block", Messages.text("block", blockMaterial), Messages.color("type_color", this.ctx.godService().getColorForGodType(godType)), Messages.component("god_type", this.ctx.messages().godTypeName(godType, GodGender.None)));
-				}
+				List<Component> names = blocks.stream().map(block -> this.ctx.messages().itemName(block)).toList();
+				send(sender, "command.help.block-type", Messages.component("blocks", Component.join(JoinConfiguration.commas(true), names)), Messages.color("type_color", this.ctx.godService().getColorForGodType(godType)), Messages.component("god_type", this.ctx.messages().godTypeName(godType, GodGender.None)));
 			}
 		}
 		send(sender, "command.help.blocks-footer");
