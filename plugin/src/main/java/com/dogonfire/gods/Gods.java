@@ -27,6 +27,7 @@ import com.dogonfire.gods.commands.GodsTabCompleter;
 import com.dogonfire.gods.config.ConfigDefaults;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
+import com.dogonfire.gods.integration.GodsMetrics;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
 import com.dogonfire.gods.listener.ActionCooldown;
 import com.dogonfire.gods.listener.AltarListener;
@@ -59,6 +60,7 @@ public class Gods extends JavaPlugin
 	private Storage							storage;
 	private GodsContext						ctx;
 	private GodsPlaceholderExpansion		placeholderExpansion;
+	private GodsMetrics						metrics;
 
 	// Repeating tasks started by onEnable, cancelled by onDisable
 	private final List<BukkitTask>			tasks				= new ArrayList<BukkitTask>();
@@ -125,12 +127,16 @@ public class Gods extends JavaPlugin
 			logDebug("PlaceholderAPI not found.");
 		}
 
+		this.metrics = new GodsMetrics(this.ctx);
+
 		// Moods, priests, quests, holy land attacks and the like
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, new GodUpdateTask(this.ctx), GodUpdateTask.DELAY_TICKS, GodUpdateTask.PERIOD_TICKS));
 		// Writes the data files that changed (and on /g reload and disable)
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.storage.flush(), Storage.AUTOSAVE_TICKS, Storage.AUTOSAVE_TICKS));
 		// Priest status and the like change in places that don't notify the chat cache, so refresh it now and then
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.ctx.chatService().refreshAll(), 1L, ChatService.REFRESH_TICKS));
+		// The numbers the bStats charts show (bStats reads them on its own thread)
+		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.metrics.refresh(), GodsMetrics.REFRESH_TICKS, GodsMetrics.REFRESH_TICKS));
 
 		startFeatures();
 	}
@@ -148,6 +154,11 @@ public class Gods extends JavaPlugin
 		{
 			this.placeholderExpansion.unregister();
 			this.placeholderExpansion = null;
+		}
+		if (this.metrics != null)
+		{
+			this.metrics.shutdown();
+			this.metrics = null;
 		}
 
 		stopFeatures();
@@ -197,6 +208,7 @@ public class Gods extends JavaPlugin
 		loadData();
 		startFeatures();
 		this.storage.finishReload();
+		this.metrics.refresh();
 		return true;
 	}
 

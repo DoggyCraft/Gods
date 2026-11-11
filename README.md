@@ -1,9 +1,13 @@
-Gods
-======
+<h1 align="center">Gods</h1>
+<div align="center">
 
 [![Build](https://github.com/DoggyCraft/Gods/actions/workflows/build.yml/badge.svg)](https://github.com/DoggyCraft/Gods/actions/workflows/build.yml)
+[![Bukkit](https://img.shields.io/curseforge/dt/39139?label=Bukkit)](https://dev.bukkit.org/projects/gods)
+[![bStats Servers](https://img.shields.io/bstats/servers/35252?label=Servers)](https://bstats.org/plugin/bukkit/Gods/35252)
+[![bStats Players](https://img.shields.io/bstats/players/35252?label=Players)](https://bstats.org/plugin/bukkit/Gods/35252)
+</div>
 
-# ![Gods](img/Gods.jpg)
+![Gods](img/Gods.jpg)
 
 The plugin for adding Gods to minecraft!
 
@@ -29,7 +33,8 @@ Installation
 Links
 ---------
 
-*	[Bukkit Plugin Page](https://dev.bukkit.org/bukkit-plugins/gods/)
+*	[Bukkit Plugin Page](https://dev.bukkit.org/projects/gods)
+*	[Statistics on bStats](https://bstats.org/plugin/bukkit/Gods/35252)
 *	[Releases](https://github.com/DoggyCraft/Gods/releases)
 
 Building
