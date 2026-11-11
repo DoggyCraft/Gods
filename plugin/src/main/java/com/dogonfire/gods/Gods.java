@@ -19,9 +19,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.dogonfire.gods.api.GodsApi;
 import com.dogonfire.gods.command.AcceptCommand;
 import com.dogonfire.gods.command.AccessCommand;
 import com.dogonfire.gods.command.AllyCommand;
@@ -78,6 +80,7 @@ import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.LegacyLangFiles;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.service.ChatService;
+import com.dogonfire.gods.service.GodsApiService;
 import com.dogonfire.gods.storage.Storage;
 import com.dogonfire.gods.task.GodUpdateTask;
 import com.dogonfire.gods.util.AtomicFiles;
@@ -170,6 +173,9 @@ public class Gods extends JavaPlugin
 		this.tasks.add(getServer().getScheduler().runTaskTimer(this, () -> this.metrics.refresh(), GodsMetrics.REFRESH_TICKS, GodsMetrics.REFRESH_TICKS));
 
 		startFeatures();
+
+		// The API for other plugins, unregistered by onDisable
+		getServer().getServicesManager().register(GodsApi.class, new GodsApiService(this.ctx), this, ServicePriority.Normal);
 	}
 
 	@Override
@@ -180,6 +186,8 @@ public class Gods extends JavaPlugin
 			// config.yml couldn't be read: nothing was loaded, so nothing is saved
 			return;
 		}
+
+		getServer().getServicesManager().unregisterAll(this);
 
 		if (this.placeholderExpansion != null)
 		{

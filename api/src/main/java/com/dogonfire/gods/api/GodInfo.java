@@ -12,7 +12,7 @@ import org.bukkit.Location;
  * data, and use {@link GodsApi} to make changes.
  *
  * @param name           the god's name, as Gods writes it (first letter upper case)
- * @param type           the god's divine force
+ * @param type           the god's divine force, or null if Gods can't read the one in its data file
  * @param gender         the god's gender
  * @param mood           how the god feels
  * @param moodValue      the god's exact mood, from -100 (furious) to 100 (delighted); see {@link GodMood}
