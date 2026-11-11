@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.dogonfire.gods.migration.FirstDataVersion;
+import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.model.Quest;
 import com.dogonfire.gods.model.QuestLocation;
 import com.dogonfire.gods.model.QuestTarget;
@@ -24,13 +26,18 @@ import com.dogonfire.gods.util.LegacyDates;
  * &lt;god name&gt;: Type, Amount, TargetType, MaxDuration, Progress, Players, CreatedTime, Location.World/X/Y/Z/Ground
  * QuestTargets.&lt;hash&gt;: God, Location.World/X/Y/Z
  * </pre>
- * No data version: the format is unchanged. Loading drops what Gods 0.9.x left that can't be used any more, and
- * writes the file back at once: the {@code Global} section of the removed global quests, and the quests (with their
- * targets) of the types that no longer exist (HOLYWAR, SLAYDRAGON, GETHOLYARTIFACT, PVPREVENGE). Keys this version
- * doesn't know, and values it can't read (an {@code Amount} that is not a number), are kept unchanged.
+ * plus {@code data-version: 2}. Version 1 (no {@code data-version}) has the same keys; its upgrade
+ * ({@link FirstDataVersion}) makes the {@code quests.yml.v1.bak} backup before the cleanup below first rewrites it.
+ * Loading drops what Gods 0.9.x left that can't be used any more, and writes the file back at once: the
+ * {@code Global} section of the removed global quests, and the quests (with their targets) of the types that no
+ * longer exist (HOLYWAR, SLAYDRAGON, GETHOLYARTIFACT, PVPREVENGE). Keys this version doesn't know, and values it can't
+ * read (an {@code Amount} that is not a number), are kept unchanged.
  */
 public final class QuestRepository extends Repository
 {
+	public static final int					DATA_VERSION	= 2;
+	public static final String				VERSION_KEY		= "data-version";
+
 	public static final String				TARGETS			= "QuestTargets";
 	/** The global quests of Gods 0.9.x, dropped on load */
 	static final String						GLOBAL			= "Global";
@@ -59,6 +66,12 @@ public final class QuestRepository extends Repository
 	private final Map<String, QuestTarget>	targets			= new LinkedHashMap<String, QuestTarget>();
 	// Entries under QuestTargets that are no target, written back unchanged
 	private final Map<String, Object>		otherTargetKeys	= new LinkedHashMap<String, Object>();
+
+	/** The data version and migrations of quests.yml */
+	static VersionedYaml format()
+	{
+		return new VersionedYaml(VERSION_KEY, DATA_VERSION, 1, List.of(new FirstDataVersion()));
+	}
 
 	QuestRepository(DataFile file, Logger logger)
 	{
@@ -132,6 +145,10 @@ public final class QuestRepository extends Repository
 		{
 			ConfigurationSection section = yaml.getConfigurationSection(key);
 
+			if (key.equals(VERSION_KEY))
+			{
+				continue;
+			}
 			if (key.equals(GLOBAL))
 			{
 				cleaned = true;

@@ -256,6 +256,43 @@ class StorageTest
 	}
 
 	@Test
+	void everyOldDataFileIsBackedUpBeforeItsFirstRewrite() throws IOException
+	{
+		List<String> names = List.of("gods", "believers", "quests", "holyland", "marriages", "bibles");
+		for (String name : names)
+		{
+			Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".yml");
+		}
+		Storage storage = storage();
+		storage.gods().load();
+		storage.believers().load();
+		storage.quests().load();
+		storage.holyLands().load();
+		storage.marriages().load();
+		storage.bibles().load();
+		storage.close();
+
+		for (String name : names)
+		{
+			String original = Files.readString(Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".original"));
+			assertEquals(original, Files.readString(this.dir.resolve(name + ".yml.v1.bak")), name);
+			assertEquals(2, YamlConfiguration.loadConfiguration(this.dir.resolve(name + ".yml").toFile()).getInt("data-version"), name);
+		}
+	}
+
+	@Test
+	void aNewDataFileGetsTheCurrentVersion()
+	{
+		Storage storage = storage();
+		storage.marriages().load();
+		storage.marriages().getOrCreate(UUID.randomUUID());
+		storage.marriages().save();
+		storage.close();
+
+		assertEquals(2, YamlConfiguration.loadConfiguration(this.dir.resolve("marriages.yml").toFile()).getInt("data-version"));
+	}
+
+	@Test
 	void aHandEditIsNeverOverwrittenBeforeReload() throws IOException
 	{
 		Storage storage = storage();

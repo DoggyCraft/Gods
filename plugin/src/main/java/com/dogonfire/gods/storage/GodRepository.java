@@ -202,15 +202,25 @@ public final class GodRepository extends Repository
 		god.setSeed(section.getLong(SEED));
 		god.setVerbosity(section.getInt(VERBOSITY));
 
+		List<String> unresolved = new ArrayList<String>(section.getStringList(GodsV1ToV2.UNRESOLVED_PRIESTS));
 		for (String priest : section.getStringList(PRIESTS))
 		{
 			UUID priestId = parseUUID(priest);
 			if (priestId == null)
 			{
-				logger().info("Ignoring priest '" + priest + "' of " + name + ": it is not a player UUID");
+				// Kept, not lost: a priest that isn't a UUID can't be one, but the admin can fix it
+				logger().info("Ignoring priest '" + priest + "' of " + name + ": it is not a player UUID; it is kept under " + GodsV1ToV2.UNRESOLVED_PRIESTS);
+				if (!unresolved.contains(priest))
+				{
+					unresolved.add(priest);
+				}
 				continue;
 			}
 			god.priests().add(priestId);
+		}
+		if (!unresolved.isEmpty())
+		{
+			extras.put(GodsV1ToV2.UNRESOLVED_PRIESTS, unresolved);
 		}
 		god.setPendingPriest(parseUUID(section.getString(PENDING_PRIEST)));
 		god.setPendingPriestTime(DATES.parse(section.getString(PENDING_PRIEST_TIME)));

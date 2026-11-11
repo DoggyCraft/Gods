@@ -50,8 +50,8 @@ public final class Storage
 	/**
 	 * The data files in {@code dataFolder}, written by a background thread of their own.
 	 *
-	 * @param playerIdByName the UUID of a player the server has seen, by name (any case), or null; upgrades priests
-	 *                       that old gods.yml files keep by name
+	 * @param playerIdByName the UUID of a player the server has seen, by name (any case), or null; upgrades priests and
+	 *                       believers that old gods.yml and believers.yml files keep by name
 	 */
 	public Storage(Path dataFolder, Logger logger, Function<String, UUID> playerIdByName)
 	{
@@ -74,11 +74,11 @@ public final class Storage
 		this.logger = logger;
 		this.writer = writer;
 		this.gods = new GodRepository(new DataFile(dataFolder.resolve("gods.yml"), logger, writer, UUID_TAGS, GodRepository.format(logger, playerIdByName)), logger);
-		this.believers = new BelieverRepository(file(dataFolder, "believers.yml", null), logger);
-		this.quests = new QuestRepository(file(dataFolder, "quests.yml", null), logger);
+		this.believers = new BelieverRepository(new DataFile(dataFolder.resolve("believers.yml"), logger, writer, null, BelieverRepository.format(logger, playerIdByName)), logger);
+		this.quests = new QuestRepository(new DataFile(dataFolder.resolve("quests.yml"), logger, writer, null, QuestRepository.format()), logger);
 		this.holyLands = new HolyLandRepository(new DataFile(dataFolder.resolve("holyland.yml"), logger, writer, null, HolyLandRepository.format(logger)), logger);
-		this.marriages = new MarriageRepository(file(dataFolder, "marriages.yml", null), logger);
-		this.bibles = new HolyBookRepository(file(dataFolder, "bibles.yml", null), logger);
+		this.marriages = new MarriageRepository(new DataFile(dataFolder.resolve("marriages.yml"), logger, writer, null, MarriageRepository.format()), logger);
+		this.bibles = new HolyBookRepository(new DataFile(dataFolder.resolve("bibles.yml"), logger, writer, null, HolyBookRepository.format()), logger);
 		this.whitelist = new GodListRepository(file(dataFolder, "whitelist.yml", null), logger, "whitelisted");
 		this.blacklist = new GodListRepository(file(dataFolder, "blacklist.yml", null), logger, "blacklisted");
 		this.files = List.of(this.gods.file(), this.believers.file(), this.quests.file(), this.holyLands.file(), this.marriages.file(), this.bibles.file(), this.whitelist.file(), this.blacklist.file());

@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -75,13 +78,49 @@ class BelieverRepositoryTest
 		assertEquals("Odin", written.getString(THOR_BELIEVER + ".Invitation.God"));
 		assertEquals("21:16:00 14-03-2019", written.getString(THOR_BELIEVER + ".Invitation.Time"));
 		assertEquals(3, written.getInt(ODIN_BELIEVER + ".SomethingNewer"));
-		// Entries keyed by name are not believers, but they stay in the file
-		assertEquals(99, written.getInt("Notch.Prayers"));
+		// An entry keyed by a name the server doesn't know is kept under Unresolved
+		assertEquals(99, written.getInt("Unresolved.Notch.Prayers"));
 
 		Storage again = Fixtures.storage(this.dir);
 		assertTrue(again.believers().load());
 		assertEquals(before, Fixtures.snapshot(again.believers()));
 		again.close();
+	}
+
+	@Test
+	void believersKeptByNameAreMovedToTheirUuidWithABackup() throws IOException
+	{
+		UUID notch = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+		Path file = Fixtures.copy("legacy/believers-0.9.yml", this.dir, "believers.yml");
+		String original = Files.readString(file);
+		Storage storage = Fixtures.storage(this.dir, Map.of("notch", notch));
+		assertTrue(storage.believers().load());
+
+		Believer converted = storage.believers().find(notch);
+		assertEquals("Thor", converted.godName());
+		assertEquals(99, converted.prayers());
+		assertEquals(4, storage.believers().size());
+		storage.close();
+
+		assertEquals(original, Files.readString(this.dir.resolve("believers.yml.v1.bak")));
+		YamlConfiguration written = YamlConfiguration.loadConfiguration(file.toFile());
+		assertEquals(2, written.getInt("data-version"));
+		assertEquals(99, written.getInt(notch + ".Prayers"));
+		assertFalse(written.contains("Notch"));
+		assertFalse(written.contains("Unresolved"));
+	}
+
+	@Test
+	void aNameWhosePlayerAlreadyHasAnEntryIsNotMerged() throws IOException
+	{
+		Files.writeString(this.dir.resolve("believers.yml"), THOR_BELIEVER + ":\n  God: Thor\nAnna:\n  God: Odin\n");
+		Storage storage = Fixtures.storage(this.dir, Map.of("anna", THOR_BELIEVER));
+		assertTrue(storage.believers().load());
+		assertEquals("Thor", storage.believers().find(THOR_BELIEVER).godName());
+		storage.close();
+
+		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("believers.yml").toFile());
+		assertEquals("Odin", written.getString("Unresolved.Anna.God"));
 	}
 
 	@Test
@@ -97,7 +136,7 @@ class BelieverRepositoryTest
 		storage.close();
 
 		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("believers.yml").toFile());
-		assertEquals(1, written.getKeys(false).size());
+		assertEquals(Set.of("data-version", id.toString()), written.getKeys(false));
 		assertEquals("Loki", written.getString(id + ".God"));
 		assertFalse(written.contains(id + ".Invitation"));
 		assertFalse(written.contains(id + ".Prayers"));

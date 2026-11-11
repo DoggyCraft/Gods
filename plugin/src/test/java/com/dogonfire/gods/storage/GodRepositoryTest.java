@@ -53,7 +53,7 @@ class GodRepositoryTest
 		assertEquals(List.of("Thor", "Odin", "Loki"), storage.gods().names());
 
 		God thor = storage.gods().find("Thor");
-		// PriestName is added, names become UUIDs, an unknown name and "none" are dropped, no duplicates
+		// PriestName is added, names become UUIDs, an unknown name is kept aside, "none" is dropped, no duplicates
 		assertEquals(List.of(JEB, STEVE, NOTCH), thor.priests());
 		assertEquals(STEVE, thor.blessedPlayer());
 		assertEquals(LegacyDates.SECONDS.parse("21:15:03 14-03-2019"), thor.blessedTime());
@@ -106,6 +106,7 @@ class GodRepositoryTest
 		assertEquals(GodRepository.DATA_VERSION, written.getInt("data-version"));
 		assertEquals(List.of(JEB.toString(), STEVE.toString(), NOTCH.toString()), written.getStringList("Thor.Priests"));
 		assertFalse(written.contains("Thor.PriestName"));
+		assertEquals(List.of("Herobrine"), written.getStringList("Thor.UnresolvedPriests"));
 		assertFalse(written.contains("Thor.LanguageFileName"));
 		assertFalse(written.contains("Odin.LanguageFileName"));
 		assertEquals("TRICKERY", written.getString("Loki.DivineForce"));

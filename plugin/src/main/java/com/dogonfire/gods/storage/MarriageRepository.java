@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -12,6 +13,8 @@ import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.dogonfire.gods.migration.FirstDataVersion;
+import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.model.Marriage;
 import com.dogonfire.gods.util.LegacyDates;
 
@@ -22,11 +25,16 @@ import com.dogonfire.gods.util.LegacyDates;
  * &lt;uuid&gt;.GettingMarried.Partner / Time / HasPickupWeddingToken
  * &lt;uuid&gt;.Married.Partner / Time / LastLove
  * </pre>
- * Times are {@code "HH:mm:ss dd-MM-yyyy"}. No data version: the format is unchanged. Entries keyed by something other
- * than a UUID, and sections whose partner isn't a UUID (very old files), are logged and kept unchanged.
+ * Times are {@code "HH:mm:ss dd-MM-yyyy"}, plus {@code data-version: 2}. Version 1 (no {@code data-version}) has the
+ * same keys; its upgrade ({@link FirstDataVersion}) makes the {@code marriages.yml.v1.bak} backup before this
+ * repository first rewrites it. Entries keyed by something other than a UUID, and sections whose partner isn't a UUID
+ * (very old files), are logged and kept unchanged.
  */
 public final class MarriageRepository extends Repository
 {
+	public static final int					DATA_VERSION	= 2;
+	public static final String				VERSION_KEY		= "data-version";
+
 	private static final String				PARTNER		= "Partner";
 	private static final String				TIME		= "Time";
 	private static final String				TOKEN		= "HasPickupWeddingToken";
@@ -37,6 +45,12 @@ public final class MarriageRepository extends Repository
 	private static final LegacyDates		DATES		= LegacyDates.SECONDS;
 
 	private final Map<UUID, Marriage>		marriages	= new LinkedHashMap<UUID, Marriage>();
+
+	/** The data version and migrations of marriages.yml */
+	static VersionedYaml format()
+	{
+		return new VersionedYaml(VERSION_KEY, DATA_VERSION, 1, List.of(new FirstDataVersion()));
+	}
 
 	MarriageRepository(DataFile file, Logger logger)
 	{
@@ -82,6 +96,10 @@ public final class MarriageRepository extends Repository
 	{
 		for (String key : yaml.getKeys(false))
 		{
+			if (key.equals(VERSION_KEY))
+			{
+				continue;
+			}
 			UUID playerId = parseId(key);
 			ConfigurationSection section = yaml.getConfigurationSection(key);
 			if (playerId == null || section == null)

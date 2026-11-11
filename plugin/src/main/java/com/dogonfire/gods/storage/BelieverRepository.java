@@ -4,25 +4,39 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.dogonfire.gods.migration.BelieversV1ToV2;
+import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.model.Believer;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
  * believers.yml: one {@link Believer} per player UUID, with the keys Gods has always written ({@code God},
- * {@code Prayers}, {@code LastPrayer}, ... times as {@code "HH:mm:ss dd-MM-yyyy"}). No data version: the format is
- * unchanged. Entries keyed by something other than a UUID (player names, from very old versions) are logged, ignored
- * and written back unchanged.
+ * {@code Prayers}, {@code LastPrayer}, ... times as {@code "HH:mm:ss dd-MM-yyyy"}).
+ * <pre>
+ * data-version: 2
+ * &lt;uuid&gt;: God, Prayers, LastPrayer, Joined, PrayerPower, ReligionChat, Hunting, Invitation.God/Time,
+ *         LastPriestOffer, ChangingGod, LastBlessingTime, LastCursingTime, LastItemBlessingTime,
+ *         LastHolyArtifactBlessingTime
+ * Unresolved.&lt;name&gt;: entries of very old versions, keyed by a player name the upgrade couldn't turn into a UUID
+ * </pre>
+ * Version 1 (no {@code data-version}) is upgraded by {@link BelieversV1ToV2}, which moves entries keyed by player
+ * name to the player's UUID. Other entries that are not a UUID are logged, ignored and written back unchanged.
  */
 public final class BelieverRepository extends Repository
 {
+	public static final int				DATA_VERSION				= 2;
+	public static final String			VERSION_KEY					= "data-version";
+
 	private static final String			GOD							= "God";
 	private static final String			PRAYERS						= "Prayers";
 	private static final String			LAST_PRAYER					= "LastPrayer";
@@ -46,6 +60,12 @@ public final class BelieverRepository extends Repository
 	private static final LegacyDates	DATES						= LegacyDates.SECONDS;
 
 	private final Map<UUID, Believer>	believers					= new LinkedHashMap<UUID, Believer>();
+
+	/** The data version and migrations of believers.yml */
+	static VersionedYaml format(Logger logger, Function<String, UUID> playerIdByName)
+	{
+		return new VersionedYaml(VERSION_KEY, DATA_VERSION, 1, List.of(new BelieversV1ToV2(playerIdByName, logger)));
+	}
 
 	BelieverRepository(DataFile file, Logger logger)
 	{
@@ -97,6 +117,15 @@ public final class BelieverRepository extends Repository
 	{
 		for (String key : yaml.getKeys(false))
 		{
+			if (key.equals(VERSION_KEY))
+			{
+				continue;
+			}
+			if (key.equals(BelieversV1ToV2.UNRESOLVED))
+			{
+				keepUnknown(key, yaml.get(key));
+				continue;
+			}
 			UUID id = parseId(key);
 			ConfigurationSection section = yaml.getConfigurationSection(key);
 			if (id == null || section == null)

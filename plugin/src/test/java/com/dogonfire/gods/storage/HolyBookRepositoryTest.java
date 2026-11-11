@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -56,7 +57,10 @@ class HolyBookRepositoryTest
 
 		YamlConfiguration original = YamlConfiguration.loadConfiguration(Fixtures.copy("legacy/bibles-0.9.yml", this.dir, "original.yml").toFile());
 		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("bibles.yml").toFile());
+		// The same keys, and the data version (the original is kept as bibles.yml.v1.bak)
+		original.set("data-version", 2);
 		assertEquals(original.getKeys(true), written.getKeys(true));
+		assertEquals(Files.readString(this.dir.resolve("original.yml")), Files.readString(this.dir.resolve("bibles.yml.v1.bak")));
 		for (String key : original.getKeys(true))
 		{
 			if (!original.isConfigurationSection(key))
