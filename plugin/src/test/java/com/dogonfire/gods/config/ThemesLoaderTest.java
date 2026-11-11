@@ -2,6 +2,7 @@ package com.dogonfire.gods.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,7 +25,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.integration.npc.SkinTextures;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.NpcSkin;
 
 class ThemesLoaderTest
 {
@@ -256,6 +259,75 @@ class ThemesLoaderTest
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("holy-mob")));
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sky")));
 		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("colour")));
+	}
+
+	/** Only the werewolves have a skin of their own (a signed texture); the others look like the default mannequin */
+	@Test
+	void onlyTheWerewolvesHaveABundledSkin() throws Exception
+	{
+		Themes themes = load("");
+		for (GodType type : GodType.values())
+		{
+			NpcSkin skin = themes.of(type).npcSkin();
+			if (type == GodType.WEREWOLVES)
+			{
+				assertTrue(skin != null && skin.isSigned() && skin.name() == null, "" + skin);
+				assertNotNull(SkinTextures.decode(skin.value()));
+			}
+			else
+			{
+				assertNull(skin, type.name());
+			}
+		}
+		assertNull(themes.of(null).npcSkin());
+	}
+
+	/** A name, a texture, or nothing; a set npc section replaces the default's skin as a whole */
+	@Test
+	void npcSkinsAreANameOrATexture() throws Exception
+	{
+		String value = SkinTextures.encode(new SkinTextures.Texture("http://textures.minecraft.net/texture/abc", false));
+		Themes themes = load("""
+				default:
+				  npc:
+				    skin: Notch
+				sun:
+				  npc:
+				    skin:
+				      value: %s
+				      signature: sig
+				werewolves:
+				  npc:
+				    skin: ''
+				""".formatted(value));
+		assertEquals(NpcSkin.named("Notch"), themes.of(null).npcSkin());
+		assertEquals(NpcSkin.named("Notch"), themes.of(GodType.FROST).npcSkin());
+		assertEquals(new NpcSkin(null, value, "sig"), themes.of(GodType.SUN).npcSkin());
+		assertNull(themes.of(GodType.WEREWOLVES).npcSkin());
+		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+	}
+
+	@Test
+	void badNpcSkinsAreMentioned() throws Exception
+	{
+		Themes themes = load("""
+				sun:
+				  npc:
+				    skin:
+				      value: not-a-texture
+				      colour: red
+				moon:
+				  npc: Notch
+				sea:
+				  npc:
+				    skn: Notch
+				""");
+		assertNull(themes.of(GodType.SUN).npcSkin());
+		assertNull(themes.of(GodType.MOON).npcSkin());
+		for (String expected : new String[] { "not a skin texture", "colour", "moon.npc", "skn" })
+		{
+			assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains(expected)), expected + " in " + this.log.warnings());
+		}
 	}
 
 	/** config.yml's altars.block-types wins for the god types it lists, even with an empty list */

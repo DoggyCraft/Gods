@@ -23,6 +23,7 @@ import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.util.LegacyDates;
 
 class GodRepositoryTest
@@ -287,6 +288,48 @@ class GodRepositoryTest
 		Storage again = Fixtures.storage(this.dir);
 		assertTrue(again.gods().load());
 		assertEquals(new BlockPos("world", -1, 70, 2), again.gods().find("Thor").mainAltar());
+		again.close();
+	}
+
+	/** The NPC skin (/g godskin) is NpcSkin.Name/Value/Signature; one that isn't a section is kept as it was */
+	@Test
+	void npcSkinsRoundTrip() throws IOException
+	{
+		Files.writeString(this.dir.resolve("gods.yml"), """
+				data-version: 2
+				Zeus:
+				  NpcSkin:
+				    Name: Notch
+				    Value: abc
+				    Signature: def
+				Hera:
+				  NpcSkin: Notch
+				Odin:
+				  NpcSkin:
+				    Name: Jeb_
+				""");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.gods().load());
+		assertEquals(new NpcSkin("Notch", "abc", "def"), storage.gods().find("Zeus").npcSkin());
+		assertNull(storage.gods().find("Hera").npcSkin());
+		assertEquals(NpcSkin.named("Jeb_"), storage.gods().find("Odin").npcSkin());
+
+		storage.gods().getOrCreate("Thor").setNpcSkin(new NpcSkin(null, "xyz", null));
+		storage.gods().find("Odin").setNpcSkin(null);
+		storage.gods().markDirty();
+		storage.close();
+
+		YamlConfiguration written = written();
+		assertEquals("def", written.getString("Zeus.NpcSkin.Signature"));
+		assertEquals("Notch", written.getString("Hera.NpcSkin"));
+		assertEquals("xyz", written.getString("Thor.NpcSkin.Value"));
+		assertFalse(written.contains("Thor.NpcSkin.Signature"));
+		assertFalse(written.contains("Odin.NpcSkin"));
+
+		Storage again = Fixtures.storage(this.dir);
+		assertTrue(again.gods().load());
+		assertEquals(new NpcSkin("Notch", "abc", "def"), again.gods().find("Zeus").npcSkin());
+		assertEquals(new NpcSkin(null, "xyz", null), again.gods().find("Thor").npcSkin());
 		again.close();
 	}
 }

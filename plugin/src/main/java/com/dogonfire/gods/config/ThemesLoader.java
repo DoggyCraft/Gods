@@ -25,7 +25,9 @@ import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
+import com.dogonfire.gods.integration.npc.SkinTextures;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.NpcSkin;
 
 /**
  * Reads the god types' themes: the themes.yml bundled in the jar (Gods' own, never written to disk) with the admin's
@@ -58,6 +60,11 @@ public final class ThemesLoader
 
 	public static final List<String>	LIST_KEYS		= List.of(HOLY_MOBS, UNHOLY_MOBS, HOLY_FOODS, UNHOLY_FOODS, SACRIFICE_NEEDS, SLAY_TARGETS, ALTAR_BLOCKS);
 	public static final List<String>	SIGN_KEYS		= List.of("messages", "dye", "glowing");
+
+	/** The NPC section: {@code npc.skin}, a player name or a section with value and signature */
+	public static final String			NPC				= "npc";
+	public static final String			SKIN			= "skin";
+	public static final List<String>	SKIN_KEYS		= List.of("name", "value", "signature");
 
 	public static final String			EFFECTS			= "effects";
 	public static final String			SYMBOL			= "symbol";
@@ -202,9 +209,10 @@ public final class ThemesLoader
 
 	/**
 	 * One section of themes.yml before its names are resolved: the lists by key (the effect lists by their path, like
-	 * {@code effects.pleased.particles}), the sign settings and the effects' symbol (empty map: not set)
+	 * {@code effects.pleased.particles}), the sign settings, the effects' symbol and the NPC skin ({@link #SKIN_KEYS}) (empty
+	 * map: not set; a set npc section replaces the default's as a whole)
 	 */
-	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol)
+	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, String> npc)
 	{
 	}
 
@@ -302,7 +310,7 @@ public final class ThemesLoader
 			sign.putAll(own.sign());
 			Map<String, String> symbol = new LinkedHashMap<>(defaults.symbol());
 			symbol.putAll(own.symbol());
-			merged.put(name, new RawTheme(lists, sign, symbol));
+			merged.put(name, new RawTheme(lists, sign, symbol, own.npc().isEmpty() ? defaults.npc() : own.npc()));
 		}
 		return merged;
 	}
@@ -348,7 +356,7 @@ public final class ThemesLoader
 			readSign(section, sign);
 			readSymbol(section, symbol);
 		}
-		return new RawTheme(lists, sign, symbol);
+		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, null, null) : Map.of());
 	}
 
 	private static void readSign(ConfigurationSection section, Map<String, String> sign)
@@ -375,6 +383,67 @@ public final class ThemesLoader
 		}
 	}
 
+	/**
+	 * The {@code npc} section of a theme: {@code skin: <player name>}, or {@code skin:} with {@code value} and
+	 * {@code signature} (and maybe {@code name}). The map holds what is set ({@link #SKIN_KEYS}); a skin that is set
+	 * but empty ({@code skin: ''}) is kept as an empty name, so it replaces the default's skin with none.
+	 *
+	 * @param logger null for Gods' own file (no warnings)
+	 */
+	public static Map<String, String> readNpc(ConfigurationSection section, String name, Logger logger)
+	{
+		Map<String, String> npc = new LinkedHashMap<>();
+		if (!section.isSet(NPC))
+		{
+			return npc;
+		}
+		if (!section.isConfigurationSection(NPC))
+		{
+			warn(logger, "themes.yml " + name + ".npc must be a section (skin), ignoring it.");
+			return npc;
+		}
+		ConfigurationSection npcSection = section.getConfigurationSection(NPC);
+		for (String key : npcSection.getKeys(false))
+		{
+			if (!key.equals(SKIN))
+			{
+				warn(logger, "Unknown key '" + key + "' in themes.yml " + name + ".npc (skin), ignoring it.");
+			}
+		}
+		if (npcSection.isConfigurationSection(SKIN))
+		{
+			ConfigurationSection skin = npcSection.getConfigurationSection(SKIN);
+			for (String key : skin.getKeys(false))
+			{
+				if (SKIN_KEYS.contains(key))
+				{
+					npc.put(key, String.valueOf(skin.get(key)));
+				}
+				else
+				{
+					warn(logger, "Unknown key '" + key + "' in themes.yml " + name + ".npc.skin (name, value, signature), ignoring it.");
+				}
+			}
+		}
+		else if (npcSection.isSet(SKIN))
+		{
+			npc.put("name", String.valueOf(npcSection.get(SKIN)));
+		}
+		if (npc.isEmpty())
+		{
+			npc.put("name", "");
+		}
+		return npc;
+	}
+
+	private static void warn(Logger logger, String message)
+	{
+		if (logger != null)
+		{
+			logger.warning(message);
+		}
+	}
+
 	/** The admin's changes to one section; a key the base lacks starts from the fallback's (the default section) */
 	private static RawTheme apply(RawTheme base, ConfigurationSection override, RawTheme fallback, String name, Logger logger)
 	{
@@ -385,8 +454,15 @@ public final class ThemesLoader
 		Map<String, List<String>> lists = new LinkedHashMap<>(base.lists());
 		Map<String, String> sign = new LinkedHashMap<>(base.sign());
 		Map<String, String> symbol = new LinkedHashMap<>(base.symbol());
+		Map<String, String> npc = base.npc();
 		for (String key : override.getKeys(false))
 		{
+			if (key.equals(NPC))
+			{
+				// Replaces the whole skin: a name doesn't mix with another skin's texture
+				npc = readNpc(override, name, logger);
+				continue;
+			}
 			if (key.equals(SIGN))
 			{
 				if (!override.isConfigurationSection(SIGN))
@@ -416,7 +492,7 @@ public final class ThemesLoader
 			}
 			applyList(override, key, lists, fallback, name, logger);
 		}
-		return new RawTheme(lists, sign, symbol);
+		return new RawTheme(lists, sign, symbol, npc);
 	}
 
 	/** The admin's changes to the effects: {@code symbol}, and a section per mood with the effect lists */
@@ -513,7 +589,23 @@ public final class ThemesLoader
 						sign.getOrDefault("messages", Theme.SignStyle.PLAIN.messages()).trim().toLowerCase(Locale.ROOT),
 						dye(section, sign.get("dye")),
 						glowing(section, sign.get("glowing"))),
-				effects(section, raw, bundledNames));
+				effects(section, raw, bundledNames),
+				npcSkin(section, raw.npc()));
+	}
+
+	/**
+	 * The NPC skin of a theme, or null for none; a texture value that isn't one is warned about and left out (a name
+	 * is checked when it is resolved)
+	 */
+	private NpcSkin npcSkin(String section, Map<String, String> npc)
+	{
+		NpcSkin skin = new NpcSkin(npc.get("name"), npc.get("value"), npc.get("signature"));
+		if (skin.hasTexture() && SkinTextures.decode(skin.value()) == null)
+		{
+			this.logger.warning("themes.yml " + section + ".npc.skin.value is not a skin texture, ignoring it.");
+			skin = new NpcSkin(skin.name(), null, null);
+		}
+		return skin.isEmpty() ? null : skin;
 	}
 
 	private Theme.Effects effects(String section, RawTheme raw, Set<String> bundledNames)

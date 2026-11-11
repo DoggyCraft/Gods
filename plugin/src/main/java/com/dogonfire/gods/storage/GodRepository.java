@@ -23,6 +23,7 @@ import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
@@ -31,6 +32,7 @@ import com.dogonfire.gods.util.LegacyDates;
  * <pre>
  * data-version: 2
  * &lt;god name&gt;: Created, DivineForce, Gender, PrivateAccess, Description, Home.World/X/Y/Z, MainAltar.World/X/Y/Z,
+ *              NpcSkin.Name/Value/Signature,
  *              Mood, Seed, Verbosity,
  *              Priests, PendingPriest, PendingPriestTime, Allies, Enemies, ContestedLand.World/X/Y/Z/Hash,
  *              BlessedPlayer, BlessedTime, CursedPlayer, CursedTime, EatFoodType, NotEatFoodType, NotSlayMobType,
@@ -54,6 +56,7 @@ public final class GodRepository extends Repository
 	private static final String			DESCRIPTION				= "Description";
 	private static final String			HOME					= "Home";
 	private static final String			MAIN_ALTAR				= "MainAltar";
+	private static final String			NPC_SKIN				= "NpcSkin";
 	private static final String			MOOD					= "Mood";
 	private static final String			SEED					= "Seed";
 	private static final String			VERBOSITY				= "Verbosity";
@@ -81,7 +84,7 @@ public final class GodRepository extends Repository
 	/** Kept by older versions next to ContestedLand; cleared with it ({@link #clearContestedLand}) */
 	private static final List<String>	LEGACY_CONTESTED		= List.of("ContestedKills", "ContestedDesecration");
 
-	private static final Set<String>	KNOWN					= Set.of(CREATED, DIVINE_FORCE, GENDER, PRIVATE_ACCESS, DESCRIPTION, HOME, MAIN_ALTAR, MOOD, SEED, VERBOSITY,
+	private static final Set<String>	KNOWN					= Set.of(CREATED, DIVINE_FORCE, GENDER, PRIVATE_ACCESS, DESCRIPTION, HOME, MAIN_ALTAR, NPC_SKIN, MOOD, SEED, VERBOSITY,
 			PRIESTS, PENDING_PRIEST, PENDING_PRIEST_TIME, ALLIES, ENEMIES, CONTESTED_LAND, BLESSED_PLAYER, BLESSED_TIME, CURSED_PLAYER, CURSED_TIME,
 			HOLY_FOOD, UNHOLY_FOOD, HOLY_MOB, UNHOLY_MOB, SACRIFICE_VALUES, PVP, MOB_DAMAGE, MOB_SPAWNING, LAST_QUEST_TIME, GENDER_CHANGED_TIME);
 
@@ -211,6 +214,16 @@ public final class GodRepository extends Repository
 		else if (section.contains(MAIN_ALTAR))
 		{
 			extras.put(MAIN_ALTAR, toPlain(section.get(MAIN_ALTAR)));
+		}
+
+		if (section.isConfigurationSection(NPC_SKIN))
+		{
+			NpcSkin skin = new NpcSkin(section.getString(NPC_SKIN + ".Name"), section.getString(NPC_SKIN + ".Value"), section.getString(NPC_SKIN + ".Signature"));
+			god.setNpcSkin(skin.isEmpty() ? null : skin);
+		}
+		else if (section.contains(NPC_SKIN))
+		{
+			extras.put(NPC_SKIN, toPlain(section.get(NPC_SKIN)));
 		}
 
 		god.setMood((float) section.getDouble(MOOD));
@@ -372,6 +385,12 @@ public final class GodRepository extends Repository
 				section.set(MAIN_ALTAR + ".X", god.mainAltar().x());
 				section.set(MAIN_ALTAR + ".Y", god.mainAltar().y());
 				section.set(MAIN_ALTAR + ".Z", god.mainAltar().z());
+			}
+			if (god.npcSkin() != null)
+			{
+				section.set(NPC_SKIN + ".Name", god.npcSkin().name());
+				section.set(NPC_SKIN + ".Value", god.npcSkin().value());
+				section.set(NPC_SKIN + ".Signature", god.npcSkin().signature());
 			}
 			if (god.mood() != 0.0F)
 			{

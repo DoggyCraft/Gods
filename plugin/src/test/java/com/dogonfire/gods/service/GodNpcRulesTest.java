@@ -2,6 +2,7 @@ package com.dogonfire.gods.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
+import com.dogonfire.gods.model.NpcSkin;
 
 class GodNpcRulesTest
 {
@@ -78,6 +80,18 @@ class GodNpcRulesTest
 		assertTrue(GodNpcRules.showsName(Settings.FloatingText.OFF));
 		assertFalse(GodNpcRules.showsName(Settings.FloatingText.ALL));
 		assertFalse(GodNpcRules.showsName(Settings.FloatingText.MAIN));
+	}
+
+	/** /g godskin wins over the theme; nothing is the default look */
+	@Test
+	void theGodsOwnSkinComesFirst()
+	{
+		NpcSkin own = NpcSkin.named("Notch");
+		NpcSkin theme = new NpcSkin(null, "abc", "def");
+		assertEquals(own, GodNpcRules.skin(own, theme));
+		assertEquals(theme, GodNpcRules.skin(null, theme));
+		assertEquals(theme, GodNpcRules.skin(new NpcSkin(" ", null, null), theme));
+		assertNull(GodNpcRules.skin(null, null));
 	}
 
 	@Test

@@ -23,6 +23,9 @@
 #                      symbol    text that floats up at prayers (like ❄), "" for none
 #                      pleased, neutral, angry: each with particles (particle ids like end_rod), sounds (sound ids
 #                      like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB")
+#   npc              the god's figure at its main altar (config.yml's npc section):
+#                      skin      a player name, or a section with value and signature (a signed texture, e.g. from
+#                                mineskin.org); '' for the default look. A god's own skin (/g godskin) comes first.
 #
 # A god keeps the holy and unholy mob and food it already picked; changes here only affect what gods pick from now on.
 # Names are Minecraft ids (polar_bear, cooked_cod). Names this server's Minecraft version doesn't have are skipped.
@@ -47,3 +50,11 @@
 #
 # werewolves:
 #   altar-blocks: [mossy_cobblestone]
+#   npc:
+#     skin: '' # the default look instead of the werewolf alpha
+#
+# sun:
+#   npc:
+#     skin:
+#       value: ewogICJ0aW1lc3RhbXAiIDog... # the texture value from mineskin.org
+#       signature: Z8NgxOC7mVyeW9hGKMx... # and its signature

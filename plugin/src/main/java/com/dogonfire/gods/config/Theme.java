@@ -8,6 +8,8 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 
+import com.dogonfire.gods.model.NpcSkin;
+
 /**
  * What one god type is about (a section of themes.yml, merged by {@link ThemesLoader}): the mobs and foods its gods pick
  * their commandments from, what they may want sacrificed, what their slay quests ask for, the blocks their altars are
@@ -23,6 +25,8 @@ import org.bukkit.entity.EntityType;
  *                       them, see {@link Themes#altars()})
  * @param sign           how altar signs of these gods look
  * @param effects        how the effects of these gods look and sound (prayers, sacrifices, blessings, curses)
+ * @param npcSkin        the skin of these gods' NPCs at their main altars, or null for the default look (a god's own skin,
+ *                       set with /g godskin, comes first)
  */
 public record Theme(
 		List<EntityType> holyMobs,
@@ -33,7 +37,8 @@ public record Theme(
 		List<EntityType> slayTargets,
 		List<Material> altarBlocks,
 		SignStyle sign,
-		Effects effects)
+		Effects effects,
+		NpcSkin npcSkin)
 {
 	/**
 	 * How an altar sign looks once Gods has made it.

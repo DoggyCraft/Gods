@@ -646,6 +646,7 @@ command:
     blessings: <red>Blessings are not enabled on this server
     prayers: <red>Prayers are not enabled on this server
     quests: <red>Quests are not enabled on this server
+    npc: <red>God figures at altars are not enabled on this server
   access:
     parameters: '[open/close]'
     description: Set your religion as open or invite only
@@ -728,6 +729,18 @@ command:
     cooldown: <red>The gender of <god> changed recently. Wait <hl><hours></hl> more hours
     # <god>, and <gender> ("God", "Goddess", "Deity"). The god tells its believers itself (believers-gender-changed).
     done: <aqua>You made <gold><god><aqua> your <yellow><gender>
+  godskin:
+    parameters: \<player>|reset
+    description: Give your God's figure at its main altar a player's skin
+    not-priest: <red>Only priests can choose the skin of your God
+    # <player> as typed; sent while the skin is looked up
+    looking: <gray>Looking for the skin of <player>...
+    # <player> as typed
+    not-found: <red>There is no player called <hl><player></hl> with a skin
+    # <god>, and <player>: whose skin it wears now
+    done: <aqua><gold><god></gold> now appears in the skin of <yellow><player>
+    # <god>
+    reset: <aqua><gold><god></gold> appears in the skin of its kind again
   help:
     parameters: '[altar/blocks]'
     description: Show the list of Gods commands

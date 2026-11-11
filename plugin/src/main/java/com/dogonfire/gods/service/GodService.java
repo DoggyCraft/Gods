@@ -23,6 +23,7 @@ import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.storage.CleanupGuard;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.util.LegacyDates;
@@ -475,6 +476,26 @@ public class GodService
 		god.setMainAltar(sign);
 		this.repository.save();
 		// The god appears at its new main altar, or leaves the old one
+		ctx.godNpcs().refreshGod(godName);
+	}
+
+	/** The skin of the god's NPC set with /g godskin, or null for its god type's (themes.yml) */
+	public NpcSkin getNpcSkin(String godName)
+	{
+		God god = god(godName);
+		return god != null ? god.npcSkin() : null;
+	}
+
+	/** Sets the skin of the god's NPC (null: back to its god type's); saved now, and its NPC changes */
+	public void setNpcSkin(String godName, NpcSkin skin)
+	{
+		God god = god(godName);
+		if (god == null || Objects.equals(god.npcSkin(), skin))
+		{
+			return;
+		}
+		god.setNpcSkin(skin);
+		this.repository.save();
 		ctx.godNpcs().refreshGod(godName);
 	}
 

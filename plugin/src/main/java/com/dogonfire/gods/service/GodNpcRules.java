@@ -4,6 +4,7 @@ import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
+import com.dogonfire.gods.model.NpcSkin;
 
 /**
  * The rules of a god's NPC at its main altar (pure, tested): where it stands and which way it faces, when it turns to
@@ -92,6 +93,12 @@ public final class GodNpcRules
 	public static boolean showsName(Settings.FloatingText floatingText)
 	{
 		return floatingText == Settings.FloatingText.OFF;
+	}
+
+	/** The skin a god's NPC wears: its own (/g godskin), else its god type's (themes.yml), else none (null) */
+	public static NpcSkin skin(NpcSkin godSkin, NpcSkin themeSkin)
+	{
+		return godSkin != null && !godSkin.isEmpty() ? godSkin : themeSkin != null && !themeSkin.isEmpty() ? themeSkin : null;
 	}
 
 	/** Whether a figure fits on the spot: its feet block and the one above can be walked through */

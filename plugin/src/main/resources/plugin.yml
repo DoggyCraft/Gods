@@ -51,6 +51,7 @@ permissions:
       gods.priest.description: true
       gods.priest.editbible: true
       gods.priest.gender: true
+      gods.priest.godskin: true
       gods.priest.invite: true
       gods.priest.kick: true
       gods.priest.pvp: true
@@ -170,6 +171,9 @@ permissions:
   gods.priest.gender:
     default: true
     description: "Allows a priest to change the gender of their God"
+  gods.priest.godskin:
+    default: true
+    description: "Allows a priest to give the figure of their God at its main altar a player's skin"
   gods.priest.kick:
     default: true
     description: "Allows priest to kick believers from their religion"

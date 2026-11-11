@@ -20,6 +20,7 @@ import com.dogonfire.gods.integration.npc.GodNpcProvider;
 import com.dogonfire.gods.integration.npc.MannequinNpcs;
 import com.dogonfire.gods.integration.npc.NpcProviders;
 import com.dogonfire.gods.integration.npc.NpcSpec;
+import com.dogonfire.gods.integration.npc.SkinResolver;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
@@ -52,10 +53,13 @@ public class GodNpcService
 	private BukkitTask				task;
 	// The provider wasn't ready when the NPCs were to be shown; they are shown when it is
 	private boolean					waiting;
+	// Players' skins by name, kept for the life of the plugin
+	private final SkinResolver		skins;
 
 	public GodNpcService(GodsContext ctx)
 	{
 		this.ctx = ctx;
+		this.skins = new SkinResolver(ctx.plugin());
 	}
 
 	/** Picks the provider config.yml asks for, removes strays, and shows the NPCs of main altars that are loaded */
@@ -269,10 +273,47 @@ public class GodNpcService
 		return new NpcSpec(godName, location, name, skinFor(godName));
 	}
 
-	/** The god's skin, or null for the provider's default look */
+	/**
+	 * The god's skin ({@link GodNpcRules#skin}: its own, else its god type's), or null for the provider's default look.
+	 * A skin known only by name is resolved in the background; until then it is given by name (Citizens and FancyNpcs
+	 * resolve names themselves, the mannequin waits), and the NPCs are refreshed when it is known.
+	 */
 	private NpcSkin skinFor(String godName)
 	{
-		return null;
+		NpcSkin skin = GodNpcRules.skin(ctx.godService().getNpcSkin(godName), ctx.themes().of(ctx.godService().getDivineForceForGod(godName)).npcSkin());
+		if (skin == null || skin.hasTexture())
+		{
+			return skin;
+		}
+		NpcSkin known = this.skins.known(skin.name());
+		if (known != null)
+		{
+			return known;
+		}
+		this.skins.resolve(skin.name(), resolved -> {
+			if (resolved != null)
+			{
+				// Next tick: the answer may come at once (an online player), in the middle of a refresh
+				ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), this::refreshShown);
+			}
+		});
+		known = this.skins.known(skin.name());
+		return known != null ? known : skin;
+	}
+
+	/** The NPCs shown are brought in line again (a skin was resolved) */
+	private void refreshShown()
+	{
+		for (String godName : new ArrayList<>(this.shown))
+		{
+			refreshGod(godName);
+		}
+	}
+
+	/** Finds players' skins by name (/g godskin, and themes that name a player) */
+	public SkinResolver skins()
+	{
+		return this.skins;
 	}
 
 	// ---------------------------------------------------------------------

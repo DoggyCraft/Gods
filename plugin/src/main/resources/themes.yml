@@ -19,6 +19,9 @@
 #                    sounds (sound ids like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB", for dust
 #                    particles and the symbol). Prayers use the god's mood, sacrifices pleased (wanted), neutral or
 #                    angry (unwanted), blessings pleased and curses angry.
+#   npc              the god's figure at its main altar (config.yml's npc section): skin, a player name (resolved by
+#                    the server) or value and signature (a signed texture, e.g. from mineskin.org). Without one the
+#                    figure has the default look. A god's own skin (/g godskin) comes first.
 # Names are Minecraft ids. Names the server's Minecraft version doesn't have (newer mobs and blocks) are skipped.
 
 default:
@@ -347,6 +350,12 @@ werewolves:
       particles: [damage_indicator, smoke]
       sounds: [entity.wolf.growl]
       colors: ['#3B2A1A', black]
+  npc:
+    # The werewolf alpha, from DoggyCraft's Werewolf plugin (texture taken from the Minecraft account WerewolfAlpha;
+    # the account need not exist or keep that skin)
+    skin:
+      value: ewogICJ0aW1lc3RhbXAiIDogMTY4NTAzNzE3NjgzNiwKICAicHJvZmlsZUlkIiA6ICJlMGQwNzRiZDY3MjI0N2ZjOTVkM2YyOGUyODk5ZTE1NSIsCiAgInByb2ZpbGVOYW1lIiA6ICJXZXJld29sZkFscGhhIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2NhZTg4YjY5MjA0YWUyYzNlM2NiZTcwOWUzZTYyNTIxZTUzZmEwNWU0ZGFkODkxYzZhZmJkZmI5MDg2OGE3ZTAiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==
+      signature: GIDMFU5fTmB4T4RFFs/pQDAg7ZsCsu5KAxMXiQw4G32G0Db5SRmJ6OtiSc3SRznJO9EAW7lmjo38+BdY4b3cgTM7IbXmZGx5ML22ZW5KYspUoot2wo9kIj5ksh+H0Tfy9JCPLpg17nd7O1aY5+RhI5Aq+mhtyhJFXn1a906Qg9/XtHhiw0bUrthpa1RrtHnbH6+hFKgzNKAEeT93MvrPajOT7dmzQ72UK3KXgpe6KzbrWFf+NL0ZbpfkjwabSIALUdcL6+92EI//dB5yMgHEln9wfzKjH+82cDGEoGQjAnJIf+/KVWOtkfNRJauwpUkIUkD4tmkXxCCTyXXwUuIb7e7CwxyFWK4K7e7ir/P5zf1NuQZV+X1MwbF1c++dlGa4yBIvrb97F9tTu+7tw6KFwxqCvj4yRjhkGXsN0soI39v95q7ucxWaX0D4oKwa9QYi9zLW6DIh9bPxGa78TAPC/WyAdM/8J+/uinX2mvEsECsKQVmrCGRrqrZgfctsnXHuqstKMNOecwDFDzi8rWlcM3/wrdHn14Lvn2bsZGR4Xhr532CY2t+JgkQvYBM5Z+tkW5C7MCVH4BbLwf2zDcDkGIOzq5VoKlu/2WML88etjyzSIhCN0WJXWFkeRr7ddTar7Nx8/AzHRUBcTGXC+UGiHMYWWq8bAILFggLKY8eJzq0=
 
 # All creatures: rare beasts are holy and must not be eaten, vermin must be slain
 creatures:
