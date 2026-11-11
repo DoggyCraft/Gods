@@ -43,6 +43,12 @@ With [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/)
 
 A god's priests can change its gender later with `/g gender <god|goddess|deity>`, once every 24 hours (`priests.gender-change-cooldown-hours` in config.yml); the god tells its believers. A Deity, a non-binary god, has no voice of its own: each thing it says comes from its type's male or female voice, picked at random. The gender words on signs and for `/g gender` are `altar.gender-words` in `lang/<language>/messages.yml`; the English ones always work.
 
+Above every praying altar the god's name and title float in the style of its type. A priest can make one altar the god's main altar: look at its sign, block or light (at most 5 blocks away) and use `/g setaltar` (permission `gods.priest.setaltar`). The main altar gets a line of its own above it, and `/g info` shows its believers where it is. If it is destroyed, the god has no main altar until a priest chooses another.
+
+In config.yml, `altars.floating-text` is `all` (above every praying altar, the default), `main` (only above main altars) or `off`, and `altars.floating-text-view-distance-blocks` (32) sets how far away players see it. The texts are `altar.floating.*` in `lang/<language>/messages.yml`. They are never saved with the world: Gods puts them back when the altar's chunk loads.
+
+Gods keeps track of its altars in `plugins/Gods/altars.yml`. Altars that already stand are found as their chunks load (altars from Gods 0.9.x the first time someone uses them), so nothing needs to be done after an update.
+
 Themes
 ---------
 Each god type has a theme: the mobs it holds holy or wants slain, the foods it wants eaten or forbids, what it wants sacrificed, what its slay quests ask for, its altar blocks and how its altar signs look. Gods' own themes are built into the jar ([themes.yml](plugin/src/main/resources/themes.yml)) and use mobs, foods and blocks up to the newest Minecraft; whatever your server's version doesn't have is skipped.
