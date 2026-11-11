@@ -35,7 +35,9 @@ import com.dogonfire.gods.util.AtomicFiles;
  * {@code lang/<language>_<type>_<gender>.yml} becomes {@code lang/<language>/voices/<type>_<gender>.yml}. The text is
  * converted with {@link LegacyText} ({@code &} codes and {@code $PlayerName}-style placeholders to MiniMessage), and
  * the keys get their new names. The new file is the bundled one with every message the old file says differently, so
- * an admin's changes are kept. The old files are moved to {@code lang/old/}.
+ * an admin's changes are kept. A message that is one of Gods' own old texts ({@link #stock}: every version of the
+ * english files Gods 0.9.x shipped or downloaded, and those of this version before MiniMessage) is no change, so an
+ * unchanged old file gets Gods' new text. The old files are moved to {@code lang/old/}.
  */
 public final class LegacyLangFiles
 {
@@ -97,7 +99,6 @@ public final class LegacyLangFiles
 			info("PrayedForHealth", "prayer.prayed-for-health", "&b", "$PlayerName", HL_GOD, "$Amount", HL_AMOUNT),
 			info("PrayedForQuest", "prayer.prayed-for-quest", "&b", "$PlayerName", HL_GOD, "$Amount", HL_AMOUNT));
 
-	/** The old sections of names in the general file, and where they go */
 	/** Whether a name in a section of the old general file is still asked for (old files name things that are gone) */
 	private static boolean isKnownName(String section, String name)
 	{
@@ -112,6 +113,26 @@ public final class LegacyLangFiles
 		};
 	}
 
+	/**
+	 * Old keys of the general file that this version renamed before MiniMessage, to the name {@link #INFO} knows them by,
+	 * so an admin's text under the 0.9.x name carries over
+	 */
+	static final Map<String, String>		INFO_RENAMES	= Map.of("AltarPrayingNowAllowed", "AltarPrayingNotAllowed");
+
+	/**
+	 * Old keys of the voice files that this version renamed before MiniMessage (the 0.9.x names), to the names
+	 * {@link #voiceKey} makes the new keys from
+	 */
+	static final Map<String, String>		VOICE_RENAMES	= Map.of(
+			"GodToBelieversGiveBiblesQuestStarted", "GodToBelieversGiveItemsQuestStarted",
+			"GodToBelieversGiveBiblesQuestStatus", "GodToBelieversGiveItemsQuestStatus",
+			"GodToBelieversGiveBiblesQuestCompleted", "GodToBelieversGiveItemsQuestCompleted",
+			"GodToBelieversGiveBiblesQuestFailed", "GodToBelieversGiveItemsQuestFailed",
+			"GodToBelieversGetHolyArtifactThisQuestStarted", "GodToBelieversGetHolyArtifactQuestStarted",
+			"GodToBelieversGetHolyArtifactThisQuestStatus", "GodToBelieversGetHolyArtifactQuestStatus",
+			"GodToBelieversGetHolyArtifactThisQuestFailed", "GodToBelieversGetHolyArtifactQuestFailed");
+
+	/** The old sections of names in the general file, and where they go */
 	static final Map<String, String>		NAMES		= Map.of(
 			"Items", "names.item",
 			"Mobs", "names.mob",
@@ -165,17 +186,35 @@ public final class LegacyLangFiles
 		return out.toString();
 	}
 
+	/** {@link #convertGeneral(ConfigurationSection, ConfigurationSection)} keeping every message, stock or not */
+	public static Map<String, String> convertGeneral(ConfigurationSection old)
+	{
+		return convertGeneral(old, null);
+	}
+
 	/**
 	 * The messages of an old general file under their new keys, converted to MiniMessage. Messages no longer used are
-	 * left out.
+	 * left out, and so are those that are one of Gods' own old texts ({@code stock}, see {@link #stock}): no admin
+	 * changed them, and the new file has Gods' new text for them.
+	 *
+	 * @param stock every text Gods' own old file had per key, or null to keep every message
 	 */
-	public static Map<String, String> convertGeneral(ConfigurationSection old)
+	public static Map<String, String> convertGeneral(ConfigurationSection old, ConfigurationSection stock)
 	{
 		Map<String, String> converted = new LinkedHashMap<>();
 		for (InfoMessage message : INFO)
 		{
-			String text = old.getString("Info." + message.oldKey());
-			if (text != null)
+			String key = "Info." + message.oldKey();
+			String text = old.getString(key);
+			for (Map.Entry<String, String> rename : INFO_RENAMES.entrySet())
+			{
+				if (text == null && rename.getValue().equals(message.oldKey()))
+				{
+					key = "Info." + rename.getKey();
+					text = old.getString(key);
+				}
+			}
+			if (text != null && !isStock(stock, key, text))
 			{
 				converted.put(message.newKey(), LegacyText.toMiniMessage(text, message.base(), true, message.placeholders()));
 			}
@@ -192,7 +231,7 @@ public final class LegacyLangFiles
 			{
 				String text = names.getString(name);
 				// A name that is the key itself is what Gods shows without one
-				if (text != null && !text.equals(name) && isKnownName(section.getKey(), name))
+				if (text != null && !text.equals(name) && isKnownName(section.getKey(), name) && !isStock(stock, section.getKey() + "." + name, text))
 				{
 					converted.put(section.getValue() + "." + name, LegacyText.toMiniMessage(text, "", false, Map.of("$Gender", "<gender>")));
 				}
@@ -201,8 +240,20 @@ public final class LegacyLangFiles
 		return converted;
 	}
 
-	/** The lines of an old voice file under their new keys, converted to MiniMessage */
+	/** {@link #convertVoice(ConfigurationSection, ConfigurationSection)} keeping every line, stock or not */
 	public static Map<String, List<String>> convertVoice(ConfigurationSection old)
+	{
+		return convertVoice(old, null);
+	}
+
+	/**
+	 * The lines of an old voice file under their new keys, converted to MiniMessage. A key whose lines are all among
+	 * Gods' own old lines for it ({@code stock}) is left out: the new file has Gods' new lines for it. Keys this version
+	 * renamed ({@link #VOICE_RENAMES}) go under the new name.
+	 *
+	 * @param stock every line Gods' own old file had per key, or null to keep every key
+	 */
+	public static Map<String, List<String>> convertVoice(ConfigurationSection old, ConfigurationSection stock)
 	{
 		Map<String, List<String>> converted = new LinkedHashMap<>();
 		for (String key : old.getKeys(false))
@@ -211,12 +262,23 @@ public final class LegacyLangFiles
 			{
 				continue;
 			}
+			String renamed = VOICE_RENAMES.get(key);
+			if (renamed != null && old.isList(renamed))
+			{
+				// The file has the new name too
+				continue;
+			}
+			List<String> oldLines = old.getStringList(key);
+			if (!oldLines.isEmpty() && oldLines.stream().allMatch(line -> isStock(stock, key, line)))
+			{
+				continue;
+			}
 			List<String> lines = new ArrayList<>();
-			for (String line : old.getStringList(key))
+			for (String line : oldLines)
 			{
 				lines.add(LegacyText.toMiniMessage(line, LegacyText.VOICE_BASE, false, LegacyText.VOICE_PLACEHOLDERS));
 			}
-			converted.put(voiceKey(key), List.copyOf(lines));
+			converted.put(voiceKey(renamed != null ? renamed : key), List.copyOf(lines));
 		}
 		return converted;
 	}
@@ -298,7 +360,8 @@ public final class LegacyLangFiles
 				}
 				else
 				{
-					changedMessages += write(target, general.matches() ? convertGeneral(old) : convertVoice(old), bundled(resources, language, newPath));
+					YamlConfiguration stock = stock(resources, name);
+					changedMessages += write(target, general.matches() ? convertGeneral(old, stock) : convertVoice(old, stock), bundled(resources, language, newPath));
 					converted++;
 				}
 				moveToOld(file, langFolder.resolve("old"));
@@ -352,6 +415,35 @@ public final class LegacyLangFiles
 		Files.createDirectories(target.getParent());
 		AtomicFiles.write(target, yaml.saveToString());
 		return bundled != null ? changed : 0;
+	}
+
+	/**
+	 * Every text Gods' own old language file of this name had, per key: {@code legacy-lang/<name>} in the jar, made from
+	 * every version of Gods' english files in its git history (0.9.x, which downloaded them from GitHub, and this version
+	 * before MiniMessage). Null for a file Gods never had (another language).
+	 */
+	static YamlConfiguration stock(Function<String, InputStream> resources, String oldFileName) throws IOException
+	{
+		try (InputStream in = resources.apply("legacy-lang/" + oldFileName))
+		{
+			if (in == null)
+			{
+				return null;
+			}
+			YamlConfiguration stock = new YamlConfiguration();
+			stock.loadFromString(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+			return stock;
+		}
+		catch (InvalidConfigurationException e)
+		{
+			throw new IOException("The bundled legacy-lang/" + oldFileName + " is broken", e);
+		}
+	}
+
+	/** Whether the text is one Gods' own old file had for this key */
+	private static boolean isStock(ConfigurationSection stock, String key, String text)
+	{
+		return stock != null && stock.getStringList(key).contains(text);
 	}
 
 	private static String bundled(Function<String, InputStream> resources, String language, String path) throws IOException

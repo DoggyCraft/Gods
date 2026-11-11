@@ -2,6 +2,8 @@ package com.dogonfire.gods.migration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -46,6 +48,83 @@ class LegacyLangFilesTest
 		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("messages.yml"), LegacyLangFiles.convertGeneral(fixture("english_general.yml")), bundled("lang/english/messages.yml")));
 		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("sun_male.yml"), LegacyLangFiles.convertVoice(fixture("english_sun_male.yml")), bundled("lang/english/voices/sun_male.yml")));
 		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("creatures_female.yml"), LegacyLangFiles.convertVoice(fixture("english_creatures_female.yml")), bundled("lang/english/voices/creatures_female.yml")));
+	}
+
+	/** Gods 0.9.x's files (bundled, or downloaded from GitHub) differ a lot from the new text, but nobody changed them */
+	@Test
+	void unchangedOldFilesOfGods09KeepNothing() throws IOException
+	{
+		for (String name : fixtureNames("legacy/lang/0.9/"))
+		{
+			String oldName = name.equals("english_general-github.yml") ? "english_general.yml" : name;
+			YamlConfiguration stock = LegacyLangFiles.stock(this::resource, oldName);
+			YamlConfiguration old = fixture("0.9/" + name);
+			Map<String, ?> converted = oldName.equals("english_general.yml") ? LegacyLangFiles.convertGeneral(old, stock) : LegacyLangFiles.convertVoice(old, stock);
+			assertEquals(Map.of(), converted, name);
+		}
+	}
+
+	/** The files of this version before MiniMessage aren't customizations either, whatever the new text says */
+	@Test
+	void unchangedOldFilesOfThisVersionKeepNothing() throws IOException
+	{
+		assertEquals(Map.of(), LegacyLangFiles.convertGeneral(fixture("english_general.yml"), LegacyLangFiles.stock(this::resource, "english_general.yml")));
+		assertEquals(Map.of(), LegacyLangFiles.convertVoice(fixture("english_sun_male.yml"), LegacyLangFiles.stock(this::resource, "english_sun_male.yml")));
+	}
+
+	@Test
+	void theStockOfGods09IsThereForEveryFile() throws IOException
+	{
+		for (String name : fixtureNames("legacy/lang/0.9/"))
+		{
+			if (!name.equals("english_general-github.yml"))
+			{
+				assertNotNull(LegacyLangFiles.stock(this::resource, name), name);
+			}
+		}
+		assertNull(LegacyLangFiles.stock(this::resource, "klingon_general.yml"));
+	}
+
+	/** A customized 0.9.x file keeps its changes, under the keys this version renamed too, and loses its stock lines */
+	@Test
+	void aCustomizedGods09FileKeepsOnlyItsChanges() throws IOException
+	{
+		YamlConfiguration general = fixture("0.9/english_general.yml");
+		general.set("Info.AltarPrayingNowAllowed", "&4Nur Priester beten hier");
+		general.set("Info.YourPrayerPower", "&eDu hast $Amount Gebetskraft");
+		Map<String, String> messages = LegacyLangFiles.convertGeneral(general, LegacyLangFiles.stock(this::resource, "english_general.yml"));
+		assertEquals(Map.of("altar.praying-not-allowed", "<dark_red>Nur Priester beten hier", "prayer.power", "<yellow>Du hast <hl><amount></hl><aqua> Gebetskraft"), messages);
+
+		YamlConfiguration sun = fixture("0.9/english_sun_male.yml");
+		sun.set("GodToBelieversGiveBiblesQuestStarted", List.of("Bring Bücher, $PlayerName!"));
+		sun.set("GodToBelieversGetHolyArtifactThisQuestFailed", List.of("Zu spät"));
+		List<String> praying = new java.util.ArrayList<>(sun.getStringList("GodToBelieverPraying"));
+		praying.add("Bete lauter!");
+		sun.set("GodToBelieverPraying", praying);
+		Map<String, List<String>> voice = LegacyLangFiles.convertVoice(sun, LegacyLangFiles.stock(this::resource, "english_sun_male.yml"));
+		assertEquals(List.of("believer-praying", "believers-give-items-quest-started", "believers-get-holy-artifact-quest-failed"), List.copyOf(voice.keySet()));
+		assertEquals(List.of("Bring Bücher, <hl><player></hl>!"), voice.get("believers-give-items-quest-started"));
+		assertEquals("Bete lauter!", voice.get("believer-praying").getLast());
+	}
+
+	/** A whole 0.9.x language folder, unchanged, becomes Gods' own new files */
+	@Test
+	void migratingUnchangedGods09FilesKeepsNothing() throws IOException
+	{
+		for (String name : fixtureNames("legacy/lang/0.9/"))
+		{
+			if (!name.equals("english_general-github.yml"))
+			{
+				copy("0.9/" + name, name);
+			}
+		}
+
+		LegacyLangFiles.migrate(this.lang, this::resource, LOG);
+
+		for (String path : List.of("messages.yml", "voices/war_female.yml", "voices/sun_male.yml", "voices/creatures_female.yml"))
+		{
+			assertEquals(bundledYaml("lang/english/" + path).saveToString(), YamlConfiguration.loadConfiguration(this.lang.resolve("english").resolve(path).toFile()).saveToString(), path);
+		}
 	}
 
 	@Test
@@ -136,6 +215,15 @@ class LegacyLangFilesTest
 		Messages messages = new Messages(this.lang, this::resource, LOG);
 		messages.load("english", "Doggycraft");
 		assertEquals("§eDu hast jetzt §65§e Gebetskraft", messages.legacy("prayer.power", Messages.amount(5)));
+	}
+
+	/** The files in a test resource folder */
+	private List<String> fixtureNames(String folder) throws IOException
+	{
+		try (java.util.stream.Stream<Path> files = Files.list(Path.of(java.net.URI.create(Objects.requireNonNull(getClass().getClassLoader().getResource(folder), folder).toString()))))
+		{
+			return files.map(file -> file.getFileName().toString()).sorted().toList();
+		}
 	}
 
 	private void copy(String fixture, String as) throws IOException
