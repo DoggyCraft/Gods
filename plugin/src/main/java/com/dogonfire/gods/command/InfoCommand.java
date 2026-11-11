@@ -1,0 +1,105 @@
+package com.dogonfire.gods.command;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.GodMood;
+
+/** /g info [god]: everything about a god (the player's own by default) */
+public final class InfoCommand extends SubCommand
+{
+	public InfoCommand(GodsContext ctx)
+	{
+		super(ctx, "info", "gods.info");
+	}
+
+	@Override
+	public void execute(CommandSender sender, List<String> args) throws CommandException
+	{
+		String godName = args.size() == 1 ? this.ctx.godService().formatGodName(args.getFirst()) : null;
+		if (godName == null && sender instanceof Player player)
+		{
+			godName = godOf(player);
+		}
+		if (godName == null)
+		{
+			throw new CommandException("command.info.no-god");
+		}
+		if (!this.ctx.godService().godExist(godName))
+		{
+			throw new CommandException("command.info.unknown-god");
+		}
+
+		send(sender, "command.info.header", Messages.god(godName), Messages.color("type_color", this.ctx.godService().getColorForGod(godName)), Messages.legacyText("title", this.ctx.godService().getTitleForGod(godName)));
+		send(sender, "command.info.god-description", Messages.text("description", String.valueOf(this.ctx.godService().getGodDescription(godName))));
+
+		GodMood godMood = this.ctx.moodService().getMoodForGod(godName);
+		send(sender, "command.info.mood." + godMood.name(), Messages.god(godName), Messages.component("mood", this.ctx.messages().moodName(godMood)));
+
+		Material neededItem = this.ctx.commandmentService().getSacrificeItemTypeForGod(godName);
+		if (neededItem != null)
+		{
+			send(sender, "command.info.sacrifice", Messages.god(godName), Messages.type(this.ctx.messages().itemName(neededItem)));
+		}
+
+		List<UUID> priests = this.ctx.priestService().getPriestsForGod(godName);
+		if (priests == null || priests.isEmpty())
+		{
+			send(sender, "command.info.no-priest");
+		}
+		else if (priests.size() == 1)
+		{
+			send(sender, "command.info.priest", Messages.player(nameOf(priests.getFirst())));
+		}
+		else
+		{
+			send(sender, "command.info.priests");
+			for (UUID priest : priests)
+			{
+				send(sender, "command.info.priests-line", Messages.player(nameOf(priest)));
+			}
+		}
+
+		send(sender, "command.info.believers", Messages.amount(this.ctx.believerService().getBelieversForGod(godName).size()));
+		send(sender, "command.info.power", Messages.text("power", this.ctx.godService().getGodPower(godName)));
+		if (this.ctx.settings().commandments().enabled())
+		{
+			send(sender, "command.info.holy-food", Messages.type(this.ctx.messages().itemName(this.ctx.commandmentService().getHolyFoodTypeForGod(godName))));
+			send(sender, "command.info.unholy-food", Messages.type(this.ctx.messages().itemName(this.ctx.commandmentService().getUnholyFoodTypeForGod(godName))));
+			send(sender, "command.info.holy-creature", Messages.type(this.ctx.messages().mobName(this.ctx.commandmentService().getHolyMobTypeForGod(godName))));
+			send(sender, "command.info.unholy-creature", Messages.type(this.ctx.messages().mobName(this.ctx.commandmentService().getUnholyMobTypeForGod(godName))));
+		}
+
+		List<String> allies = this.ctx.relationService().getAllianceRelations(godName);
+		List<String> enemies = this.ctx.relationService().getWarRelations(godName);
+		if (!allies.isEmpty() || !enemies.isEmpty())
+		{
+			send(sender, "command.info.relations");
+			for (String ally : allies)
+			{
+				send(sender, "command.info.alliance", Messages.god(ally));
+			}
+			for (String enemy : enemies)
+			{
+				send(sender, "command.info.war", Messages.god(enemy));
+			}
+		}
+
+		if (this.ctx.settings().holyLand().enabled())
+		{
+			send(sender, "command.info.holy-land", Messages.text("claimed", this.ctx.holyLandService().getClaimedChunksForGod(godName)), Messages.text("max", this.ctx.holyLandService().getMaximumChunksForGod(godName)));
+		}
+	}
+
+	@Override
+	public List<String> tabComplete(CommandSender sender, List<String> args)
+	{
+		return args.size() == 1 ? godNames() : List.of();
+	}
+}
