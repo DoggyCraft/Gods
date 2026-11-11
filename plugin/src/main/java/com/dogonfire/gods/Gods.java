@@ -288,34 +288,42 @@ public class Gods extends JavaPlugin
 		boolean complete = true;
 		if (this.settings.bibles().enabled())
 		{
-			complete &= loadStep("bibles.yml", () -> this.ctx.holyBookService().load());
+			complete &= loadStep("bibles.yml", () -> this.ctx.holyBookService().load(), true);
 		}
 		if (this.settings.marriage().enabled())
 		{
-			complete &= loadStep("marriages.yml", () -> this.ctx.marriageService().load());
+			complete &= loadStep("marriages.yml", () -> this.ctx.marriageService().load(), true);
 		}
 		if (this.settings.holyLand().enabled())
 		{
-			complete &= loadStep("holyland.yml", () -> this.ctx.holyLandService().load());
+			complete &= loadStep("holyland.yml", () -> this.ctx.holyLandService().load(), true);
 		}
 
 		// Old lang/<language>_*.yml files (Gods 0.9.x and before MiniMessage) become the new message files first
 		loadStep("the old language files", () -> LegacyLangFiles.migrate(getDataFolder().toPath().resolve("lang"), this::getResource, getLogger()));
 		loadStep("the message files", () -> this.ctx.messages().load(this.settings.general().language(), this.settings.general().serverName()));
-		complete &= loadStep("gods.yml", () -> this.ctx.godService().load());
+		complete &= loadStep("gods.yml", () -> this.ctx.godService().load(), true);
 		// Where the altars are; not needed to judge dead gods, so it doesn't hold back cleanups
 		loadStep("altars.yml", () -> this.ctx.altarRegistry().load());
-		complete &= loadStep("quests.yml", () -> this.ctx.questService().load());
-		complete &= loadStep("believers.yml", () -> this.ctx.believerService().load());
-		complete &= loadStep("whitelist.yml and blacklist.yml", () -> this.ctx.godListService().load());
+		complete &= loadStep("quests.yml", () -> this.ctx.questService().load(), true);
+		complete &= loadStep("believers.yml", () -> this.ctx.believerService().load(), true);
+		complete &= loadStep("whitelist.yml and blacklist.yml", () -> this.ctx.godListService().load(), true);
 
 		this.knownPlayerIds = null;
 		// Nothing is removed because of what another file says for a few minutes, in case an edit is still going on
 		this.storage.dataLoaded(complete);
 	}
 
-	/** Runs one step of {@link #loadData()}; returns false (after logging it) if it failed */
+	/**
+	 * Runs one step of {@link #loadData()}; returns false (after logging it) if it failed. Only the steps whose result
+	 * goes into the cleanup guard ({@code complete &=}) stop dead gods and inactive priests from being removed.
+	 */
 	private boolean loadStep(String what, Runnable step)
+	{
+		return loadStep(what, step, false);
+	}
+
+	private boolean loadStep(String what, Runnable step, boolean blocksCleanup)
 	{
 		try
 		{
@@ -324,7 +332,7 @@ public class Gods extends JavaPlugin
 		}
 		catch (RuntimeException ex)
 		{
-			getLogger().log(Level.SEVERE, "Could not load " + what + "; going on without it. Dead gods and inactive priests are not removed until this is fixed and Gods is reloaded.", ex);
+			getLogger().log(Level.SEVERE, "Could not load " + what + "; going on without it." + (blocksCleanup ? " Dead gods and inactive priests are not removed until this is fixed and Gods is reloaded." : ""), ex);
 			return false;
 		}
 	}
