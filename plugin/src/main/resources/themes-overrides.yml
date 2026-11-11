@@ -1,0 +1,40 @@
+# Your changes to the god themes.
+#
+# Gods' own themes are built into the jar (plugin/src/main/resources/themes.yml in the Gods sources). This file only
+# holds what you change, merged over them key by key. Gods wrote it once as an example and never writes it again, so
+# your changes survive updates, and new mobs and foods in Gods' themes reach you without any work. /g reload reads it.
+#
+# Sections: default (the theme of gods without a type, and what fills a key a god type leaves out; Gods' own god
+# types leave out nothing) and the god types:
+# frost, love, evil, sea, moon, sun, thunder, party, war, werewolves, creatures, wisdom, nature. Keys in each:
+#   holy-mobs        mobs the god forbids killing (each god picks one)
+#   unholy-mobs      mobs the god wants slain (each god picks one)
+#   holy-foods       foods the god wants eaten (each god picks one)
+#   unholy-foods     foods the god forbids (each god picks one)
+#   sacrifice-needs  items the god may come to want sacrificed
+#   slay-targets     mobs slay quests ask for, besides the god's unholy mob
+#   altar-blocks     blocks an altar is built on to make a god of this type; config.yml's altars.block-types replaces
+#                    them for every god type it lists
+#   sign             how altar signs look:
+#                      messages  the texts under altar.sign.<messages> in lang/<language>/messages.yml
+#                      dye       the sign's dye color (black, white, red, light_blue, ...)
+#                      glowing   true or false
+#
+# A god keeps the holy and unholy mob and food it already picked; changes here only affect what gods pick from now on.
+# Names are Minecraft ids (polar_bear, cooked_cod). Names this server's Minecraft version doesn't have are skipped.
+#
+# A list replaces Gods' list. A section with add: and/or remove: changes Gods' list instead. For example:
+#
+# frost:
+#   holy-mobs: [polar_bear, fox]
+#   holy-foods:
+#     add: [pumpkin_pie]
+#     remove: [cooked_cod]
+#   altar-blocks:
+#     add: [white_concrete]
+#   sign:
+#     dye: blue
+#     glowing: false
+#
+# werewolves:
+#   altar-blocks: [mossy_cobblestone]

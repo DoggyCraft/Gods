@@ -1,0 +1,237 @@
+# Gods' own god themes. This file lives in the Gods jar and is never written to disk: to change a theme, put only
+# your changes in plugins/Gods/themes.yml (Gods writes a commented example there once).
+#
+# Each god type has a section; "default" fills what a god type's section leaves out, and is the theme of gods without
+# a type. In each:
+#   holy-mobs        mobs the god forbids killing (each god picks one and keeps it)
+#   unholy-mobs      mobs the god wants slain (each god picks one and keeps it)
+#   holy-foods       foods the god wants eaten (each god picks one and keeps it)
+#   unholy-foods     foods the god forbids (each god picks one and keeps it)
+#   sacrifice-needs  items the god may come to want sacrificed (each god's seed picks five; its forbidden food may be
+#                    wanted burnt too)
+#   slay-targets     mobs slay quests ask for, besides the god's unholy mob
+#   altar-blocks     blocks an altar is built on to make a god of this type (config.yml's altars.block-types replaces
+#                    them for the god types it lists)
+#   sign             how altar signs look: messages (the texts under altar.sign.<messages> in messages.yml), dye (the
+#                    sign's dye color) and glowing (glowing text)
+# Names are Minecraft ids. Names the server's Minecraft version doesn't have (newer mobs and blocks) are skipped.
+
+default:
+  holy-mobs: [chicken, cow, pig, sheep, rabbit, horse, bat]
+  unholy-mobs: [chicken, cow, pig, sheep, rabbit, horse, bat, wolf, skeleton, zombie]
+  holy-foods: [apple, bread, cooked_salmon, melon_slice, cooked_beef, cooked_porkchop, carrot]
+  unholy-foods: [apple, bread, cooked_salmon, melon_slice, cooked_beef, cooked_porkchop, carrot]
+  sacrifice-needs: [poppy, cooked_porkchop, rabbit_hide, rabbit_foot, cactus, bread, carrot, iron_pickaxe, iron_ingot, gold_ingot,
+    apple, book, cake, melon_slice, cookie, pumpkin, sugar_cane, egg, wheat, netherrack, potato, bone, feather]
+  slay-targets: [sheep, spider, chicken, cow, pig]
+  altar-blocks: []
+  sign:
+    messages: default
+    dye: black
+    glowing: false
+
+# Snow and ice: the creatures of cold biomes are holy, fire and heat are not
+frost:
+  holy-mobs: [polar_bear, fox, snow_golem, goat, wolf, rabbit]
+  unholy-mobs: [blaze, magma_cube, husk, strider, zombie, skeleton, creeper]
+  holy-foods: [cooked_salmon, cooked_cod, sweet_berries, rabbit_stew, cooked_rabbit, beetroot_soup, apple]
+  unholy-foods: [baked_potato, cooked_porkchop, pumpkin_pie, melon_slice, cooked_beef, bread]
+  sacrifice-needs: [snowball, packed_ice, blue_ice, powder_snow_bucket, leather, rabbit_hide, rabbit_foot, cod, salmon,
+    sweet_berries, spruce_log, white_wool, feather, bone, iron_ingot, goat_horn]
+  slay-targets: [stray, zombie, skeleton, spider, creeper, husk]
+  altar-blocks: [snow_block, packed_ice, blue_ice]
+  sign:
+    messages: frost
+    dye: light_blue
+    glowing: true
+
+# Love and kindness: cuddly animals are holy, sweets please; those who hurt the innocent must be slain
+love:
+  holy-mobs: [cat, parrot, allay, ocelot, rabbit, axolotl, panda, sheep]
+  unholy-mobs: [witch, vindicator, evoker, pillager, zombie, skeleton, creeper]
+  holy-foods: [cookie, sweet_berries, glow_berries, honey_bottle, apple, melon_slice, pumpkin_pie]
+  unholy-foods: [cooked_rabbit, rabbit_stew, cooked_mutton, cooked_chicken, spider_eye, poisonous_potato]
+  sacrifice-needs: [poppy, rose_bush, pink_tulip, peony, lilac, allium, pink_petals, cake, cookie, sugar, honeycomb, gold_ingot,
+    diamond, amethyst_shard, pink_dye, red_dye, emerald, string]
+  slay-targets: [witch, pillager, vindicator, zombie, skeleton, spider]
+  altar-blocks: [diamond_block, cherry_planks, cherry_log, cherry_wood, pink_wool, pink_concrete, pink_terracotta]
+  sign:
+    messages: love
+    dye: pink
+    glowing: true
+
+# Darkness: the undead, the nether and the sculk are holy; the innocent animals of the surface are prey
+evil:
+  holy-mobs: [bat, spider, cave_spider, witch, wither_skeleton, warden, piglin, hoglin]
+  unholy-mobs: [chicken, cow, pig, sheep, rabbit, horse, wolf, iron_golem, snow_golem]
+  holy-foods: [rotten_flesh, spider_eye, cooked_porkchop, cooked_beef, cooked_mutton]
+  unholy-foods: [golden_carrot, apple, honey_bottle, sweet_berries, glow_berries, bread, cookie, melon_slice]
+  sacrifice-needs: [bone, rotten_flesh, spider_eye, fermented_spider_eye, gunpowder, wither_rose, soul_sand, soul_soil,
+    crying_obsidian, obsidian, sculk, netherrack, coal, ink_sac, ghast_tear, black_dye, blaze_powder]
+  slay-targets: [sheep, cow, pig, chicken, rabbit, horse]
+  altar-blocks: [obsidian, crying_obsidian, sculk, soul_sand, soul_soil, blackstone, polished_blackstone_bricks,
+    chiseled_polished_blackstone]
+  sign:
+    messages: evil
+    dye: purple
+    glowing: true
+
+# The sea: the creatures of the water are holy, the drowned and the guardians are not
+sea:
+  holy-mobs: [dolphin, turtle, axolotl, squid, glow_squid, cod, salmon, tropical_fish, nautilus]
+  unholy-mobs: [drowned, guardian, pufferfish, zombie_nautilus, zombie, skeleton]
+  holy-foods: [cooked_cod, cooked_salmon, dried_kelp, cod, salmon]
+  unholy-foods: [pufferfish, cooked_beef, cooked_porkchop, cooked_mutton, baked_potato, bread]
+  sacrifice-needs: [kelp, sea_pickle, prismarine_shard, prismarine_crystals, nautilus_shell, turtle_scute, ink_sac, glow_ink_sac,
+    cod, salmon, tropical_fish, lapis_lazuli, seagrass, tube_coral, brain_coral, fishing_rod]
+  slay-targets: [drowned, guardian, zombie, skeleton, creeper]
+  altar-blocks: [lapis_block, prismarine, prismarine_bricks, dark_prismarine, sea_lantern]
+  sign:
+    messages: sea
+    dye: cyan
+    glowing: true
+
+# The night and the End: night creatures and the moon rabbit are holy, the restless dead are not
+moon:
+  holy-mobs: [bat, cat, fox, wolf, rabbit, enderman]
+  unholy-mobs: [phantom, zombie, skeleton, creeper, witch, drowned]
+  holy-foods: [glow_berries, cooked_rabbit, rabbit_stew, chorus_fruit, carrot]
+  unholy-foods: [golden_carrot, baked_potato, bread, cooked_beef, honey_bottle, melon_slice]
+  sacrifice-needs: [ender_pearl, chorus_fruit, end_stone, purpur_block, phantom_membrane, glowstone_dust, glow_ink_sac, bone,
+    string, clock, feather, rabbit_foot, rabbit_hide, white_wool, quartz]
+  slay-targets: [zombie, skeleton, spider, creeper, drowned]
+  altar-blocks: [end_stone, end_stone_bricks, purpur_block, purpur_pillar]
+  sign:
+    messages: moon
+    dye: light_gray
+    glowing: true
+
+# The sun and the desert: creatures of the day are holy, the undead that burn in the sun are not
+sun:
+  holy-mobs: [camel, armadillo, bee, chicken, horse, llama]
+  unholy-mobs: [zombie, skeleton, husk, drowned, phantom, bogged, creeper]
+  holy-foods: [bread, baked_potato, golden_carrot, honey_bottle, apple, melon_slice, cooked_chicken]
+  unholy-foods: [rotten_flesh, spider_eye, glow_berries, mushroom_stew, suspicious_stew, cooked_cod]
+  sacrifice-needs: [sunflower, dandelion, gold_ingot, gold_nugget, glowstone_dust, honeycomb, wheat, hay_block, sandstone, sand,
+    cactus, torch, orange_tulip, oxeye_daisy, sugar_cane, egg]
+  slay-targets: [zombie, skeleton, husk, drowned, spider, creeper]
+  altar-blocks: [sandstone, chiseled_sandstone, cut_sandstone, smooth_sandstone, gold_block, raw_gold_block, glowstone,
+    honeycomb_block]
+  sign:
+    messages: sun
+    dye: orange
+    glowing: true
+
+# Storms and lightning: creepers and golems the lightning loves are holy; copper calls the storm
+thunder:
+  holy-mobs: [iron_golem, copper_golem, horse, parrot, creeper, breeze]
+  unholy-mobs: [witch, drowned, zombie, skeleton, spider, zombified_piglin]
+  holy-foods: [cooked_beef, cooked_mutton, baked_potato, rabbit_stew, bread]
+  unholy-foods: [cooked_porkchop, melon_slice, apple, carrot, pufferfish]
+  sacrifice-needs: [copper_ingot, raw_copper, lightning_rod, redstone, iron_ingot, gunpowder, wind_charge, breeze_rod,
+    glowstone_dust, quartz, feather, string]
+  slay-targets: [drowned, zombie, skeleton, spider, witch]
+  altar-blocks: [quartz_block, chiseled_quartz_block, quartz_pillar, quartz_bricks,
+    copper_block, exposed_copper, weathered_copper, oxidized_copper,
+    waxed_copper_block, waxed_exposed_copper, waxed_weathered_copper, waxed_oxidized_copper,
+    cut_copper, exposed_cut_copper, weathered_cut_copper, oxidized_cut_copper,
+    waxed_cut_copper, waxed_exposed_cut_copper, waxed_weathered_cut_copper, waxed_oxidized_cut_copper,
+    chiseled_copper, exposed_chiseled_copper, weathered_chiseled_copper, oxidized_chiseled_copper,
+    waxed_chiseled_copper, waxed_exposed_chiseled_copper, waxed_weathered_chiseled_copper, waxed_oxidized_chiseled_copper]
+  sign:
+    messages: thunder
+    dye: yellow
+    glowing: true
+
+# Feasts and music: the dancers and the playful are holy, the party poopers must go
+party:
+  holy-mobs: [parrot, allay, llama, panda, happy_ghast, sheep]
+  unholy-mobs: [creeper, witch, pillager, zombie, skeleton, phantom]
+  holy-foods: [cookie, pumpkin_pie, honey_bottle, melon_slice, sweet_berries, glow_berries, apple]
+  unholy-foods: [dried_kelp, beetroot_soup, bread, spider_eye, rotten_flesh]
+  sacrifice-needs: [cake, cookie, firework_rocket, firework_star, note_block, jukebox, music_disc_cat, sugar, cocoa_beans, emerald,
+    gunpowder, paper, lime_wool, magenta_wool, pumpkin_pie, honey_bottle, candle, egg]
+  slay-targets: [creeper, witch, pillager, zombie, skeleton]
+  altar-blocks: [emerald_block, note_block, jukebox, lime_concrete, magenta_concrete, lime_glazed_terracotta,
+    magenta_glazed_terracotta]
+  sign:
+    messages: party
+    dye: lime
+    glowing: true
+
+# War: horses, war dogs and golems are holy, raiders must be slain
+war:
+  holy-mobs: [horse, wolf, iron_golem, donkey, mule]
+  unholy-mobs: [pillager, vindicator, ravager, evoker, piglin_brute, zombie, skeleton]
+  holy-foods: [cooked_beef, cooked_porkchop, cooked_mutton, cooked_chicken, bread, baked_potato]
+  unholy-foods: [cookie, pumpkin_pie, honey_bottle, sweet_berries, melon_slice]
+  sacrifice-needs: [iron_sword, iron_axe, bow, crossbow, arrow, shield, iron_ingot, iron_helmet, gunpowder, flint, leather, bone,
+    netherrack, raw_iron]
+  slay-targets: [pillager, vindicator, zombie, skeleton, spider, creeper]
+  altar-blocks: [netherrack, iron_block, raw_iron_block, nether_bricks, red_nether_bricks, chiseled_nether_bricks,
+    smithing_table, fletching_table]
+  sign:
+    messages: war
+    dye: red
+    glowing: true
+
+# The pack: wolves are holy, prey is hunted and eaten raw. No altar block makes a werewolf god (as before); add some
+# in plugins/Gods/themes.yml or config.yml if you want them
+werewolves:
+  holy-mobs: [wolf, fox]
+  unholy-mobs: [sheep, rabbit, chicken, pig, cow, goat]
+  holy-foods: [beef, porkchop, mutton, rabbit, cooked_beef, cooked_mutton]
+  unholy-foods: [bread, baked_potato, carrot, apple, melon_slice, beetroot, pumpkin_pie, sweet_berries]
+  sacrifice-needs: [bone, beef, mutton, porkchop, rabbit_hide, rabbit_foot, leather, rotten_flesh, spruce_log, feather, chicken]
+  slay-targets: [sheep, rabbit, pig, cow, chicken]
+  altar-blocks: []
+  sign:
+    messages: werewolves
+    dye: gray
+    glowing: true
+
+# All creatures: rare beasts are holy and must not be eaten, vermin must be slain
+creatures:
+  holy-mobs: [sniffer, armadillo, frog, camel, panda, turtle, goat, mooshroom]
+  unholy-mobs: [silverfish, endermite, zombie, skeleton, spider, slime]
+  holy-foods: [carrot, apple, sweet_berries, beetroot, melon_slice, bread]
+  unholy-foods: [cooked_beef, cooked_porkchop, cooked_chicken, cooked_mutton, cooked_rabbit, rabbit_stew]
+  sacrifice-needs: [wheat, wheat_seeds, carrot, hay_block, lead, egg, feather, leather, bone_meal, beetroot_seeds, melon_seeds,
+    pumpkin_seeds, torchflower_seeds, slime_ball, string, oak_sapling]
+  slay-targets: [zombie, skeleton, spider, creeper, witch]
+  altar-blocks: [oak_log, spruce_log, birch_log, jungle_log, acacia_log, dark_oak_log, mangrove_log, pale_oak_log, hay_block,
+    bone_block]
+  sign:
+    messages: creatures
+    dye: brown
+    glowing: true
+
+# Wisdom: the villagers and the talkers are holy, those who corrupt knowledge are not
+wisdom:
+  holy-mobs: [villager, wandering_trader, allay, parrot, sniffer, cat]
+  unholy-mobs: [silverfish, zombie_villager, evoker, vindicator, witch, zombie]
+  holy-foods: [apple, golden_carrot, glow_berries, honey_bottle, bread, cooked_salmon]
+  unholy-foods: [suspicious_stew, pufferfish, poisonous_potato, spider_eye, rotten_flesh]
+  sacrifice-needs: [book, paper, writable_book, ink_sac, glow_ink_sac, feather, lapis_lazuli, amethyst_shard, bookshelf, map,
+    compass, clock, spyglass, emerald, candle]
+  slay-targets: [zombie, skeleton, spider, creeper, witch]
+  altar-blocks: [bookshelf, chiseled_bookshelf, amethyst_block, calcite]
+  sign:
+    messages: wisdom
+    dye: blue
+    glowing: true
+
+# Nature: bees, foxes and frogs are holy, berries and honey please; what tramples and blights must go
+nature:
+  holy-mobs: [bee, fox, frog, rabbit, panda, mooshroom, ocelot]
+  unholy-mobs: [creeper, zombie, skeleton, spider, ravager, creaking]
+  holy-foods: [sweet_berries, glow_berries, honey_bottle, apple, carrot, melon_slice, beetroot, mushroom_stew]
+  unholy-foods: [rotten_flesh, spider_eye, poisonous_potato, cooked_porkchop, cooked_beef]
+  sacrifice-needs: [oak_sapling, birch_sapling, azalea, flowering_azalea, moss_block, honeycomb, wheat_seeds, melon, pumpkin,
+    sugar_cane, bone_meal, dandelion, poppy, cornflower, lily_of_the_valley, sweet_berries, vine, lily_pad, cactus]
+  slay-targets: [creeper, zombie, skeleton, spider, witch]
+  altar-blocks: [melon, pumpkin, moss_block, azalea_leaves, flowering_azalea_leaves, mossy_cobblestone, mossy_stone_bricks]
+  sign:
+    messages: nature
+    dye: green
+    glowing: true

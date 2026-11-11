@@ -5,6 +5,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
 import com.dogonfire.gods.config.Settings;
+import com.dogonfire.gods.config.Themes;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.service.AltarService;
@@ -124,6 +125,12 @@ public final class GodsContext
 	public Settings settings()
 	{
 		return this.plugin.settings();
+	}
+
+	/** The god types' themes (themes.yml); replaced on /g reload, so read them when needed instead of keeping them */
+	public Themes themes()
+	{
+		return this.plugin.themes();
 	}
 
 	public Storage storage()

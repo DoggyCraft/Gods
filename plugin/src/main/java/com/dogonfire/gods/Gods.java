@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -17,6 +18,7 @@ import java.util.logging.Level;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -66,6 +68,8 @@ import com.dogonfire.gods.command.WarCommand;
 import com.dogonfire.gods.config.ConfigDefaults;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
+import com.dogonfire.gods.config.Themes;
+import com.dogonfire.gods.config.ThemesLoader;
 import com.dogonfire.gods.integration.GodsMetrics;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
 import com.dogonfire.gods.listener.ActionCooldown;
@@ -100,6 +104,8 @@ public class Gods extends JavaPlugin
 
 	/** Replaced as a whole by /g reload */
 	private volatile Settings				settings;
+	/** Replaced as a whole by /g reload, with the settings */
+	private volatile Themes					themes;
 	private Storage							storage;
 	private GodsContext						ctx;
 	private GodsPlaceholderExpansion		placeholderExpansion;
@@ -113,6 +119,8 @@ public class Gods extends JavaPlugin
 	private final List<Listener>			featureListeners	= new ArrayList<Listener>();
 	// Players the server has seen, by lower case name; built when an old data file needs it, dropped after loading
 	private Map<String, UUID>				knownPlayerIds;
+	// Names some Minecraft versions have and others don't (version-names.txt), read once
+	private Set<String>						versionNames;
 
 	/**
 	 * The settings read from config.yml at the last (re)load. Read them through here (or {@link GodsContext#settings()})
@@ -123,12 +131,19 @@ public class Gods extends JavaPlugin
 		return this.settings;
 	}
 
+	/** The god types' themes read at the last (re)load; like {@link #settings()}, read them through here every time */
+	public Themes themes()
+	{
+		return this.themes;
+	}
+
 	@Override
 	public void onEnable()
 	{
 		try
 		{
 			this.settings = loadSettings();
+			this.themes = loadThemes(this.settings, null);
 		}
 		catch (VersionedYaml.LoadException e)
 		{
@@ -238,6 +253,8 @@ public class Gods extends JavaPlugin
 			return false;
 		}
 
+		Themes newThemes = loadThemes(newSettings, this.themes);
+
 		if (!this.storage.prepareReload(10, TimeUnit.SECONDS))
 		{
 			getLogger().severe("Reload failed: the data files could not be saved in time, so they are not read again.");
@@ -245,6 +262,7 @@ public class Gods extends JavaPlugin
 		}
 
 		this.settings = newSettings;
+		this.themes = newThemes;
 		stopFeatures();
 		loadData();
 		startFeatures();
@@ -418,6 +436,78 @@ public class Gods extends JavaPlugin
 
 		config.setDefaults(defaults);
 		return new SettingsLoader(config, getLogger()).load();
+	}
+
+	/**
+	 * Reads the god types' themes: the themes.yml in the jar with the admin's plugins/Gods/themes.yml merged over it.
+	 * The admin's file is written once, as a commented example, and never again. If it can't be read, the previous
+	 * themes stay (on /g reload) or Gods' own are used (on enable).
+	 */
+	private Themes loadThemes(Settings settings, Themes previous)
+	{
+		File file = new File(getDataFolder(), "themes.yml");
+		if (!file.exists())
+		{
+			try (InputStream in = getResource("themes-overrides.yml"))
+			{
+				if (in != null)
+				{
+					AtomicFiles.write(file.toPath(), new String(in.readAllBytes(), StandardCharsets.UTF_8));
+				}
+			}
+			catch (IOException e)
+			{
+				getLogger().warning("Could not write the example themes.yml: " + e.getMessage());
+			}
+		}
+
+		YamlConfiguration overrides = new YamlConfiguration();
+		boolean overridesRead = true;
+		if (file.exists())
+		{
+			try
+			{
+				overrides.load(file);
+			}
+			catch (IOException | InvalidConfigurationException e)
+			{
+				overridesRead = false;
+				getLogger().severe("Could not read themes.yml: " + e.getMessage());
+			}
+		}
+		if (!overridesRead && previous != null)
+		{
+			getLogger().severe("Keeping the themes from before; fix themes.yml and run /g reload.");
+			return new Themes(previous.defaults(), previous.types(), Themes.combineAltars(settings.altars(), previous.types()));
+		}
+		if (!overridesRead)
+		{
+			getLogger().severe("Using Gods' own themes without your changes; fix themes.yml and run /g reload.");
+			overrides = new YamlConfiguration();
+		}
+
+		YamlConfiguration bundled;
+		try (InputStream in = getResource("themes.yml"))
+		{
+			bundled = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+			if (this.versionNames == null)
+			{
+				this.versionNames = ThemesLoader.readVersionNames(this::getResource);
+			}
+		}
+		catch (IOException e)
+		{
+			throw new IllegalStateException("Could not read the bundled themes.yml", e);
+		}
+
+		boolean debug = settings.general().debug();
+		ThemesLoader loader = new ThemesLoader(ThemesLoader.serverNames(this.versionNames), getLogger(), message -> {
+			if (debug)
+			{
+				getLogger().info("[Debug] " + message);
+			}
+		});
+		return loader.load(bundled, overrides, settings.altars());
 	}
 
 	/**
