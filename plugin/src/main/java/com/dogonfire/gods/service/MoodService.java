@@ -24,29 +24,32 @@ public class MoodService
 	/**
 	 * Adds to (or with a negative value, takes from) the god's mood, within -100 to 100. Fires a
 	 * {@link GodMoodChangeEvent} if the mood changes; a listener may cancel or change it.
+	 *
+	 * @return false if a listener cancelled it (or the name is null)
 	 */
-	public void addMoodForGod(String godName, float mood)
+	public boolean addMoodForGod(String godName, float mood)
 	{
 		God god = this.repository.forChange(godName);
 		if (god == null)
 		{
-			return;
+			return false;
 		}
 
 		float newMood = MoodRules.add(god.mood(), mood);
 		if (newMood == god.mood())
 		{
-			return;
+			return true;
 		}
 		GodMoodChangeEvent event = ctx.fire(new GodMoodChangeEvent(god.name(), god.mood(), newMood));
 		if (event.isCancelled())
 		{
-			return;
+			return false;
 		}
 
 		god.setMood(MoodRules.add(event.getNewMood(), 0.0F));
 
 		this.repository.markDirty();
+		return true;
 	}
 
 	/** The mood value, -100 to 100 */

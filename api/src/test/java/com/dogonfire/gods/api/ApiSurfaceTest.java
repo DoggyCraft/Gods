@@ -39,6 +39,7 @@ class ApiSurfaceTest
 {
 	private static final List<Class<?>> API = List.of(GodsApi.class, GodInfo.class, BelieverInfo.class, QuestInfo.class,
 			GodType.class, GodGender.class, GodMood.class, QuestType.class,
+			ActionResult.class,
 			GodEvent.class, GodSpeakEvent.class, BelieverPrayEvent.class, BelieverJoinGodEvent.class, BelieverLeaveGodEvent.class,
 			GodCreateEvent.class, GodMoodChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
 			GodCursePlayerEvent.class, QuestEvent.class, QuestStartEvent.class, QuestCompleteEvent.class, QuestFailEvent.class,

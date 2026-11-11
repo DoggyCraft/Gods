@@ -254,9 +254,25 @@ public class QuestService
 	 */
 	public boolean generateQuest(String godName)
 	{
+		return startQuest(godName) == QuestStart.STARTED;
+	}
+
+	/** What became of an attempt to give a god a new quest */
+	public enum QuestStart
+	{
+		STARTED,
+		/** It has a quest already, or no kind of quest could be made */
+		NOT_POSSIBLE,
+		/** A {@link QuestStartEvent} listener took it back */
+		CANCELLED
+	}
+
+	/** Like {@link #generateQuest}, saying why there is no new quest */
+	public QuestStart startQuest(String godName)
+	{
 		if (hasQuest(godName))
 		{
-			return false;
+			return QuestStart.NOT_POSSIBLE;
 		}
 
 		List<QuestType> questTypes = new ArrayList<QuestType>();
@@ -299,12 +315,14 @@ public class QuestService
 			}
 		}
 
+		boolean cancelled = false;
 		// Other plugins may take the new quest back before the believers hear of it
 		if (newQuest && ctx.fire(new QuestStartEvent(snapshot(godName))).isCancelled())
 		{
 			ctx.plugin().logDebug("Another plugin cancelled the new quest of " + godName);
 			discardQuest(godName);
 			newQuest = false;
+			cancelled = true;
 		}
 
 		ctx.godService().setTimeSinceLastQuest(godName);
@@ -318,7 +336,7 @@ public class QuestService
 			ctx.plugin().logDebug("Could not generate any quest for " + godName);
 		}
 
-		return newQuest;
+		return newQuest ? QuestStart.STARTED : cancelled ? QuestStart.CANCELLED : QuestStart.NOT_POSSIBLE;
 	}
 
 	/** Sets what every new quest sets, keeping what the god's section has besides */

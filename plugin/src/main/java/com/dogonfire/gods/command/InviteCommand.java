@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
-import com.dogonfire.gods.message.Voice;
 
 /** /g invite &lt;player&gt;: the priest's god invites an online player to the religion */
 public final class InviteCommand extends SubCommand
@@ -30,10 +29,7 @@ public final class InviteCommand extends SubCommand
 		{
 			throw new CommandException("command.invite.already", Messages.player(playerName), Messages.god(godName));
 		}
-		this.ctx.believerService().setInvitation(invited.getUniqueId(), godName);
-		this.ctx.plugin().log(godName + " invited to " + invited.getName() + " to join the religion");
-		this.ctx.godSpeech().say(godName, invited, Voice.PLAYER_INVITE, 10, Messages.player(invited.getName()));
-		this.ctx.godSpeech().sendInfo(invited.getUniqueId(), "god.question-hint", 40);
+		this.ctx.prayerService().invite(godName, invited);
 		send(sender, "command.invite.done", Messages.player(playerName), Messages.god(godName));
 	}
 

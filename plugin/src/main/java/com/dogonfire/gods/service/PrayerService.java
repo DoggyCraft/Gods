@@ -290,6 +290,15 @@ public class PrayerService
 		ctx.godSpeech().say(godName, player, Voice.BELIEVER_NO_QUESTION, 2 + this.random.nextInt(20), Messages.player(player.getName()));
 	}
 
+	/** The god invites the player to join it; they answer with /g yes or /g no */
+	public void invite(String godName, Player invited)
+	{
+		ctx.believerService().setInvitation(invited.getUniqueId(), godName);
+		ctx.plugin().log(godName + " invited to " + invited.getName() + " to join the religion");
+		ctx.godSpeech().say(godName, invited, Voice.PLAYER_INVITE, 10, Messages.player(invited.getName()));
+		ctx.godSpeech().sendInfo(invited.getUniqueId(), "god.question-hint", 40);
+	}
+
 	public boolean believerLeaveGod(UUID believerId)
 	{
 		String godName = ctx.believerService().getGodForBeliever(believerId);

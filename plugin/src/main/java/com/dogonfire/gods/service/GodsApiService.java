@@ -13,9 +13,11 @@ import java.util.regex.Pattern;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.api.ActionResult;
 import com.dogonfire.gods.api.BelieverInfo;
 import com.dogonfire.gods.api.GodInfo;
 import com.dogonfire.gods.api.GodsApi;
@@ -134,8 +136,7 @@ public final class GodsApiService implements GodsApi
 		checkThread();
 		Believer believer = ctx.storage().believers().find(playerId);
 		// The god's priest list as it is (PriestService drops inactive priests when asked, with a message to believers)
-		God god = believer != null && believer.godName() != null ? ctx.storage().gods().find(believer.godName()) : null;
-		return Optional.ofNullable(ApiSnapshots.believer(believer, god != null && god.priests().contains(playerId)));
+		return Optional.ofNullable(ApiSnapshots.believer(believer, believer != null && isPriest(believer.godName(), playerId)));
 	}
 
 	// ---------------------------------------------------------------------
@@ -229,5 +230,276 @@ public final class GodsApiService implements GodsApi
 		Voice voice = situation(situation);
 		TagResolver[] tags = placeholders(placeholders);
 		return existing(godName).map(god -> ctx.godSpeech().renderedVoiceLine(god, voice, tags));
+	}
+	// ---------------------------------------------------------------------
+	// Acting as a god
+
+	private static ActionResult done(boolean happened)
+	{
+		return happened ? ActionResult.SUCCESS : ActionResult.CANCELLED;
+	}
+
+	@Override
+	public ActionResult bless(String godName, Player player)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!ctx.settings().blessings().enabled())
+		{
+			return ActionResult.FEATURE_DISABLED;
+		}
+		if (ctx.believerService().hasRecentBlessing(player.getUniqueId()))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.blessingService().blessPlayer(god.get(), player.getUniqueId(), ctx.godService().getGodPower(god.get())));
+	}
+
+	@Override
+	public ActionResult curse(String godName, Player player)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!ctx.settings().curses().enabled())
+		{
+			return ActionResult.FEATURE_DISABLED;
+		}
+		if (ctx.believerService().hasRecentCursing(player.getUniqueId()))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.blessingService().cursePlayer(god.get(), player.getUniqueId(), ctx.godService().getGodPower(god.get())));
+	}
+
+	@Override
+	public ActionResult heal(String godName, Player player)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		return god.isEmpty() ? ActionResult.NO_SUCH_GOD : done(ctx.blessingService().healPlayer(god.get(), player));
+	}
+
+	@Override
+	public ActionResult giveItem(String godName, Player player, Material material)
+	{
+		checkThread();
+		if (material == null || !material.isItem() || material.isAir())
+		{
+			throw new IllegalArgumentException(material + " is not an item");
+		}
+		Optional<String> god = existing(godName);
+		return god.isEmpty() ? ActionResult.NO_SUCH_GOD : done(ctx.blessingService().giveItem(god.get(), player, material, true));
+	}
+
+	@Override
+	public ActionResult giveHolyArtifact(String godName, Player player)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!ctx.settings().holyArtifacts().enabled())
+		{
+			return ActionResult.FEATURE_DISABLED;
+		}
+		if (!ctx.plugin().isEnabledInWorld(player.getWorld()) || ctx.holyArtifactService().hasHolyArtifact(player))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.blessingService().blessPlayerWithHolyArtifact(god.get(), player));
+	}
+
+	@Override
+	public ActionResult smite(String godName, Player player, int damage)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		return god.isEmpty() ? ActionResult.NO_SUCH_GOD : done(ctx.blessingService().smite(god.get(), player, damage));
+	}
+
+	@Override
+	public ActionResult addMood(String godName, float amount)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		return god.isEmpty() ? ActionResult.NO_SUCH_GOD : done(ctx.moodService().addMoodForGod(god.get(), amount));
+	}
+
+	@Override
+	public ActionResult addPrayerPower(UUID playerId, int amount)
+	{
+		checkThread();
+		if (ctx.believerService().getGodForBeliever(playerId) == null)
+		{
+			return ActionResult.NOT_BELIEVER;
+		}
+		ctx.believerService().increasePrayerPower(playerId, amount);
+		return ActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult startQuest(String godName)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!ctx.settings().quests().enabled())
+		{
+			return ActionResult.FEATURE_DISABLED;
+		}
+		return switch (ctx.questService().startQuest(god.get()))
+		{
+			case STARTED -> ActionResult.SUCCESS;
+			case CANCELLED -> ActionResult.CANCELLED;
+			case NOT_POSSIBLE -> ActionResult.NOT_POSSIBLE;
+		};
+	}
+
+	@Override
+	public ActionResult completeQuest(String godName)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		return ctx.questService().completeQuest(god.get()) ? ActionResult.SUCCESS : ActionResult.NOT_POSSIBLE;
+	}
+
+	@Override
+	public ActionResult failQuest(String godName)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		return ctx.questService().failQuest(god.get()) ? ActionResult.SUCCESS : ActionResult.NOT_POSSIBLE;
+	}
+
+	@Override
+	public ActionResult invite(String godName, Player player)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (god.get().equals(ctx.believerService().getGodForBeliever(player.getUniqueId())))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		ctx.prayerService().invite(god.get(), player);
+		return ActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult offerPriesthood(String godName, Player player)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!god.get().equals(ctx.believerService().getGodForBeliever(player.getUniqueId())))
+		{
+			return ActionResult.NOT_BELIEVER;
+		}
+		if (isPriest(god.get(), player.getUniqueId()) || !ctx.priestService().offerPriesthood(god.get(), player))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return ActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult assignPriest(String godName, UUID playerId)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!god.get().equals(ctx.believerService().getGodForBeliever(playerId)))
+		{
+			return ActionResult.NOT_BELIEVER;
+		}
+		return done(ctx.priestService().assignPriest(god.get(), playerId));
+	}
+
+	@Override
+	public ActionResult removePriest(String godName, UUID playerId)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (!isPriest(god.get(), playerId))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		ctx.priestService().removePriest(god.get(), playerId);
+		return ActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult setAlliance(String godName, String otherGodName, boolean allied)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		Optional<String> other = existing(otherGodName);
+		if (god.isEmpty() || other.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (god.get().equals(other.get()))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.relationService().setAlliance(god.get(), other.get(), allied));
+	}
+
+	@Override
+	public ActionResult setWar(String godName, String otherGodName, boolean atWar)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		Optional<String> other = existing(otherGodName);
+		if (god.isEmpty() || other.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (god.get().equals(other.get()))
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.relationService().setWar(god.get(), other.get(), atWar));
+	}
+
+	/** Whether the player is in the god's priest list as stored (see {@link #getBeliever}) */
+	private boolean isPriest(String godName, UUID playerId)
+	{
+		God god = ctx.storage().gods().find(godName);
+		return god != null && god.priests().contains(playerId);
 	}
 }

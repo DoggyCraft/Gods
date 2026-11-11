@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 /**
@@ -137,4 +138,170 @@ public interface GodsApi
 	 *                                  name is not a valid tag name
 	 */
 	Optional<String> getVoiceLine(String godName, String situation, Map<String, String> placeholders);
+
+	// ---------------------------------------------------------------------
+	// Acting as a god
+	//
+	// Each action goes through the same code as the game itself: the same effects, messages and events. An action that
+	// fires a cancellable event returns CANCELLED when a listener cancels it. The god says nothing unless noted: make it
+	// speak with say or sayVoiceLine.
+
+	/**
+	 * The god blesses the player with a good potion effect for a while (longer the more powerful the god is). Fires a
+	 * {@link com.dogonfire.gods.api.event.GodBlessPlayerEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
+	 *         (blessings are off), {@link ActionResult#NOT_POSSIBLE} (the player was blessed too recently) or
+	 *         {@link ActionResult#CANCELLED}
+	 */
+	ActionResult bless(String godName, Player player);
+
+	/**
+	 * The god curses the player: a bad potion effect, or lightning or hostile mobs when the config allows them. Fires a
+	 * {@link com.dogonfire.gods.api.event.GodCursePlayerEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
+	 *         (curses are off), {@link ActionResult#NOT_POSSIBLE} (the player was cursed too recently) or
+	 *         {@link ActionResult#CANCELLED}
+	 */
+	ActionResult curse(String godName, Player player);
+
+	/**
+	 * The god heals the player and says so (its {@code believer-health-blessing} line). Fires a
+	 * {@link com.dogonfire.gods.api.event.GodBlessPlayerEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult heal(String godName, Player player);
+
+	/**
+	 * The god drops one item of the material in front of the player and says so (its {@code believer-item-blessing}
+	 * line). Fires a {@link com.dogonfire.gods.api.event.GodBlessPlayerEvent}. Nothing drops if a block is in the way.
+	 *
+	 * @param material an item material
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#CANCELLED}
+	 * @throws IllegalArgumentException if the material is not an item
+	 */
+	ActionResult giveItem(String godName, Player player, Material material);
+
+	/**
+	 * The god drops a holy artifact of its type in front of the player and says so. Fires a
+	 * {@link com.dogonfire.gods.api.event.GodBlessPlayerEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
+	 *         (holy artifacts are off), {@link ActionResult#NOT_POSSIBLE} (the player carries one already, or Gods is
+	 *         not enabled in their world) or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult giveHolyArtifact(String godName, Player player);
+
+	/**
+	 * The god strikes the player with lightning. Fires a {@link com.dogonfire.gods.api.event.GodCursePlayerEvent}.
+	 *
+	 * @param damage how much damage it does on top of the lightning's fire; 0 or less only looks like lightning
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult smite(String godName, Player player, int damage);
+
+	/**
+	 * Pleases (a positive amount) or angers (a negative amount) the god; its mood stays within -100 to 100. Believers
+	 * pleasing it adds 5 to 14 (depending on the god), angering it takes 1. Fires a
+	 * {@link com.dogonfire.gods.api.event.GodMoodChangeEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult addMood(String godName, float amount);
+
+	/**
+	 * Gives the believer prayer power (or, with a negative amount, takes it; it never goes below 0), which they spend
+	 * on {@code /g prayfor}. They are told how much they have now. A god's own power comes from its believers' prayers
+	 * and can't be set.
+	 *
+	 * @return {@link ActionResult#SUCCESS} or {@link ActionResult#NOT_BELIEVER} (the player believes in no god)
+	 */
+	ActionResult addPrayerPower(UUID playerId, int amount);
+
+	/**
+	 * The god gives its believers a new quest of a kind the config allows, and tells them. Fires a
+	 * {@link com.dogonfire.gods.api.event.QuestStartEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
+	 *         (quests are off), {@link ActionResult#NOT_POSSIBLE} (it has a quest, or no kind of quest could be made)
+	 *         or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult startQuest(String godName);
+
+	/**
+	 * The god's quest is completed, as if its believers had done it: the god says so, is pleased and rewards the
+	 * believers who are online. Fires a {@link com.dogonfire.gods.api.event.QuestCompleteEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#NOT_POSSIBLE} (it
+	 *         has no quest)
+	 */
+	ActionResult completeQuest(String godName);
+
+	/**
+	 * The god's quest fails, as if its time had run out: the god is angered and says so. Fires a
+	 * {@link com.dogonfire.gods.api.event.QuestFailEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#NOT_POSSIBLE} (it
+	 *         has no quest)
+	 */
+	ActionResult failQuest(String godName);
+
+	/**
+	 * The god invites the player to become its believer, as a priest's {@code /g invite} does; the player answers with
+	 * {@code /g yes} (which fires a {@link com.dogonfire.gods.api.event.BelieverJoinGodEvent}) or {@code /g no}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#NOT_POSSIBLE} (the
+	 *         player believes in the god already)
+	 */
+	ActionResult invite(String godName, Player player);
+
+	/**
+	 * The god offers the believer to become its priest; they answer with {@code /g yes} (which fires a
+	 * {@link com.dogonfire.gods.api.event.PriestAssignEvent}) or {@code /g no}. A god makes at most one offer every 3
+	 * minutes.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#NOT_BELIEVER} or
+	 *         {@link ActionResult#NOT_POSSIBLE} (they are a priest already, or the god made an offer too recently)
+	 */
+	ActionResult offerPriesthood(String godName, Player player);
+
+	/**
+	 * Makes the believer one of the god's priests right away (running the priest command in Gods' config). Fires a
+	 * {@link com.dogonfire.gods.api.event.PriestAssignEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS} (also if they are a priest already), {@link ActionResult#NO_SUCH_GOD},
+	 *         {@link ActionResult#NOT_BELIEVER} or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult assignPriest(String godName, UUID playerId);
+
+	/**
+	 * The priest is no longer one of the god's priests (running the priest removal command in Gods' config). Fires a
+	 * {@link com.dogonfire.gods.api.event.PriestRemoveEvent}.
+	 *
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD} or {@link ActionResult#NOT_POSSIBLE} (they
+	 *         are not its priest)
+	 */
+	ActionResult removePriest(String godName, UUID playerId);
+
+	/**
+	 * Makes the two gods allies (ending a war between them) or ends their alliance, and tells both gods' believers, as
+	 * a priest's {@code /g ally} does. Fires a {@link com.dogonfire.gods.api.event.GodRelationChangeEvent} if it
+	 * changes anything.
+	 *
+	 * @return {@link ActionResult#SUCCESS} (also if they already were or weren't allies), {@link ActionResult#NO_SUCH_GOD}
+	 *         (either god), {@link ActionResult#NOT_POSSIBLE} (it is the same god) or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult setAlliance(String godName, String otherGodName, boolean allied);
+
+	/**
+	 * Puts the two gods at war (ending an alliance between them) or ends their war, and tells both gods' believers, as
+	 * a priest's {@code /g war} does. Fires a {@link com.dogonfire.gods.api.event.GodRelationChangeEvent} if it changes
+	 * anything.
+	 *
+	 * @return {@link ActionResult#SUCCESS} (also if they already were or weren't at war), {@link ActionResult#NO_SUCH_GOD}
+	 *         (either god), {@link ActionResult#NOT_POSSIBLE} (it is the same god) or {@link ActionResult#CANCELLED}
+	 */
+	ActionResult setWar(String godName, String otherGodName, boolean atWar);
 }
