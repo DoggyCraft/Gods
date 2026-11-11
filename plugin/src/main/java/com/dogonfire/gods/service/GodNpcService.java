@@ -16,6 +16,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.config.Settings;
+import com.dogonfire.gods.integration.npc.CitizensNpcs;
 import com.dogonfire.gods.integration.npc.GodNpcProvider;
 import com.dogonfire.gods.integration.npc.MannequinNpcs;
 import com.dogonfire.gods.integration.npc.NpcProviders;
@@ -129,6 +130,7 @@ public class GodNpcService
 			return switch (kind)
 			{
 				case BUILTIN -> new MannequinNpcs(ctx.plugin());
+				case CITIZENS -> new CitizensNpcs();
 				default -> null;
 			};
 		}
