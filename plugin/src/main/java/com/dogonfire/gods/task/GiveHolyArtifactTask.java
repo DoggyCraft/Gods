@@ -4,15 +4,14 @@ import java.util.Random;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.GodType;
 
+/** A god gives a holy artifact: it appears in front of the player ({@link Task#giftSpot}) */
 public class GiveHolyArtifactTask extends Task
 {
 	private Player	player	= null;
@@ -24,49 +23,30 @@ public class GiveHolyArtifactTask extends Task
 	{
 		super(ctx);
 		this.player = p;
-		this.godName = new String(god);
+		this.godName = god;
 		this.godType = godType;
 		this.speak = godspeak;
-	}
-
-	private boolean giveItem()
-	{
-		Vector dir = this.player.getLocation().getDirection();
-		dir.setY(0);
-		Location spawnLocation = this.player.getLocation().toVector().add(dir.multiply(4)).toLocation(this.player.getWorld());
-
-		spawnLocation.setY(spawnLocation.getY() + 2.0D);
-		if (spawnLocation.getBlock().getType() != Material.AIR)
-		{
-			getPlugin().logDebug("Could not giveItem(): Not air infront of " + this.player.getName());
-			return false;
-		}
-		try
-		{
-			getPlugin().logDebug("Creating holy artifact for " + this.player.getName());
-
-			ctx.holyArtifactService().createHolyArtifact(this.godType, this.godName, spawnLocation);
-
-			spawnLocation.getWorld().playEffect(spawnLocation, Effect.MOBSPAWNER_FLAMES, 25);
-		}
-		catch (Exception ex)
-		{
-			getPlugin().log("Could not giveItem(): " + ex.getMessage());
-			return false;
-		}
-		return true;
 	}
 
 	@Override
 	public void run()
 	{
-		if (giveItem())
+		if (!this.player.isOnline())
 		{
-			Random random = new Random();
-			if (this.speak)
-			{
-				ctx.godSpeech().say(this.godName, this.player, Voice.BELIEVER_HOLY_ARTIFACT_BLESSING, 2 + random.nextInt(10), Messages.player(this.player.getName()));
-			}
+			return;
+		}
+		Location spawnLocation = giftSpot(this.player);
+
+		getPlugin().logDebug("Creating holy artifact for " + this.player.getName());
+		if (ctx.holyArtifactService().createHolyArtifact(this.godType, this.godName, spawnLocation) == null)
+		{
+			return;
+		}
+		spawnLocation.getWorld().playEffect(spawnLocation, Effect.MOBSPAWNER_FLAMES, 25);
+
+		if (this.speak)
+		{
+			ctx.godSpeech().say(this.godName, this.player, Voice.BELIEVER_HOLY_ARTIFACT_BLESSING, 2 + new Random().nextInt(10), Messages.player(this.player.getName()));
 		}
 	}
 }

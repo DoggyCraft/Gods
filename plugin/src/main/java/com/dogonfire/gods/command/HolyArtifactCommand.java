@@ -36,6 +36,10 @@ public final class HolyArtifactCommand extends SubCommand
 		{
 			throw new CommandException("command.holyartifact.world-disabled");
 		}
+		if (this.ctx.godService().getDivineForceForGod(godName) == null)
+		{
+			throw new CommandException("command.holyartifact.failed", Messages.god(godName));
+		}
 		if (!this.ctx.blessingService().blessPlayerWithHolyArtifact(godName, player))
 		{
 			throw new CommandException("command.cancelled");

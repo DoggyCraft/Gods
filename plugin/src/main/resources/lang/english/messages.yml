@@ -343,6 +343,8 @@ command:
     description: Let your God give you a Holy Artifact
     already: <red>You already carry a Holy Artifact
     world-disabled: <red>Gods are not present in this world
+    # <god> has no type yet (no altar was ever built to it)
+    failed: <red><god> has no holy artifact to give
     done: <gold><god><aqua> gave <player> a Holy artifact!
   home:
     parameters: ''

@@ -286,10 +286,15 @@ public class BlessingService
 	/**
 	 * Drops a holy artifact in front of the player (a {@link GodBlessPlayerEvent})
 	 *
-	 * @return false if they carry one already or a listener cancelled it
+	 * @return false if the god has no type, they carry one already or a listener cancelled it
 	 */
 	public boolean giveHolyArtifact(String godName, GodType godType, Player player, boolean speak)
 	{
+		// A god without a type has no kind of artifact to give
+		if (godType == null)
+		{
+			return false;
+		}
 		// A second artifact would only drop at their feet: the pickup is refused while they carry one
 		if (ctx.holyArtifactService().hasHolyArtifact(player))
 		{
