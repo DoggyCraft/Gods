@@ -289,11 +289,14 @@ public class AltarListener implements Listener
 		{
 			return;
 		}
-		ctx.altarService().addDroppedItem(event.getItemDrop().getEntityId(), player.getUniqueId());
+		ctx.altarService().addDroppedItem(event.getItemDrop(), player.getUniqueId());
 	}
 
-	/** A dropped item burning: a sacrifice to the god of whoever dropped it (or part of a sacrifice quest) */
-	@EventHandler
+	/**
+	 * A dropped item catching fire (in fire or in lava): a sacrifice to the god of whoever dropped it (or part of a
+	 * sacrifice quest). It counts once, though it catches fire again every tick it burns.
+	 */
+	@EventHandler(ignoreCancelled = true)
 	public void onEntityCombust(EntityCombustEvent event)
 	{
 		if (!ctx.settings().sacrifices().enabled())
@@ -313,7 +316,7 @@ public class AltarListener implements Listener
 		{
 			return;
 		}
-		UUID believerId = ctx.altarService().getDroppedItemPlayer(event.getEntity().getEntityId());
+		UUID believerId = ctx.altarService().takeDroppedItemPlayer(item);
 		if (believerId == null)
 		{
 			return;

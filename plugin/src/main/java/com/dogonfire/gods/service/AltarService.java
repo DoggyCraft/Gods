@@ -1,9 +1,7 @@
 package com.dogonfire.gods.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -15,6 +13,8 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.sign.Side;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
@@ -33,7 +33,7 @@ import com.dogonfire.gods.model.GodType;
 public class AltarService
 {
 	private Random							random			= new Random();
-	private Map<Integer, UUID>			droppedItems	= new HashMap<Integer, UUID>();
+	private final DroppedItems			droppedItems	= new DroppedItems();
 
 	private final GodsContext ctx;
 
@@ -42,15 +42,30 @@ public class AltarService
 		this.ctx = ctx;
 	}
 
-	public void addDroppedItem(int entityID, UUID playerId)
+	/** Remembers that the player dropped this item, so it counts as their sacrifice if it burns */
+	public void addDroppedItem(Item item, UUID playerId)
 	{
-		this.droppedItems.put(Integer.valueOf(entityID), playerId);
+		long now = System.currentTimeMillis();
+		if (this.droppedItems.size() > 256)
+		{
+			pruneDroppedItems(now);
+		}
+		this.droppedItems.add(item.getUniqueId(), playerId, now);
 	}
 
+	/** Forgets dropped items that despawned, were picked up or burned */
 	public void clearDroppedItems()
 	{
-		ctx.plugin().logDebug("Cleared " + this.droppedItems.size() + " dropped items");
-		this.droppedItems.clear();
+		int removed = pruneDroppedItems(System.currentTimeMillis());
+		ctx.plugin().logDebug("Forgot " + removed + " dropped items, " + this.droppedItems.size() + " left");
+	}
+
+	private int pruneDroppedItems(long now)
+	{
+		return this.droppedItems.prune(now, itemId -> {
+			Entity entity = ctx.plugin().getServer().getEntity(itemId);
+			return entity == null || !entity.isValid();
+		});
 	}
 
 	/** Any wooden wall sign (oak, spruce, ..., bamboo, crimson, warped) can be an altar sign. */
@@ -159,9 +174,13 @@ public class AltarService
 		return playerName != null ? ctx.plugin().getServer().getPlayerExact(playerName) : null;
 	}
 
-	public UUID getDroppedItemPlayer(int entityID)
+	/**
+	 * The player who dropped this item, if it is to count as their sacrifice now. An item counts once: fire and lava set
+	 * a burning item on fire again every tick, and only the first time counts.
+	 */
+	public UUID takeDroppedItemPlayer(Item item)
 	{
-		return this.droppedItems.get(entityID);
+		return this.droppedItems.take(item.getUniqueId(), System.currentTimeMillis());
 	}
 
 	public GodGender getGodGenderFromAltarBlock(Block block)
