@@ -233,7 +233,8 @@ public class QuestService
 		return this.repository.target(QuestTarget.keyFor(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
 	}
 
-	private boolean isQuestTarget(Location location)
+	/** Whether a quest target (a pilgrimage chest) is at this block */
+	public boolean isQuestTarget(Location location)
 	{
 		QuestTarget target = targetAt(location);
 
