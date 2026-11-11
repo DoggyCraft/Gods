@@ -124,6 +124,33 @@ class MessageKeysTest
 		assertTrue(missing.isEmpty(), "Missing voice lines: " + missing);
 	}
 
+	/** Every mob and item in Gods' own themes has a name in messages.yml (others get one made from the id) */
+	@Test
+	void everyNameInTheThemesHasAName() throws IOException
+	{
+		YamlConfiguration messages = bundled("lang/english/messages.yml");
+		YamlConfiguration themes = bundled("themes.yml");
+		List<String> missing = new ArrayList<>();
+		for (String key : themes.getKeys(true))
+		{
+			if (!themes.isList(key))
+			{
+				continue;
+			}
+			String list = key.substring(key.indexOf('.') + 1);
+			String section = list.endsWith("mobs") || list.equals("slay-targets") ? "names.mob." : "names.item.";
+			for (String name : themes.getStringList(key))
+			{
+				String nameKey = section + name.toUpperCase(java.util.Locale.ROOT);
+				if (!messages.isString(nameKey) && !missing.contains(nameKey))
+				{
+					missing.add(nameKey);
+				}
+			}
+		}
+		assertTrue(missing.isEmpty(), "Missing from messages.yml: " + missing);
+	}
+
 	@Test
 	void theBundledMessagesHaveTheirVersion() throws IOException
 	{

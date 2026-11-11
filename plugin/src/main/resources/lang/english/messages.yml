@@ -112,7 +112,8 @@ quest:
 power:
   healed: <aqua>You healed <hl><amount></hl> beings
 
-# Names Gods puts into messages. An item or mob without a name here is shown by its Minecraft name (e.g. IRON_INGOT).
+# Names Gods puts into messages. An item or mob without a name here gets one made from its Minecraft id
+# (IRON_INGOT: Iron Ingot).
 names:
   item:
     AIR: air
@@ -139,6 +140,233 @@ names:
     COOKED_CHICKEN: chicken
     GOLD_NUGGET: gold nugget
     MAP: empty map
+    ACACIA_LOG: acacia log
+    ALLIUM: allium
+    AMETHYST_BLOCK: amethyst block
+    AMETHYST_SHARD: amethyst shard
+    ARROW: arrow
+    AZALEA: azalea
+    AZALEA_LEAVES: azalea leaves
+    BAKED_POTATO: baked potato
+    BEEF: raw beef
+    BEETROOT: beetroot
+    BEETROOT_SEEDS: beetroot seeds
+    BEETROOT_SOUP: beetroot soup
+    BIRCH_LOG: birch log
+    BIRCH_SAPLING: birch sapling
+    BLACK_DYE: black dye
+    BLACKSTONE: blackstone
+    BLAZE_POWDER: blaze powder
+    BLUE_ICE: blue ice
+    BONE: bone
+    BONE_BLOCK: bone block
+    BONE_MEAL: bone meal
+    BOOKSHELF: bookshelf
+    BOW: bow
+    BRAIN_CORAL: brain coral
+    BREEZE_ROD: breeze rod
+    CACTUS: cactus
+    CALCITE: calcite
+    CANDLE: candle
+    CHERRY_LOG: cherry log
+    CHERRY_PLANKS: cherry planks
+    CHERRY_WOOD: cherry wood
+    CHICKEN: raw chicken
+    CHISELED_BOOKSHELF: chiseled bookshelf
+    CHISELED_COPPER: chiseled copper
+    CHISELED_NETHER_BRICKS: chiseled nether bricks
+    CHISELED_POLISHED_BLACKSTONE: chiseled polished blackstone
+    CHISELED_QUARTZ_BLOCK: chiseled quartz block
+    CHISELED_SANDSTONE: chiseled sandstone
+    CHORUS_FRUIT: chorus fruit
+    CLOCK: clock
+    COAL: coal
+    COCOA_BEANS: cocoa beans
+    COD: raw cod
+    COMPASS: compass
+    COOKED_MUTTON: cooked mutton
+    COOKED_PORKCHOP: cooked porkchop
+    COOKED_RABBIT: cooked rabbit
+    COPPER_BLOCK: copper block
+    COPPER_INGOT: copper ingot
+    CORNFLOWER: cornflower
+    CROSSBOW: crossbow
+    CRYING_OBSIDIAN: crying obsidian
+    CUT_COPPER: cut copper
+    CUT_SANDSTONE: cut sandstone
+    DANDELION: dandelion
+    DARK_OAK_LOG: dark oak log
+    DARK_PRISMARINE: dark prismarine
+    DIAMOND_BLOCK: diamond block
+    DRIED_KELP: dried kelp
+    EGG: egg
+    EMERALD: emerald
+    EMERALD_BLOCK: emerald block
+    ENDER_PEARL: ender pearl
+    END_STONE: end stone
+    END_STONE_BRICKS: end stone bricks
+    EXPOSED_CHISELED_COPPER: exposed chiseled copper
+    EXPOSED_COPPER: exposed copper
+    EXPOSED_CUT_COPPER: exposed cut copper
+    FEATHER: feather
+    FERMENTED_SPIDER_EYE: fermented spider eye
+    FIREWORK_ROCKET: firework rocket
+    FIREWORK_STAR: firework star
+    FISHING_ROD: fishing rod
+    FLETCHING_TABLE: fletching table
+    FLINT: flint
+    FLOWERING_AZALEA: flowering azalea
+    FLOWERING_AZALEA_LEAVES: flowering azalea leaves
+    GHAST_TEAR: ghast tear
+    GLOW_BERRIES: glow berries
+    GLOW_INK_SAC: glow ink sac
+    GLOWSTONE: glowstone
+    GLOWSTONE_DUST: glowstone dust
+    GOAT_HORN: goat horn
+    GOLDEN_CARROT: golden carrot
+    GOLD_INGOT: gold ingot
+    GUNPOWDER: gunpowder
+    HAY_BLOCK: hay block
+    HONEY_BOTTLE: honey bottle
+    HONEYCOMB: honeycomb
+    HONEYCOMB_BLOCK: honeycomb block
+    INK_SAC: ink sac
+    IRON_AXE: iron axe
+    IRON_HELMET: iron helmet
+    IRON_INGOT: iron ingot
+    IRON_PICKAXE: iron pickaxe
+    IRON_SWORD: iron sword
+    JUKEBOX: jukebox
+    JUNGLE_LOG: jungle log
+    KELP: kelp
+    LAPIS_BLOCK: lapis block
+    LAPIS_LAZULI: lapis lazuli
+    LEAD: lead
+    LEATHER: leather
+    LIGHTNING_ROD: lightning rod
+    LILAC: lilac
+    LILY_OF_THE_VALLEY: lily of the valley
+    LILY_PAD: lily pad
+    LIME_CONCRETE: lime concrete
+    LIME_GLAZED_TERRACOTTA: lime glazed terracotta
+    LIME_WOOL: lime wool
+    MAGENTA_CONCRETE: magenta concrete
+    MAGENTA_GLAZED_TERRACOTTA: magenta glazed terracotta
+    MAGENTA_WOOL: magenta wool
+    MANGROVE_LOG: mangrove log
+    MELON_SEEDS: melon seeds
+    MELON_SLICE: melon slice
+    MOSS_BLOCK: moss block
+    MOSSY_COBBLESTONE: mossy cobblestone
+    MOSSY_STONE_BRICKS: mossy stone bricks
+    MUSHROOM_STEW: mushroom stew
+    MUSIC_DISC_CAT: music disc
+    MUTTON: raw mutton
+    NAUTILUS_SHELL: nautilus shell
+    NETHER_BRICKS: nether bricks
+    NETHERRACK: netherrack
+    NOTE_BLOCK: note block
+    OAK_SAPLING: oak sapling
+    ORANGE_TULIP: orange tulip
+    OXEYE_DAISY: oxeye daisy
+    OXIDIZED_CHISELED_COPPER: oxidized chiseled copper
+    OXIDIZED_COPPER: oxidized copper
+    OXIDIZED_CUT_COPPER: oxidized cut copper
+    PACKED_ICE: packed ice
+    PALE_OAK_LOG: pale oak log
+    PAPER: paper
+    PEONY: peony
+    PHANTOM_MEMBRANE: phantom membrane
+    PINK_CONCRETE: pink concrete
+    PINK_DYE: pink dye
+    PINK_PETALS: pink petals
+    PINK_TERRACOTTA: pink terracotta
+    PINK_TULIP: pink tulip
+    PINK_WOOL: pink wool
+    POISONOUS_POTATO: poisonous potato
+    POLISHED_BLACKSTONE_BRICKS: polished blackstone bricks
+    POPPY: poppy
+    PORKCHOP: raw porkchop
+    POTATO: potato
+    POWDER_SNOW_BUCKET: bucket of powder snow
+    PRISMARINE: prismarine
+    PRISMARINE_BRICKS: prismarine bricks
+    PRISMARINE_CRYSTALS: prismarine crystals
+    PRISMARINE_SHARD: prismarine shard
+    PUFFERFISH: pufferfish
+    PUMPKIN: pumpkin
+    PUMPKIN_PIE: pumpkin pie
+    PUMPKIN_SEEDS: pumpkin seeds
+    PURPUR_BLOCK: purpur block
+    PURPUR_PILLAR: purpur pillar
+    QUARTZ: quartz
+    QUARTZ_BLOCK: quartz block
+    QUARTZ_BRICKS: quartz bricks
+    QUARTZ_PILLAR: quartz pillar
+    RABBIT: raw rabbit
+    RABBIT_FOOT: rabbit foot
+    RABBIT_HIDE: rabbit hide
+    RABBIT_STEW: rabbit stew
+    RAW_COPPER: raw copper
+    RAW_GOLD_BLOCK: raw gold block
+    RAW_IRON: raw iron
+    RAW_IRON_BLOCK: raw iron block
+    RED_DYE: red dye
+    RED_NETHER_BRICKS: red nether bricks
+    REDSTONE: redstone
+    ROSE_BUSH: rose bush
+    ROTTEN_FLESH: rotten flesh
+    SALMON: raw salmon
+    SAND: sand
+    SANDSTONE: sandstone
+    SCULK: sculk
+    SEAGRASS: seagrass
+    SEA_LANTERN: sea lantern
+    SEA_PICKLE: sea pickle
+    SHIELD: shield
+    SLIME_BALL: slime ball
+    SMITHING_TABLE: smithing table
+    SMOOTH_SANDSTONE: smooth sandstone
+    SNOWBALL: snowball
+    SNOW_BLOCK: snow block
+    SOUL_SAND: soul sand
+    SOUL_SOIL: soul soil
+    SPIDER_EYE: spider eye
+    SPRUCE_LOG: spruce log
+    SPYGLASS: spyglass
+    STRING: string
+    SUGAR: sugar
+    SUGAR_CANE: sugar cane
+    SUNFLOWER: sunflower
+    SUSPICIOUS_STEW: suspicious stew
+    SWEET_BERRIES: sweet berries
+    TORCH: torch
+    TORCHFLOWER_SEEDS: torchflower seeds
+    TROPICAL_FISH: tropical fish
+    TUBE_CORAL: tube coral
+    TURTLE_SCUTE: turtle scute
+    VINE: vine
+    WAXED_CHISELED_COPPER: waxed chiseled copper
+    WAXED_COPPER_BLOCK: waxed copper block
+    WAXED_CUT_COPPER: waxed cut copper
+    WAXED_EXPOSED_CHISELED_COPPER: waxed exposed chiseled copper
+    WAXED_EXPOSED_COPPER: waxed exposed copper
+    WAXED_EXPOSED_CUT_COPPER: waxed exposed cut copper
+    WAXED_OXIDIZED_CHISELED_COPPER: waxed oxidized chiseled copper
+    WAXED_OXIDIZED_COPPER: waxed oxidized copper
+    WAXED_OXIDIZED_CUT_COPPER: waxed oxidized cut copper
+    WAXED_WEATHERED_CHISELED_COPPER: waxed weathered chiseled copper
+    WAXED_WEATHERED_COPPER: waxed weathered copper
+    WAXED_WEATHERED_CUT_COPPER: waxed weathered cut copper
+    WEATHERED_CHISELED_COPPER: weathered chiseled copper
+    WEATHERED_COPPER: weathered copper
+    WEATHERED_CUT_COPPER: weathered cut copper
+    WHEAT: wheat
+    WHEAT_SEEDS: wheat seeds
+    WHITE_WOOL: white wool
+    WIND_CHARGE: wind charge
+    WITHER_ROSE: wither rose
+    WRITABLE_BOOK: book and quill
   mob:
     CHICKEN: chicken
     CREEPER: creeper
@@ -162,6 +390,61 @@ names:
     SKELETON: skeleton
     VILLAGER: villager
     UNKNOWN: unknown
+    ALLAY: allay
+    ARMADILLO: armadillo
+    AXOLOTL: axolotl
+    BEE: bee
+    BOGGED: bogged
+    BREEZE: breeze
+    CAMEL: camel
+    CAT: cat
+    COD: cod
+    COPPER_GOLEM: copper golem
+    CREAKING: creaking
+    DOLPHIN: dolphin
+    DONKEY: donkey
+    DROWNED: drowned
+    ENDERMITE: endermite
+    EVOKER: evoker
+    FOX: fox
+    FROG: frog
+    GLOW_SQUID: glow squid
+    GOAT: goat
+    GUARDIAN: guardian
+    HAPPY_GHAST: happy ghast
+    HOGLIN: hoglin
+    HORSE: horse
+    HUSK: husk
+    LLAMA: llama
+    MAGMA_CUBE: magma cube
+    MOOSHROOM: mooshroom
+    MULE: mule
+    NAUTILUS: nautilus
+    PANDA: panda
+    PARROT: parrot
+    PHANTOM: phantom
+    PIGLIN: piglin
+    PIGLIN_BRUTE: piglin brute
+    PILLAGER: pillager
+    POLAR_BEAR: polar bear
+    PUFFERFISH: pufferfish
+    RABBIT: rabbit
+    RAVAGER: ravager
+    SALMON: salmon
+    SNIFFER: sniffer
+    SNOW_GOLEM: snow golem
+    STRAY: stray
+    STRIDER: strider
+    TROPICAL_FISH: tropical fish
+    TURTLE: turtle
+    VINDICATOR: vindicator
+    WANDERING_TRADER: wandering trader
+    WARDEN: warden
+    WITCH: witch
+    WITHER_SKELETON: wither skeleton
+    ZOMBIE_NAUTILUS: zombie nautilus
+    ZOMBIE_VILLAGER: zombie villager
+    ZOMBIFIED_PIGLIN: zombified piglin
   # <gender> is the name below
   god-type:
     FROST: <gender> of Frost

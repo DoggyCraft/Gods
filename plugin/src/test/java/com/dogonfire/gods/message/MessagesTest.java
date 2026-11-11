@@ -99,13 +99,24 @@ class MessagesTest
 	}
 
 	@Test
-	void namesFallBackToTheEnumName()
+	void namesFallBackToOnesMadeFromTheId()
 	{
 		this.jar.put("lang/english/messages.yml", "names:\n  item:\n    CARROT: carrot\n  gender:\n    Female: Goddess\n  god-type:\n    SUN: <gender> of the Sun\n");
 		Messages messages = messages("english");
 		assertEquals("carrot", Messages.legacy(messages.itemName(Material.CARROT)));
-		assertEquals("POTATO", Messages.legacy(messages.itemName(Material.POTATO)));
+		assertEquals("Potato", Messages.legacy(messages.itemName(Material.POTATO)));
+		assertEquals("Cooked Beef", Messages.legacy(messages.itemName(Material.COOKED_BEEF)));
+		assertEquals("Polar Bear", Messages.legacy(messages.mobName(org.bukkit.entity.EntityType.POLAR_BEAR)));
 		assertEquals("Goddess of the Sun", Messages.legacy(messages.godTypeName(GodType.SUN, GodGender.Female)));
+	}
+
+	@Test
+	void readableNames()
+	{
+		assertEquals("Cooked Beef", Messages.readableName("COOKED_BEEF"));
+		assertEquals("Tnt", Messages.readableName("TNT"));
+		assertEquals("Waxed Oxidized Cut Copper", Messages.readableName("WAXED_OXIDIZED_CUT_COPPER"));
+		assertEquals("", Messages.readableName(""));
 	}
 
 	@Test

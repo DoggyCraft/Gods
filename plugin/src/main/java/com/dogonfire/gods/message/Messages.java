@@ -182,16 +182,35 @@ public final class Messages
 	// ---------------------------------------------------------------------
 	// Names
 
-	/** The name of an item, from {@code names.item.<MATERIAL>}; the material's own name when there is none */
+	/** The name of an item, from {@code names.item.<MATERIAL>}; one made from the material when there is none */
 	public Component itemName(Material material)
 	{
-		return name("names.item." + material.name(), material.name());
+		return name("names.item." + material.name(), readableName(material.name()));
 	}
 
-	/** The name of a mob, from {@code names.mob.<TYPE>}; the type's own name when there is none */
+	/** The name of a mob, from {@code names.mob.<TYPE>}; one made from the type when there is none */
 	public Component mobName(EntityType type)
 	{
-		return name("names.mob." + type.name(), type.name());
+		return name("names.mob." + type.name(), readableName(type.name()));
+	}
+
+	/** A name made from a Minecraft id, for things messages.yml has no name for: COOKED_BEEF is "Cooked Beef" */
+	public static String readableName(String id)
+	{
+		StringBuilder name = new StringBuilder();
+		for (String word : id.toLowerCase(Locale.ROOT).split("[_ ]"))
+		{
+			if (word.isEmpty())
+			{
+				continue;
+			}
+			if (name.length() > 0)
+			{
+				name.append(' ');
+			}
+			name.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+		}
+		return name.toString();
 	}
 
 	/** "God", "Goddess" */
