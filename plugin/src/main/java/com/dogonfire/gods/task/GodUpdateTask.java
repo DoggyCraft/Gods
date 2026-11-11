@@ -411,7 +411,11 @@ public final class GodUpdateTask implements Runnable
 		// Love: Spawn luck/food/Health/Gold/
 		// Sea: Spawn fish in sea within radius
 		
-		ctx.holyLandService().removeAbandonedLands();
+		// Not while the data can't be trusted for removing things (see CleanupGuard)
+		if (ctx.storage().cleanupVerdict() == CleanupGuard.Verdict.ALLOWED)
+		{
+			ctx.holyLandService().removeAbandonedLands();
+		}
 	}
 	
 
@@ -522,7 +526,10 @@ public final class GodUpdateTask implements Runnable
 
 		boolean godTalk = ctx.priestService().managePriests(godName);
 
-		ctx.prayerService().removeLostBelievers(godName);
+		if (ctx.storage().cleanupVerdict() == CleanupGuard.Verdict.ALLOWED)
+		{
+			ctx.prayerService().removeLostBelievers(godName);
+		}
 
 		if (!godTalk)
 		{
