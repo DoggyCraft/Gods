@@ -13,7 +13,8 @@ public final class RejectCommand extends SubCommand
 	public RejectCommand(GodsContext ctx)
 	{
 		super(ctx, "no", "gods.reject");
-		believerOnly();
+		// A player without a god answers invitations too
+		playerOnly();
 	}
 
 	@Override

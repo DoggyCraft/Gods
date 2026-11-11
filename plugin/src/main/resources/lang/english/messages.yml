@@ -448,6 +448,8 @@ command:
   'no':
     parameters: ''
     description: Reject a proposal from your God
+    # A player without a god and no invitation to answer
+    nothing: <red>There is nothing to answer.
   prayfor:
     parameters: \<Item/Health/Blessing/Quest>
     description: Pray to your God for something specific
@@ -516,6 +518,8 @@ command:
   'yes':
     parameters: ''
     description: Accept a proposal from your God
+    # A player without a god and no invitation to answer
+    nothing: <red>There is nothing to answer.
 
 # How long ago something was, put into other messages
 time:

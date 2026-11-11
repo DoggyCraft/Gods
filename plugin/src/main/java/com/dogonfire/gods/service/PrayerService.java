@@ -211,7 +211,7 @@ public class PrayerService
 			return;
 		}
 
-		if (ctx.settings().marriage().enabled())
+		if (godName != null && ctx.settings().marriage().enabled())
 		{
 			UUID pendingMarriagePartner = ctx.marriageService().getProposal(believerId);
 
@@ -247,7 +247,7 @@ public class PrayerService
 
 		if (godName == null)
 		{
-			ctx.plugin().logDebug(player.getName() + " has no god and nothing to accept");
+			ctx.messages().send(player, "command.yes.nothing");
 			return;
 		}
 
@@ -350,6 +350,7 @@ public class PrayerService
 
 		if (godName == null)
 		{
+			ctx.messages().send(player, "command.no.nothing");
 			return;
 		}
 
