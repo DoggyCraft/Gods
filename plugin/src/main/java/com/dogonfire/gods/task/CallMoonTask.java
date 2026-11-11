@@ -29,7 +29,8 @@ public class CallMoonTask extends Task
 	@Override
 	public void run()
 	{
-		if (!this.player.isOnline() || System.currentTimeMillis() >= this.stopTime)
+		// It is the world the player called the moon in; leaving it ends the power
+		if (!this.player.isOnline() || !this.world.equals(this.player.getWorld()) || System.currentTimeMillis() >= this.stopTime)
 		{
 			return;
 		}

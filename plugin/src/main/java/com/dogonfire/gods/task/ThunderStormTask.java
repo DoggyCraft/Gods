@@ -3,6 +3,7 @@ package com.dogonfire.gods.task;
 import java.util.Random;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
@@ -13,13 +14,15 @@ import com.dogonfire.gods.util.Lightning;
 import com.dogonfire.gods.util.NearbyEntities;
 
 /**
- * LIGHTNING_STORM: a storm around the player until stopTime (System.currentTimeMillis()), with a bolt now and then on a
- * creature near them. The bolts set no fires and change no creatures ({@link Lightning}).
+ * LIGHTNING_STORM: a storm in the player's world until stopTime (System.currentTimeMillis()) or until they leave that
+ * world, with a bolt now and then on a creature near them. The bolts set no fires and change no creatures
+ * ({@link Lightning}).
  */
 public class ThunderStormTask extends Task
 {
 	private long	stopTime;
 	private Player	player;
+	private World	world;
 	private Random	random	= new Random();
 
 	public ThunderStormTask(GodsContext ctx, Player player, long stopTime)
@@ -27,18 +30,20 @@ public class ThunderStormTask extends Task
 		super(ctx);
 		this.stopTime = stopTime;
 		this.player = player;
+		this.world = player.getWorld();
 	}
 
 	@Override
 	public void run()
 	{
-		if (!this.player.isOnline() || System.currentTimeMillis() >= this.stopTime)
+		// The storm is in the world the player called it in; it ends when they leave it
+		if (!this.player.isOnline() || !this.world.equals(this.player.getWorld()) || System.currentTimeMillis() >= this.stopTime)
 		{
-			this.player.getWorld().setStorm(false);
+			this.world.setStorm(false);
 			return;
 		}
 
-		this.player.getWorld().setStorm(true);
+		this.world.setStorm(true);
 
 		Entity[] entities = NearbyEntities.living(this.player.getLocation(), 20.0D);
 

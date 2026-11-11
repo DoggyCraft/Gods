@@ -2,12 +2,12 @@ package com.dogonfire.gods.task;
 
 import java.util.Random;
 
-import org.bukkit.EntityEffect;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Wolf;
 
 import com.dogonfire.gods.GodsContext;
 
+/** /g love: hearts around both partners, three times, and now and then fireworks */
 public class LoveTask extends Task
 {
 	private Player	player1;
@@ -41,9 +41,7 @@ public class LoveTask extends Task
 		boolean firework = (random.nextInt(100) == 0);
 
 		{
-			Wolf wolf = player1.getWorld().spawn(this.player1.getLocation(), Wolf.class);
-			wolf.playEffect(EntityEffect.WOLF_HEARTS);		
-			wolf.remove();
+			hearts(this.player1);
 
 			if (firework)
 			{
@@ -52,9 +50,7 @@ public class LoveTask extends Task
 		}
 
 		{
-			Wolf wolf = player2.getWorld().spawn(this.player2.getLocation(), Wolf.class);
-			wolf.playEffect(EntityEffect.WOLF_HEARTS);		
-			wolf.remove();
+			hearts(this.player2);
 
 			if (firework)
 			{
@@ -67,5 +63,11 @@ public class LoveTask extends Task
 		{
 			getPlugin().getServer().getScheduler().scheduleSyncDelayedTask(getPlugin(), new LoveTask(ctx, this.player1, this.player2, newcycle), 40L);
 		}
+	}
+
+	// Hearts around the player, like a wolf being tamed (a wolf spawned and removed in the same tick showed nothing)
+	private static void hearts(Player player)
+	{
+		player.getWorld().spawnParticle(Particle.HEART, player.getLocation().add(0.0D, 1.0D, 0.0D), 7, 0.5D, 0.5D, 0.5D);
 	}
 }
