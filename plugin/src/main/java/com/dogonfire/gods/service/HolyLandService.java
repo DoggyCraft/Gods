@@ -259,9 +259,10 @@ public class HolyLandService
 		return chunks;
 	}
 
+	/** The regions of holy land the god may claim: power / 10 + 3, and its rank's extra regions (ranks.unlocks.holy-land-extra-regions) */
 	public int getMaximumChunksForGod(String godName)
 	{
-		return (int) (ctx.godService().getGodPower(godName) / 10 + 3);
+		return RankRules.maxHolyLandRegions(ctx.godService().getGodPower(godName), ctx.rankService().getRank(godName), ctx.settings().ranks().unlocks());
 	}
 
 	/** A believer built an altar here: claim the land for the god if it's free. */

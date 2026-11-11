@@ -285,7 +285,9 @@ public class PriestService
 			return false;
 		}
 
-		if (PriestRules.wantsMorePriests(priestNames.size(), ctx.settings().priests().maxPerGod()))
+		// priests.max-per-god, and one more from the rank config.yml's ranks.unlocks.extra-priest names
+		if (PriestRules.wantsMorePriests(priestNames.size(), RankRules.maxPriests(ctx.settings().priests().maxPerGod(), ctx.rankService().getRank(godName),
+				ctx.settings().ranks().unlocks().extraPriest())))
 		{
 			if (this.random.nextInt(3) == 0)
 			{

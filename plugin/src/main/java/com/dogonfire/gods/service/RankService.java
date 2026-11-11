@@ -2,9 +2,17 @@ package com.dogonfire.gods.service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.GodAscendEvent;
+import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.api.event.GodDescendEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Altar;
@@ -29,6 +37,8 @@ public class RankService
 {
 	private final GodsContext		ctx;
 	private final GodRepository		repository;
+	// The aura's effect that was warned about as unknown
+	private String					unknownEffect;
 
 	public RankService(GodsContext ctx, GodRepository repository)
 	{
@@ -172,6 +182,54 @@ public class RankService
 		}
 		god.setStats(change.apply(god.stats()));
 		this.repository.markDirty();
+	}
+
+	// ---------------------------------------------------------------------
+	// The aura
+
+	/**
+	 * On the god's turn: its believers in its own holy land feel its aura (config.yml's {@code ranks.aura}), a gentle
+	 * effect that lasts until about its next turn, from the rank {@code ranks.unlocks.aura} names. Only while holy land
+	 * is on.
+	 */
+	public void aura(String godName)
+	{
+		Settings.Aura aura = ctx.settings().ranks().aura();
+		if (!aura.enabled() || !ctx.settings().holyLand().enabled() || !hasUnlocked(godName, ctx.settings().ranks().unlocks().aura()))
+		{
+			return;
+		}
+		PotionEffectType type = effectType(aura.effect());
+		if (type == null)
+		{
+			return;
+		}
+		for (UUID believerId : ctx.believerService().getOnlineBelieversForGod(godName))
+		{
+			Player believer = ctx.plugin().getServer().getPlayer(believerId);
+			if (believer == null || believer.isDead() || !ctx.plugin().isEnabledInWorld(believer.getWorld()))
+			{
+				continue;
+			}
+			if (godName.equals(ctx.holyLandService().getGodAtHolyLandLocation(believer.getLocation())))
+			{
+				// Ambient, without particles: a gentle effect, not a potion
+				believer.addPotionEffect(new PotionEffect(type, aura.seconds() * 20, aura.amplifier(), true, false, true));
+			}
+		}
+	}
+
+	/** The effect with this id, or null (warned about once) */
+	private PotionEffectType effectType(String id)
+	{
+		NamespacedKey key = NamespacedKey.fromString(id);
+		PotionEffectType type = key != null ? Registry.EFFECT.get(key) : null;
+		if (type == null && !id.equals(this.unknownEffect))
+		{
+			this.unknownEffect = id;
+			ctx.plugin().getLogger().warning("Unknown effect '" + id + "' for ranks.aura.effect in config.yml; gods have no aura.");
+		}
+		return type;
 	}
 
 	// ---------------------------------------------------------------------
