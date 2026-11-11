@@ -1,5 +1,40 @@
 1.0.0
 -------------------------------
+Requirements
+* Minecraft 26.1 or newer (Spigot or Paper), Java 25. Servers on older versions can keep using 0.9.x.
+* Vault is no longer used. Permissions go through Bukkit (LuckPerms and the like work as usual).
+
+Upgrading from 0.9.x (back up your plugins/Gods folder first)
+* config.yml is upgraded to a new, commented layout with clearer key names; the old file is kept as config.yml.v1.bak. Gods no longer rewrites config.yml on every start.
+* Language files are converted to MiniMessage in plugins/Gods/lang/<language>/ (messages.yml and voices/); your changes are kept and the old files are moved to lang/old/.
+* gods.yml and holyland.yml get a data version; each is backed up (.v1.bak) before it is upgraded. Priests stored by name become UUIDs.
+* Holy lands from 0.9.x can't be kept: they were stored under a broken key that mixed up regions and worlds. They are backed up and dropped; gods claim land again as believers build and pray at altars. Neutral lands must be set again with /g setsafe.
+* Quests of types that no longer exist are removed.
+
+New
+* Quests work again (pilgrimage, slay, item sacrifice and give-items quests); they were never generated before.
+* Holy artifacts work: every god type has artifacts, each power does what its lore says, and powers have a cooldown.
+* An API for other plugins (gods-api on JitPack): read gods and believers, make gods speak (custom text or their own voice lines), act as a god (bless, curse, heal, give items and artifacts, smite, quests, priests, war and alliance), and events for prayers, believers, priests, blessings, quests, holy land and relations. GodSpeakEvent lets e.g. an NPC plugin say a god's words.
+* All messages are MiniMessage and can be changed, including the ones that were hard-coded.
+* /g reload reloads everything, and reads only the data files you edited on disk.
+* Data files are saved in the background and never overwritten when they can't be read (a copy is kept as <file>.broken-<time>).
+* Anonymous statistics on bStats.
+
+Fixed (a selection)
+* Blessing or cursing a player could make gods.yml unloadable and wipe every god.
+* Abandoned holy land cleanup deleted every holy land.
+* Wars and alliances were never recognized; attacks on holy land could not be started or ended.
+* Praying at an altar sign opened the sign editor and destroyed the altar on 1.20+; any wood type of sign now works.
+* Arrows, TNT and explosions got through holy land protection; neutral land didn't stop mob spawns; defenders couldn't fight back.
+* Titles, holy books, religion chat (mutes, % in god names) and many commands work again.
+* Settings that were saved but never read (bibles on join, give-items quests, item blessing power, ...) now work. A god's own PvP and mob damage settings now apply even when the defaults are on. priests.assign-command / remove-command now run.
+
+Changed
+* gods.setsafe is for ops only.
+* Holy laws, prophecies, instruction books, global quests, holy war and slay dragon quests (never finished) and /g answer are removed.
+
+Ideas from earlier versions (not done)
+-------------------------------
 MySQL support
 * Convert Quests
 * Weather altars
