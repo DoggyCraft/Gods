@@ -34,9 +34,11 @@ import com.dogonfire.gods.listener.AltarListener;
 import com.dogonfire.gods.listener.BelieverListener;
 import com.dogonfire.gods.listener.ChatListener;
 import com.dogonfire.gods.listener.GodListener;
+import com.dogonfire.gods.listener.HolyArtifactListener;
+import com.dogonfire.gods.listener.HolyBookListener;
 import com.dogonfire.gods.listener.HolyLandListener;
 import com.dogonfire.gods.listener.MarriageListener;
-import com.dogonfire.gods.listener.QuestAndHolyItemListener;
+import com.dogonfire.gods.listener.QuestListener;
 import com.dogonfire.gods.migration.ConfigV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.service.ChatService;
@@ -64,6 +66,8 @@ public class Gods extends JavaPlugin
 
 	// Repeating tasks started by onEnable, cancelled by onDisable
 	private final List<BukkitTask>			tasks				= new ArrayList<BukkitTask>();
+	// Meals (GodListener, QuestListener) and reading holy books (HolyBookListener) share this cooldown
+	private ActionCooldown					actionCooldown;
 	// Started by startFeatures, undone by stopFeatures
 	private final List<Listener>			featureListeners	= new ArrayList<Listener>();
 	// Players the server has seen, by lower case name; built when an old data file needs it, dropped after loading
@@ -108,10 +112,8 @@ public class Gods extends JavaPlugin
 		}
 
 		PluginManager pm = getServer().getPluginManager();
-		// Both handle meals; they share the cooldown
-		ActionCooldown mealCooldown = new ActionCooldown();
-		pm.registerEvents(new GodListener(this.ctx, mealCooldown), this);
-		pm.registerEvents(new QuestAndHolyItemListener(this.ctx, mealCooldown), this);
+		this.actionCooldown = new ActionCooldown();
+		pm.registerEvents(new GodListener(this.ctx, this.actionCooldown), this);
 		pm.registerEvents(new BelieverListener(this.ctx), this);
 		pm.registerEvents(new AltarListener(this.ctx), this);
 		pm.registerEvents(new ChatListener(this.ctx), this);
@@ -260,6 +262,19 @@ public class Gods extends JavaPlugin
 	/** The features that can be switched on and off in config.yml */
 	private void startFeatures()
 	{
+		// Registered before HolyLandListener, as they always were
+		if (this.settings.quests().enabled())
+		{
+			registerFeature(new QuestListener(this.ctx, this.actionCooldown));
+		}
+		if (this.settings.bibles().enabled())
+		{
+			registerFeature(new HolyBookListener(this.ctx, this.actionCooldown));
+		}
+		if (this.settings.holyArtifacts().enabled())
+		{
+			registerFeature(new HolyArtifactListener(this.ctx));
+		}
 		if (this.settings.holyLand().enabled())
 		{
 			registerFeature(new HolyLandListener(this.ctx));

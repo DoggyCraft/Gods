@@ -14,8 +14,8 @@ import com.dogonfire.gods.GodsContext;
 
 /**
  * Gods: their commandments when a believer kills a mob or eats ({@code CommandmentService}), and which gods have a
- * believer online, on join and quit ({@code GodService}). Always registered, before {@link QuestAndHolyItemListener},
- * with which it shares the meal {@link ActionCooldown}.
+ * believer online, on join and quit ({@code GodService}). Always registered, so it runs before
+ * {@link QuestListener}, with which it shares the meal {@link ActionCooldown}.
  */
 public class GodListener implements Listener
 {
