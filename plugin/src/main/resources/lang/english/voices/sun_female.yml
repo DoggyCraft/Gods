@@ -538,7 +538,7 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'A new dawn rises, believers! From now on I am your <gender> of the Sun!'
-# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+# Said to all believers when the god descends to its main altar and appears there (it rose to the descended rank, config.yml ranks.descended)
 believers-god-descended:
 - 'Rejoice! I have descended in all my light! Come to my altar and bask in my glory!'
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)

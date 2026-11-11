@@ -505,7 +505,7 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'Hear me, warriors! From now on I am your <gender> of War!'
-# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+# Said to all believers when the god descends to its main altar and appears there (it rose to the descended rank, config.yml ranks.descended)
 believers-god-descended:
 - 'Warriors! I have come down to lead you! Report to my altar at once!'
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)

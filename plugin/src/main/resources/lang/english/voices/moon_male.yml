@@ -536,7 +536,7 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'The moon changes its face, and so have I: I am your <gender> now.'
-# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+# Said to all believers when the god descends to its main altar and appears there (it rose to the descended rank, config.yml ranks.descended)
 believers-god-descended:
 - 'Under the silver light I have descended. Come to my altar, my children of the night!'
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)

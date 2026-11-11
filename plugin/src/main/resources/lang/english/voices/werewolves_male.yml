@@ -536,7 +536,7 @@ believer-god-chose-gender:
 # "Goddess", "Deity")
 believers-gender-changed:
 - 'Hear the howl, pack! From now on I am your <gender>!'
-# Said to all believers when the god descends to its main altar and appears there (config.yml npc.descend)
+# Said to all believers when the god descends to its main altar and appears there (it rose to the descended rank, config.yml ranks.descended)
 believers-god-descended:
 - 'The pack has called and I have come! Find me at my altar, under the moon!'
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)

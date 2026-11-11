@@ -51,7 +51,7 @@ Gods keeps track of its altars in `plugins/Gods/altars.yml`. Altars that already
 
 The god at its altar
 ---------
-Once a religion has grown, its god descends to its main altar and stands there as a figure in front of the altar sign, turning to look at players who come close. Right-clicking the figure prays to the god, just like praying at the altar. The god descends when it has a main altar, a priest for at least 24 hours (`npc.descend.requires-priest`, `npc.descend.hours-after-priest`), at least 3 believers (`npc.descend.min-believers`) and, if you set one, enough power (`npc.descend.min-power`); lightning strikes (only a flash, it does no harm), its effects rise and it tells its believers. It ascends again when it has no priest any more, or when its believers stay fewer than `min-believers` for 24 hours (`npc.descend.ascend-grace-hours`), and descends again when it qualifies once more.
+When a religion rises to the descended rank (see [Ranks](#ranks)), its god descends to its main altar and stands there as a figure in front of the altar sign, turning to look at players who come close. Right-clicking the figure prays to the god, just like praying at the altar. By default the god descends when it has a main altar, a priest for at least 24 hours, at least 3 believers and is at least neutral (`ranks.descended` in config.yml); lightning strikes (only a flash, it does no harm), its effects rise and it tells its believers. It ascends again when it falls below that rank: at once when it has no priest any more, or when its believers stay fewer than it needs for 24 hours (`ranks.drop-grace-hours`), and descends again when it rises once more.
 
 Who makes the figure is `npc.provider` in config.yml:
 
@@ -86,6 +86,28 @@ werewolves:
     skin:
       goddess: ''               # the default goddess instead of the werewolf alpha
 ```
+
+Ranks
+---------
+A religion grows through five ranks, like the ranks of a forum. A god starts as a spirit and rises one rank at a time, on one of its turns, when it meets every condition of the next rank. Each god type has its own names for the ranks (`ranks` in its theme): the default ones are Spirit, Recognized, Descended, Exalted and Greater God; a god of the sea rises from Tide through Current, Breaker and Maelstrom to Leviathan, a god of frost from Snowflake to Eternal Winter. `/g rank [god]` shows a god's rank and, to its believers, what its next rank needs, condition by condition ("Sacrifices: 31/20", "Mood: Neutral (at least Pleased)"); `/g info`, `/g list`, the text above main altars and PlaceholderAPI's `%gods_rank%` show the rank too.
+
+| Rank | Needs (config.yml's defaults) | Unlocks |
+|---|---|---|
+| Spirit | a new god | |
+| Recognized | a priest, 3 believers | the holy book, quests, 1 more region of holy land |
+| Descended | a priest for 24 hours, 3 believers, a neutral mood, a main altar | the god appears at its main altar; 2 more regions of holy land |
+| Exalted | 10 believers, 50 power, a pleased mood, 72 hours as descended, 150 prayers, 20 accepted sacrifices, 2 completed quests, 2 altars, 2 converts | holy artifacts, alliances and wars; 4 more regions of holy land |
+| Greater | 20 believers, 150 power, a pleased mood, 168 hours as exalted, 500 prayers, 75 sacrifices, 6 quests, 4 altars, 4 regions of holy land, 5 converts | a second priest, an aura (Regeneration I) for believers in its holy land, 8 more regions of holy land; the whole server hears of it |
+
+Each condition is in `ranks.<rank>` in config.yml and each is optional (remove it and it doesn't count): `min-believers`, `min-power`, `requires-priest`, `min-mood` (`angry`, `displeased`, `neutral`, `pleased` or `exalted`: at least that mood), `requires-main-altar`, `hours-after-priest`, `hours-at-previous-rank`, and what the religion has done in its whole life: `min-prayers` (prayers at its altars), `min-sacrifices` (sacrifices it was pleased with), `min-quests` (completed quests), `min-altars` (praying altars standing), `min-holy-land-regions` and `min-converts` (players who joined through `/g invite`). Conditions of a feature that is off (sacrifices, quests, holy land) don't count. `requires-priest` and `min-believers` carry over to the ranks above.
+
+A god never falls because of its mood or what its religion did: an angry god just stops rising. It falls at once below every rank that needs a priest when it has none left, and when it has fewer believers than its rank needs for `ranks.drop-grace-hours` (24) it falls to the highest rank it still has the believers for.
+
+`ranks.unlocks` sets the lowest rank of each feature (`bibles`, `quests`, `holy-artifacts`, `relations`, `extra-priest`, `aura`) and the extra holy land regions per rank (`holy-land-extra-regions`, on top of power / 10 + 3); `ranks.aura` sets the aura's effect, level and seconds (or switches it off). A command of a feature a god hasn't unlocked says which rank it needs. The features' own switches (`quests.enabled`, `quests.required-believers`, `priests.max-per-god`, ...) still apply.
+
+Rising to a rank shows an effect at the main altar (grander for each rank; the descent has its lightning) and the god tells its believers; a greater god is announced to the whole server. Altar effects grow with the rank: a spirit's prayers are a flicker, its symbol floats up from the descended rank on, and a greater god's are the grandest.
+
+Gods from before ranks get a rank on their first turn: the highest their believers, power, priest, mood, altars, holy land and age allow, with their lifetime stats (which Gods didn't count before) set to what that rank asks for, so they keep it. A god that had descended stays descended.
 
 Themes
 ---------
@@ -173,10 +195,10 @@ if (gods != null) {
 }
 ```
 
-- **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest, main altar and descent; `home()` is the spot in front of the main altar), the god's figure at its altar (`getNpc(god)`, `isGodNpc(entity)`), believers (`getBeliever(uuid)`), and whose holy land a location is.
+- **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest, main altar, descent and rank; `home()` is the spot in front of the main altar), a god's progress towards its next rank (`getRankProgress(god)`), the god's figure at its altar (`getNpc(god)`, `isGodNpc(entity)`), believers (`getBeliever(uuid)`), and whose holy land a location is.
 - **Speak as a god**: `say(god, player, text)` with a [MiniMessage](https://docs.advntr.dev/minimessage/format.html) text, `sayToBelievers(god, text)`, and the god's own voice lines with `sayVoiceLine(god, player, situation)` / `getVoiceLine(god, situation)`. The situations are the keys of the voice files (`getVoiceSituations()`, e.g. `believer-random-pleased-speech`).
-- **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood or its gender (`setGender`, which ignores the priests' cooldown), start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars. Each returns an `ActionResult`.
-- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent`, `GodRelationChangeEvent`, `GodDescendEvent` and `GodAscendEvent`. Most can be cancelled.
+- **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood or its gender (`setGender`, which ignores the priests' cooldown), start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars, and set its rank (`setRank`, bypassing the conditions). Each returns an `ActionResult`.
+- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent`, `GodRelationChangeEvent`, `GodDescendEvent`, `GodAscendEvent` and `GodRankChangeEvent` (a rise can be cancelled, a fall can't). Most can be cancelled.
 
 Everything a god says to a player fires a `GodSpeakEvent` first, so a plugin can, for example, let a god speak through an NPC instead of the chat:
 

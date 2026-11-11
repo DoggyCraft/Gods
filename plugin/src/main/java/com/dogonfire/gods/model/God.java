@@ -371,7 +371,7 @@ public final class God
 		this.genderChangedTime = genderChangedTime;
 	}
 
-	/** Since when the god has had a priest, or null (see {@code DescentRules}) */
+	/** Since when the god has had a priest, or null (see {@code RankRules}) */
 	public Instant priestSince()
 	{
 		return this.priestSince;
