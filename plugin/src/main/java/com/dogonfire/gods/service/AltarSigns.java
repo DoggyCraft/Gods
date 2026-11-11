@@ -3,16 +3,19 @@ package com.dogonfire.gods.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
 import com.dogonfire.gods.model.GodGender;
 
 /**
- * Reading the text of altar signs, without the server so it can be tested. Altars are written on the front of a wall
- * sign on an altar block: "Altar / of / &lt;god&gt;" (praying), "Curses / On / &lt;player&gt;" and
- * "Blessings / On / &lt;player&gt;". A new praying altar is a sign with the god's name on it, and maybe "God" or
- * "Goddess" on another line.
+ * Reading altar signs, without the server so it can be tested. Altars are written on the front of a wall sign on an
+ * altar block. A new praying altar is a sign with the god's name on it, and maybe "God" or "Goddess" on another line;
+ * a new curse or blessing altar says "Curses" or "Blessings" on its first line and a player's name on its third. Gods
+ * then tags the sign (praying, curses or blessings, the god, the player) and writes it in the god type's style.
+ * Altars from before tags say "Altar / of / &lt;god&gt;", "Curses / On / &lt;player&gt;" or
+ * "Blessings / On / &lt;player&gt;"; they are recognized by that text and tagged when first used.
  */
 public final class AltarSigns
 {
@@ -31,6 +34,115 @@ public final class AltarSigns
 
 	private AltarSigns()
 	{
+	}
+
+	/** What an altar sign is for; the key is its value in the sign's tag and its part of the sign text keys */
+	public enum Kind
+	{
+		PRAYING("praying"), CURSES("curses"), BLESSINGS("blessings");
+
+		private final String key;
+
+		Kind(String key)
+		{
+			this.key = key;
+		}
+
+		public String key()
+		{
+			return this.key;
+		}
+
+		/** The kind with this key, or null */
+		public static Kind byKey(String key)
+		{
+			for (Kind kind : values())
+			{
+				if (kind.key.equals(key))
+				{
+					return kind;
+				}
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * A finished altar sign.
+	 *
+	 * @param kind       praying, curses or blessings
+	 * @param god        a praying altar's god (as written on an untagged sign); for a curse or blessing sign the god of
+	 *                   whoever made it, whose style the sign has (may be null)
+	 * @param playerName who a curse or blessing sign is about, else null
+	 * @param playerId   their UUID, null if unknown (an untagged sign names the player only)
+	 * @param tagged     true if read from the sign's tags; false for an altar from before tags, read from its text
+	 */
+	public record AltarSign(Kind kind, String god, String playerName, UUID playerId, boolean tagged)
+	{
+		/** The same altar, as it is once tagged */
+		public AltarSign asTagged(String god, UUID playerId)
+		{
+			return new AltarSign(this.kind, god, this.playerName, playerId, true);
+		}
+	}
+
+	/**
+	 * Recognizes an altar sign: by its tags first (a sign Gods made or already tagged), else by the text altars had
+	 * before tags ("Altar / of / &lt;god&gt;", "Curses / On / &lt;player&gt;", "Blessings / On / &lt;player&gt;").
+	 * Null if it is no altar sign.
+	 *
+	 * @param tagKind the sign's kind tag, null if it has none
+	 * @param lines   the front text of the sign
+	 */
+	public static AltarSign recognize(String tagKind, String tagGod, String tagPlayerName, String tagPlayerId, String[] lines)
+	{
+		Kind kind = tagKind != null ? Kind.byKey(tagKind) : null;
+		if (kind != null)
+		{
+			return new AltarSign(kind, tagGod, tagPlayerName, uuid(tagPlayerId), true);
+		}
+		if (lines == null || lines.length < 3)
+		{
+			return null;
+		}
+		if (plain(lines[0]).equals(ALTAR) && isFormatted(lines))
+		{
+			return new AltarSign(Kind.PRAYING, plain(lines[2]), null, null, false);
+		}
+		String cursed = namedPlayer(lines, CURSES);
+		if (cursed != null)
+		{
+			return new AltarSign(Kind.CURSES, null, cursed, null, false);
+		}
+		String blessed = namedPlayer(lines, BLESSINGS);
+		if (blessed != null)
+		{
+			return new AltarSign(Kind.BLESSINGS, null, blessed, null, false);
+		}
+		return null;
+	}
+
+	private static UUID uuid(String text)
+	{
+		try
+		{
+			return text != null ? UUID.fromString(text) : null;
+		}
+		catch (IllegalArgumentException ex)
+		{
+			return null;
+		}
+	}
+
+	/** The four lines of a sign: the given ones, cut or padded with empty lines */
+	public static String[] fourLines(List<String> lines)
+	{
+		String[] four = new String[4];
+		for (int line = 0; line < 4; line++)
+		{
+			four[line] = line < lines.size() && lines.get(line) != null ? lines.get(line) : "";
+		}
+		return four;
 	}
 
 	/** The text of a line without colors and surrounding spaces; "" for null */

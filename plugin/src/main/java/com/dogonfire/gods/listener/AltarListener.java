@@ -76,15 +76,17 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		String[] lines = AltarService.getSignLines(block);
-		if (lines == null)
+		// By its tags, or by the text of an altar from before tags (which gets tagged and styled now)
+		AltarSigns.AltarSign altar = ctx.altarService().readAltarSign(block);
+		if (altar == null)
 		{
 			return;
 		}
+		altar = ctx.altarService().refreshAltarSign(block, altar, player);
 
 		if (ctx.settings().curses().enabled())
 		{
-			Player cursedPlayer = ctx.altarService().getCursedPlayerFromAltar(block, lines);
+			Player cursedPlayer = altar.kind() == AltarSigns.Kind.CURSES ? ctx.altarService().getAltarSignPlayer(altar) : null;
 
 			if (cursedPlayer != null)
 			{
@@ -120,7 +122,7 @@ public class AltarListener implements Listener
 		}
 		if (ctx.settings().blessings().enabled())
 		{
-			Player blessedPlayer = ctx.altarService().getBlessedPlayerFromAltarSign(block, lines);
+			Player blessedPlayer = altar.kind() == AltarSigns.Kind.BLESSINGS ? ctx.altarService().getAltarSignPlayer(altar) : null;
 			if (blessedPlayer != null)
 			{
 				if ((godName != null) && ctx.priestService().isPriest(player.getUniqueId()))
@@ -155,10 +157,8 @@ public class AltarListener implements Listener
 			}
 		}
 
-		// Only a finished "Altar / of / <god>" sign is a praying altar. A curse or blessing sign whose player
-		// is offline (or with cursing/blessing off), or any other sign on an altar block, does nothing
-		String firstLine = ChatColor.stripColor(lines[0]).trim();
-		if (!firstLine.equals("Altar") || !ctx.altarService().isFormattedAltarSign(block))
+		// A curse or blessing sign whose player is offline (or with cursing/blessing off) does nothing
+		if (altar.kind() != AltarSigns.Kind.PRAYING)
 		{
 			return;
 		}
@@ -169,8 +169,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		// The god of a praying altar is written on its third line
-		String altarGodName = lines[2];
+		String altarGodName = altar.god();
 
 		if (altarGodName == null)
 		{
@@ -235,7 +234,7 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		boolean created;
+		AltarSigns.AltarSign created;
 
 		if ((ctx.settings().curses().enabled()) && (ctx.altarService().isCursingAltar(block, event.getLines())))
 		{
@@ -257,9 +256,9 @@ public class AltarListener implements Listener
 			created = ctx.altarService().handleNewPrayingAltar(event);
 		}
 
-		if (created)
+		if (created != null)
 		{
-			ctx.altarService().waxAltarSignLater(block);
+			ctx.altarService().finishAltarSignLater(block, created);
 		}
 		else
 		{

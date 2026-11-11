@@ -42,6 +42,66 @@ altar:
   blessing-not-allowed: <dark_red>You cannot bless players
   build-not-allowed: <dark_red>You cannot build altars
   create-god-not-allowed: <red>You cannot create a new God
+  # The front text Gods writes on altar signs: four lines each, per sign style (sign.messages of a god type's theme in
+  # themes.yml; a style without its own text uses default). praying knows <god>; curses and blessings know <player>.
+  # Altar signs are recognized by their tags, not by this text, so it can say anything.
+  sign:
+    default:
+      praying: [Altar, of, <god>, '']
+      curses: [Curses, On, <player>, '']
+      blessings: [Blessings, On, <player>, '']
+    frost:
+      praying: ['<aqua>❄ Altar ❄', '<dark_aqua>of the frost', '<white><god>', '']
+      curses: ['<dark_aqua>❄ Curses ❄', '<aqua>freeze', '<white><player>', '']
+      blessings: ['<aqua>❄ Blessings ❄', '<dark_aqua>upon', '<white><player>', '']
+    love:
+      praying: ['<light_purple>♥ Altar ♥', '<#ff8ac8>of love', '<white><god>', '']
+      curses: ['<dark_purple>♥ Curses ♥', '<light_purple>upon', '<white><player>', '']
+      blessings: ['<light_purple>♥ Blessings ♥', '<#ff8ac8>upon', '<white><player>', '']
+    evil:
+      praying: ['<dark_red>☠ Altar ☠', '<gray>of darkness', '<red><god>', '']
+      curses: ['<dark_red>☠ Curses ☠', '<gray>upon', '<red><player>', '']
+      blessings: ['<dark_purple>Dark Blessings', '<gray>upon', '<red><player>', '']
+    sea:
+      praying: ['<aqua>≈ Altar ≈', '<dark_aqua>of the deep', '<white><god>', '']
+      curses: ['<dark_aqua>≈ Curses ≈', '<aqua>drown', '<white><player>', '']
+      blessings: ['<aqua>≈ Blessings ≈', '<dark_aqua>upon', '<white><player>', '']
+    moon:
+      praying: ['<gray>☾ Altar ☾', '<dark_gray>of the night', '<white><god>', '']
+      curses: ['<dark_gray>☾ Curses ☾', '<gray>upon', '<white><player>', '']
+      blessings: ['<gray>☾ Blessings ☾', '<dark_gray>upon', '<white><player>', '']
+    sun:
+      praying: ['<gold>☀ Altar ☀', '<yellow>of the sun', '<white><god>', '']
+      curses: ['<red>☀ Curses ☀', '<gold>burn', '<white><player>', '']
+      blessings: ['<gold>☀ Blessings ☀', '<yellow>upon', '<white><player>', '']
+    thunder:
+      praying: ['<yellow>⚡ Altar ⚡', '<gold>of the storm', '<white><god>', '']
+      curses: ['<gold>⚡ Curses ⚡', '<yellow>strike', '<white><player>', '']
+      blessings: ['<yellow>⚡ Blessings ⚡', '<gold>upon', '<white><player>', '']
+    party:
+      praying: ['<light_purple>♪ Altar ♪', '<green>of the feast', '<yellow><god>', '']
+      curses: ['<dark_purple>♪ Curses ♪', '<green>upon', '<yellow><player>', '']
+      blessings: ['<light_purple>♪ Blessings ♪', '<green>upon', '<yellow><player>', '']
+    war:
+      praying: ['<red>⚔ Altar ⚔', '<gray>of war', '<white><god>', '']
+      curses: ['<dark_red>⚔ Curses ⚔', '<gray>upon', '<white><player>', '']
+      blessings: ['<red>⚔ Blessings ⚔', '<gray>upon', '<white><player>', '']
+    werewolves:
+      praying: ['<gray>☾ Altar ☾', '<dark_gray>of the pack', '<white><god>', '']
+      curses: ['<dark_gray>Curses', '<gray>of the pack on', '<white><player>', '']
+      blessings: ['<gray>Blessings', '<dark_gray>of the pack on', '<white><player>', '']
+    creatures:
+      praying: ['<gold>✦ Altar ✦', '<dark_green>of creatures', '<white><god>', '']
+      curses: ['<dark_green>✦ Curses ✦', '<gold>upon', '<white><player>', '']
+      blessings: ['<gold>✦ Blessings ✦', '<dark_green>upon', '<white><player>', '']
+    wisdom:
+      praying: ['<blue>✎ Altar ✎', '<dark_aqua>of wisdom', '<white><god>', '']
+      curses: ['<dark_blue>✎ Curses ✎', '<blue>upon', '<white><player>', '']
+      blessings: ['<blue>✎ Blessings ✎', '<dark_aqua>upon', '<white><player>', '']
+    nature:
+      praying: ['<green>✿ Altar ✿', '<dark_green>of nature', '<white><god>', '']
+      curses: ['<dark_green>✿ Curses ✿', '<green>upon', '<white><player>', '']
+      blessings: ['<green>✿ Blessings ✿', '<dark_green>upon', '<white><player>', '']
 
 prayer:
   power: <aqua>Your prayer power is now <hl><amount></hl>

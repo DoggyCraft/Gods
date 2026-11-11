@@ -7,8 +7,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -16,13 +18,17 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.sign.Side;
+import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodType;
 
@@ -41,9 +47,20 @@ public class AltarService
 
 	private final GodsContext ctx;
 
+	// The tags of altar signs: gods:altar (praying, curses, blessings), gods:altar_god, gods:altar_player (UUID) and
+	// gods:altar_player_name
+	private final NamespacedKey		kindKey;
+	private final NamespacedKey		godKey;
+	private final NamespacedKey		playerKey;
+	private final NamespacedKey		playerNameKey;
+
 	public AltarService(GodsContext ctx)
 	{
 		this.ctx = ctx;
+		this.kindKey = new NamespacedKey(ctx.plugin(), "altar");
+		this.godKey = new NamespacedKey(ctx.plugin(), "altar_god");
+		this.playerKey = new NamespacedKey(ctx.plugin(), "altar_player");
+		this.playerNameKey = new NamespacedKey(ctx.plugin(), "altar_player_name");
 	}
 
 	/** Remembers that the player dropped this item, so it counts as their sacrifice if it burns */
@@ -86,31 +103,163 @@ public class AltarService
 		return new ItemStack((item != null && item.isItem()) ? item : Material.OAK_SIGN, 1);
 	}
 
-	/** The lines on the front of a sign block (the side altars are written on), or null if it is not a sign. */
-	public static String[] getSignLines(Block block)
+	/**
+	 * Tags, styles and waxes the sign of a new altar one tick later (after the text from the sign editor has been
+	 * applied), so it is known by its tags and players can't open the sign editor on it.
+	 */
+	public void finishAltarSignLater(Block signBlock, AltarSigns.AltarSign altar)
 	{
-		if (block == null || !(block.getState() instanceof Sign))
+		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> markAltarSign(signBlock, altar));
+	}
+
+	/** The altar a sign is (by its tags, or by its text for altars from before tags), or null if it is none */
+	public AltarSigns.AltarSign readAltarSign(Block block)
+	{
+		if (block == null || !(block.getState() instanceof Sign sign))
 		{
 			return null;
 		}
+		PersistentDataContainer tags = sign.getPersistentDataContainer();
+		return AltarSigns.recognize(tags.get(this.kindKey, PersistentDataType.STRING), tags.get(this.godKey, PersistentDataType.STRING), tags.get(this.playerNameKey, PersistentDataType.STRING),
+				tags.get(this.playerKey, PersistentDataType.STRING), sign.getSide(Side.FRONT).getLines());
+	}
 
-		return ((Sign) block.getState()).getSide(Side.FRONT).getLines();
+	/** The online player a curse or blessing sign is about, or null */
+	public Player getAltarSignPlayer(AltarSigns.AltarSign altar)
+	{
+		if (altar.playerId() != null)
+		{
+			return ctx.plugin().getServer().getPlayer(altar.playerId());
+		}
+		// Exact name: getPlayer(String) would also match name prefixes
+		return altar.playerName() != null ? ctx.plugin().getServer().getPlayerExact(altar.playerName()) : null;
 	}
 
 	/**
-	 * Waxes the sign of a new altar one tick later (after the text from the
-	 * sign editor has been applied), so players can't open the sign editor on it.
+	 * Brings an altar sign up to date when it is used: an altar from before tags is tagged (with the god of whoever uses
+	 * a curse or blessing sign, for its style, and the player it names if they are online), and the sign is written in
+	 * its god type's style if it isn't (the god's type or the themes may have changed). Returns the altar as tagged.
 	 */
-	public void waxAltarSignLater(Block signBlock)
+	public AltarSigns.AltarSign refreshAltarSign(Block block, AltarSigns.AltarSign altar, Player user)
 	{
-		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> {
-			if (signBlock.getState() instanceof Sign)
+		AltarSigns.AltarSign tagged = altar;
+		if (altar.kind() == AltarSigns.Kind.PRAYING && (altar.god() == null || altar.god().length() <= 1))
+		{
+			// Not a proper god name; left as it is
+			return altar;
+		}
+		if (!altar.tagged())
+		{
+			if (altar.kind() == AltarSigns.Kind.PRAYING)
 			{
-				Sign sign = (Sign) signBlock.getState();
-				sign.setWaxed(true);
-				sign.update();
+				tagged = altar.asTagged(ctx.godService().formatGodName(altar.god()), null);
 			}
-		});
+			else
+			{
+				Player named = getAltarSignPlayer(altar);
+				tagged = altar.asTagged(ctx.believerService().getGodForBeliever(user.getUniqueId()), named != null ? named.getUniqueId() : null);
+			}
+			ctx.plugin().logDebug("Tagging the " + altar.kind().key() + " altar sign at " + block.getLocation());
+		}
+
+		if (!altar.tagged() || !isStyled(block, tagged))
+		{
+			markAltarSign(block, tagged);
+		}
+		return tagged;
+	}
+
+	/** True if the sign shows the altar's text in its style */
+	private boolean isStyled(Block block, AltarSigns.AltarSign altar)
+	{
+		if (!(block.getState() instanceof Sign sign))
+		{
+			return true;
+		}
+		SignSide front = sign.getSide(Side.FRONT);
+		Theme.SignStyle style = signStyle(altar);
+		// The text without its colors: the server may write the same colors with other codes
+		String[] lines = front.getLines();
+		String[] text = signText(altar);
+		for (int line = 0; line < text.length; line++)
+		{
+			if (!AltarSigns.plain(line < lines.length ? lines[line] : "").equals(AltarSigns.plain(text[line])))
+			{
+				return false;
+			}
+		}
+		return front.getColor() == style.dye() && front.isGlowingText() == style.glowing();
+	}
+
+	/**
+	 * Tags the sign as this altar (its kind, god and player) and writes its front in the god type's style: the text of
+	 * {@code altar.sign.<style>.<kind>} in messages.yml, the theme's dye color and glowing text. Waxes it, so players
+	 * can't edit it.
+	 */
+	public void markAltarSign(Block block, AltarSigns.AltarSign altar)
+	{
+		if (!(block.getState() instanceof Sign sign))
+		{
+			return;
+		}
+		PersistentDataContainer tags = sign.getPersistentDataContainer();
+		tags.set(this.kindKey, PersistentDataType.STRING, altar.kind().key());
+		setOrRemove(tags, this.godKey, altar.god());
+		setOrRemove(tags, this.playerNameKey, altar.playerName());
+		setOrRemove(tags, this.playerKey, altar.playerId() != null ? altar.playerId().toString() : null);
+
+		SignSide front = sign.getSide(Side.FRONT);
+		String[] text = signText(altar);
+		for (int line = 0; line < text.length; line++)
+		{
+			front.setLine(line, text[line]);
+		}
+		Theme.SignStyle style = signStyle(altar);
+		front.setColor(style.dye());
+		front.setGlowingText(style.glowing());
+		sign.setWaxed(true);
+		sign.update();
+	}
+
+	private static void setOrRemove(PersistentDataContainer tags, NamespacedKey key, String value)
+	{
+		if (value != null)
+		{
+			tags.set(key, PersistentDataType.STRING, value);
+		}
+		else
+		{
+			tags.remove(key);
+		}
+	}
+
+	/**
+	 * The front text of an altar sign in its style (four legacy text lines): {@code altar.sign.<style>.<kind>} in
+	 * messages.yml, or {@code altar.sign.default.<kind>} when the style has none
+	 */
+	public String[] signText(AltarSigns.AltarSign altar)
+	{
+		String key = "altar.sign." + signStyle(altar).messages() + "." + altar.kind().key();
+		if (!ctx.messages().has(key))
+		{
+			key = "altar.sign.default." + altar.kind().key();
+		}
+		TagResolver name = altar.kind() == AltarSigns.Kind.PRAYING ? Messages.god(altar.god()) : Messages.player(signPlayerName(altar));
+		return AltarSigns.fourLines(ctx.messages().legacyLines(key, name));
+	}
+
+	/** The name a curse or blessing sign shows: the player's name now if they are online */
+	private String signPlayerName(AltarSigns.AltarSign altar)
+	{
+		Player player = altar.playerId() != null ? ctx.plugin().getServer().getPlayer(altar.playerId()) : null;
+		return player != null ? player.getName() : (altar.playerName() != null ? altar.playerName() : "");
+	}
+
+	/** The style of an altar sign: its god's type's (the default theme's for no god, or a god without a type) */
+	private Theme.SignStyle signStyle(AltarSigns.AltarSign altar)
+	{
+		GodType type = altar.god() != null && ctx.godService().godExist(altar.god()) ? ctx.godService().getDivineForceForGod(altar.god()) : null;
+		return ctx.themes().of(type).sign();
 	}
 
 	public Block getAltarBlockFromSign(Block block)
@@ -219,49 +368,66 @@ public class AltarService
 		return godTypes.get(this.random.nextInt(godTypes.size()));
 	}
 
-	public boolean handleNewBlessingAltar(SignChangeEvent event)
+	/** A new blessing altar ("Blessings" and a player's name): the altar, or null if the player may not build one */
+	public AltarSigns.AltarSign handleNewBlessingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
 
 		if (!player.isOp() && !ctx.permissions().hasPermission(player, "gods.altar.build"))
 		{
-			return false;
+			return null;
 		}
-		event.setLine(0, "Blessings");
-		event.setLine(1, "On");
-
-		event.setLine(3, "");
+		AltarSigns.AltarSign altar = newPlayerAltar(event, AltarSigns.Kind.BLESSINGS, getBlessedPlayerFromAltarSign(event.getBlock(), event.getLines()));
 
 		ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.blessing-hint", 10);
 
-		return true;
+		return altar;
 	}
 
-	public boolean handleNewCursingAltar(SignChangeEvent event)
+	/** A new curse altar ("Curses" and a player's name): the altar, or null if the player may not build one */
+	public AltarSigns.AltarSign handleNewCursingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
 		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.build")))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.build-not-allowed", 10);
-			return false;
+			return null;
 		}
-		
-		event.setLine(0, "Curses");
-		event.setLine(1, "On");
-		event.setLine(3, "");
+
+		AltarSigns.AltarSign altar = newPlayerAltar(event, AltarSigns.Kind.CURSES, getCursedPlayerFromAltar(event.getBlock(), event.getLines()));
 
 		ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.curse-hint", 20);
 
-		return true;
+		return altar;
 	}
 
-	public boolean handleNewPrayingAltar(SignChangeEvent event)
+	/** A curse or blessing altar about {@code target}, in the style of its builder's god, written on the sign */
+	private AltarSigns.AltarSign newPlayerAltar(SignChangeEvent event, AltarSigns.Kind kind, Player target)
+	{
+		String builderGod = ctx.believerService().getGodForBeliever(event.getPlayer().getUniqueId());
+		AltarSigns.AltarSign altar = new AltarSigns.AltarSign(kind, builderGod, target.getName(), target.getUniqueId(), true);
+		writeSign(event, altar);
+		return altar;
+	}
+
+	/** The text of the altar in its style, as the sign's new text */
+	private void writeSign(SignChangeEvent event, AltarSigns.AltarSign altar)
+	{
+		String[] text = signText(altar);
+		for (int line = 0; line < text.length; line++)
+		{
+			event.setLine(line, text[line]);
+		}
+	}
+
+	/** A new praying altar (the god's name, maybe a gender word): the altar, or null if it can't be built */
+	public AltarSigns.AltarSign handleNewPrayingAltar(SignChangeEvent event)
 	{
 		Player player = event.getPlayer();
 		if ((!player.isOp()) && (!ctx.permissions().hasPermission(player, "gods.altar.build")))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.build-not-allowed", 10);
-			return false;
+			return null;
 		}
 
 		// The god's name, and maybe "God" or "Goddess" on another line
@@ -269,12 +435,12 @@ public class AltarService
 		if (nameLine.problem() == AltarSigns.Problem.INVALID_SIGN)
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.invalid-sign", 10);
-			return false;
+			return null;
 		}
 		if (nameLine.problem() == AltarSigns.Problem.INVALID_GOD_NAME)
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.invalid-god-name", 20);
-			return false;
+			return null;
 		}
 
 		String godName = nameLine.godName().trim();
@@ -283,34 +449,36 @@ public class AltarService
 		if ((godName.length() <= 1) || (godName.contains(" ")))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.invalid-god-name", 20);
-			return false;
+			return null;
 		}
 
 		if (!ctx.godListService().isAllowedGod(godName))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.god-not-allowed", 1);
-			return false;
+			return null;
 		}
 
 		if (!ctx.godService().hasGodAccess(player.getUniqueId(), godName))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.no-access", 1);
-			return false;
+			return null;
 		}
 
 		String currentGodName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 		if (currentGodName != null && !currentGodName.equals(godName))
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.other-god", 1, Messages.god(godName));
-			return false;
+			return null;
 		}
 
 		Block altarBlock = getAltarBlockFromSign(player.getWorld().getBlockAt(event.getBlock().getLocation()));
 
 		if (altarBlock == null)
 		{
-			return false;
+			return null;
 		}
+
+		AltarSigns.AltarSign altar;
 		
 		if (ctx.prayerService().addAltar(event.getPlayer(), godName, event.getBlock().getLocation(), nameLine.gender()))
 		{
@@ -321,10 +489,8 @@ public class AltarService
 			
 			ctx.questService().handleBuiltPrayingAltar(godName);
 
-			event.setLine(0, "Altar");
-			event.setLine(1, "of");
-			event.setLine(2, godName);
-			event.setLine(3, "");
+			altar = new AltarSigns.AltarSign(AltarSigns.Kind.PRAYING, godName, null, null, true);
+			writeSign(event, altar);
 
 			ctx.godSpeech().sendInfo(event.getPlayer().getUniqueId(), "altar.pray-hint", 80, Messages.god(godName));
 		}
@@ -335,10 +501,10 @@ public class AltarService
 			event.setLine(2, "");
 			event.setLine(3, "");
 
-			return false;
+			return null;
 		}
 
-		return true;
+		return altar;
 	}
 
 	public boolean isAltarBlock(Block block)
@@ -369,10 +535,10 @@ public class AltarService
 		return getAltarBlockFromSign(block) != null;
 	}
 
-	/** True if the front of this sign already shows a finished altar ("Altar of ...", "Curses On ...", "Blessings On ..."). */
+	/** True if this sign already is a finished altar (tagged, or with the text altars had before tags) */
 	public boolean isFormattedAltarSign(Block block)
 	{
-		return AltarSigns.isFormatted(getSignLines(block));
+		return readAltarSign(block) != null;
 	}
 
 	public boolean isBlessingAltar(Block block, String[] lines)

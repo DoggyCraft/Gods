@@ -1,5 +1,6 @@
 package com.dogonfire.gods.service;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -75,6 +76,52 @@ class AltarSignsTest
 		assertEquals(GodGender.Female, AltarSigns.genderWord("§dGoddess", MALE, FEMALE));
 		assertNull(AltarSigns.genderWord("Gods", MALE, FEMALE));
 		assertNull(AltarSigns.genderWord(null, MALE, FEMALE));
+	}
+
+	/** A tagged sign is known by its tags, whatever its text says */
+	@Test
+	void taggedAltarsAreKnownByTheirTags()
+	{
+		String id = "4b0d5e8c-1d3a-4bfa-9d3c-6c6f1f3f2a10";
+		AltarSigns.AltarSign praying = AltarSigns.recognize("praying", "Thor", null, null, new String[] { "§b❄ Altar ❄", "§3of the frost", "§fThor", "" });
+		assertEquals(new AltarSigns.AltarSign(AltarSigns.Kind.PRAYING, "Thor", null, null, true), praying);
+
+		AltarSigns.AltarSign curses = AltarSigns.recognize("curses", "Loki", "Notch", id, new String[] { "", "", "", "" });
+		assertEquals(new AltarSigns.AltarSign(AltarSigns.Kind.CURSES, "Loki", "Notch", java.util.UUID.fromString(id), true), curses);
+
+		// The tag wins over the text
+		assertEquals(AltarSigns.Kind.BLESSINGS, AltarSigns.recognize("blessings", null, "Notch", "not a uuid", new String[] { "Altar", "of", "Thor", "" }).kind());
+		assertNull(AltarSigns.recognize("blessings", null, "Notch", "not a uuid", new String[4]).playerId());
+	}
+
+	/** Altars from before tags are known by their text, and are not tagged yet */
+	@Test
+	void untaggedAltarsAreKnownByTheirText()
+	{
+		assertEquals(new AltarSigns.AltarSign(AltarSigns.Kind.PRAYING, "Thor", null, null, false), AltarSigns.recognize(null, null, null, null, new String[] { "Altar", "of", " §6Thor ", "" }));
+		assertEquals(new AltarSigns.AltarSign(AltarSigns.Kind.CURSES, null, "Notch", null, false), AltarSigns.recognize(null, null, null, null, new String[] { "Curses", "On", "Notch", "" }));
+		assertEquals(new AltarSigns.AltarSign(AltarSigns.Kind.BLESSINGS, null, "Notch", null, false), AltarSigns.recognize(null, null, null, null, new String[] { "Blessings", "On", "Notch", "" }));
+		// An unknown kind in the tag: read the text
+		assertEquals(AltarSigns.Kind.PRAYING, AltarSigns.recognize("weather", null, null, null, new String[] { "Altar", "of", "Thor", "" }).kind());
+		assertNull(AltarSigns.recognize(null, null, null, null, new String[] { "Thor", "", "", "" }));
+		assertNull(AltarSigns.recognize(null, null, null, null, new String[] { "Altar", "for", "Thor", "" }));
+		assertNull(AltarSigns.recognize(null, null, null, null, new String[] { "Curses", "On", "", "" }));
+		assertNull(AltarSigns.recognize(null, null, null, null, null));
+	}
+
+	@Test
+	void taggingKeepsTheKindAndPlayer()
+	{
+		java.util.UUID id = java.util.UUID.randomUUID();
+		AltarSigns.AltarSign old = new AltarSigns.AltarSign(AltarSigns.Kind.CURSES, null, "Notch", null, false);
+		assertEquals(new AltarSigns.AltarSign(AltarSigns.Kind.CURSES, "Loki", "Notch", id, true), old.asTagged("Loki", id));
+	}
+
+	@Test
+	void signsHaveFourLines()
+	{
+		assertArrayEquals(new String[] { "a", "b", "", "" }, AltarSigns.fourLines(List.of("a", "b")));
+		assertArrayEquals(new String[] { "a", "b", "c", "d" }, AltarSigns.fourLines(List.of("a", "b", "c", "d", "e")));
 	}
 
 	@Test
