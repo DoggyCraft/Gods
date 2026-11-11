@@ -541,6 +541,12 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'The party is over, folks. I am heading back up, until you invite me again!'
+# Said to all believers when the god rises to a new rank (<rank>: its name, as the god type calls it; the descended rank has believers-god-descended)
+believers-god-rank-up:
+- 'Turn it up! You made me <hl><rank></hl>! This calls for a celebration!'
+# Said to all believers when the god falls to a lower rank (<rank>: its new rank; falling below descended has believers-god-ascended)
+believers-god-rank-down:
+- 'The music died down. I am only <hl><rank></hl> now. Get the party going again!'
 # Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
 priests-main-altar-moved:
 - 'Whoops, my main altar is gone! The party moves to my altar at <hl><x>, <y>, <z></hl>!'

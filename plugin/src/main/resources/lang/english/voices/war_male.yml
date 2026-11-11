@@ -511,6 +511,12 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'You have lost your fighting spirit. I return to the heavens, until you earn me again.'
+# Said to all believers when the god rises to a new rank (<rank>: its name, as the god type calls it; the descended rank has believers-god-descended)
+believers-god-rank-up:
+- 'Victory! Your battles have made me <hl><rank></hl>. Sharpen your blades for greater wars.'
+# Said to all believers when the god falls to a lower rank (<rank>: its new rank; falling below descended has believers-god-ascended)
+believers-god-rank-down:
+- 'We have lost ground. I am only <hl><rank></hl> now. Rally and fight for me again.'
 # Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
 priests-main-altar-moved:
 - 'The enemy has razed my main altar! We hold the altar at <hl><x>, <y>, <z></hl> now. It is our home.'

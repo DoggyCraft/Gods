@@ -26,6 +26,7 @@ import com.dogonfire.gods.api.event.GodDescendEvent;
 import com.dogonfire.gods.api.event.GodGenderChangeEvent;
 import com.dogonfire.gods.api.event.GodEvent;
 import com.dogonfire.gods.api.event.GodMoodChangeEvent;
+import com.dogonfire.gods.api.event.GodRankChangeEvent;
 import com.dogonfire.gods.api.event.GodRelationChangeEvent;
 import com.dogonfire.gods.api.event.GodSpeakEvent;
 import com.dogonfire.gods.api.event.HolyLandAttackStartEvent;
@@ -44,12 +45,13 @@ import com.dogonfire.gods.api.event.QuestStartEvent;
 class ApiSurfaceTest
 {
 	private static final List<Class<?>> API = List.of(GodsApi.class, GodInfo.class, BelieverInfo.class, QuestInfo.class,
-			GodType.class, GodGender.class, GodMood.class, QuestType.class,
+			GodType.class, GodGender.class, GodMood.class, GodRank.class, QuestType.class, RankProgress.class, RankProgress.Condition.class,
 			ActionResult.class,
 			GodEvent.class, GodSpeakEvent.class, BelieverPrayEvent.class, BelieverJoinGodEvent.class, BelieverLeaveGodEvent.class,
 			GodCreateEvent.class, GodMoodChangeEvent.class, GodGenderChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
 			GodCursePlayerEvent.class, QuestEvent.class, QuestStartEvent.class, QuestCompleteEvent.class, QuestFailEvent.class,
-			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class, GodDescendEvent.class, GodAscendEvent.class);
+			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class, GodDescendEvent.class, GodAscendEvent.class,
+			GodRankChangeEvent.class);
 
 	@Test
 	void onlyExposesJavaBukkitAndApiTypes()
@@ -100,6 +102,10 @@ class ApiSurfaceTest
 		// GodInfo before descended
 		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
 				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class);
+		// GodInfo before rank
+		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
+				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class,
+				java.time.Instant.class);
 	}
 
 	/** The NPC methods came after the rest and have defaults, so other implementations (test doubles) still compile */
@@ -108,6 +114,9 @@ class ApiSurfaceTest
 	{
 		assertTrue(GodsApi.class.getMethod("getNpc", String.class).isDefault());
 		assertTrue(GodsApi.class.getMethod("isGodNpc", org.bukkit.entity.Entity.class).isDefault());
+		// So do the rank methods
+		assertTrue(GodsApi.class.getMethod("getRankProgress", String.class).isDefault());
+		assertTrue(GodsApi.class.getMethod("setRank", String.class, GodRank.class).isDefault());
 	}
 
 	/** Bukkit only lets plugins listen to an event that has a static getHandlerList */

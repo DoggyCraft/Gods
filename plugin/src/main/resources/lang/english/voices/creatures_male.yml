@@ -546,6 +546,12 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'The world is quiet without my flock. I return to the wilds above, until you call me again.'
+# Said to all believers when the god rises to a new rank (<rank>: its name, as the god type calls it; the descended rank has believers-god-descended)
+believers-god-rank-up:
+- 'Hear the herds and the flocks call my name! I am <hl><rank></hl> now, thanks to you, my little ones.'
+# Said to all believers when the god falls to a lower rank (<rank>: its new rank; falling below descended has believers-god-ascended)
+believers-god-rank-down:
+- 'The wild has grown thin around me. I am but <hl><rank></hl> again. Bring the flock back to me.'
 # Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
 priests-main-altar-moved:
 - 'My altar has fallen, but the creatures still gather at my altar at <hl><x>, <y>, <z></hl>. It is my main altar and our home now.'

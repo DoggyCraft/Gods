@@ -29,6 +29,7 @@ import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.Quest;
 import com.dogonfire.gods.model.QuestType;
@@ -77,6 +78,13 @@ class ApiSnapshotsTest
 		assertEquals(com.dogonfire.gods.api.GodMood.ANGRY, ApiSnapshots.mood(-71.0F));
 		assertEquals(com.dogonfire.gods.api.GodMood.NEUTRAL, ApiSnapshots.mood(0.0F));
 		assertEquals(com.dogonfire.gods.api.GodMood.EXALTED, ApiSnapshots.mood(100.0F));
+
+		assertEquals(names(GodRank.values()), names(com.dogonfire.gods.api.GodRank.values()));
+		for (GodRank rank : GodRank.values())
+		{
+			assertEquals(rank, ApiSnapshots.modelRank(ApiSnapshots.rank(rank)));
+		}
+		assertEquals(com.dogonfire.gods.api.GodRank.SPIRIT, ApiSnapshots.rank(null));
 	}
 
 	@Test
@@ -103,6 +111,7 @@ class ApiSnapshotsTest
 		god.allies().add("Hera");
 		god.enemies().add("Hades");
 		god.setDescended(CREATED.plusSeconds(3600));
+		god.setRank(GodRank.EXALTED);
 		QuestInfo quest = new QuestInfo("Zeus", com.dogonfire.gods.api.QuestType.SLAY, "ZOMBIE", 10, 3, null, null, null);
 		Location home = new Location(WORLD, 1, 64, 2);
 
@@ -132,6 +141,9 @@ class ApiSnapshotsTest
 		assertNotSame(info.mainAltar(), info.mainAltar());
 		assertEquals(CREATED.plusSeconds(3600), info.descended());
 		assertTrue(info.isDescended());
+		assertEquals(com.dogonfire.gods.api.GodRank.EXALTED, info.rank());
+		// An unranked god is a spirit
+		assertEquals(com.dogonfire.gods.api.GodRank.SPIRIT, ApiSnapshots.god(new God("Hera"), 0F, Set.of(), null, 0, null, null).rank());
 	}
 
 	@Test
@@ -249,5 +261,18 @@ class ApiSnapshotsTest
 	private static List<String> names(Enum<?>[] values)
 	{
 		return Arrays.stream(values).map(Enum::name).toList();
+	}
+
+	@Test
+	void rankProgressShowsEachCondition()
+	{
+		com.dogonfire.gods.api.RankProgress progress = ApiSnapshots.rankProgress(GodRank.DESCENDED, GodRank.EXALTED, List.of(
+				new RankRules.Progress(RankRules.Condition.BELIEVERS, 7, 10, false), new RankRules.Progress(RankRules.Condition.MOOD, 3, 3, true)));
+		assertEquals(com.dogonfire.gods.api.GodRank.DESCENDED, progress.rank());
+		assertEquals(com.dogonfire.gods.api.GodRank.EXALTED, progress.next());
+		assertEquals(List.of(new com.dogonfire.gods.api.RankProgress.Condition("min-believers", 7, 10, false),
+				new com.dogonfire.gods.api.RankProgress.Condition("min-mood", 3, 3, true)), progress.conditions());
+		assertFalse(progress.isComplete());
+		assertTrue(ApiSnapshots.rankProgress(GodRank.GREATER, null, List.of()).isComplete());
 	}
 }

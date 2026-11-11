@@ -350,4 +350,37 @@ public interface GodsApi
 	 *         (either god), {@link ActionResult#NOT_POSSIBLE} (it is the same god) or {@link ActionResult#CANCELLED}
 	 */
 	ActionResult setWar(String godName, String otherGodName, boolean atWar);
+
+	// ---------------------------------------------------------------------
+	// Ranks
+
+	/**
+	 * How far the god is towards its next rank: each condition of that rank (Gods' config, {@code ranks.<rank>}) with
+	 * where the god is and what the rank needs. A god with the highest rank gets its own rank's conditions.
+	 *
+	 * @param godName the god's name (in any case)
+	 * @return the god's progress, or empty if there is no such god
+	 */
+	default Optional<RankProgress> getRankProgress(String godName)
+	{
+		return Optional.empty();
+	}
+
+	/**
+	 * Gives the god a rank, bypassing its conditions, with everything a rank change brings (the effects, the god's
+	 * words, its descent or ascent at {@link GodRank#DESCENDED}). Fires a
+	 * {@link com.dogonfire.gods.api.event.GodRankChangeEvent} (cause {@code API}) and, when it crosses the descended
+	 * rank, {@link com.dogonfire.gods.api.event.GodDescendEvent} or {@link com.dogonfire.gods.api.event.GodAscendEvent}.
+	 * The god's turn may still change it afterwards: it falls without a priest or with too few believers for its new
+	 * rank (after the grace period), and rises when it meets the next rank's conditions.
+	 *
+	 * @param godName the god's name (in any case)
+	 * @param rank    its new rank
+	 * @return {@link ActionResult#SUCCESS} (also if it had that rank already), {@link ActionResult#NO_SUCH_GOD},
+	 *         {@link ActionResult#CANCELLED}, or {@link ActionResult#NOT_POSSIBLE} where Gods doesn't support it
+	 */
+	default ActionResult setRank(String godName, GodRank rank)
+	{
+		return ActionResult.NOT_POSSIBLE;
+	}
 }

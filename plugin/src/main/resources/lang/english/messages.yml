@@ -603,6 +603,8 @@ broadcast:
   married: <white><player><aqua> just married <white><partner><aqua> in the name of <gold><god><aqua>!
   # When a believer completes a pilgrimage: <player> (display name) and the <type> of the place
   pilgrimage: <gold><player><aqua> completed a pilgrimage to <gold><type>
+  # When a god rises to the greater rank: <god>, <rank> (its name, as the god type calls it), <gender> ("God", "Goddess", "Deity")
+  greater-god: <gold><bold><god></bold><aqua> has risen to <gold><rank></gold>! Its religion is among the greatest in <server>.
 
 # The /gods command. Each command has its parameters and description (shown by /gods help) and its replies.
 command:

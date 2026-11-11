@@ -5,7 +5,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * A god is about to descend to its main altar: its religion reached the milestone in Gods' config ({@code npc.descend}:
+ * A god is about to descend to its main altar: its religion rose to the descended rank (Gods' config, {@code ranks.descended}:
  * a priest for long enough, enough believers and power), and the god will appear there as an NPC, with lightning, and
  * tell its believers. Cancelling it keeps the god from descending for now; Gods checks again on the god's next turn.
  */

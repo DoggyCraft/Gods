@@ -22,8 +22,10 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.ActionResult;
 import com.dogonfire.gods.api.BelieverInfo;
 import com.dogonfire.gods.api.GodInfo;
+import com.dogonfire.gods.api.GodRank;
 import com.dogonfire.gods.api.GodsApi;
 import com.dogonfire.gods.api.QuestInfo;
+import com.dogonfire.gods.api.RankProgress;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Believer;
@@ -537,6 +539,33 @@ public final class GodsApiService implements GodsApi
 			return ActionResult.NOT_POSSIBLE;
 		}
 		return done(ctx.relationService().setWar(god.get(), other.get(), atWar));
+	}
+
+	@Override
+	public Optional<RankProgress> getRankProgress(String godName)
+	{
+		checkThread();
+		return existing(godName).map(god -> {
+			com.dogonfire.gods.model.GodRank rank = ctx.rankService().getRank(god);
+			com.dogonfire.gods.model.GodRank next = rank.next();
+			return ApiSnapshots.rankProgress(rank, next, ctx.rankService().progress(god, next != null ? next : rank));
+		});
+	}
+
+	@Override
+	public ActionResult setRank(String godName, GodRank rank)
+	{
+		checkThread();
+		Optional<String> god = existing(godName);
+		if (god.isEmpty())
+		{
+			return ActionResult.NO_SUCH_GOD;
+		}
+		if (rank == null)
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.rankService().setRank(god.get(), ApiSnapshots.modelRank(rank)));
 	}
 
 	/** Whether the player is in the god's priest list as stored (see {@link #getBeliever}) */

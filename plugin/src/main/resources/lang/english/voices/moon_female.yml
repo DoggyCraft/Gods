@@ -542,6 +542,12 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'The moon wanes, and so must I. I return to the night sky, until you call me again.'
+# Said to all believers when the god rises to a new rank (<rank>: its name, as the god type calls it; the descended rank has believers-god-descended)
+believers-god-rank-up:
+- 'The night grows brighter! Your faith has made me <hl><rank></hl>.'
+# Said to all believers when the god falls to a lower rank (<rank>: its new rank; falling below descended has believers-god-ascended)
+believers-god-rank-down:
+- 'My light wanes. I am only <hl><rank></hl> now. Pray to me under the stars.'
 # Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
 priests-main-altar-moved:
 - 'My main altar is gone. Under the moon, the altar at <hl><x>, <y>, <z></hl> is my main altar and our home now.'

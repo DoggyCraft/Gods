@@ -542,6 +542,12 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'The leaves fall, and so must I. I return to the earth, until your faith blooms again.'
+# Said to all believers when the god rises to a new rank (<rank>: its name, as the god type calls it; the descended rank has believers-god-descended)
+believers-god-rank-up:
+- 'My roots run deeper! Your care has made me <hl><rank></hl>, and the world grows green.'
+# Said to all believers when the god falls to a lower rank (<rank>: its new rank; falling below descended has believers-god-ascended)
+believers-god-rank-down:
+- 'My leaves wither. I am only <hl><rank></hl> now. Tend to my garden again.'
 # Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
 priests-main-altar-moved:
 - 'My main altar has returned to the earth. The altar at <hl><x>, <y>, <z></hl> is our home now.'

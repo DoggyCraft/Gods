@@ -2,6 +2,7 @@ package com.dogonfire.gods.service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -12,6 +13,7 @@ import org.bukkit.World;
 import com.dogonfire.gods.api.BelieverInfo;
 import com.dogonfire.gods.api.GodInfo;
 import com.dogonfire.gods.api.QuestInfo;
+import com.dogonfire.gods.api.RankProgress;
 import com.dogonfire.gods.model.Believer;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.Quest;
@@ -61,6 +63,31 @@ public final class ApiSnapshots
 	public static com.dogonfire.gods.api.GodMood mood(float moodValue)
 	{
 		return com.dogonfire.gods.api.GodMood.valueOf(MoodRules.moodFor(moodValue).name());
+	}
+
+	/** The API's rank for the model's (an unranked god is a spirit) */
+	public static com.dogonfire.gods.api.GodRank rank(com.dogonfire.gods.model.GodRank rank)
+	{
+		return rank != null ? com.dogonfire.gods.api.GodRank.valueOf(rank.name()) : com.dogonfire.gods.api.GodRank.SPIRIT;
+	}
+
+	/** The model's rank for the API's */
+	public static com.dogonfire.gods.model.GodRank modelRank(com.dogonfire.gods.api.GodRank rank)
+	{
+		return com.dogonfire.gods.model.GodRank.valueOf(rank.name());
+	}
+
+	/**
+	 * A god's progress towards its next rank as the API shows it
+	 *
+	 * @param rank     its rank now
+	 * @param next     the rank it can rise to, or null at the top
+	 * @param progress the conditions of {@code next} (or its own rank's at the top), from {@link RankRules#progress}
+	 */
+	public static RankProgress rankProgress(com.dogonfire.gods.model.GodRank rank, com.dogonfire.gods.model.GodRank next, List<RankRules.Progress> progress)
+	{
+		return new RankProgress(rank(rank), next != null ? rank(next) : null, progress.stream()
+				.map(condition -> new RankProgress.Condition(condition.condition().key(), condition.current(), condition.required(), condition.met())).toList());
 	}
 
 	public static com.dogonfire.gods.api.QuestType questType(com.dogonfire.gods.model.QuestType type)
@@ -118,7 +145,7 @@ public final class ApiSnapshots
 	{
 		return new GodInfo(god.name(), godType(god.type()), gender(god.gender()), mood(god.mood()), god.mood(), power, believers, god.priests(), god.allies(),
 				god.enemies(), god.description(), home != null && home.getWorld() != null ? home : null, holyLandClaims, quest, god.created(),
-				mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null, god.descended());
+				mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null, god.descended(), rank(god.rank()));
 	}
 
 	/** The believer as the API shows them, or null if they believe in no god */

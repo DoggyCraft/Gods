@@ -98,6 +98,10 @@ public enum Voice
 	BELIEVERS_GOD_DESCENDED("believers-god-descended"),
 	/** The god that had descended ascended again: no priest, or too few believers for too long */
 	BELIEVERS_GOD_ASCENDED("believers-god-ascended"),
+	/** The god rose to a new rank (<rank>, as its god type calls it; not the descended rank, which has its own) */
+	BELIEVERS_GOD_RANK_UP("believers-god-rank-up"),
+	/** The god fell to a lower rank (<rank>; not below the descended rank, which has its own words) */
+	BELIEVERS_GOD_RANK_DOWN("believers-god-rank-down"),
 	BELIEVERS_GIVE_BIBLES_QUEST_PROGRESS("believers-give-bibles-quest-progress"),
 	BELIEVERS_GIVE_ITEMS_QUEST_COMPLETED("believers-give-items-quest-completed"),
 	BELIEVERS_GIVE_ITEMS_QUEST_FAILED("believers-give-items-quest-failed"),

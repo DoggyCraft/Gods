@@ -145,7 +145,8 @@ class LegacyLangFilesTest
 
 	/** Situations the old files never had (the bundled voice files have them, and servers fall back to those) */
 	private static final java.util.Set<Voice> NEW_VOICES = java.util.Set.of(Voice.BELIEVER_GOD_CHOSE_GENDER, Voice.BELIEVERS_GENDER_CHANGED,
-			Voice.BELIEVERS_GOD_DESCENDED, Voice.BELIEVERS_GOD_ASCENDED, Voice.PRIESTS_MAIN_ALTAR_MOVED, Voice.PRIESTS_MAIN_ALTAR_LOST);
+			Voice.BELIEVERS_GOD_DESCENDED, Voice.BELIEVERS_GOD_ASCENDED, Voice.BELIEVERS_GOD_RANK_UP, Voice.BELIEVERS_GOD_RANK_DOWN, Voice.PRIESTS_MAIN_ALTAR_MOVED,
+			Voice.PRIESTS_MAIN_ALTAR_LOST);
 
 	@Test
 	void everyOldVoiceKeyTheCodeUsesHasANewKey() throws IOException
