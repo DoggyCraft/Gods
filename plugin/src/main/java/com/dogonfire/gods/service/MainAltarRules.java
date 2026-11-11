@@ -1,5 +1,6 @@
 package com.dogonfire.gods.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -8,8 +9,9 @@ import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
 
 /**
- * Which altar /g setaltar means (pure, tested): the priest looks at a registered altar's sign, its altar block or the
- * light on top of it, and it must be a praying altar of their own god.
+ * Main altars (pure, tested): which altar /g setaltar means (the priest looks at a registered altar's sign, its altar
+ * block or the light on top of it, and it must be a praying altar of their own god), which altar a god without one gets
+ * on its own ({@link #automatic}), and where the god stands in front of it ({@link #standingSpot}).
  */
 public final class MainAltarRules
 {
@@ -89,5 +91,32 @@ public final class MainAltarRules
 			}
 		}
 		return new Target(praying ? Verdict.OTHER_GOD : Verdict.NOT_PRAYING, null);
+	}
+
+	/**
+	 * The altar a god without a main altar gets on its own, among its registered altars (in the order the registry
+	 * found them): of the praying ones, the oldest whose creation time is known, else the first found; null if there is
+	 * none
+	 */
+	public static Altar automatic(Collection<Altar> altars)
+	{
+		Altar first = null;
+		Altar oldest = null;
+		for (Altar altar : altars)
+		{
+			if (altar.kind() != AltarKind.PRAYING)
+			{
+				continue;
+			}
+			if (first == null)
+			{
+				first = altar;
+			}
+			if (altar.created() != null && (oldest == null || altar.created().isBefore(oldest.created())))
+			{
+				oldest = altar;
+			}
+		}
+		return oldest != null ? oldest : first;
 	}
 }

@@ -114,7 +114,8 @@ public class AltarService
 		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> {
 			if (!isWallSign(signBlock))
 			{
-				// Gone within the tick
+				// Gone within the tick; a god founded at it needs another main altar
+				ctx.altarRegistry().notBuilt(AltarRegistry.pos(signBlock), altar.god());
 				return;
 			}
 			markAltarSign(signBlock, altar);

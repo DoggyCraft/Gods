@@ -543,3 +543,9 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'My heart aches, my children. I must leave you, until your love is strong again.'
+# Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
+priests-main-altar-moved:
+- 'My altar was broken, but love endures: the altar at <hl><x>, <y>, <z></hl> is our home now.'
+# Said to the priests when the main altar is gone and the god has no altar left
+priests-main-altar-lost:
+- 'All my altars are gone, my dear! Build me a new one, with love.'

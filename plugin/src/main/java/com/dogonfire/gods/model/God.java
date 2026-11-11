@@ -24,7 +24,7 @@ public final class God
 	private boolean				privateAccess;				// PrivateAccess: only believers may use its altars
 	private String				description;				// Description
 	private GodHome				home;						// Home
-	private BlockPos			mainAltar;					// MainAltar.World/X/Y/Z: the sign of its main altar (/g setaltar)
+	private BlockPos			mainAltar;					// MainAltar.World/X/Y/Z: the sign of its main altar
 	private NpcSkin				npcSkin;					// NpcSkin.Name/Value/Signature: the skin of its NPC (/g godskin)
 
 	private float				mood;						// Mood: -100 (angry) to 100 (exalted)
@@ -137,7 +137,7 @@ public final class God
 		this.home = home;
 	}
 
-	/** The sign of the god's main altar (set with /g setaltar), or null */
+	/** The sign of the god's main altar (where it was founded, chosen on its own or with /g setaltar), or null */
 	public BlockPos mainAltar()
 	{
 		return this.mainAltar;

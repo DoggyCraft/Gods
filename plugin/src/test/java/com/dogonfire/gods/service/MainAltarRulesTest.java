@@ -2,7 +2,9 @@ package com.dogonfire.gods.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,5 +67,41 @@ class MainAltarRulesTest
 		// The sign hangs south of its block, so the spot is one further south
 		assertEquals(new BlockPos("world", 10, 64, 12), MainAltarRules.standingSpot(PRAYING));
 		assertEquals(new BlockPos("world", 12, 64, 10), MainAltarRules.standingSpot(CURSES));
+	}
+
+	private static Altar praying(int x, Instant created)
+	{
+		return new Altar(new BlockPos("world", x, 64, 1), new BlockPos("world", x, 64, 0), AltarKind.PRAYING, "Zeus", created, null);
+	}
+
+	/** A god without a main altar gets the oldest of its praying altars whose time is known */
+	@Test
+	void theOldestKnownPrayingAltarBecomesTheMainAltar()
+	{
+		Altar found = praying(1, null);
+		Altar newer = praying(2, Instant.parse("2026-05-02T10:00:00Z"));
+		Altar older = praying(3, Instant.parse("2026-05-01T10:00:00Z"));
+		assertSame(older, MainAltarRules.automatic(List.of(CURSES, found, newer, older)));
+		// With one left (the main altar was destroyed), that one
+		assertSame(newer, MainAltarRules.automatic(List.of(found, newer)));
+	}
+
+	/** Altars found or used rather than built have no time: the first the registry found */
+	@Test
+	void withoutTimesTheFirstFoundBecomesTheMainAltar()
+	{
+		Altar first = praying(1, null);
+		Altar second = praying(2, null);
+		assertSame(first, MainAltarRules.automatic(List.of(CURSES, first, second)));
+		// The first altar registered for a god from before main altars
+		assertSame(second, MainAltarRules.automatic(List.of(second)));
+	}
+
+	/** No praying altar left: no main altar */
+	@Test
+	void noPrayingAltarNoMainAltar()
+	{
+		assertNull(MainAltarRules.automatic(List.of()));
+		assertNull(MainAltarRules.automatic(List.of(CURSES)));
 	}
 }

@@ -151,7 +151,9 @@ public enum Voice
 	PRIEST_NOT_SLAY_MOB_TYPE("priest-not-slay-mob-type"),
 	PRIEST_PRIEST_ACCEPTED("priest-priest-accepted"),
 	PRIEST_SLAY_MOB_TYPE("priest-slay-mob-type"),
-	PRIEST_USE_BIBLE("priest-use-bible");
+	PRIEST_USE_BIBLE("priest-use-bible"),
+	PRIESTS_MAIN_ALTAR_MOVED("priests-main-altar-moved"),
+	PRIESTS_MAIN_ALTAR_LOST("priests-main-altar-lost");
 
 	private final String key;
 

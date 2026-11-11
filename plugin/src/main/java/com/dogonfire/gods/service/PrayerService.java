@@ -201,7 +201,7 @@ public class PrayerService
 				return false;
 			}
 
-			ctx.godService().createGod(godName, player.getLocation(), godGender, godType, seed);
+			ctx.godService().createGod(godName, prayerLocation.getBlock(), player.getLocation(), godGender, godType, seed);
 
 			if (ctx.settings().gods().broadcastNewGods())
 			{

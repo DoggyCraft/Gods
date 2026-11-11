@@ -540,3 +540,9 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'Your faith has thawed. I return to the frozen heights, until you call me again.'
+# Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
+priests-main-altar-moved:
+- 'My main altar has melted away. The altar at <hl><x>, <y>, <z></hl> shall hold my frost and be our home now.'
+# Said to the priests when the main altar is gone and the god has no altar left
+priests-main-altar-lost:
+- 'My last altar has melted away! Build me a new one in the cold, priest.'

@@ -534,3 +534,9 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'The party is over, folks. I am heading back up, until you invite me again!'
+# Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
+priests-main-altar-moved:
+- 'Whoops, my main altar is gone! The party moves to my altar at <hl><x>, <y>, <z></hl>!'
+# Said to the priests when the main altar is gone and the god has no altar left
+priests-main-altar-lost:
+- 'No altars left?! Build me a new one, priest, the party cannot stop!'

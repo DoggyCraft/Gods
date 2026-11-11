@@ -543,3 +543,9 @@ believers-god-descended:
 # Said to all believers when the god that had descended ascends again (no priest, or too few believers)
 believers-god-ascended:
 - 'The tide goes out, and so do I. I return to the deep, until you call me again.'
+# Said to the priests when the main altar is gone and the god's oldest remaining altar becomes its main altar (<world>, <x>, <y>, <z>: its altar block)
+priests-main-altar-moved:
+- 'The tide took my main altar. My altar at <hl><x>, <y>, <z></hl> is our home now.'
+# Said to the priests when the main altar is gone and the god has no altar left
+priests-main-altar-lost:
+- 'The sea has taken every altar of mine. Build me a new one, priest.'

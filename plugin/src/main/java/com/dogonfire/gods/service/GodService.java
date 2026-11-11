@@ -12,6 +12,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
@@ -84,8 +85,14 @@ public class GodService
 		return GodRules.formatGodName(godName);
 	}
 
-	/** Creates a god at its first altar, with its gender, type and seed (its personality, see {@link #getSeedForGod}) */
-	public void createGod(String godName, Location location, GodGender godGender, GodType godType, long seed)
+	/**
+	 * Creates a god at its first altar, with its gender, type and seed (its personality, see {@link #getSeedForGod}).
+	 * That altar is its main altar (even when older altars of a god of this name, removed before, still stand).
+	 *
+	 * @param altarSign the sign of the praying altar it was founded at
+	 * @param location  where the player stood
+	 */
+	public void createGod(String godName, Block altarSign, Location location, GodGender godGender, GodType godType, long seed)
 	{
 		setHomeForGod(godName, location);
 		setGenderForGod(godName, godGender);
@@ -103,6 +110,7 @@ public class GodService
 		}
 
 		this.repository.markDirty();
+		setMainAltar(godName, AltarRegistry.pos(altarSign));
 		// Altars that stood before the god (it was removed and is founded anew) get their floating text
 		ctx.altarTexts().refreshGod(godName);
 		ctx.godNpcs().refreshGod(godName);
@@ -458,7 +466,7 @@ public class GodService
 		this.repository.markDirty();
 	}
 
-	/** The sign of the god's main altar (/g setaltar), or null; see {@link AltarRegistry#mainAltar} */
+	/** The sign of the god's main altar, or null; see {@link AltarRegistry#mainAltar} */
 	public BlockPos getMainAltar(String godName)
 	{
 		God god = god(godName);

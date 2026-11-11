@@ -20,6 +20,8 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
@@ -27,8 +29,9 @@ import com.dogonfire.gods.storage.AltarRepository;
 
 /**
  * Where the altars are (altars.yml, {@link AltarRepository}): every tagged altar sign Gods made, used or found, with its
- * altar block, kind and god, and each god's main altar (/g setaltar; stored on the god in gods.yml, see
- * {@link #mainAltar}).
+ * altar block, kind and god, and each god's main altar (stored on the god in gods.yml, see {@link #mainAltar}): the
+ * altar a god is founded at, else its oldest registered praying altar, or the one a priest chose with /g setaltar; when
+ * it is gone, the oldest remaining praying altar takes its place.
  * <ul>
  * <li>Added when an altar is built (after its sign is tagged), when one is used (an old altar is tagged on first use),
  * and when a scan finds one.</li>
@@ -61,10 +64,17 @@ public class AltarRegistry
 		this.repository = repository;
 	}
 
-	/** Reads altars.yml (or keeps what is in memory on /g reload), then queues every loaded chunk for a scan */
+	/**
+	 * Reads altars.yml (or keeps what is in memory on /g reload), gives every god without a main altar one of its
+	 * registered praying altars ({@link MainAltarRules#automatic}), then queues every loaded chunk for a scan
+	 */
 	public void load()
 	{
 		this.repository.load();
+		for (String godName : ctx.godService().getAllGods())
+		{
+			chooseMainAltar(godName);
+		}
 		queueLoadedChunks();
 	}
 
@@ -166,6 +176,7 @@ public class AltarRegistry
 				dropMainAltar(oldGod, existing, "its sign changed");
 			}
 			ctx.altarTexts().show(existing);
+			chooseMainAltar(found.god());
 			return;
 		}
 		if (existing != null)
@@ -176,6 +187,8 @@ public class AltarRegistry
 		this.repository.add(altar);
 		ctx.plugin().logDebug("Registered the " + altar);
 		ctx.altarTexts().show(altar);
+		// A god without a main altar (one from before main altars) gets its first registered praying altar
+		chooseMainAltar(found.god());
 	}
 
 	/** Unregisters the altar with this sign (it is gone); clears its god's main altar if it was that */
@@ -192,13 +205,57 @@ public class AltarRegistry
 		this.repository.markDirty();
 	}
 
+	/**
+	 * The god's main altar is gone (or no longer its praying altar): its oldest remaining praying altar takes its place
+	 * ({@link MainAltarRules#automatic}), or it has none; its priests are told either way
+	 */
 	private void dropMainAltar(String godName, Altar altar, String why)
 	{
-		if (godName != null && altar.sign().equals(ctx.godService().getMainAltar(godName)))
+		if (godName == null || !altar.sign().equals(ctx.godService().getMainAltar(godName)))
 		{
-			ctx.godService().setMainAltar(godName, null);
-			ctx.plugin().log("The main altar of " + godName + " at " + describe(altar.sign()) + " is gone (" + why + "); " + godName + " has no main altar now.");
+			return;
 		}
+		ctx.godService().setMainAltar(godName, null);
+		ctx.plugin().log("The main altar of " + godName + " at " + describe(altar.sign()) + " is gone (" + why + ").");
+		Altar next = chooseMainAltar(godName);
+		if (next == null)
+		{
+			ctx.plugin().log(godName + " has no altar left and no main altar now.");
+			ctx.godSpeech().sayToPriests(godName, Voice.PRIESTS_MAIN_ALTAR_LOST);
+			return;
+		}
+		ctx.godSpeech().sayToPriests(godName, Voice.PRIESTS_MAIN_ALTAR_MOVED, Messages.text("world", next.world()), Messages.text("x", next.block().x()),
+				Messages.text("y", next.block().y()), Messages.text("z", next.block().z()));
+	}
+
+	/**
+	 * Gives an existing god without a main altar one on its own: its oldest registered praying altar
+	 * ({@link MainAltarRules#automatic}). A main altar it has (set by a priest or chosen before) is never moved while it
+	 * stands, even when the registry hasn't found it again yet.
+	 *
+	 * @return the altar it got, or null if it got none
+	 */
+	private Altar chooseMainAltar(String godName)
+	{
+		if (godName == null || ctx.godService().getMainAltar(godName) != null || !ctx.godService().godExist(godName))
+		{
+			return null;
+		}
+		Altar altar = MainAltarRules.automatic(forGod(godName));
+		if (altar != null)
+		{
+			setMainAltar(altar);
+		}
+		return altar;
+	}
+
+	/**
+	 * A sign that was to become an altar was gone before it was finished and registered: a god founded at it, whose
+	 * main altar it already is, gets another (or none)
+	 */
+	public void notBuilt(BlockPos sign, String godName)
+	{
+		dropMainAltar(godName, new Altar(sign, sign, AltarKind.PRAYING, godName, null, null), "its sign was gone before it was finished");
 	}
 
 	// ---------------------------------------------------------------------
@@ -379,7 +436,7 @@ public class AltarRegistry
 	// Main altars
 
 	/**
-	 * The god's main altar (/g setaltar), or null if it has none. gods.yml keeps it (its sign) on the god; the
+	 * The god's main altar (where it was founded, chosen on its own or with /g setaltar), or null if it has none. gods.yml keeps it (its sign) on the god; the
 	 * registry's altar is returned when it has it, else one made from the stored sign (an altar not found again yet,
 	 * e.g. after altars.yml was lost; its altar block is then not known and given as the sign).
 	 * <p>
