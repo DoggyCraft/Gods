@@ -3,6 +3,7 @@ package com.dogonfire.gods.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -79,7 +80,7 @@ class QuestRulesTest
 	void slayTargetsAreNeverTheHolyMob()
 	{
 		Random random = new Random(3);
-		List<String> common = QuestRules.SLAY_TARGETS;
+		List<String> common = List.of("SHEEP", "SPIDER", "CHICKEN", "COW", "PIG");
 		boolean unholySeen = false;
 		for (int i = 0; i < 500; i++)
 		{
@@ -94,6 +95,44 @@ class QuestRulesTest
 		{
 			assertTrue(common.contains(QuestRules.slayTarget(random, common, () -> null, "PIG")));
 		}
+	}
+
+	/** Five targets are drawn from ten, as Gods always did */
+	@Test
+	void slayTargetsDrawLikeBefore()
+	{
+		List<String> common = List.of("SHEEP", "SPIDER", "CHICKEN", "COW", "PIG");
+		Random before = new Random(11);
+		Random now = new Random(11);
+		for (int i = 0; i < 200; i++)
+		{
+			int roll;
+			String expected;
+			do
+			{
+				roll = before.nextInt(10);
+				expected = roll < common.size() ? common.get(roll) : "ZOMBIE";
+			}
+			while (expected.equals("COW"));
+			assertEquals(expected, QuestRules.slayTarget(now, common, () -> "ZOMBIE", "COW"));
+		}
+	}
+
+	/** Themes may have any number of targets, or none that fit */
+	@Test
+	void slayTargetsOfAnyThemeEnd()
+	{
+		Random random = new Random(5);
+		assertEquals("ZOMBIE", QuestRules.slayTarget(random, List.of(), () -> "ZOMBIE", "COW"));
+		assertNull(QuestRules.slayTarget(random, List.of("COW"), () -> null, "COW"));
+		assertNull(QuestRules.slayTarget(random, List.of(), () -> "COW", "COW"));
+		List<String> many = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L");
+		boolean unholySeen = false;
+		for (int i = 0; i < 200; i++)
+		{
+			unholySeen |= "ZOMBIE".equals(QuestRules.slayTarget(random, many, () -> "ZOMBIE", "A"));
+		}
+		assertTrue(unholySeen, "the unholy mob is still asked for with many targets");
 	}
 
 	@Test

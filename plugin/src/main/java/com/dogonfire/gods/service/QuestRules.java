@@ -22,8 +22,8 @@ public final class QuestRules
 	/** What a sacrifice quest asks for (by Material name) */
 	public static final List<String>	SACRIFICE_TARGETS	= List.of("GOLDEN_SWORD", "GOLDEN_PICKAXE", "GOLDEN_SHOVEL", "GOLDEN_AXE", "FISHING_ROD", "ANVIL", "OAK_BOAT", "BOOK", "BOW", "APPLE");
 
-	/** What a slay quest asks for besides the god's unholy mob (by EntityType name), drawn from ten */
-	public static final List<String>	SLAY_TARGETS		= List.of("SHEEP", "SPIDER", "CHICKEN", "COW", "PIG");
+	/** A slay target is drawn at most this often, so lists that don't fit can't loop forever */
+	public static final int				MAX_SLAY_TARGET_DRAWS	= 100;
 
 	/** A pilgrimage chest is this many blocks from the believer, at least and at most */
 	public static final int				PILGRIMAGE_MIN_DISTANCE	= 500;
@@ -81,19 +81,23 @@ public final class QuestRules
 	}
 
 	/**
-	 * The mob a slay quest asks for: one of {@code common} (indices 0 to 4 of ten draws), or else the god's unholy mob
-	 * (asked for each time, it may be null). Never the god's holy mob; drawn again until it fits.
+	 * The mob a slay quest asks for: one of {@code common} (the god type's slay targets, half of the draws), or else the
+	 * god's unholy mob (asked for each time, it may be null). Never the god's holy mob; drawn again until it fits, at
+	 * most {@link #MAX_SLAY_TARGET_DRAWS} times. With five targets, as Gods always had, the draws are the ones it always
+	 * made. Null if nothing fits.
 	 */
 	public static <T> T slayTarget(Random random, List<T> common, Supplier<T> unholyMob, T holyMob)
 	{
-		T target;
-		do
+		for (int draw = 0; draw < MAX_SLAY_TARGET_DRAWS; draw++)
 		{
-			int roll = random.nextInt(10);
-			target = (roll < common.size()) ? common.get(roll) : unholyMob.get();
+			int roll = common.isEmpty() ? 0 : random.nextInt(2 * common.size());
+			T target = (roll < common.size()) ? common.get(roll) : unholyMob.get();
+			if (target != null && !target.equals(holyMob))
+			{
+				return target;
+			}
 		}
-		while (target == null || target.equals(holyMob));
-		return target;
+		return null;
 	}
 
 	/** A made-up holy name, like "Ollukka" */

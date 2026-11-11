@@ -453,13 +453,14 @@ public class QuestService
 	{
 		QuestRules.Size size = QuestRules.slay(this.random, ctx.believerService().getOnlineBelieversForGod(godName).size());
 
-		List<EntityType> common = new ArrayList<EntityType>();
-		for (String name : QuestRules.SLAY_TARGETS)
-		{
-			common.add(EntityType.valueOf(name));
-		}
+		List<EntityType> common = ctx.commandmentService().themeForGod(godName).slayTargets();
 		EntityType holyCreature = ctx.commandmentService().getHolyMobTypeForGod(godName);
 		EntityType targetType = QuestRules.slayTarget(this.random, common, () -> ctx.commandmentService().getUnholyMobTypeForGod(godName), holyCreature);
+		if (targetType == null)
+		{
+			ctx.plugin().logDebug(godName + " has no mob to ask to slay (themes.yml slay-targets)");
+			return false;
+		}
 
 		newQuest(godName, QuestType.SLAY, targetType.name(), size.amount(), size.maxDurationMinutes());
 		this.repository.save();

@@ -6,12 +6,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.God;
@@ -20,8 +22,9 @@ import com.dogonfire.gods.storage.GodRepository;
 /**
  * A god's commandments and sacrifices: the food it wants eaten and the food it forbids, the mob to slay and the mob to
  * spare (each picked once and kept), what happens when a believer eats or kills, and the items it wants sacrificed at
- * its altars and how much (it wants more of some over time and forgets unwanted ones). The rules are in
- * {@link SacrificeRules}. Main thread only.
+ * its altars and how much (it wants more of some over time and forgets unwanted ones). What a god picks from is its
+ * type's theme (themes.yml, {@link #themeForGod}); the rules are in {@link CommandmentRules} and {@link SacrificeRules}.
+ * Main thread only.
  */
 public class CommandmentService
 {
@@ -29,33 +32,26 @@ public class CommandmentService
 	private final GodsContext		ctx;
 	private final GodRepository		repository;
 
-	/** Holy and unholy food are picked from these */
-	private static final Material[]	FOODS				= { Material.APPLE, Material.BREAD, Material.COOKED_SALMON, Material.MELON_SLICE, Material.COOKED_BEEF, Material.COOKED_PORKCHOP,
-			Material.CARROT };
-
-	/** What a god may come to want sacrificed; its seed picks five. null is the god's unholy food. */
-	private static final Material[]	SACRIFICE_NEEDS		= { Material.POPPY, Material.COOKED_PORKCHOP, null, Material.RABBIT_HIDE, Material.RABBIT_FOOT, Material.CACTUS,
-			Material.BREAD, Material.CARROT, Material.IRON_PICKAXE, Material.IRON_INGOT, Material.GOLD_INGOT, Material.APPLE, Material.BOOK, Material.CAKE, Material.MELON_SLICE,
-			Material.COOKIE, Material.PUMPKIN, Material.SUGAR_CANE, Material.EGG, Material.WHEAT, Material.NETHERRACK, Material.POTATO, Material.BONE, Material.FEATHER };
-
 	public CommandmentService(GodsContext ctx, GodRepository repository)
 	{
 		this.ctx = ctx;
 		this.repository = repository;
 	}
 
-	private String generateHolyMobTypeForGod()
+	/**
+	 * The theme of the god's type (themes.yml; the default theme for a god without a type), which its commandments,
+	 * sacrifice needs and slay quests are picked from
+	 */
+	public Theme themeForGod(String godName)
 	{
-		EntityType[] holyMobTypes = new EntityType[] { EntityType.CHICKEN, EntityType.COW, EntityType.PIG, EntityType.SHEEP, EntityType.RABBIT, EntityType.HORSE, EntityType.BAT };
-
-		return holyMobTypes[this.random.nextInt(holyMobTypes.length)].name();
+		return ctx.themes().of(ctx.godService().getDivineForceForGod(godName));
 	}
 
-	private String generateUnholyMobTypeForGod()
+	/** A list of the god's theme, or the default theme's when it is empty (e.g. every name in it is newer than the server) */
+	private <T> List<T> fromTheme(String godName, Function<Theme, List<T>> list)
 	{
-		EntityType[] unholyMobTypes = new EntityType[] { EntityType.CHICKEN, EntityType.COW, EntityType.PIG, EntityType.SHEEP, EntityType.RABBIT, EntityType.HORSE, EntityType.BAT, EntityType.WOLF, EntityType.SKELETON, EntityType.ZOMBIE };
-
-		return unholyMobTypes[this.random.nextInt(unholyMobTypes.length)].name();
+		List<T> own = list.apply(themeForGod(godName));
+		return own.isEmpty() ? list.apply(ctx.themes().defaults()) : own;
 	}
 
 	/**
@@ -77,95 +73,74 @@ public class CommandmentService
 		}
 	}
 
+	/** A god keeps its holy food once picked; one this server doesn't know (any more) counts as a carrot */
 	public Material getHolyFoodTypeForGod(String godName)
 	{
 		God god = this.repository.forChange(godName);
-		String foodTypeString = god != null ? god.holyFood() : null;
-		
-		Material foodType = Material.AIR;
-		
-		if (foodTypeString == null)
+		String stored = god != null ? god.holyFood() : null;
+		if (stored != null)
 		{
-			foodType = FOODS[this.random.nextInt(FOODS.length)];
-			foodTypeString = foodType.name();
+			Material food = Material.getMaterial(stored);
+			return food != null ? food : Material.CARROT;
+		}
 
-			if (god != null)
-			{
-				god.setHolyFood(foodTypeString);
-			}
-
-			this.repository.markDirty();
-		}
-		else
+		Material unholyFood = (god != null && god.unholyFood() != null) ? Material.getMaterial(god.unholyFood()) : null;
+		Material food = CommandmentRules.pick(this.random, fromTheme(godName, Theme::holyFoods), unholyFood);
+		if (food == null)
 		{
-			foodType = Material.getMaterial(foodTypeString);
+			food = Material.CARROT;
 		}
-		
-		if(foodType == null)
+		if (god != null)
 		{
-			foodType = Material.CARROT;
+			god.setHolyFood(food.name());
 		}
-		
-		return foodType;
+		this.repository.markDirty();
+		return food;
 	}
 
+	/** A god keeps its holy mob once picked; one this server doesn't know (any more) is picked again */
 	public EntityType getHolyMobTypeForGod(String godName)
 	{
 		God god = this.repository.forChange(godName);
 		EntityType mobType = parseEntityType(god != null ? god.holyMob() : null);
 		if (mobType == null)
 		{
-			String unholyMobTypeString = getUnholyMobTypeForGod(godName).name();
-			String mobTypeString;
-			do
+			mobType = CommandmentRules.pick(this.random, fromTheme(godName, Theme::holyMobs), getUnholyMobTypeForGod(godName));
+			if (mobType == null)
 			{
-				mobTypeString = generateHolyMobTypeForGod();
+				mobType = EntityType.COW;
 			}
-			while (mobTypeString.equals(unholyMobTypeString));
-
 			if (god != null)
 			{
-				god.setHolyMob(mobTypeString);
+				god.setHolyMob(mobType.name());
 			}
 			this.repository.markDirty();
-
-			mobType = EntityType.valueOf(mobTypeString);
 		}
 		return mobType;
 	}
 
+	/** A god keeps its unholy food once picked, never its holy food; one this server doesn't know counts as a carrot */
 	public Material getUnholyFoodTypeForGod(String godName)
 	{
 		God god = this.repository.forChange(godName);
-		String foodTypeString = god != null ? god.unholyFood() : null;
-		Material foodType = Material.AIR;
-		if (foodTypeString == null)
+		String stored = god != null ? god.unholyFood() : null;
+		if (stored != null)
 		{
-			do
-			{
-				foodType = FOODS[this.random.nextInt(FOODS.length)];
-				foodTypeString = foodType.name();
-			}
-			while (foodTypeString.equals(getHolyFoodTypeForGod(godName).name()));
-			
-			if (god != null)
-			{
-				god.setUnholyFood(foodTypeString);
-			}
-
-			this.repository.markDirty();
-		}
-		else
-		{
-			foodType = Material.getMaterial(foodTypeString);
-		}
-		
-		if(foodType == null)
-		{
-			foodType = Material.CARROT;
+			Material food = Material.getMaterial(stored);
+			return food != null ? food : Material.CARROT;
 		}
 
-		return foodType;
+		Material food = CommandmentRules.pick(this.random, fromTheme(godName, Theme::unholyFoods), getHolyFoodTypeForGod(godName));
+		if (food == null)
+		{
+			food = Material.CARROT;
+		}
+		if (god != null)
+		{
+			god.setUnholyFood(food.name());
+		}
+		this.repository.markDirty();
+		return food;
 	}
 
 	public Material getSacrificeItemTypeForGod(String godName)
@@ -195,29 +170,10 @@ public class CommandmentService
 		return null;
 	}
 
+	/** One of the items the god's seed picked from its type's sacrifice needs, or its unholy food; null if none fits */
 	private Material getSacrificeNeedForGod(String godName)
 	{
-		Random materialRandom = new Random(ctx.godService().getSeedForGod(godName));
-		List<Integer> materials = new ArrayList<Integer>();
-
-		for (int n = 0; n < 5; n++)
-		{
-			materials.add(materialRandom.nextInt(SACRIFICE_NEEDS.length));
-		}
-
-		int typeIndex = 0;
-		Material type = Material.AIR;
-
-		do
-		{
-			typeIndex = materials.get(this.random.nextInt(materials.size())).intValue();
-
-			// null: the god's unholy food
-			type = SACRIFICE_NEEDS[typeIndex] != null ? SACRIFICE_NEEDS[typeIndex] : getUnholyFoodTypeForGod(godName);
-		}
-		while (type == getHolyFoodTypeForGod(godName) || type == Material.AIR);
-
-		return type;
+		return CommandmentRules.sacrificeNeed(this.random, ctx.godService().getSeedForGod(godName), fromTheme(godName, Theme::sacrificeNeeds), () -> getUnholyFoodTypeForGod(godName), getHolyFoodTypeForGod(godName));
 	}
 
 	private Material getSacrificeUnwantedForGod(String godName)
@@ -298,21 +254,23 @@ public class CommandmentService
 		return god != null ? parseEntityType(god.unholyMob()) : null;
 	}
 
+	/** A god keeps its unholy mob once picked; one this server doesn't know (any more) is picked again */
 	public EntityType getUnholyMobTypeForGod(String godName)
 	{
 		God god = this.repository.forChange(godName);
 		EntityType mobType = parseEntityType(god != null ? god.unholyMob() : null);
 		if (mobType == null)
 		{
-			String mobTypeString = generateUnholyMobTypeForGod();
-
+			mobType = CommandmentRules.pick(this.random, fromTheme(godName, Theme::unholyMobs), parseEntityType(god != null ? god.holyMob() : null));
+			if (mobType == null)
+			{
+				mobType = EntityType.ZOMBIE;
+			}
 			if (god != null)
 			{
-				god.setUnholyMob(mobTypeString);
+				god.setUnholyMob(mobType.name());
 			}
 			this.repository.markDirty();
-
-			mobType = EntityType.valueOf(mobTypeString);
 		}
 		return mobType;
 	}
@@ -509,6 +467,10 @@ public class CommandmentService
 		}
 		
 		Material type = getSacrificeNeedForGod(godName);
+		if (type == null)
+		{
+			return;
+		}
 
 		float value = getSacrificeValueForGod(godName, type);
 
