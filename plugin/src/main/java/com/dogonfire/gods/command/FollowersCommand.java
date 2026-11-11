@@ -75,7 +75,7 @@ public final class FollowersCommand extends SubCommand
 			{
 				if (follower.believerId().equals(player.getUniqueId()))
 				{
-					send(sender, "command.followers.you-below", Messages.player(String.format("%-20s", nameOf(follower.believerId()))), Messages.text("when", follower.lastPrayer()));
+					send(sender, "command.followers.you-below", Messages.player(String.format("%-20s", nameOf(follower.believerId()))), Messages.component("when", timeAgo(follower.lastPrayer(), now)));
 				}
 			}
 		}

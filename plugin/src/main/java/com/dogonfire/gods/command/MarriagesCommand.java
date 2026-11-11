@@ -66,7 +66,7 @@ public final class MarriagesCommand extends SubCommand
 			{
 				if (isIn(couple, playerId))
 				{
-					send(sender, "command.marriages.you-below", Messages.text("rank", rank), Messages.text("couple", String.format("%-40s", couple(couple))), Messages.text("when", couple.lastLove()));
+					send(sender, "command.marriages.you-below", Messages.text("rank", rank), Messages.text("couple", String.format("%-40s", couple(couple))), Messages.component("when", timeAgo(couple.lastLove(), now)));
 				}
 				rank++;
 			}

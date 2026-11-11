@@ -308,7 +308,7 @@ command:
     line: <yellow><player><aqua> Prayed <gold><when>
     # The line of the player using the command
     you: <gold><player><aqua> Prayed <gold><when>
-    # Below the list, when the player isn't in it; <when> is the date
+    # Below the list, when the player isn't in it
     you-below: <gold><player> Prayed <when>
   help:
     parameters: '[altar/blocks]'
@@ -436,7 +436,7 @@ command:
     # One per couple: <rank>, <couple>, <when> they last loved (time.*-ago)
     line: <white><rank> - <couple><aqua> Loved <gold><when>
     you: <gold><rank> - <couple><aqua> Loved <gold><when>
-    # Below the list, when the player isn't in it; <when> is the date
+    # Below the list, when the player isn't in it
     you-below: <gold><rank> - <couple> Loved <when>
   marry:
     parameters: \<name>
