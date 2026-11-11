@@ -281,6 +281,7 @@ class ThemesLoaderTest
 		assertBundledSkin(themes.of(GodType.SEA).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.NATURE).npcSkins().god(), true);
 		assertBundledSkin(themes.of(GodType.NATURE).npcSkins().goddess(), true);
+		assertBundledSkin(themes.of(GodType.WAR).npcSkins().god(), false);
 		// The werewolf alpha is the account WerewolfAlpha's texture
 		assertTrue(new String(Base64.getDecoder().decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()), StandardCharsets.UTF_8).contains("\"WerewolfAlpha\""));
 		Map<GodType, Theme.NpcSkins> expected = Map.of(
@@ -289,7 +290,8 @@ class ThemesLoaderTest
 				GodType.THUNDER, new Theme.NpcSkins(themes.of(GodType.THUNDER).npcSkins().god(), null, null),
 				GodType.LOVE, new Theme.NpcSkins(null, themes.of(GodType.LOVE).npcSkins().goddess(), null),
 				GodType.SEA, new Theme.NpcSkins(themes.of(GodType.SEA).npcSkins().god(), themes.of(GodType.SEA).npcSkins().goddess(), null),
-				GodType.NATURE, new Theme.NpcSkins(themes.of(GodType.NATURE).npcSkins().god(), themes.of(GodType.NATURE).npcSkins().goddess(), null));
+				GodType.NATURE, new Theme.NpcSkins(themes.of(GodType.NATURE).npcSkins().god(), themes.of(GodType.NATURE).npcSkins().goddess(), null),
+				GodType.WAR, new Theme.NpcSkins(themes.of(GodType.WAR).npcSkins().god(), null, null));
 		for (GodType type : GodType.values())
 		{
 			assertEquals(expected.getOrDefault(type, Theme.NpcSkins.NONE), themes.of(type).npcSkins(), type.name());
@@ -410,7 +412,7 @@ class ThemesLoaderTest
 				    skin:
 				      deity:
 				        name: Notch
-				war:
+				creatures:
 				  npc:
 				    skin:
 				      deity:
@@ -433,10 +435,10 @@ class ThemesLoaderTest
 		// Gods' own love goddess stays
 		assertEquals(bundledThemes.of(GodType.LOVE).npcSkins(), themes.of(GodType.LOVE).npcSkins());
 		assertTrue(themes.of(GodType.PARTY).npcSkins().isEmpty());
-		assertTrue(themes.of(GodType.WAR).npcSkins().isEmpty());
+		assertTrue(themes.of(GodType.CREATURES).npcSkins().isEmpty());
 		assertTrue(themes.of(GodType.FROST).npcSkins().isEmpty());
 		for (String expected : new String[] { "sun.npc.skin is a player name ('Notch')", "werewolves.npc.skin.god is a player name", "godess",
-				"love.npc.skin.goddess has no signature", "party.npc.skin.deity is a player name", "war.npc.skin.deity.value is not a skin texture", "'add'",
+				"love.npc.skin.goddess has no signature", "party.npc.skin.deity is a player name", "creatures.npc.skin.deity.value is not a skin texture", "'add'",
 				"frost.npc.skin needs a skin per gender", "moon.npc", "skn" })
 		{
 			assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains(expected)), expected + " in " + this.log.warnings());

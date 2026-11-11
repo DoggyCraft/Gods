@@ -376,6 +376,12 @@ war:
       particles: [large_smoke, damage_indicator]
       sounds: [entity.ravager.roar]
       colors: ['#3A0000', black]
+  npc:
+    skin:
+      # A god of war, from MineSkin: https://mineskin.org/skins/529a860877044504aa09ad296fe37d9c
+      god:
+        value: eyJ0aW1lc3RhbXAiOjE1MTE0NDkxMTUyMzUsInByb2ZpbGVJZCI6ImJkM2M2NDhiZDZhMDRmMDM5NDkzMjc1MzVjYjgzMWViIiwicHJvZmlsZU5hbWUiOiJFbW1hYVBsYXl6Iiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsidXJsIjoiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS8xMmY4NWUzNmI0NjJmZDRkODgyMjg1OTI2OWQyYmI0MzM1MmRiYWNkNDNjZDE1Y2RjNjdlMTc0Y2JlZTQ5In19fQ==
+        signature: Az3RCZl5aRCLax6JI3gQ/Kblys6ujiXkXUbkEWpW0LWKlaHooRL9AXHQIrehSbGyWlrRKH4VfYwvvODVrMK3Q96tSYkRhVaxeUC1BjbBYl3WwShTswEuMso4/bnvPJsCBavB5xXOKOXb+Gyd4ejm06EqF4QIIr3xACYd0wOXCTIxATCho3GVHqlywrYiAomGCXAyiqMEfko9q261MxKf+c5jDZ81VNSgdQvvTclR9oRc746tnzYfhb6zISqmEB70KJJ0znfwqyaAo5HNo15w267wBFk4sVLFN+NmpfpyeNlNbKZTezGxBs9I0BTSfUAbFrG/e413yNj0CWY70CJ0j1530KV06H7knQMXnlWyvZwlPq8TnUc32EV31GDRH1FhyBCt4g769eMnXD0s60bTbOXCzfaWli1dXFNynZKTru3IOSks0NZHB2jm4UATbGv9VvBkLQ4rMkq4yk0E8zdINgEyLaWYVZGiatr50mGlAw8iwAnD4PMUYwt9vMJJ+VJggyTiW67jC1QtEH1/SYl7RcjdiEERqaekvPwJdrPobHLip9Jpbc6AjiEtyd+plUiOM+loYp6lB+sG2uWMz6j0pPM485UjChFWrHBrsNbUErylWXdxAWfVsgJD4FLBEYbog69F780FQZ2gyK0zQJ1fVkieyg8DNLrR9lvL27sdb+s=
 
 # The pack: wolves are holy, prey is hunted and eaten raw. Altars of the taiga, where the wolves live
 werewolves:
