@@ -27,8 +27,10 @@ import org.bukkit.entity.EntityType;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.integration.npc.SkinTextures;
+import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
+import com.dogonfire.gods.service.GodNpcRules;
 
 class ThemesLoaderTest
 {
@@ -284,6 +286,9 @@ class ThemesLoaderTest
 		assertBundledSkin(themes.of(GodType.WAR).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.FROST).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.FROST).npcSkins().goddess(), true);
+		assertBundledSkin(themes.of(GodType.MOON).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.MOON).npcSkins().goddess(), true);
+		assertBundledSkin(themes.of(GodType.MOON).npcSkins().deity(), false);
 		// The werewolf alpha is the account WerewolfAlpha's texture
 		assertTrue(new String(Base64.getDecoder().decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()), StandardCharsets.UTF_8).contains("\"WerewolfAlpha\""));
 		Map<GodType, Theme.NpcSkins> expected = Map.of(
@@ -294,10 +299,36 @@ class ThemesLoaderTest
 				GodType.SEA, new Theme.NpcSkins(themes.of(GodType.SEA).npcSkins().god(), themes.of(GodType.SEA).npcSkins().goddess(), null),
 				GodType.NATURE, new Theme.NpcSkins(themes.of(GodType.NATURE).npcSkins().god(), themes.of(GodType.NATURE).npcSkins().goddess(), null),
 				GodType.WAR, new Theme.NpcSkins(themes.of(GodType.WAR).npcSkins().god(), null, null),
-				GodType.FROST, new Theme.NpcSkins(themes.of(GodType.FROST).npcSkins().god(), themes.of(GodType.FROST).npcSkins().goddess(), null));
+				GodType.FROST, new Theme.NpcSkins(themes.of(GodType.FROST).npcSkins().god(), themes.of(GodType.FROST).npcSkins().goddess(), null),
+				GodType.MOON, themes.of(GodType.MOON).npcSkins());
 		for (GodType type : GodType.values())
 		{
 			assertEquals(expected.getOrDefault(type, Theme.NpcSkins.NONE), themes.of(type).npcSkins(), type.name());
+		}
+	}
+
+	/** Which bundled skin gods of each gender wear (GodNpcRules.skin over Gods' own themes) */
+	@Test
+	void eachGenderWearsTheBundledSkins() throws Exception
+	{
+		Themes themes = load("");
+		Theme.NpcSkins defaults = themes.defaults().npcSkins();
+		Theme.NpcSkins moon = themes.of(GodType.MOON).npcSkins();
+		Theme.NpcSkins thunder = themes.of(GodType.THUNDER).npcSkins();
+		// A non-binary moon god is the moon's deity, not its god
+		assertEquals(moon.deity(), GodNpcRules.skin(null, GodGender.NonBinary, moon, defaults));
+		assertEquals(moon.god(), GodNpcRules.skin(null, GodGender.Male, moon, defaults));
+		assertEquals(moon.goddess(), GodNpcRules.skin(null, GodGender.Female, moon, defaults));
+		// Thunder has no deity: its god (Zeus); and no goddess: the default goddess
+		assertEquals(thunder.god(), GodNpcRules.skin(null, GodGender.NonBinary, thunder, defaults));
+		assertEquals(defaults.goddess(), GodNpcRules.skin(null, GodGender.Female, thunder, defaults));
+		// Every god type has a skin for every gender
+		for (GodType type : GodType.values())
+		{
+			for (GodGender gender : GodGender.values())
+			{
+				assertNotNull(GodNpcRules.skin(null, gender, themes.of(type).npcSkins(), defaults), type + " " + gender);
+			}
 		}
 	}
 

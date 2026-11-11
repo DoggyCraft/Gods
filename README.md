@@ -68,7 +68,7 @@ A god wears a skin for its gender from its theme (`npc.skin`, with `god`, `godde
 *	a goddess: its type's `goddess` skin, else the `default` section's `goddess` skin;
 *	a deity: its type's `deity` skin, its type's `god` skin, the `default` section's `deity` skin, else the `default` section's `god` skin.
 
-Gods' own themes have a god and a goddess in the `default` section, so every god has a skin; thunder (Zeus), love, the sea, nature, frost, war, evil and the werewolves have their own. When a priest changes the god's gender with `/g gender`, its figure changes skin too.
+Gods' own themes have a god and a goddess in the `default` section, so every god has a skin; thunder (Zeus), love, the sea, nature, frost, war, evil, the werewolves and the moon (with a deity too) have their own. When a priest changes the god's gender with `/g gender`, its figure changes skin too.
 
 A priest can give the god a skin of its own, which comes before all of these: `/g godskin` gives it the skin the priest wears now, `/g godskin <player>` a player's skin (permission `gods.priest.godskin`), and `/g godskin reset` gives back its theme's. Gods looks the skin up in the background and keeps it in gods.yml.
 
