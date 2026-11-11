@@ -59,7 +59,7 @@ public final class MainAltarRules
 	}
 
 	/**
-	 * Where a god appears at its altar (the seam for a later god NPC): the block in front of the sign, facing the altar,
+	 * Where a god appears at its altar as an NPC ({@link GodNpcService}): the block in front of the sign, facing the altar,
 	 * i.e. the sign moved once more away from its altar block. Whether a figure fits there is the caller's to check.
 	 */
 	public static BlockPos standingSpot(Altar altar)

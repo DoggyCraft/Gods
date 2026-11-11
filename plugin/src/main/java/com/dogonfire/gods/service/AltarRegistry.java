@@ -383,7 +383,7 @@ public class AltarRegistry
 	 * registry's altar is returned when it has it, else one made from the stored sign (an altar not found again yet,
 	 * e.g. after altars.yml was lost; its altar block is then not known and given as the sign).
 	 * <p>
-	 * This is where a god can appear in the world (a later NPC): {@link MainAltarRules#standingSpot} is the spot in
+	 * This is where a god that descended appears as an NPC ({@link GodNpcService}): {@link MainAltarRules#standingSpot} is the spot in
 	 * front of its sign, {@link #mainAltarLocation} the altar block.
 	 */
 	public Altar mainAltar(String godName)

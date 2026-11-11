@@ -27,7 +27,7 @@ Installation
 ---------
 *	Run a [Paper](https://papermc.io/) or Spigot server on Minecraft 1.21.3 or newer (including 26.x), with Java 21 or newer.
 *	Download `Gods-<version>.jar` from the [releases](https://github.com/DoggyCraft/Gods/releases) and drop it into the `plugins` folder.
-*	Optional: [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/), [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/) (new altars only in claims, see below).
+*	Optional: [WorldGuard](https://enginehub.org/worldguard), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/), [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/) (new altars only in claims, see below), [Citizens](https://www.spigotmc.org/resources/citizens.13811/) or [FancyNpcs](https://modrinth.com/plugin/fancynpcs) (the god at its altar on servers older than 1.21.9, see below).
 *	Start the server. Commands and permissions are listed in [plugin.yml](plugin/src/main/resources/plugin.yml).
 
 Building an altar
@@ -48,6 +48,32 @@ Above every praying altar the god's name and title float in the style of its typ
 In config.yml, `altars.floating-text` is `all` (above every praying altar, the default), `main` (only above main altars) or `off`, and `altars.floating-text-view-distance-blocks` (32) sets how far away players see it. The texts are `altar.floating.*` in `lang/<language>/messages.yml`. They are never saved with the world: Gods puts them back when the altar's chunk loads.
 
 Gods keeps track of its altars in `plugins/Gods/altars.yml`. Altars that already stand are found as their chunks load (altars from Gods 0.9.x the first time someone uses them), so nothing needs to be done after an update.
+
+The god at its altar
+---------
+Once a religion has grown, its god descends to its main altar and stands there as a figure in front of the altar sign, turning to look at players who come close. Right-clicking the figure prays to the god, just like praying at the altar. The god descends when it has a main altar, a priest for at least 24 hours (`npc.descend.requires-priest`, `npc.descend.hours-after-priest`), at least 3 believers (`npc.descend.min-believers`) and, if you set one, enough power (`npc.descend.min-power`); lightning strikes (only a flash, it does no harm), its effects rise and it tells its believers. It ascends again when it has no priest any more, or when its believers stay fewer than `min-believers` for 24 hours (`npc.descend.ascend-grace-hours`), and descends again when it qualifies once more.
+
+Who makes the figure is `npc.provider` in config.yml:
+
+*	`auto` (the default): [Citizens](https://www.spigotmc.org/resources/citizens.13811/) if it is installed, else [FancyNpcs](https://modrinth.com/plugin/fancynpcs) if it is installed, else the built-in figure, else none.
+*	`builtin`: a vanilla mannequin. Minecraft 1.21.9 and newer have mannequins (Spigot and Paper); on older servers there is no built-in figure, so install Citizens or FancyNpcs there.
+*	`citizens`, `fancynpcs`: that plugin, if it is installed. Gods' figures are never saved in its files.
+*	`off`, or `npc.enabled: false`: no figures.
+
+The figures are never saved with the world: Gods puts them back when the altar's chunks load. The god's name shows above the figure only when `altars.floating-text` is `off` (otherwise the floating text already shows it).
+
+A god wears the skin of its god type: `npc.skin` in its theme, a player name or a signed texture (`value` and `signature`, e.g. from [mineskin.org](https://mineskin.org)). Gods' own themes give the werewolves the werewolf alpha; the other types have the default look. A priest can give the god a player's skin with `/g godskin <player>` (permission `gods.priest.godskin`) and give back its type's with `/g godskin reset`; Gods looks the skin up in the background and keeps it in gods.yml.
+
+```yaml
+sun:
+  npc:
+    skin: Notch                 # a player's skin
+moon:
+  npc:
+    skin:
+      value: ewogICJ0aW1l...    # a signed texture
+      signature: Z8NgxOC7...
+```
 
 Themes
 ---------
@@ -135,10 +161,10 @@ if (gods != null) {
 }
 ```
 
-- **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest), believers (`getBeliever(uuid)`), and whose holy land a location is.
+- **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest, main altar and descent), the god's figure at its altar (`getNpc(god)`, `isGodNpc(entity)`), believers (`getBeliever(uuid)`), and whose holy land a location is.
 - **Speak as a god**: `say(god, player, text)` with a [MiniMessage](https://docs.advntr.dev/minimessage/format.html) text, `sayToBelievers(god, text)`, and the god's own voice lines with `sayVoiceLine(god, player, situation)` / `getVoiceLine(god, situation)`. The situations are the keys of the voice files (`getVoiceSituations()`, e.g. `believer-random-pleased-speech`).
 - **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood or its gender (`setGender`, which ignores the priests' cooldown), start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars. Each returns an `ActionResult`.
-- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent` and `GodRelationChangeEvent`. Most can be cancelled.
+- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent`, `GodRelationChangeEvent`, `GodDescendEvent` and `GodAscendEvent`. Most can be cancelled.
 
 Everything a god says to a player fires a `GodSpeakEvent` first, so a plugin can, for example, let a god speak through an NPC instead of the chat:
 
