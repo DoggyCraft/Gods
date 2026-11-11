@@ -326,6 +326,27 @@ public class PrayerService
 		return true;
 	}
 
+	/**
+	 * A priest kicks a believer (online or not) out of the religion: like leaving it, they stop being a priest and are
+	 * divorced, and their entry goes. Does nothing if they believe in another god.
+	 */
+	public void kick(String godName, UUID believerId)
+	{
+		if (!godName.equals(ctx.believerService().getGodForBeliever(believerId)))
+		{
+			return;
+		}
+		if (ctx.priestService().isPriestForGod(believerId, godName))
+		{
+			ctx.priestService().removePriest(godName, believerId);
+		}
+		if (ctx.settings().marriage().enabled())
+		{
+			ctx.marriageService().divorce(believerId);
+		}
+		ctx.believerService().removeBeliever(godName, believerId, BelieverLeaveGodEvent.Reason.KICKED);
+	}
+
 	public void believerReject(UUID believerId)
 	{
 		String godName = ctx.believerService().getGodForBeliever(believerId);

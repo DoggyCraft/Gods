@@ -7,7 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
 import com.dogonfire.gods.message.Messages;
 
 /** /g kick &lt;player&gt;: removes a believer, online or not, from the priest's religion */
@@ -35,7 +34,7 @@ public final class KickCommand extends SubCommand
 		{
 			throw new CommandException("command.kick.yourself");
 		}
-		this.ctx.believerService().removeBeliever(godName, believerId, BelieverLeaveGodEvent.Reason.KICKED);
+		this.ctx.prayerService().kick(godName, believerId);
 		send(sender, "command.kick.done", Messages.player(believerName));
 		Player believer = this.ctx.plugin().getServer().getPlayer(believerId);
 		if (believer != null)
