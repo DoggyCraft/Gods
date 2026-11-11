@@ -30,6 +30,7 @@ import org.bukkit.persistence.PersistentDataType;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
 /**
@@ -244,8 +245,14 @@ public class AltarService
 		{
 			key = "altar.sign.default." + altar.kind().key();
 		}
-		TagResolver name = altar.kind() == AltarSigns.Kind.PRAYING ? Messages.god(altar.god()) : Messages.player(signPlayerName(altar));
-		return AltarSigns.fourLines(ctx.messages().legacyLines(key, name));
+		if (altar.kind() != AltarSigns.Kind.PRAYING)
+		{
+			return AltarSigns.fourLines(ctx.messages().legacyLines(key, Messages.player(signPlayerName(altar))));
+		}
+		// The god's gender and title, so a sign showing them is written anew when a priest changes the gender
+		GodGender gender = ctx.godService().getGenderForGod(altar.god());
+		return AltarSigns.fourLines(ctx.messages().legacyLines(key, Messages.god(altar.god()), Messages.component("gender", ctx.messages().genderName(gender)),
+				Messages.component("title", ctx.messages().godTypeName(ctx.godService().getDivineForceForGod(altar.god()), gender))));
 	}
 
 	/** The name a curse or blessing sign shows: the player's name now if they are online */
@@ -342,7 +349,17 @@ public class AltarService
 	/** What a sign written as a new praying altar says: the god's name and maybe a gender word ({@link AltarSigns}) */
 	public AltarSigns.NewAltar readNewPrayingAltar(String[] lines)
 	{
-		return AltarSigns.newPrayingAltar(lines, genderWords("altar.gender-words.male", "God"), genderWords("altar.gender-words.female", "Goddess"));
+		return AltarSigns.newPrayingAltar(lines, genderWords());
+	}
+
+	/**
+	 * The words of this language that name a god's gender, on an altar sign and in /g gender
+	 * ({@code altar.gender-words.*} in messages.yml), and the English ones
+	 */
+	public AltarSigns.GenderWords genderWords()
+	{
+		return new AltarSigns.GenderWords(genderWords("altar.gender-words.male", "God"), genderWords("altar.gender-words.female", "Goddess"),
+				genderWords("altar.gender-words.non-binary", "Deity"));
 	}
 
 	/** The words of this language that choose a gender on an altar sign (messages.yml), and the English one */

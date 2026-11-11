@@ -11,9 +11,9 @@ import com.dogonfire.gods.model.GodGender;
 
 /**
  * Reading altar signs, without the server so it can be tested. Altars are written on the front of a wall sign on an
- * altar block. A new praying altar is a sign with the god's name on it, and maybe "God" or "Goddess" on another line;
- * a new curse or blessing altar says "Curses" or "Blessings" on its first line and a player's name on its third. Gods
- * then tags the sign (praying, curses or blessings, the god, the player) and writes it in the god type's style.
+ * altar block. A new praying altar is a sign with the god's name on it, and maybe "God", "Goddess" or "Deity" on
+ * another line; a new curse or blessing altar says "Curses" or "Blessings" on its first line and a player's name on
+ * its third. Gods then tags the sign (praying, curses or blessings, the god, the player) and writes it in the god type's style.
  * Altars from before tags say "Altar / of / &lt;god&gt;", "Curses / On / &lt;player&gt;" or
  * "Blessings / On / &lt;player&gt;"; they are recognized by that text and tagged when first used.
  */
@@ -206,9 +206,9 @@ public final class AltarSigns
 
 	/**
 	 * What a new praying altar sign says: the god's name (as written; the caller trims and formats it), and the gender
-	 * the player chose by writing "God" or "Goddess" (the language's words, any case) on another line, or null when
-	 * they didn't (the god then chooses). A sign with only one written line is the god's name, as altars always were,
-	 * even if that name is a gender word. Problem is null when the sign is fine.
+	 * the player chose by writing "God", "Goddess" or "Deity" (the language's words, any case) on another line, or null
+	 * when they didn't (the god then chooses). A sign with only one written line is the god's name, as altars always
+	 * were, even if that name is a gender word. Problem is null when the sign is fine.
 	 */
 	public record NewAltar(String godName, GodGender gender, Problem problem)
 	{
@@ -219,13 +219,58 @@ public final class AltarSigns
 	}
 
 	/**
+	 * The words that name a god's gender, on an altar sign and in /g gender: the language's
+	 * ({@code altar.gender-words.*} in messages.yml) and the English ones
+	 *
+	 * @param male      the words for a male god ("God")
+	 * @param female    the words for a female god ("Goddess")
+	 * @param nonBinary the words for a non-binary god ("Deity")
+	 */
+	public record GenderWords(Collection<String> male, Collection<String> female, Collection<String> nonBinary)
+	{
+		/** Only the English words */
+		public static final GenderWords ENGLISH = new GenderWords(List.of("God"), List.of("Goddess"), List.of("Deity"));
+
+		/** The gender a line names (any case, colors ignored), or null if it is no gender word */
+		public GodGender gender(String line)
+		{
+			String word = plain(line);
+			if (matches(this.female, word))
+			{
+				return GodGender.Female;
+			}
+			if (matches(this.male, word))
+			{
+				return GodGender.Male;
+			}
+			if (matches(this.nonBinary, word))
+			{
+				return GodGender.NonBinary;
+			}
+			return null;
+		}
+
+		/** Every word, for tab completion */
+		public List<String> all()
+		{
+			List<String> all = new ArrayList<>();
+			all.addAll(this.male);
+			all.addAll(this.female);
+			all.addAll(this.nonBinary);
+			return all;
+		}
+
+		private static boolean matches(Collection<String> words, String word)
+		{
+			return !word.isEmpty() && words.stream().anyMatch(candidate -> plain(candidate).equalsIgnoreCase(word));
+		}
+	}
+
+	/**
 	 * Reads a new praying altar sign: one line with the god's name, and maybe one more with a gender word; nothing
 	 * else.
-	 *
-	 * @param maleWords   the words for a male god ("God")
-	 * @param femaleWords the words for a female god ("Goddess")
 	 */
-	public static NewAltar newPrayingAltar(String[] lines, Collection<String> maleWords, Collection<String> femaleWords)
+	public static NewAltar newPrayingAltar(String[] lines, GenderWords words)
 	{
 		List<String> written = new ArrayList<>();
 		for (String text : lines)
@@ -249,8 +294,8 @@ public final class AltarSigns
 		GodGender gender = null;
 		if (written.size() == 2)
 		{
-			GodGender first = genderWord(written.get(0), maleWords, femaleWords);
-			GodGender second = genderWord(written.get(1), maleWords, femaleWords);
+			GodGender first = words.gender(written.get(0));
+			GodGender second = words.gender(written.get(1));
 			if ((first == null) == (second == null))
 			{
 				// Two names, or two gender words
@@ -265,20 +310,5 @@ public final class AltarSigns
 			return NewAltar.problem(Problem.INVALID_GOD_NAME);
 		}
 		return new NewAltar(godName, gender, null);
-	}
-
-	/** The gender a line names (any case, colors ignored), or null if it is no gender word */
-	public static GodGender genderWord(String line, Collection<String> maleWords, Collection<String> femaleWords)
-	{
-		String word = plain(line);
-		if (femaleWords.stream().anyMatch(female -> plain(female).equalsIgnoreCase(word)))
-		{
-			return GodGender.Female;
-		}
-		if (maleWords.stream().anyMatch(male -> plain(male).equalsIgnoreCase(word)))
-		{
-			return GodGender.Male;
-		}
-		return null;
 	}
 }

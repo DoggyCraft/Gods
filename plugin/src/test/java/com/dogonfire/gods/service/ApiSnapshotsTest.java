@@ -61,7 +61,13 @@ class ApiSnapshotsTest
 		assertEquals(com.dogonfire.gods.api.GodGender.MALE, ApiSnapshots.gender(GodGender.Male));
 		assertEquals(com.dogonfire.gods.api.GodGender.FEMALE, ApiSnapshots.gender(GodGender.Female));
 		assertEquals(com.dogonfire.gods.api.GodGender.NONE, ApiSnapshots.gender(GodGender.None));
-		assertEquals(com.dogonfire.gods.api.GodGender.NONE, ApiSnapshots.gender(null));
+		assertEquals(com.dogonfire.gods.api.GodGender.NON_BINARY, ApiSnapshots.gender(GodGender.NonBinary));
+		assertEquals(com.dogonfire.gods.api.GodGender.NONE, ApiSnapshots.gender((GodGender) null));
+		assertEquals(names(GodGender.values()).size(), com.dogonfire.gods.api.GodGender.values().length);
+		for (GodGender gender : GodGender.values())
+		{
+			assertEquals(gender, ApiSnapshots.modelGender(ApiSnapshots.gender(gender)));
+		}
 
 		assertEquals(names(GodMood.values()), names(com.dogonfire.gods.api.GodMood.values()));
 		assertEquals(com.dogonfire.gods.api.GodMood.ANGRY, ApiSnapshots.mood(-71.0F));

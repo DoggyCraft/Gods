@@ -6,6 +6,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -238,6 +240,12 @@ public class GodService
 		this.repository.markDirty();
 	}
 
+	/** {@code <gender>}: the name of the god's gender ("God", "Goddess", "Deity"), for its words and messages */
+	public TagResolver genderTag(String godName)
+	{
+		return Messages.component("gender", ctx.messages().genderName(getGenderForGod(godName)));
+	}
+
 	public ChatColor getColorForGod(String godName)
 	{
 		return getColorForGodType(getDivineForceForGod(godName));
@@ -264,15 +272,16 @@ public class GodService
 	}
 
 	/**
-	 * @return the voice the god speaks with, e.g. sun_male, from its type and gender. A god without a gender always gets
-	 *         the same one, picked from its seed.
+	 * @return the voices the god speaks with, e.g. [sun_male], from its type and gender ({@link GodRules#voices}). A god
+	 *         without a gender always gets the same one, picked from its seed; a non-binary god gets its type's male
+	 *         and female voice, and each line it says comes from one of them.
 	 */
-	public String getVoiceForGod(String godName)
+	public List<String> getVoicesForGod(String godName)
 	{
 		GodType godType = getDivineForceForGod(godName);
 		GodGender godGender = godType != null ? getGenderForGod(godName) : null;
 		long seed = godGender == GodGender.None ? getSeedForGod(godName) : 0L;
-		return GodRules.voice(godType, godGender, seed);
+		return GodRules.voices(godType, godGender, seed);
 	}
 
 	/** A new seed for a god about to be created (never 0, which means none) */

@@ -529,6 +529,7 @@ believers-defend-holy-land-success:
 - Our roots hold strong! You have defended our Holy Land, my children!
 believers-new-player-accepted:
 - A new seed has been planted in our garden! Welcome them, my children.
-# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself
+# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself.
+# <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
-- 'As the seasons choose their colors, I have chosen, <player>: I am your God of Nature!'
+- 'As the seasons choose their colors, I have chosen, <player>: I am your <gender> of Nature!'

@@ -34,12 +34,11 @@ class AltarSignsTest
 		assertNull(AltarSigns.namedPlayer(new String[] { "Curses", "On" }, AltarSigns.CURSES));
 	}
 
-	private static final List<String>	MALE	= List.of("God");
-	private static final List<String>	FEMALE	= List.of("Goddess", "Gudinde");
+	private static final AltarSigns.GenderWords	WORDS	= new AltarSigns.GenderWords(List.of("God"), List.of("Goddess", "Gudinde"), List.of("Deity", "Guddom"));
 
 	private static AltarSigns.NewAltar newAltar(String... lines)
 	{
-		return AltarSigns.newPrayingAltar(lines, MALE, FEMALE);
+		return AltarSigns.newPrayingAltar(lines, WORDS);
 	}
 
 	/** The old way: only the god's name */
@@ -58,24 +57,34 @@ class AltarSignsTest
 		assertNull(newAltar("Goddess", "", "", "").gender());
 	}
 
-	/** "God" or "Goddess" on another line, above or below the name, any case */
+	/** "God", "Goddess" or "Deity" on another line, above or below the name, any case */
 	@Test
 	void theGenderIsWrittenOnAnotherLine()
 	{
 		assertEquals(new AltarSigns.NewAltar("Freya", GodGender.Female, null), newAltar("Freya", "goddess", "", ""));
 		assertEquals(new AltarSigns.NewAltar("Thor", GodGender.Male, null), newAltar("", "§6GOD", "", "Thor"));
 		assertEquals(new AltarSigns.NewAltar("Frigg", GodGender.Female, null), newAltar("Frigg", "", "Gudinde", ""));
+		assertEquals(new AltarSigns.NewAltar("Loki", GodGender.NonBinary, null), newAltar("deity", "Loki", "", ""));
+		assertEquals(new AltarSigns.NewAltar("Loki", GodGender.NonBinary, null), newAltar("Loki", "", "", "GUDDOM"));
 		assertEquals(AltarSigns.Problem.INVALID_SIGN, newAltar("God", "Goddess", "", "").problem());
+		assertEquals(AltarSigns.Problem.INVALID_SIGN, newAltar("Deity", "God", "", "").problem());
+		// A god may be named Deity when it is the only line
+		assertEquals(new AltarSigns.NewAltar("Deity", null, null), newAltar("", "Deity", "", ""));
 		assertEquals(AltarSigns.Problem.INVALID_GOD_NAME, newAltar("T", "God", "", "").problem());
 	}
 
 	@Test
 	void genderWords()
 	{
-		assertEquals(GodGender.Male, AltarSigns.genderWord(" god ", MALE, FEMALE));
-		assertEquals(GodGender.Female, AltarSigns.genderWord("§dGoddess", MALE, FEMALE));
-		assertNull(AltarSigns.genderWord("Gods", MALE, FEMALE));
-		assertNull(AltarSigns.genderWord(null, MALE, FEMALE));
+		assertEquals(GodGender.Male, WORDS.gender(" god "));
+		assertEquals(GodGender.Female, WORDS.gender("§dGoddess"));
+		assertEquals(GodGender.NonBinary, WORDS.gender("§5DeItY"));
+		assertEquals(GodGender.NonBinary, AltarSigns.GenderWords.ENGLISH.gender("deity"));
+		assertEquals(GodGender.Female, AltarSigns.GenderWords.ENGLISH.gender("Goddess"));
+		assertNull(AltarSigns.GenderWords.ENGLISH.gender("Gudinde"));
+		assertNull(WORDS.gender(""));
+		assertNull(WORDS.gender("Gods"));
+		assertNull(WORDS.gender(null));
 	}
 
 	/** A tagged sign is known by its tags, whatever its text says */

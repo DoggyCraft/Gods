@@ -210,4 +210,38 @@ class GodRepositoryTest
 		assertFalse(written.contains("Freya.Priests"));
 		assertFalse(written.contains("Freya.PvP"));
 	}
+
+	/** Non-binary gods are stored as NonBinary and read back; the old genders read as they always did */
+	@Test
+	void gendersRoundTrip() throws IOException
+	{
+		Files.writeString(this.dir.resolve("gods.yml"), """
+				data-version: 2
+				Loki:
+				  Gender: NonBinary
+				Thor:
+				  Gender: Male
+				Odin:
+				  Gender: None
+				Hel:
+				  Gender: Unknown
+				""");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.gods().load());
+		assertEquals(GodGender.NonBinary, storage.gods().find("Loki").gender());
+		assertEquals(GodGender.Male, storage.gods().find("Thor").gender());
+		assertEquals(GodGender.None, storage.gods().find("Odin").gender());
+		assertNull(storage.gods().find("Hel").gender());
+
+		storage.gods().find("Thor").setGender(GodGender.NonBinary);
+		storage.gods().markDirty();
+		storage.close();
+
+		YamlConfiguration written = written();
+		assertEquals("NonBinary", written.getString("Loki.Gender"));
+		assertEquals("NonBinary", written.getString("Thor.Gender"));
+		assertEquals("None", written.getString("Odin.Gender"));
+		// A gender this version doesn't know is kept as it was
+		assertEquals("Unknown", written.getString("Hel.Gender"));
+	}
 }

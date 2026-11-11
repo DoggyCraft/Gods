@@ -4,7 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.junit.jupiter.api.Test;
@@ -33,22 +37,46 @@ class GodRulesTest
 	@Test
 	void theVoiceComesFromTypeAndGender()
 	{
-		assertEquals("thunder_male", GodRules.voice(GodType.THUNDER, GodGender.Male, 0L));
-		assertEquals("love_female", GodRules.voice(GodType.LOVE, GodGender.Female, 1L));
-		// No gender: the seed picks one, always the same
-		assertEquals("sea_female", GodRules.voice(GodType.SEA, GodGender.None, 42L));
-		assertEquals("sea_male", GodRules.voice(GodType.SEA, GodGender.None, 43L));
+		assertEquals(List.of("thunder_male"), GodRules.voices(GodType.THUNDER, GodGender.Male, 0L));
+		assertEquals(List.of("love_female"), GodRules.voices(GodType.LOVE, GodGender.Female, 1L));
+		// No gender: the seed picks one, always the same (as before non-binary gods)
+		assertEquals(List.of("sea_female"), GodRules.voices(GodType.SEA, GodGender.None, 42L));
+		assertEquals(List.of("sea_male"), GodRules.voices(GodType.SEA, GodGender.None, 43L));
+		assertEquals(List.of("sea_female"), GodRules.voices(GodType.SEA, GodGender.None, 44L));
+		// Non-binary: both voices of its type, whatever the seed
+		assertEquals(List.of("sea_male", "sea_female"), GodRules.voices(GodType.SEA, GodGender.NonBinary, 42L));
 		// No such god
-		assertEquals("sun_male", GodRules.voice(null, null, 0L));
+		assertEquals(List.of("sun_male"), GodRules.voices(null, null, 0L));
 	}
 
-	/** A god without a gender word on its sign chooses its gender from its seed, the same one a god without a gender speaks with */
+	/** A god without a gender word on its sign chooses its gender from its seed, among all three */
 	@Test
 	void aGodChoosesItsGenderFromItsSeed()
 	{
 		assertEquals(GodGender.Female, GodRules.chosenGender(42L));
 		assertEquals(GodGender.Male, GodRules.chosenGender(43L));
-		assertEquals(GodRules.voice(GodType.SEA, GodGender.None, 7L), GodRules.voice(GodType.SEA, GodRules.chosenGender(7L), 0L));
+		assertEquals(GodGender.NonBinary, GodRules.chosenGender(44L));
+		assertEquals(GodGender.Male, GodRules.chosenGender(-2L));
+		assertEquals(GodRules.chosenGender(7L), GodRules.chosenGender(7L));
+		Set<GodGender> chosen = new HashSet<>();
+		for (long seed = 1000L; seed < 1010L; seed++)
+		{
+			chosen.add(GodRules.chosenGender(seed));
+		}
+		assertEquals(Set.of(GodGender.Male, GodGender.Female, GodGender.NonBinary), chosen);
+	}
+
+	@Test
+	void priestsWaitBetweenGenderChanges()
+	{
+		Instant now = Instant.parse("2026-11-11T12:00:00Z");
+		assertEquals(Duration.ZERO, GodRules.genderChangeWait(null, now, 24));
+		assertEquals(Duration.ofHours(23), GodRules.genderChangeWait(now.minus(Duration.ofHours(1)), now, 24));
+		assertEquals(Duration.ZERO, GodRules.genderChangeWait(now.minus(Duration.ofHours(24)), now, 24));
+		assertEquals(Duration.ZERO, GodRules.genderChangeWait(now.minus(Duration.ofDays(3)), now, 24));
+		assertEquals(Duration.ZERO, GodRules.genderChangeWait(now, now, 0));
+		// A change in the future (the clock went back) waits from then
+		assertEquals(Duration.ofHours(25), GodRules.genderChangeWait(now.plus(Duration.ofHours(1)), now, 24));
 	}
 
 	@Test

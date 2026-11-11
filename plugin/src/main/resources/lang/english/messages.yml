@@ -32,10 +32,12 @@ altar:
   invalid-god-name: <dark_red>That is not a proper name for a God!
   invalid-sign: <dark_red>Only write the name of a God on the sign
   # The words a player may write on a new altar sign, on another line than the God's name, to choose the God's gender
-  # (any case). English "God" and "Goddess" always work too. Without one, a new God chooses its gender itself.
+  # (any case). English "God", "Goddess" and "Deity" always work too. Without one, a new God chooses its gender
+  # itself.
   gender-words:
     male: [God]
     female: [Goddess]
+    non-binary: [Deity]
   blessing-hint: <aqua>Right click the sign on the altar to bless that player
   curse-hint: <aqua>Right click the sign on the altar to curse that player
   curse-not-allowed: <dark_red>You cannot curse players
@@ -43,7 +45,8 @@ altar:
   build-not-allowed: <dark_red>You cannot build altars
   create-god-not-allowed: <red>You cannot create a new God
   # The front text Gods writes on altar signs: four lines each, per sign style (sign.messages of a god type's theme in
-  # themes.yml; a style without its own text uses default). praying knows <god>; curses and blessings know <player>.
+  # themes.yml; a style without its own text uses default). praying knows <god>, <gender> ("God", "Goddess", "Deity")
+  # and <title> ("Deity of the Sea"); curses and blessings know <player>.
   # Altar signs are recognized by their tags, not by this text, so it can say anything.
   sign:
     default:
@@ -530,6 +533,7 @@ names:
     None: God
     Male: God
     Female: Goddess
+    NonBinary: Deity
   mood:
     EXALTED: Exalted
     PLEASED: Pleased
@@ -539,7 +543,7 @@ names:
 
 # Sent to everyone on the server
 broadcast:
-  # When config.yml's gods.broadcast-new-gods is on. <player>, <god>, <gender> ("God", "Goddess")
+  # When config.yml's gods.broadcast-new-gods is on. <player>, <god>, <gender> ("God", "Goddess", "Deity")
   new-god: <white><player><aqua> started to believe in the <gender> <gold><god>
   # When two players marry: <player>, <partner> (display names), <god>
   married: <white><player><aqua> just married <white><partner><aqua> in the name of <gold><god><aqua>!
@@ -674,8 +678,8 @@ command:
     - <white>  1 - Place a block (the block decides the type of God)
     - <white>  2 - Place a torch, lantern or candle on top
     - <white>  3 - Place a wall sign on the side of the block
-    - <white>  4 - Write the name of your God on the sign, and <aqua>God<white> or <aqua>Goddess<white> on
-    - <white>      another line to choose (or let your God choose)
+    - <white>  4 - Write the name of your God on the sign, and <aqua>God<white>, <aqua>Goddess<white> or <aqua>Deity<white>
+    - <white>      on another line to choose (or let your God choose)
     - ''
     - <aqua>You can now pray to your God by right-clicking the sign!
     - <aqua>Check what type of god you can make with <white>/g help blocks

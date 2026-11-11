@@ -39,7 +39,20 @@ public final class ApiSnapshots
 		{
 			case Male -> com.dogonfire.gods.api.GodGender.MALE;
 			case Female -> com.dogonfire.gods.api.GodGender.FEMALE;
+			case NonBinary -> com.dogonfire.gods.api.GodGender.NON_BINARY;
 			case None -> com.dogonfire.gods.api.GodGender.NONE;
+		};
+	}
+
+	/** The model's gender for the API's */
+	public static com.dogonfire.gods.model.GodGender modelGender(com.dogonfire.gods.api.GodGender gender)
+	{
+		return switch (gender)
+		{
+			case MALE -> com.dogonfire.gods.model.GodGender.Male;
+			case FEMALE -> com.dogonfire.gods.model.GodGender.Female;
+			case NON_BINARY -> com.dogonfire.gods.model.GodGender.NonBinary;
+			case NONE -> com.dogonfire.gods.model.GodGender.None;
 		};
 	}
 

@@ -529,6 +529,7 @@ believers-defend-holy-land-success:
 - Our Holy Land stands like a rock in the storm! Well done, my children!
 believers-new-player-accepted:
 - A new sailor has joined our crew! Welcome them aboard, my children!
-# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself
+# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself.
+# <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
-- 'Like the tide, I have made my choice, <player>: I am your Goddess of the Sea!'
+- 'Like the tide, I have made my choice, <player>: I am your <gender> of the Sea!'

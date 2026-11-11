@@ -51,7 +51,7 @@ public class PrayerService
 			int delay = 2;
 			if (newGod && gender == null)
 			{
-				ctx.godSpeech().say(godName, player, Voice.BELIEVER_GOD_CHOSE_GENDER, delay, Messages.player(player.getName()));
+				ctx.godSpeech().say(godName, player, Voice.BELIEVER_GOD_CHOSE_GENDER, delay, Messages.player(player.getName()), ctx.godService().genderTag(godName));
 				delay = 40;
 			}
 			ctx.godSpeech().say(godName, player, Voice.BELIEVER_ALTAR_BUILT, delay + this.random.nextInt(30), Messages.player(player.getName()));
@@ -426,7 +426,7 @@ public class PrayerService
 			if (newGod)
 			{
 				// An old altar sign of a god that is gone: the new god chooses its gender
-				ctx.godSpeech().say(godName, player, Voice.BELIEVER_GOD_CHOSE_GENDER, 2, Messages.player(player.getName()));
+				ctx.godSpeech().say(godName, player, Voice.BELIEVER_GOD_CHOSE_GENDER, 2, Messages.player(player.getName()), ctx.godService().genderTag(godName));
 			}
 			Block altarBlock = ctx.altarService().getAltarBlockFromSign(player.getWorld().getBlockAt(location));
 

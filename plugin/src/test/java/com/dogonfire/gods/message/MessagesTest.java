@@ -130,6 +130,52 @@ class MessagesTest
 		assertNull(messages.voices().randomLine("moon_female", Voice.BELIEVER_PRAYING));
 	}
 
+	/** A non-binary god's line comes from one of its two voice files, picked for each line, then a line of that file */
+	@Test
+	void nonBinaryGodsSpeakWithBothVoices()
+	{
+		this.jar.put("lang/english/voices/sun_male.yml", "believer-praying:\n- m1\n- m2\nbelievers-alliance: ''\n");
+		this.jar.put("lang/english/voices/sun_female.yml", "believer-praying:\n- f1\n- f2\n- f3\nbelievers-alliance: [ally]\n");
+		GodVoices voices = messages("english").voices();
+		List<String> both = List.of("sun_male", "sun_female");
+
+		// Draws: which file (of 2), then which line of it
+		assertEquals("m2", voices.randomLine(both, Voice.BELIEVER_PRAYING, new Draws(0, 1)));
+		assertEquals("f3", voices.randomLine(both, Voice.BELIEVER_PRAYING, new Draws(1, 2)));
+		assertEquals("f1", voices.randomLine(both, Voice.BELIEVER_PRAYING, new Draws(1, 0)));
+		// The picked file says nothing there: the god says nothing
+		assertNull(voices.randomLine(both, Voice.BELIEVERS_ALLIANCE, new Draws(0, 0)));
+		assertEquals("ally", voices.randomLine(both, Voice.BELIEVERS_ALLIANCE, new Draws(1, 0)));
+		// One voice: no draw for the file
+		assertEquals("m2", voices.randomLine(List.of("sun_male"), Voice.BELIEVER_PRAYING, new Draws(1)));
+		// Bundled: a non-binary sun god says lines of both files
+		Messages bundled = new Messages(this.lang, path -> getClass().getClassLoader().getResourceAsStream(path), Logger.getLogger("test"));
+		bundled.load("english", "Doggycraft");
+		assertEquals(bundled.voices().lines("sun_male", Voice.BELIEVER_PRAYING).getFirst(), bundled.voices().randomLine(both, Voice.BELIEVER_PRAYING, new Draws(0, 0)));
+		assertEquals(bundled.voices().lines("sun_female", Voice.BELIEVER_PRAYING).getFirst(), bundled.voices().randomLine(both, Voice.BELIEVER_PRAYING, new Draws(1, 0)));
+		assertEquals("Deity of the Sea", Messages.legacy(bundled.godTypeName(GodType.SEA, GodGender.NonBinary)));
+	}
+
+	/** A Random that returns the given numbers from nextInt, in order */
+	private static final class Draws extends java.util.Random
+	{
+		private final int[]	draws;
+		private int			next;
+
+		Draws(int... draws)
+		{
+			this.draws = draws;
+		}
+
+		@Override
+		public int nextInt(int bound)
+		{
+			int draw = this.draws[this.next++];
+			assertTrue(draw < bound);
+			return draw;
+		}
+	}
+
 	/** A god's words with the bundled god.speech look as before, and a god or player name can't inject tags */
 	@Test
 	void godSpeechLooksAsBeforeAndNamesAreNotParsed()

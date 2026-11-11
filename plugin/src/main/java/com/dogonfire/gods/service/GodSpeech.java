@@ -21,7 +21,8 @@ import com.dogonfire.gods.task.InfoTask;
 /**
  * Gods speaking to players, and the info messages Gods sends a little later. A god speaks in its voice
  * ({@link com.dogonfire.gods.message.GodVoices}: a random line for the situation from the voice file of its type and
- * gender), formatted by {@code god.speech} in messages.yml, and only to players who are online, in an enabled world and
+ * gender; a non-binary god's line comes from its type's male or female file, picked anew for each line),
+ * formatted by {@code god.speech} in messages.yml, and only to players who are online, in an enabled world and
  * have {@code gods.listen}. Messages are sent after a delay in ticks ({@link GodSpeakTask}, {@link InfoTask}).
  * <p>
  * Every call passes its own tags. A god's line also knows {@code <god>} (the god's name) and, unless the call says
@@ -53,7 +54,7 @@ public class GodSpeech
 	 */
 	public String voiceLine(String godName, Voice situation)
 	{
-		return messages().voices().randomLine(ctx.godService().getVoiceForGod(godName), situation);
+		return messages().voices().randomLine(ctx.godService().getVoicesForGod(godName), situation);
 	}
 
 	/**

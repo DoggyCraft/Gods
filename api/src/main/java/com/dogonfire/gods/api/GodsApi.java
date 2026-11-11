@@ -71,7 +71,8 @@ public interface GodsApi
 	/**
 	 * The situations gods have voice lines for: the keys of Gods' voice files ({@code lang/<language>/voices/}), such as
 	 * {@code believer-praying}, {@code believer-random-pleased-speech} or {@code believers-slay-quest-started}. Each
-	 * god has a list of lines for each, in the voice of its type and gender, and says one at random.
+	 * god has a list of lines for each, in the voice of its type and gender, and says one at random (a non-binary god
+	 * speaks each line with its type's male or female voice, picked at random).
 	 */
 	Set<String> getVoiceSituations();
 

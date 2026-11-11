@@ -1,6 +1,9 @@
 package com.dogonfire.gods.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -52,30 +55,56 @@ public final class GodRules
 	}
 
 	/**
-	 * The voice a god speaks with (see {@link GodVoices}), e.g. sun_male. A god without a gender always gets the same
-	 * one, picked from its seed; a god that doesn't exist ({@code type} null) speaks as a male sun god.
+	 * The voices a god speaks with (see {@link GodVoices}), e.g. [sun_male]. A god without a gender always gets the
+	 * same one, picked from its seed; a non-binary god has both of its type's voices and speaks each line with one of
+	 * them, picked anew every time; a god that doesn't exist ({@code type} null) speaks as a male sun god.
 	 */
-	public static String voice(GodType type, GodGender gender, long seed)
+	public static List<String> voices(GodType type, GodGender gender, long seed)
 	{
 		if (type == null)
 		{
-			type = GodType.SUN;
-			gender = GodGender.Male;
+			return List.of(GodVoices.name(GodType.SUN, GodGender.Male));
 		}
-		else if (gender == GodGender.None)
+		if (gender == GodGender.NonBinary)
 		{
-			gender = chosenGender(seed);
+			return List.of(GodVoices.name(type, GodGender.Male), GodVoices.name(type, GodGender.Female));
 		}
-		return GodVoices.name(type, gender);
+		if (gender == null || gender == GodGender.None)
+		{
+			gender = (seed & 1L) == 0L ? GodGender.Female : GodGender.Male;
+		}
+		return List.of(GodVoices.name(type, gender));
 	}
 
 	/**
-	 * The gender a god chooses itself (when its altar sign didn't say), fixed by its seed: the same one a god without a
-	 * gender speaks with
+	 * The gender a new god chooses itself (when its altar sign didn't say), fixed by its seed: male, female or
+	 * non-binary
 	 */
 	public static GodGender chosenGender(long seed)
 	{
-		return (seed & 1L) == 0L ? GodGender.Female : GodGender.Male;
+		return switch ((int) Math.floorMod(seed, 3L))
+		{
+			case 0 -> GodGender.Female;
+			case 1 -> GodGender.Male;
+			default -> GodGender.NonBinary;
+		};
+	}
+
+	/**
+	 * How long a god's priests must still wait before they may change its gender again ({@link Duration#ZERO}: they
+	 * may now)
+	 *
+	 * @param lastChange    when its gender last changed, or null for never
+	 * @param cooldownHours config.yml's priests.gender-change-cooldown-hours
+	 */
+	public static Duration genderChangeWait(Instant lastChange, Instant now, int cooldownHours)
+	{
+		if (lastChange == null)
+		{
+			return Duration.ZERO;
+		}
+		Duration left = Duration.between(now, lastChange.plus(Duration.ofHours(cooldownHours)));
+		return left.isNegative() ? Duration.ZERO : left;
 	}
 
 	/** A god's power: the power of all its believers, but at least {@code minPower} (the whitelist's) */

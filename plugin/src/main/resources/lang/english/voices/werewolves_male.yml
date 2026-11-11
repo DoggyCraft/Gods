@@ -526,6 +526,7 @@ believers-get-holy-artifact-quest-help:
 believers-get-holy-artifact-quest-range:
 - You are only <hl><amount></hl> blocks away from the Holy artifact!
 - Hurry! You are <hl><amount></hl> blocks away from the Holy artifact!
-# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself
+# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself.
+# <gender> is the name of the gender it chose ("God", "Goddess", "Deity")
 believer-god-chose-gender:
-- 'The pack has a leader, <player>: I have chosen to be your God!'
+- 'The pack has a leader, <player>: I have chosen to be your <gender>!'
