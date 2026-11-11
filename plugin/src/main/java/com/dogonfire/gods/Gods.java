@@ -22,8 +22,43 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import com.dogonfire.gods.commands.GodsCommandExecuter;
-import com.dogonfire.gods.commands.GodsTabCompleter;
+import com.dogonfire.gods.command.AcceptCommand;
+import com.dogonfire.gods.command.AccessCommand;
+import com.dogonfire.gods.command.AllyCommand;
+import com.dogonfire.gods.command.AttackCommand;
+import com.dogonfire.gods.command.BibleCommand;
+import com.dogonfire.gods.command.ChatCommand;
+import com.dogonfire.gods.command.CheckCommand;
+import com.dogonfire.gods.command.CommandChecks;
+import com.dogonfire.gods.command.CommandRouter;
+import com.dogonfire.gods.command.DescriptionCommand;
+import com.dogonfire.gods.command.DivorceCommand;
+import com.dogonfire.gods.command.EditBibleCommand;
+import com.dogonfire.gods.command.FollowersCommand;
+import com.dogonfire.gods.command.HelpCommand;
+import com.dogonfire.gods.command.HolyArtifactCommand;
+import com.dogonfire.gods.command.HomeCommand;
+import com.dogonfire.gods.command.HuntCommand;
+import com.dogonfire.gods.command.InfoCommand;
+import com.dogonfire.gods.command.InviteCommand;
+import com.dogonfire.gods.command.KickCommand;
+import com.dogonfire.gods.command.LeaveCommand;
+import com.dogonfire.gods.command.ListCommand;
+import com.dogonfire.gods.command.LoveCommand;
+import com.dogonfire.gods.command.MarriagesCommand;
+import com.dogonfire.gods.command.MarryCommand;
+import com.dogonfire.gods.command.Overview;
+import com.dogonfire.gods.command.PrayForCommand;
+import com.dogonfire.gods.command.PvpCommand;
+import com.dogonfire.gods.command.RejectCommand;
+import com.dogonfire.gods.command.ReloadCommand;
+import com.dogonfire.gods.command.SetBibleCommand;
+import com.dogonfire.gods.command.SetHomeCommand;
+import com.dogonfire.gods.command.SetPriestCommand;
+import com.dogonfire.gods.command.SetSafeCommand;
+import com.dogonfire.gods.command.StartAttackCommand;
+import com.dogonfire.gods.command.SubCommand;
+import com.dogonfire.gods.command.WarCommand;
 import com.dogonfire.gods.config.ConfigDefaults;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.SettingsLoader;
@@ -103,14 +138,7 @@ public class Gods extends JavaPlugin
 
 		loadData();
 
-		GodsCommandExecuter executer = new GodsCommandExecuter(this.ctx);
-		GodsTabCompleter tabCompleter = new GodsTabCompleter(this.ctx, executer);
-		for (String name : List.of("gods", "g"))
-		{
-			PluginCommand command = getCommand(name);
-			command.setExecutor(executer);
-			command.setTabCompleter(tabCompleter);
-		}
+		registerCommands();
 
 		PluginManager pm = getServer().getPluginManager();
 		this.actionCooldown = new ActionCooldown();
@@ -246,6 +274,28 @@ public class Gods extends JavaPlugin
 	}
 
 	/** The UUID of a player the server has seen, by name (any case), or null; for upgrading old data files */
+	/** Registers /g (alias /gods) and every subcommand: the one place a new command is added */
+	private void registerCommands()
+	{
+		CommandRouter router = new CommandRouter(this.ctx.messages(), this.ctx.permissions(), CommandChecks.of(this.ctx), new Overview(this.ctx));
+		for (SubCommand command : List.of(
+				new AcceptCommand(this.ctx), new AccessCommand(this.ctx), new AllyCommand(this.ctx), new AttackCommand(this.ctx),
+				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx),
+				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx),
+				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),
+				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LeaveCommand(this.ctx),
+				new ListCommand(this.ctx), new LoveCommand(this.ctx), new MarriagesCommand(this.ctx), new MarryCommand(this.ctx),
+				new PrayForCommand(this.ctx), new PvpCommand(this.ctx), new RejectCommand(this.ctx), new ReloadCommand(this.ctx),
+				new SetBibleCommand(this.ctx), new SetHomeCommand(this.ctx), new SetPriestCommand(this.ctx), new SetSafeCommand(this.ctx),
+				new StartAttackCommand(this.ctx), new WarCommand(this.ctx)))
+		{
+			router.register(command);
+		}
+		PluginCommand command = getCommand("g");
+		command.setExecutor(router);
+		command.setTabCompleter(router);
+	}
+
 	private UUID knownPlayerId(String name)
 	{
 		if (this.knownPlayerIds == null)

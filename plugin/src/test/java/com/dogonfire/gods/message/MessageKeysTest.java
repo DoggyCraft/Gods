@@ -76,10 +76,10 @@ class MessageKeysTest
 	void everyCommandHasParametersAndADescription() throws IOException
 	{
 		YamlConfiguration messages = bundled("lang/english/messages.yml");
-		Pattern command = Pattern.compile("super\\(ctx, \"([a-z]+)\"\\)");
+		Pattern command = Pattern.compile("super\\(ctx, \"([a-z]+)\", ");
 		List<String> missing = new ArrayList<>();
 		int commands = 0;
-		try (Stream<Path> files = Files.list(Path.of("src/main/java/com/dogonfire/gods/commands")))
+		try (Stream<Path> files = Files.list(Path.of("src/main/java/com/dogonfire/gods/command")))
 		{
 			for (Path file : files.toList())
 			{

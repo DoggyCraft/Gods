@@ -203,9 +203,7 @@ command:
   # <usage> is the command name and its parameters
   usage: '<green>Usage: /gods <usage>'
   no-permission: <red>You do not have permission to perform this command.
-  not-allowed: <red>You do not have permission for that
   no-god: <red>You do not believe in a God.
-  not-believer: <red>You do not believe in a God
   player-only: <red>This is a Player-Only command.
   priest-only: <red>This is a Priest-Only command.
   invalid: <red>Invalid Gods command!
@@ -253,7 +251,6 @@ command:
   ally:
     parameters: \<god>
     description: Toggle alliance with another religion
-    usage: <red>You need to specify a God to ally with! <yellow>/gods ally \<godname>
     not-priest: <red>Only priests can declare alliances
     own-god: <red>You cannot ally with your own God!
     at-war: <red>You are in WAR with <gold><god></gold>!
@@ -437,7 +434,6 @@ command:
   marry:
     parameters: \<name>
     description: Ask another player to marry you
-    who: <red>Marry who!?
     no-player: <red>There is no player with the name '<white><player></white>' online.
     yourself: <red>Marry yourself!? Think again...
     no-god: <white><player><red> does not believe in a God
@@ -491,7 +487,6 @@ command:
   setpriest:
     parameters: \<god> \<player>
     description: Assign someone to be the priest
-    not-enough-arguments: <red>Not enough arguments
     no-god: <red>There is no god called '<gold><god><aqua>'
     no-player: <red>There is no such player online
     done: <aqua>You set <gold><player></gold> as priest of <gold><god>
@@ -513,7 +508,6 @@ command:
   war:
     parameters: \<god>
     description: Toggle war with another religion
-    usage: <red>You need to specify a God which you want to go to WAR with! <yellow>/gods war \<godname>
     own-god: <red>You cannot go to war with your own God!
     allied: <red>You are ALLIED with <gold><god></gold>!
   'yes':
