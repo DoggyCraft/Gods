@@ -423,8 +423,10 @@ believers-altar-destroyed-by-player:
 - Our altar was destroyed by <hl><player></hl>!
 believers-altar-destroyed:
 - Our altar was destroyed!
+# Said to all believers when a priest makes an altar the main altar, the religion's home, with /g setaltar or /g sethome
+# (<player>: the priest; <world>, <x>, <y>, <z>: its altar block)
 believers-set-home:
-- <hl><player></hl> just specified his location as our home!
+- <hl><player></hl> made my altar at <hl><x>, <y>, <z></hl> my main altar and our home!
 believers-war:
 - We are now at WAR with ungodly believers of <hl><player></hl>! Kill them and make me proud!
 - My children, we are now at WAR with <hl><player></hl>! Kill them all on sight!

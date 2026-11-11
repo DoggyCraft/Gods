@@ -44,7 +44,6 @@ public final class ConfigV1ToV2 implements Migration
 			Map.entry("Settings.MinBelieversForPriest", "priests.min-believers"),
 			Map.entry("Settings.MaxPriestsPrGod", "priests.max-per-god"),
 			Map.entry("Settings.MaxPriestPrayerTime", "priests.max-hours-without-prayer"),
-			Map.entry("Settings.OnlyPriestCanSetHome", "priests.only-priests-can-set-home"),
 			Map.entry("Settings.PriestAssignCommand", "priests.assign-command"),
 			Map.entry("Settings.PriestRemoveCommand", "priests.remove-command"),
 
@@ -119,6 +118,7 @@ public final class ConfigV1ToV2 implements Migration
 	/** Settings older versions wrote that do nothing any more. They are left out without a mention. */
 	static final Set<String> OBSOLETE = Set.of(
 			"Settings.DownloadLanguageFile",
+			"Settings.OnlyPriestCanSetHome",
 			"Settings.NumberOfBelieversPrPriest",
 			"Settings.AllowMultipleGodsPrDivinePower",
 			"Quests.ConvertQuests",

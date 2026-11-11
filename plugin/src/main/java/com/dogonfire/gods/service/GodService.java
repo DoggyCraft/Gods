@@ -22,7 +22,6 @@ import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.GodGender;
-import com.dogonfire.gods.model.GodHome;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
 import com.dogonfire.gods.storage.CleanupGuard;
@@ -453,17 +452,6 @@ public class GodService
 			return null;
 		}
 		return HomeRules.home(ctx.altarRegistry().mainAltar(godName), god.home());
-	}
-
-	public void setHomeForGod(String godName, Location location)
-	{
-		God god = this.repository.forChange(godName);
-		if (god != null)
-		{
-			god.setHome(new GodHome(location.getWorld().getName(), location.getX(), location.getY(), location.getZ()));
-		}
-
-		this.repository.markDirty();
 	}
 
 	/** The sign of the god's main altar, or null; see {@link AltarRegistry#mainAltar} */

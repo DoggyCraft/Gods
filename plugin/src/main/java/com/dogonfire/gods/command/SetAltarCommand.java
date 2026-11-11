@@ -6,15 +6,19 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.service.AltarRegistry;
 import com.dogonfire.gods.service.MainAltarRules;
 
 /**
- * /g setaltar: the priest makes the praying altar they look at (its sign, altar block or light, within
- * {@link MainAltarRules#REACH_BLOCKS}) their god's main altar
+ * /g setaltar (alias /g sethome): the priest makes the praying altar they look at (its sign, altar block or light, within
+ * {@link MainAltarRules#REACH_BLOCKS}) their god's main altar, which is the religion's home (/g home); the god tells its
+ * believers
  */
 public final class SetAltarCommand extends SubCommand
 {
@@ -22,6 +26,7 @@ public final class SetAltarCommand extends SubCommand
 	{
 		super(ctx, "setaltar", "gods.priest.setaltar");
 		priestOnly("command.setaltar.not-priest");
+		aliases("sethome");
 		args(0, 0);
 	}
 
@@ -54,7 +59,10 @@ public final class SetAltarCommand extends SubCommand
 			throw new CommandException("command.setaltar.already", Messages.god(godName));
 		}
 		registry.setMainAltar(altar);
-		send(sender, "command.setaltar.done", Messages.god(godName), Messages.text("world", altar.world()), Messages.text("x", altar.block().x()),
-				Messages.text("y", altar.block().y()), Messages.text("z", altar.block().z()));
+		TagResolver[] where = { Messages.text("world", altar.world()), Messages.text("x", altar.block().x()), Messages.text("y", altar.block().y()),
+				Messages.text("z", altar.block().z()) };
+		send(sender, "command.setaltar.done", Messages.god(godName), where[0], where[1], where[2], where[3]);
+		this.ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_SET_HOME, 2, Messages.player(player.getName()), where[0], where[1], where[2],
+				where[3]);
 	}
 }

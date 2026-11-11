@@ -54,7 +54,7 @@ class BundledConfigTest
 				new Settings.General(false, "english", "Your Server", List.of()),
 				new Settings.GodSettings(true, false, true, 1.0D, 0.03D, false, false),
 				new Settings.Believers(false, 5 * 60, 154),
-				new Settings.Priests(3, 1, 72, false, 24, "", ""),
+				new Settings.Priests(3, 1, 72, 24, "", ""),
 				Settings.Altars.of(altars),
 				new Settings.Prayers(true, 30, 20, 10, 10, 50),
 				new Settings.Sacrifices(true),

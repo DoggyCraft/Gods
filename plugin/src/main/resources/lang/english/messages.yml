@@ -926,7 +926,7 @@ command:
     done: '<yellow><plugin>: <white>Reloaded configuration.'
   setaltar:
     parameters: ''
-    description: Make the altar you look at the main altar of your religion
+    description: Make the altar you look at the main altar and home of your religion (also /g sethome)
     not-priest: <red>Only priests can choose the main altar of your religion
     no-altar: <red>Look at the sign, the block or the light of an altar to your God, at most 5 blocks away
     not-praying: <red>That is not an altar to pray at
@@ -941,11 +941,6 @@ command:
     not-priest: <red>Only your priest can set the Bible
     failed: <red>You cannot use that as the Bible for <gold><god>
     done: <aqua>You set <gold><title></gold> as your holy scripture!
-  sethome:
-    parameters: ''
-    description: Set the home of your religion
-    not-priest: <red>Only your priest can set the home for your religion
-    not-holy-land: <red>You can only set religion home within your Holy Land
   setpriest:
     parameters: \<god> \<player>
     description: Assign someone to be the priest

@@ -41,13 +41,29 @@ class LegacyLangFilesTest
 		assertEquals("prophecy-header-bible-text", LegacyLangFiles.voiceKey("ProphecyHeaderBibleText"));
 	}
 
+	/**
+	 * Voices whose text Gods rewrote after the old bundled files, because the old one no longer fits (the migration
+	 * takes Gods' own old texts as unchanged, see {@link #unchangedOldFilesOfThisVersionKeepNothing})
+	 */
+	private static final java.util.Set<String> REWRITTEN_VOICES = java.util.Set.of(
+			// "just specified his location as our home": the home is the main altar now
+			Voice.BELIEVERS_SET_HOME.key());
+
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test
 	void theOldBundledFilesConvertToTheNewBundledOnes() throws IOException
 	{
 		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("messages.yml"), LegacyLangFiles.convertGeneral(fixture("english_general.yml")), bundled("lang/english/messages.yml")));
-		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("sun_male.yml"), LegacyLangFiles.convertVoice(fixture("english_sun_male.yml")), bundled("lang/english/voices/sun_male.yml")));
-		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("creatures_female.yml"), LegacyLangFiles.convertVoice(fixture("english_creatures_female.yml")), bundled("lang/english/voices/creatures_female.yml")));
+		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("sun_male.yml"), notRewritten(LegacyLangFiles.convertVoice(fixture("english_sun_male.yml"))), bundled("lang/english/voices/sun_male.yml")));
+		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("creatures_female.yml"), notRewritten(LegacyLangFiles.convertVoice(fixture("english_creatures_female.yml"))),
+				bundled("lang/english/voices/creatures_female.yml")));
+	}
+
+	private static Map<String, List<String>> notRewritten(Map<String, List<String>> converted)
+	{
+		Map<String, List<String>> kept = new java.util.LinkedHashMap<>(converted);
+		kept.keySet().removeAll(REWRITTEN_VOICES);
+		return kept;
 	}
 
 	/** Gods 0.9.x's files (bundled, or downloaded from GitHub) differ a lot from the new text, but nobody changed them */

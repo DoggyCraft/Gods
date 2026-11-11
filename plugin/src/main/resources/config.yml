@@ -7,7 +7,7 @@
 # is kept as config.yml.v1.bak.
 
 # The version of this file's layout. Gods uses it to upgrade old configs; don't change it.
-config-version: 3
+config-version: 4
 
 general:
   # Log extra information to the console, for finding problems.
@@ -50,8 +50,6 @@ priests:
   max-per-god: 1
   # Priests who haven't prayed for this many hours stop being priests.
   max-hours-without-prayer: 72
-  # Only priests can set their religion's home with /g sethome.
-  only-priests-can-set-home: false
   # How many hours a god's priests must wait between two changes of its gender with /g gender.
   gender-change-cooldown-hours: 24
   # A console command to run when a player becomes a priest, e.g. "lp user $PlayerName parent add priest". Empty for none.

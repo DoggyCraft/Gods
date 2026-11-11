@@ -61,8 +61,7 @@ public record Settings(
 	}
 
 	/** @param assignCommand console command run when a player becomes a priest ($PlayerName is replaced), or "" */
-	public record Priests(int minBelievers, int maxPerGod, int maxHoursWithoutPrayer, boolean onlyPriestsCanSetHome, int genderChangeCooldownHours, String assignCommand,
-			String removeCommand)
+	public record Priests(int minBelievers, int maxPerGod, int maxHoursWithoutPrayer, int genderChangeCooldownHours, String assignCommand, String removeCommand)
 	{
 	}
 
