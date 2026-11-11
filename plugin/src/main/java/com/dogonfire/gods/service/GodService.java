@@ -104,7 +104,7 @@ public class GodService
 
 		if (ctx.settings().bibles().enabled())
 		{
-			ctx.holyBookManager().clearBible(godName);
+			ctx.holyBookService().clearBible(godName);
 		}
 
 		if (ctx.settings().holyLand().enabled())

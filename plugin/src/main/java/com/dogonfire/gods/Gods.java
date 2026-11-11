@@ -220,7 +220,7 @@ public class Gods extends JavaPlugin
 	{
 		if (this.settings.bibles().enabled())
 		{
-			this.ctx.holyBookManager().load();
+			this.ctx.holyBookService().load();
 		}
 		if (this.settings.marriage().enabled())
 		{

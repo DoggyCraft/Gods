@@ -111,7 +111,7 @@ public class QuestAndHolyItemListener implements Listener
 
 		if ((action == Action.RIGHT_CLICK_AIR) || (action == Action.RIGHT_CLICK_BLOCK))
 		{
-			String godName = ctx.holyBookManager().getGodForBible(book);
+			String godName = ctx.holyBookService().getGodForBible(book);
 			if (godName != null)
 			{
 				if (this.cooldown.ready(player.getUniqueId(), event))

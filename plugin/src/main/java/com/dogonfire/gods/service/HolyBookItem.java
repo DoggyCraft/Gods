@@ -1,4 +1,4 @@
-package com.dogonfire.gods;
+package com.dogonfire.gods.service;
 
 import java.util.List;
 
@@ -13,10 +13,11 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 /**
- * A written book or a book and quill. Only written books have a title and an
- * author.
+ * A written book or a book and quill, as a holy book. Only written books have a title and an author. A holy book is
+ * recognized by its {@code gods:holy_book_god} tag; books from before the tag only by their author
+ * ({@link HolyBookService#getGodForBible}).
  */
-public class HolyBook
+final class HolyBookItem
 {
 	// Longest title a written book can have
 	private static final int	MAX_TITLE_LENGTH	= 32;
@@ -24,11 +25,11 @@ public class HolyBook
 	private final ItemStack		s;
 	private final NamespacedKey	godKey;
 
-	public HolyBook(Plugin plugin, ItemStack itemStack) throws Exception
+	HolyBookItem(Plugin plugin, ItemStack itemStack) throws Exception
 	{
 		if ((itemStack.getType() != Material.WRITTEN_BOOK) && (itemStack.getType() != Material.WRITABLE_BOOK))
 		{
-			throw new Exception("HolyBook: CraftItemStack is not Material.WRITTEN_BOOK or Material.WRITABLE_BOOK");
+			throw new Exception("HolyBookItem: the item is not Material.WRITTEN_BOOK or Material.WRITABLE_BOOK");
 		}
 		this.s = itemStack;
 		this.godKey = new NamespacedKey(plugin, "holy_book_god");

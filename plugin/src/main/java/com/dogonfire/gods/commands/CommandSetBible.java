@@ -46,11 +46,11 @@ public class CommandSetBible extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "Only your priest can set the Bible");
 			return;
 		}
-		if (!ctx.holyBookManager().setBible(godName, player.getName()))
+		if (!ctx.holyBookService().setBible(godName, player.getName()))
 		{
 			sender.sendMessage(ChatColor.RED + "You cannot use that as the Bible for " + ChatColor.GOLD + godName);
 			return;
 		}
-		sender.sendMessage(ChatColor.AQUA + "You set " + ChatColor.GOLD + ctx.holyBookManager().getBibleTitle(godName) + ChatColor.AQUA + " as your holy scripture!");
+		sender.sendMessage(ChatColor.AQUA + "You set " + ChatColor.GOLD + ctx.holyBookService().getBibleTitle(godName) + ChatColor.AQUA + " as your holy scripture!");
 	}
 }

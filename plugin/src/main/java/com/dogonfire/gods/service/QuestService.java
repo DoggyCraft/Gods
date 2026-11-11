@@ -326,7 +326,7 @@ public class QuestService
 	/** Quest: make non-believers read the god's holy book. Completed in {@link #handleReadBible}. */
 	private boolean generateGiveItemsQuest(String godName)
 	{
-		String bibleTitle = ctx.holyBookManager().getBibleTitle(godName);
+		String bibleTitle = ctx.holyBookService().getBibleTitle(godName);
 		if (bibleTitle == null)
 		{
 			return false;
@@ -484,7 +484,7 @@ public class QuestService
 				String itemName = (material == null) ? null : ctx.languageManager().getItemTypeName(material);
 				return (itemName == null) ? targetType : itemName;
 			case GIVEITEMS:
-				String bibleTitle = ctx.holyBookManager().getBibleTitle(godName);
+				String bibleTitle = ctx.holyBookService().getBibleTitle(godName);
 				return (bibleTitle == null) ? targetType : bibleTitle;
 			default:
 				return targetType;

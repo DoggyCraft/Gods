@@ -78,7 +78,7 @@ class StorageTest
 	{
 		Storage storage = storage();
 		assertTrue(storage.bibles().load());
-		assertTrue(storage.bibles().yaml().getKeys(false).isEmpty());
+		assertEquals(0, storage.bibles().size());
 		storage.flush();
 		storage.close();
 
@@ -181,7 +181,7 @@ class StorageTest
 		storage.bibles().load();
 		for (int i = 0; i < 50; i++)
 		{
-			storage.bibles().yaml().set("book" + i + ".Title", "p" + i);
+			storage.bibles().getOrCreate("book" + i).setTitle("p" + i);
 			storage.bibles().save();
 		}
 		assertTrue(storage.awaitWrites(10, TimeUnit.SECONDS));
@@ -198,9 +198,9 @@ class StorageTest
 		storage.bibles().load();
 		storage.close();
 
-		storage.bibles().yaml().set("Thor.Title", "Book");
+		storage.bibles().getOrCreate("Thor").setTitle("Book");
 		storage.bibles().save();
-		assertTrue(storage.bibles().isDirty());
+		assertTrue(storage.bibles().file().isDirty());
 		assertEquals(List.of(), filesInDir());
 	}
 	@Test

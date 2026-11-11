@@ -6,7 +6,6 @@ import org.bukkit.plugin.PluginManager;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.integration.WorldGuardIntegration;
 import com.dogonfire.gods.managers.HolyArtifactManager;
-import com.dogonfire.gods.managers.HolyBookManager;
 import com.dogonfire.gods.managers.HolyPowerManager;
 import com.dogonfire.gods.managers.LanguageManager;
 import com.dogonfire.gods.service.AltarService;
@@ -17,6 +16,7 @@ import com.dogonfire.gods.service.CommandmentService;
 import com.dogonfire.gods.service.GodListService;
 import com.dogonfire.gods.service.GodService;
 import com.dogonfire.gods.service.GodSpeech;
+import com.dogonfire.gods.service.HolyBookService;
 import com.dogonfire.gods.service.HolyLandService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.service.MoodService;
@@ -56,7 +56,7 @@ public final class GodsContext
 	private final QuestService				questService;
 	private final AltarService				altarService;
 	private final HolyLandService			holyLandService;
-	private final HolyBookManager			holyBookManager;
+	private final HolyBookService			holyBookService;
 	private final MarriageService			marriageService;
 	private final HolyArtifactManager		holyArtifactManager;
 	private final HolyPowerManager			holyPowerManager;
@@ -86,7 +86,7 @@ public final class GodsContext
 		this.questService = new QuestService(this, storage.quests());
 		this.altarService = new AltarService(this);
 		this.holyLandService = new HolyLandService(this, storage.holyLands());
-		this.holyBookManager = new HolyBookManager(this);
+		this.holyBookService = new HolyBookService(this, storage.bibles());
 		this.marriageService = new MarriageService(this, storage.marriages());
 		this.holyArtifactManager = new HolyArtifactManager(this);
 		this.holyPowerManager = new HolyPowerManager(this);
@@ -196,9 +196,9 @@ public final class GodsContext
 	}
 
 	/** Its data is only loaded while bibles are enabled */
-	public HolyBookManager holyBookManager()
+	public HolyBookService holyBookService()
 	{
-		return this.holyBookManager;
+		return this.holyBookService;
 	}
 
 	/** Its data is only loaded, and its listener (MarriageListener) only registered, while marriage is enabled */

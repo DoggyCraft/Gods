@@ -309,7 +309,7 @@ public class PriestService
 						}
 						else
 						{
-							ctx.languageManager().setType(ctx.holyBookManager().getBibleTitle(godName));
+							ctx.languageManager().setType(ctx.holyBookService().getBibleTitle(godName));
 							ctx.godSpeech().sayToPriests(godName, LanguageManager.LANGUAGESTRING.GodToPriestUseBible);
 						}
 						return true;

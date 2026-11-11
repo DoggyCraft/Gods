@@ -47,11 +47,11 @@ public class CommandBible extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "Only your priest can produce the Holy Book");
 			return;
 		}
-		if (!ctx.holyBookManager().giveBible(godName, player.getName()))
+		if (!ctx.holyBookService().giveBible(godName, player.getName()))
 		{
 			sender.sendMessage(ChatColor.RED + "Could not produce a Holy Book for " + godName);
 			return;
 		}
-		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + ctx.holyBookManager().getBibleTitle(godName) + ChatColor.AQUA + "!");
+		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + ctx.holyBookService().getBibleTitle(godName) + ChatColor.AQUA + "!");
 	}
 }

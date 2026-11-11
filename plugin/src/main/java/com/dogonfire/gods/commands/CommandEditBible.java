@@ -47,12 +47,12 @@ public class CommandEditBible extends GodsCommand
 			sender.sendMessage(ChatColor.RED + "Only your priest can edit your Holy Book");
 			return;
 		}
-		if (!ctx.holyBookManager().giveEditBible(godName, player.getName()))
+		if (!ctx.holyBookService().giveEditBible(godName, player.getName()))
 		{
 			sender.sendMessage(ChatColor.RED + "Could not produce a editable bible for " + godName);
 			return;
 		}
-		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + ctx.holyBookManager().getBibleTitle(godName) + ChatColor.AQUA + "!");
+		sender.sendMessage(ChatColor.AQUA + "You produced a copy of " + ChatColor.GOLD + ctx.holyBookService().getBibleTitle(godName) + ChatColor.AQUA + "!");
 		sender.sendMessage(ChatColor.AQUA + "After you have edited it, set this as your bible with " + ChatColor.WHITE + "/g setbible" + ChatColor.AQUA + "!");
 	}
 
