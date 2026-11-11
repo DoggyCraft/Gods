@@ -26,21 +26,24 @@ public class ChatService
 		public final boolean	priest;
 		public final ChatColor	godColor;
 		public final int		prayerPower;
+		/** The god's rank, as its god type calls it ("" without a god) */
+		public final String		rankName;
 
-		ChatInfo(String godName, boolean religionChat, boolean priest, ChatColor godColor, int prayerPower)
+		ChatInfo(String godName, boolean religionChat, boolean priest, ChatColor godColor, int prayerPower, String rankName)
 		{
 			this.godName = godName;
 			this.religionChat = religionChat;
 			this.priest = priest;
 			this.godColor = godColor;
 			this.prayerPower = prayerPower;
+			this.rankName = rankName;
 		}
 	}
 
 	/** How often the cache is refreshed for everyone online, in ticks */
 	public static final long			REFRESH_TICKS	= 100L;
 
-	private static final ChatInfo		NO_GOD		= new ChatInfo(null, false, false, ChatColor.WHITE, 0);
+	private static final ChatInfo		NO_GOD		= new ChatInfo(null, false, false, ChatColor.WHITE, 0, "");
 
 	private final String				chatTag		= "[GOD]";
 	private final Map<UUID, ChatInfo>	chatInfos	= new ConcurrentHashMap<UUID, ChatInfo>();
@@ -87,7 +90,7 @@ public class ChatService
 
 		if (godName == null)
 		{
-			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, ctx.believerService().getPrayerPower(playerId)));
+			this.chatInfos.put(playerId, new ChatInfo(null, false, false, ChatColor.WHITE, ctx.believerService().getPrayerPower(playerId), ""));
 			return;
 		}
 
@@ -95,7 +98,8 @@ public class ChatService
 		List<UUID> priests = ctx.priestService().getPriestsForGod(godName);
 		boolean priest = priests != null && priests.contains(playerId);
 
-		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godService().getColorForGod(godName), ctx.believerService().getPrayerPower(playerId)));
+		this.chatInfos.put(playerId, new ChatInfo(godName, religionChat, priest, ctx.godService().getColorForGod(godName), ctx.believerService().getPrayerPower(playerId),
+				ctx.rankService().getRankName(godName)));
 	}
 
 	/** Main thread only: refreshes everyone online. */

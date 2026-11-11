@@ -35,9 +35,9 @@ class AltarTextsTest
 	@Test
 	void theMainAltarHasALineOfItsOwn()
 	{
-		String text = AltarTexts.render(messages(), "sun", true, Messages.god("Ra"), Messages.component("title", Component.text("God of the Sun")));
+		String text = AltarTexts.render(messages(), "sun", true, Messages.god("Ra"), Messages.component("title", Component.text("God of the Sun")), Messages.text("rank", "High Noon"));
 		assertEquals(3, text.split("\n").length);
-		assertEquals("§6Main altar", text.split("\n")[2]);
+		assertEquals("§6Main altar · High Noon", text.split("\n")[2]);
 	}
 
 	@Test

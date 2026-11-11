@@ -206,6 +206,6 @@ public class AltarTextService
 		String style = ctx.themes().of(type).sign().messages();
 		return AltarTexts.render(ctx.messages(), style, main, Messages.god(godName), Messages.component("title", title),
 				Messages.component("gender", ctx.messages().genderName(gender)), Messages.component("mood", ctx.messages().moodName(ctx.moodService().getMoodForGod(godName))),
-				Messages.text("believers", ctx.believerService().getBelieversForGod(godName).size()));
+				Messages.text("believers", ctx.believerService().getBelieversForGod(godName).size()), Messages.text("rank", ctx.rankService().getRankName(godName)));
 	}
 }

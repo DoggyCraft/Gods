@@ -152,6 +152,12 @@ public final class RankRules
 		return needed;
 	}
 
+	/** Whole hours a rank reached at {@code since} has been held until now; 0 for null */
+	public static long hoursHeld(Instant since)
+	{
+		return hoursSince(since, Instant.now());
+	}
+
 	/** Whole hours from {@code since} to {@code now}; 0 for null or the future */
 	static long hoursSince(Instant since, Instant now)
 	{

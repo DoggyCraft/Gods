@@ -67,11 +67,13 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 		String god;
 		int prayerPower;
 		ChatColor godColor;
+		String rankName;
 		if (Bukkit.isPrimaryThread())
 		{
 			god = this.ctx.believerService().getGodForBeliever(player.getUniqueId());
 			prayerPower = this.ctx.believerService().getPrayerPower(player.getUniqueId());
 			godColor = (god != null) ? this.ctx.godService().getColorForGod(god) : ChatColor.WHITE;
+			rankName = (god != null) ? this.ctx.rankService().getRankName(god) : "";
 		}
 		else
 		{
@@ -79,6 +81,7 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 			god = info.godName;
 			prayerPower = info.prayerPower;
 			godColor = info.godColor;
+			rankName = info.rankName;
 		}
 
 		return switch (identifier)
@@ -91,6 +94,8 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 			case "prayerpower" -> String.valueOf(prayerPower);
 			// %gods_color%
 			case "color" -> "&" + ((godColor != null) ? godColor : ChatColor.WHITE).getChar();
+			// %gods_rank%: the god's rank, as its god type calls it
+			case "rank" -> rankName;
 			// An invalid placeholder (f.e. %gods_cakenomnom%)
 			default -> null;
 		};

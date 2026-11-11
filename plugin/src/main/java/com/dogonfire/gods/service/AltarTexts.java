@@ -35,7 +35,7 @@ public final class AltarTexts
 	/**
 	 * The text in legacy format, lines joined by '\n'
 	 *
-	 * @param tags {@code <god>}, {@code <title>}, {@code <gender>}, {@code <mood>}, {@code <believers>}
+	 * @param tags {@code <god>}, {@code <title>}, {@code <gender>}, {@code <mood>}, {@code <believers>}, {@code <rank>}
 	 */
 	public static String render(Messages messages, String style, boolean main, TagResolver... tags)
 	{

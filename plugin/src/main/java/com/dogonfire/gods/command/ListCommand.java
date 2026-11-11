@@ -81,10 +81,11 @@ public final class ListCommand extends SubCommand
 		this.ctx.godSpeech().sendInfo(player.getUniqueId(), "help.info-hint", 80);
 	}
 
-	/** <rank>, <name> (the name and title, padded to line up), <power> and <believers> of a line of the list */
+	/** <rank> (its place), <name> (the name and title, padded to line up), <power>, <believers> and <god-rank> of a line of the list */
 	private TagResolver row(Ranked god, String rank)
 	{
 		String fullGodName = String.format("%-16s", god.name()) + "   " + String.format("%-16s", this.ctx.godService().getTitleForGod(god.name()));
-		return TagResolver.resolver(Messages.text("rank", rank), Messages.legacyText("name", fullGodName), Messages.text("power", god.power()), Messages.text("believers", god.believers()));
+		return TagResolver.resolver(Messages.text("rank", rank), Messages.legacyText("name", fullGodName), Messages.text("power", god.power()), Messages.text("believers", god.believers()),
+				Messages.text("god-rank", this.ctx.rankService().getRankName(god.name())));
 	}
 }

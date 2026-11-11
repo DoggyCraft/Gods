@@ -41,6 +41,7 @@ permissions:
       gods.itemblessings: true
       gods.leave: true
       gods.list: true
+      gods.rank: true
       gods.listen: true
       gods.love: true
       gods.marriages: true
@@ -142,6 +143,9 @@ permissions:
   gods.leave:
     default: true
     description: "Allows the Player to leave their religion"
+  gods.rank:
+    default: true
+    description: "Allows the Player to see the rank of a god, and what its next rank needs"
   gods.list:
     default: true
     description: "Allows the Player to see the list of gods"

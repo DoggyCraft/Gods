@@ -11,6 +11,7 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 
 /** /g info [god]: everything about a god (the player's own by default) */
 public final class InfoCommand extends SubCommand
@@ -67,7 +68,9 @@ public final class InfoCommand extends SubCommand
 			}
 		}
 
-		send(sender, "command.info.believers", Messages.amount(this.ctx.believerService().getBelieversForGod(godName).size()));
+		rank(sender, godName);
+
+		send(sender, "command.info.believers",Messages.amount(this.ctx.believerService().getBelieversForGod(godName).size()));
 		send(sender, "command.info.power", Messages.text("power", this.ctx.godService().getGodPower(godName)));
 		if (this.ctx.settings().commandments().enabled())
 		{
@@ -98,6 +101,24 @@ public final class InfoCommand extends SubCommand
 		{
 			send(sender, "command.info.holy-land", Messages.text("claimed", this.ctx.holyLandService().getClaimedChunksForGod(godName)), Messages.text("max", this.ctx.holyLandService().getMaximumChunksForGod(godName)));
 		}
+	}
+
+	/**
+	 * The god's rank; for its believers (and the console) also its next rank and how far it is with each condition, on
+	 * one line (/g rank shows them one by one)
+	 */
+	private void rank(CommandSender sender, String godName)
+	{
+		send(sender, "command.info.rank", Messages.text("rank", this.ctx.rankService().getRankName(godName)));
+		boolean believer = !(sender instanceof Player player) || godName.equals(godOf(player));
+		GodRank next = this.ctx.rankService().getRank(godName).next();
+		if (!believer || next == null)
+		{
+			return;
+		}
+		String conditions = String.join(this.ctx.messages().legacy("command.info.next-rank-separator"),
+				RankLines.lines(this.ctx, this.ctx.rankService().progress(godName, next), "command.info.next-rank-met", "command.info.next-rank-unmet"));
+		send(sender, "command.info.next-rank", Messages.text("rank", this.ctx.rankService().rankName(godName, next)), Messages.legacyText("conditions", conditions));
 	}
 
 	/**

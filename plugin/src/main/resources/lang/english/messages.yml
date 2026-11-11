@@ -110,50 +110,51 @@ altar:
   # The text floating above praying altars (config.yml's altars.floating-text), per sign style like the signs above (a
   # style without its own text uses default): altar above every praying altar, main above a god's main altar
   # (/gods setaltar). One entry per line; blank lines are left out. Knows <god>, <title> ("Deity of the Sea"; empty
-  # when gods.titles is off), <gender> ("God", "Goddess", "Deity"), <mood> (names.mood) and <believers> (how many).
+  # when gods.titles is off), <gender> ("God", "Goddess", "Deity"), <mood> (names.mood), <believers> (how many) and
+  # <rank> (the god's rank, as its god type calls it in themes.yml).
   floating:
     default:
       altar: ['<white><bold><god>', '<gray><title>']
-      main: ['<white><bold><god>', '<gray><title>', '<gold>✦ Main altar ✦']
+      main: ['<white><bold><god>', '<gray><title>', '<gold>✦ Main altar · <rank> ✦']
     frost:
       altar: ['<aqua>❄ <white><bold><god></bold> <aqua>❄', '<dark_aqua><title>']
-      main: ['<aqua>❄ <white><bold><god></bold> <aqua>❄', '<dark_aqua><title>', '<aqua>Main altar']
+      main: ['<aqua>❄ <white><bold><god></bold> <aqua>❄', '<dark_aqua><title>', '<aqua>Main altar · <rank>']
     love:
       altar: ['<light_purple>♥ <white><bold><god></bold> <light_purple>♥', '<#ff8ac8><title>']
-      main: ['<light_purple>♥ <white><bold><god></bold> <light_purple>♥', '<#ff8ac8><title>', '<light_purple>Main altar']
+      main: ['<light_purple>♥ <white><bold><god></bold> <light_purple>♥', '<#ff8ac8><title>', '<light_purple>Main altar · <rank>']
     evil:
       altar: ['<dark_red>☠ <red><bold><god></bold> <dark_red>☠', '<gray><title>']
-      main: ['<dark_red>☠ <red><bold><god></bold> <dark_red>☠', '<gray><title>', '<dark_red>Main altar']
+      main: ['<dark_red>☠ <red><bold><god></bold> <dark_red>☠', '<gray><title>', '<dark_red>Main altar · <rank>']
     sea:
       altar: ['<aqua>≈ <white><bold><god></bold> <aqua>≈', '<dark_aqua><title>']
-      main: ['<aqua>≈ <white><bold><god></bold> <aqua>≈', '<dark_aqua><title>', '<aqua>Main altar']
+      main: ['<aqua>≈ <white><bold><god></bold> <aqua>≈', '<dark_aqua><title>', '<aqua>Main altar · <rank>']
     moon:
       altar: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>']
-      main: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>', '<gray>Main altar']
+      main: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>', '<gray>Main altar · <rank>']
     sun:
       altar: ['<gold>☀ <white><bold><god></bold> <gold>☀', '<yellow><title>']
-      main: ['<gold>☀ <white><bold><god></bold> <gold>☀', '<yellow><title>', '<gold>Main altar']
+      main: ['<gold>☀ <white><bold><god></bold> <gold>☀', '<yellow><title>', '<gold>Main altar · <rank>']
     thunder:
       altar: ['<yellow>⚡ <white><bold><god></bold> <yellow>⚡', '<gold><title>']
-      main: ['<yellow>⚡ <white><bold><god></bold> <yellow>⚡', '<gold><title>', '<yellow>Main altar']
+      main: ['<yellow>⚡ <white><bold><god></bold> <yellow>⚡', '<gold><title>', '<yellow>Main altar · <rank>']
     party:
       altar: ['<light_purple>♪ <yellow><bold><god></bold> <light_purple>♪', '<green><title>']
-      main: ['<light_purple>♪ <yellow><bold><god></bold> <light_purple>♪', '<green><title>', '<light_purple>Main altar']
+      main: ['<light_purple>♪ <yellow><bold><god></bold> <light_purple>♪', '<green><title>', '<light_purple>Main altar · <rank>']
     war:
       altar: ['<red>⚔ <white><bold><god></bold> <red>⚔', '<gray><title>']
-      main: ['<red>⚔ <white><bold><god></bold> <red>⚔', '<gray><title>', '<red>Main altar']
+      main: ['<red>⚔ <white><bold><god></bold> <red>⚔', '<gray><title>', '<red>Main altar · <rank>']
     werewolves:
       altar: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>']
-      main: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>', '<gray>Main altar']
+      main: ['<gray>☾ <white><bold><god></bold> <gray>☾', '<dark_gray><title>', '<gray>Main altar · <rank>']
     creatures:
       altar: ['<gold>✦ <white><bold><god></bold> <gold>✦', '<dark_green><title>']
-      main: ['<gold>✦ <white><bold><god></bold> <gold>✦', '<dark_green><title>', '<gold>Main altar']
+      main: ['<gold>✦ <white><bold><god></bold> <gold>✦', '<dark_green><title>', '<gold>Main altar · <rank>']
     wisdom:
       altar: ['<blue>✎ <white><bold><god></bold> <blue>✎', '<dark_aqua><title>']
-      main: ['<blue>✎ <white><bold><god></bold> <blue>✎', '<dark_aqua><title>', '<blue>Main altar']
+      main: ['<blue>✎ <white><bold><god></bold> <blue>✎', '<dark_aqua><title>', '<blue>Main altar · <rank>']
     nature:
       altar: ['<green>✿ <white><bold><god></bold> <green>✿', '<dark_green><title>']
-      main: ['<green>✿ <white><bold><god></bold> <green>✿', '<dark_green><title>', '<green>Main altar']
+      main: ['<green>✿ <white><bold><god></bold> <green>✿', '<dark_green><title>', '<green>Main altar · <rank>']
 
 prayer:
   power: <aqua>Your prayer power is now <hl><amount></hl>
@@ -588,6 +589,21 @@ names:
     Male: God
     Female: Goddess
     NonBinary: Deity
+  # The conditions of a god's ranks (config.yml's ranks), in /g rank and /g info
+  rank-condition:
+    min-believers: Believers
+    min-power: Power
+    requires-priest: A priest
+    min-mood: Mood
+    requires-main-altar: A main altar
+    hours-after-priest: With a priest
+    hours-at-previous-rank: At its rank
+    min-prayers: Prayers
+    min-sacrifices: Sacrifices
+    min-quests: Quests
+    min-altars: Altars
+    min-holy-land-regions: Holy land
+    min-converts: Converts
   mood:
     EXALTED: Exalted
     PLEASED: Pleased
@@ -815,6 +831,14 @@ command:
     priest: '<aqua>Priest: <yellow><player>'
     priests: '<aqua>Priests: '
     priests-line: <yellow> - <player>
+    # <rank>: the god's rank, as its god type calls it
+    rank: '<aqua>Rank: <gold><rank>'
+    # Its believers see its next rank (<rank>) and how far it is (<conditions>: each condition as next-rank-met or
+    # next-rank-unmet, with <name> (names.rank-condition) and <value> (command.rank.value), joined by the separator)
+    next-rank: '<aqua>Next rank: <gold><rank></gold> <conditions>'
+    next-rank-met: '<green><name> <value>'
+    next-rank-unmet: '<red><name> <value>'
+    next-rank-separator: '<gray>, '
     believers: '<aqua>Believers: <yellow><amount>'
     power: '<aqua>Exact power: <yellow><power>'
     holy-food: '<aqua>Holy food: <yellow><type>'
@@ -856,12 +880,13 @@ command:
     description: List the Gods of this server
     none: <gold>There are no Gods in <server>!
     header: <yellow>--------- The Gods of <server> ---------
-    # One per god: <rank>, <name> (the name and title, padded to line up), <power>, <believers>
-    line: <yellow><rank><aqua> - <name><gold> Power <power> Believers <believers>
+    # One per god: <rank> (its place in the list), <name> (the name and title, padded to line up), <power>, <believers>,
+    # <god-rank> (the god's rank, as its god type calls it)
+    line: <yellow><rank><aqua> - <name><gold> <god-rank> Power <power> Believers <believers>
     # The line of the player's god
-    you: <gold><rank> - <name><gold> Power <power> Believers <believers>
+    you: <gold><rank> - <name><gold> <god-rank> Power <power> Believers <believers>
     # Below the list, when the player's god isn't in it
-    you-below: <gold><rank> - <name> Power <power> Believers <believers>
+    you-below: <gold><rank> - <name> <god-rank> Power <power> Believers <believers>
   love:
     parameters: ''
     description: Show your love to your partner
@@ -922,6 +947,29 @@ command:
     description: Toggle PvP for your religion
     disabled: <aqua>You set PvP for your religion to <yellow> disabled
     enabled: <aqua>You set PvP for your religion to <yellow> enabled
+  rank:
+    parameters: '[god]'
+    description: Show the rank of your/a God and what its next rank needs
+    no-god: <red>You do not believe in any God.
+    unknown-god: <red>There is no God with such name.
+    header: <yellow>--------- The rank of <god> ---------
+    # <rank>: the god's rank, as its god type calls it (themes.yml); <hours>: how long it has had it
+    rank: '<aqua>Rank: <gold><rank></gold> <gray>(for <hours> hours)'
+    # Only the god's believers (and the console) see the rest
+    # <rank>: the next rank
+    next: '<aqua>Next rank: <gold><rank></gold><aqua>. It needs:'
+    top: <aqua><god> has the highest rank there is.
+    # One per condition: <name> (names.rank-condition) and <value> (one of value.*)
+    met: '<green> ✔ <name>: <value>'
+    unmet: '<red> ✘ <name>: <value>'
+    value:
+      # <current>: where the god is, <required>: what the rank needs
+      count: <current>/<required>
+      hours: <current>/<required> hours
+      # <current>: its mood now, <required>: the least it needs (names.mood)
+      mood: <current> (at least <required>)
+      'yes': 'yes'
+      'no': 'no'
   reload:
     parameters: ''
     description: Reload the configuration and data files
