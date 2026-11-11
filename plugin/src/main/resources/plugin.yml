@@ -9,6 +9,8 @@ softdepend:
   - WorldGuard
   - PlaceholderAPI
   - GriefPrevention
+  - Citizens
+  - FancyNpcs
 commands:
   g:
     description: "Controls the god system"
