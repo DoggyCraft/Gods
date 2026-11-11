@@ -19,9 +19,12 @@
 #                    sounds (sound ids like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB", for dust
 #                    particles and the symbol). Prayers use the god's mood, sacrifices pleased (wanted), neutral or
 #                    angry (unwanted), blessings pleased and curses angry.
-#   npc              the god's figure at its main altar (config.yml's npc section): skin, a player name (resolved by
-#                    the server) or value and signature (a signed texture, e.g. from mineskin.org). Without one the
-#                    figure has the default look. A god's own skin (/g godskin) comes first.
+#   npc              the god's figure at its main altar (config.yml's npc section): skin, with the value and signature
+#                    of a texture Mojang signed. Without one the figure has the default look. A god's own skin
+#                    (/g godskin) comes first. To get a value and signature:
+#                     - upload the skin's PNG to https://mineskin.org and copy the "value" and "signature" it shows;
+#                     - or skip this file: wear the skin in Minecraft, have the god's priest run /g godskin <your name>
+#                       while you're online, and change back; the god keeps the skin.
 # Names are Minecraft ids. Names the server's Minecraft version doesn't have (newer mobs and blocks) are skipped.
 
 default:
@@ -351,11 +354,10 @@ werewolves:
       sounds: [entity.wolf.growl]
       colors: ['#3B2A1A', black]
   npc:
-    # The werewolf alpha, from DoggyCraft's Werewolf plugin (texture taken from the Minecraft account WerewolfAlpha;
-    # the account need not exist or keep that skin)
+    # A werewolf god, from MineSkin: https://mineskin.org/skins/fd6366661e464d70977b7d9525493248
     skin:
-      value: ewogICJ0aW1lc3RhbXAiIDogMTY4NTAzNzE3NjgzNiwKICAicHJvZmlsZUlkIiA6ICJlMGQwNzRiZDY3MjI0N2ZjOTVkM2YyOGUyODk5ZTE1NSIsCiAgInByb2ZpbGVOYW1lIiA6ICJXZXJld29sZkFscGhhIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2NhZTg4YjY5MjA0YWUyYzNlM2NiZTcwOWUzZTYyNTIxZTUzZmEwNWU0ZGFkODkxYzZhZmJkZmI5MDg2OGE3ZTAiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==
-      signature: GIDMFU5fTmB4T4RFFs/pQDAg7ZsCsu5KAxMXiQw4G32G0Db5SRmJ6OtiSc3SRznJO9EAW7lmjo38+BdY4b3cgTM7IbXmZGx5ML22ZW5KYspUoot2wo9kIj5ksh+H0Tfy9JCPLpg17nd7O1aY5+RhI5Aq+mhtyhJFXn1a906Qg9/XtHhiw0bUrthpa1RrtHnbH6+hFKgzNKAEeT93MvrPajOT7dmzQ72UK3KXgpe6KzbrWFf+NL0ZbpfkjwabSIALUdcL6+92EI//dB5yMgHEln9wfzKjH+82cDGEoGQjAnJIf+/KVWOtkfNRJauwpUkIUkD4tmkXxCCTyXXwUuIb7e7CwxyFWK4K7e7ir/P5zf1NuQZV+X1MwbF1c++dlGa4yBIvrb97F9tTu+7tw6KFwxqCvj4yRjhkGXsN0soI39v95q7ucxWaX0D4oKwa9QYi9zLW6DIh9bPxGa78TAPC/WyAdM/8J+/uinX2mvEsECsKQVmrCGRrqrZgfctsnXHuqstKMNOecwDFDzi8rWlcM3/wrdHn14Lvn2bsZGR4Xhr532CY2t+JgkQvYBM5Z+tkW5C7MCVH4BbLwf2zDcDkGIOzq5VoKlu/2WML88etjyzSIhCN0WJXWFkeRr7ddTar7Nx8/AzHRUBcTGXC+UGiHMYWWq8bAILFggLKY8eJzq0=
+      value: ewogICJ0aW1lc3RhbXAiIDogMTc2NTIzMzU5NTE3NiwKICAicHJvZmlsZUlkIiA6ICI0NDM0YmYxYzUxOTA0MjI1OGI5ODNkM2I1OGRhY2U4NSIsCiAgInByb2ZpbGVOYW1lIiA6ICIzbmpveXlfIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzJjNjRmYzkxZjlhNTQyYzk3Mzc4YzhmMTdlNzcwNzZmNTQwOTJjMDYxOWNmMDg3NDg4NjA4NTk3OTk3YzYyMDEiCiAgICB9CiAgfQp9
+      signature: GAWHA/RNg/a40vFQIBuRbzifHCDQdhn1S7oCVhuHU94JM7Yem6PNWz+EbH7oEfj88gZis4JEp4Ylc9X8eH4xA0fvghHxO9Jd0HmYZWsrk2I6k/0hHadN8CI5XM2d/CT0fR6BUImM+EQRVHRCYV/RwYSk4RHSPa17/HjB8LnRrzp+KTyK+ONW6ItT7rd9FrJSR5llLRYwD0pGFPq+JB7XG+kXB61CrjoP24kQfbqZOAr5C/YtX1PcNried64SOVlYCbrNJAxkg1kOFFCJQxd0QyVV8GXqmIJQM/aV6bmbrD5f3VCcb0YuqJGf4qoh/az48U867KTXMAGuc9NmK01NaVDAI0tszxuBgaaAvHLNROf4eLXPU+8o7/3N8Sqvm4Klv3kISoMyz1QCWEOkqesQMBw1tZalX3Mmo9MfkP5oy5PP2l4sKAUrLGs1UcN0rJGXfzgSF9COfrDj1StyYsMDPSD6i/hwKOapOGDB4VX7U3U0M2rS2bpE4QqZEokmVbUiJ6p1OPFjRws9waTXdNHmkT3e5CnZ43+gGGuHqmtXNqfkCcLp8X0Da+wNMUl092Yk1suWprFSOTlKX71ECzuxL35H3+pgCbiv62A8NmE5hBqE9Cr4m2xsVIF5edkk57jha9XP4wI5DoT7E9s4raPmaAVYHRyBywShUvRj2AkV2RU=
 
 # All creatures: rare beasts are holy and must not be eaten, vermin must be slain
 creatures:
