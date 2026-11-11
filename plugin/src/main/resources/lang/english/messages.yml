@@ -238,6 +238,8 @@ command:
     marriages: <red>Marriages are not enabled on this server
     holy-artifacts: <red>Holy Artifacts are not enabled on this server
     blessings: <red>Blessings are not enabled on this server
+    prayers: <red>Prayers are not enabled on this server
+    quests: <red>Quests are not enabled on this server
   access:
     parameters: '[open/close]'
     description: Set your religion as open or invite only
@@ -462,6 +464,11 @@ command:
     - <white>/g prayfor item - <aqua> pray for an item
     - <white>/g prayfor health - <aqua> pray for health
     - <white>/g prayfor blessing - <aqua> pray for a magical blessing
+    # The header of help when blessings are off (so there is no item, health or blessing to pray for)
+    help-header:
+    - <yellow>--------------- How to pray for things ---------------
+    - '<aqua>Pray for something specific from your God:'
+    - ''
     # Only when quests are on
     help-quest: <white>/g prayfor quest - <aqua> pray for a quest
     help-footer:

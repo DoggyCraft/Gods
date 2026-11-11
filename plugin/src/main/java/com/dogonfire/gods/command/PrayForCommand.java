@@ -2,6 +2,7 @@ package com.dogonfire.gods.command;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
@@ -24,7 +25,30 @@ public final class PrayForCommand extends SubCommand
 	@Override
 	public String disabledMessage()
 	{
-		return this.ctx.settings().blessings().enabled() ? null : "command.disabled.blessings";
+		return disabledFor(null, this.ctx.settings().prayers().enabled(), this.ctx.settings().blessings().enabled(), this.ctx.settings().quests().enabled());
+	}
+
+	/**
+	 * Why the player can't pray for {@code kind} (item, health, blessing or quest; null for the command itself), as a
+	 * message key, or null if they can: the command needs prayers, and something to pray for; items, health and
+	 * blessings are blessings, a quest needs quests.
+	 */
+	static String disabledFor(String kind, boolean prayers, boolean blessings, boolean quests)
+	{
+		if (!prayers)
+		{
+			return "command.disabled.prayers";
+		}
+		if (kind == null)
+		{
+			return blessings || quests ? null : "command.disabled.blessings";
+		}
+		return switch (kind.toLowerCase(Locale.ROOT))
+		{
+		case "item", "health", "blessing" -> blessings ? null : "command.disabled.blessings";
+		case "quest" -> quests ? null : "command.disabled.quests";
+		default -> null;
+		};
 	}
 
 	@Override
@@ -33,6 +57,11 @@ public final class PrayForCommand extends SubCommand
 		Player player = (Player) sender;
 		String godName = believersGod(player);
 		String what = args.isEmpty() ? "" : args.getFirst();
+		String disabled = disabledFor(what, prayers().enabled(), this.ctx.settings().blessings().enabled(), this.ctx.settings().quests().enabled());
+		if (disabled != null)
+		{
+			throw new CommandException(disabled);
+		}
 		if (what.equalsIgnoreCase("health"))
 		{
 			prayForHealth(player, godName);
@@ -45,13 +74,14 @@ public final class PrayForCommand extends SubCommand
 		{
 			prayForBlessing(player, godName);
 		}
-		else if (what.equalsIgnoreCase("quest") && this.ctx.settings().quests().enabled())
+		else if (what.equalsIgnoreCase("quest"))
 		{
 			prayForQuest(player, godName);
 		}
 		else
 		{
-			send(sender, "command.prayfor.help");
+			// Only what can be prayed for
+			send(sender, this.ctx.settings().blessings().enabled() ? "command.prayfor.help" : "command.prayfor.help-header");
 			if (this.ctx.settings().quests().enabled())
 			{
 				send(sender, "command.prayfor.help-quest");
@@ -67,7 +97,11 @@ public final class PrayForCommand extends SubCommand
 		{
 			return List.of();
 		}
-		List<String> options = new ArrayList<>(List.of("item", "health", "blessing"));
+		List<String> options = new ArrayList<>();
+		if (this.ctx.settings().blessings().enabled())
+		{
+			options.addAll(List.of("item", "health", "blessing"));
+		}
 		if (this.ctx.settings().quests().enabled())
 		{
 			options.add("quest");
