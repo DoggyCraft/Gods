@@ -1,0 +1,82 @@
+Global:
+  Type: Holywar
+  CreatedTime: 18:03 12-04-2019
+  MaxDuration: 120
+  ItemType: DIAMOND
+  TargetType: Holy relic
+  LockedTime: 18:30:00 12-04-2019
+  Location:
+    World: world
+    X: 1200
+    Y: 70
+    Z: -340
+Odin:
+  Type: Pilgrimage
+  TargetType: Holy mountain of Ollukka
+  Location:
+    World: world
+    X: 812
+    Y: 74
+    Z: -1520
+  MaxDuration: 21
+  CreatedTime: 20:15 14-04-2019
+Freya:
+  Type: Slay
+  Amount: 4
+  TargetType: SPIDER
+  MaxDuration: 28
+  Progress: 1
+  CreatedTime: 21:40 14-04-2019
+Loki:
+  Type: Holywar
+  Location:
+    World: world
+    X: 100
+    Y: 64
+    Z: 200
+  Amount: Thor
+  TargetType: Holy war
+  MaxDuration: 60
+  CreatedTime: 21:00 14-04-2019
+Thor:
+  Type: Holywar
+  Location:
+    World: world
+    X: 100
+    Y: 64
+    Z: 200
+  Amount: Loki
+  TargetType: Holy war
+  MaxDuration: 60
+  CreatedTime: 21:00 14-04-2019
+Baldur:
+  Type: Convert
+  Amount: 3
+  TargetType: NONE
+  MaxDuration: 9
+  Progress: 2
+  Players:
+  - 8667ba71-b85a-4004-af54-457a9734eed7
+  - 0b8d4f7e-3c1a-4bfa-9a3e-6f0f1c2d3e4f
+  CreatedTime: 22:05 14-04-2019
+  Reward: 50
+Hel:
+  Type: 7
+  CreatedTime: not a date
+QuestTargets:
+  '-797570438':
+    God: Odin
+    Location:
+      X: 812
+      Y: 74
+      Z: -1520
+      World: world
+    LockedBy: Odin
+    LockedTime: 20:40:12 14-04-2019
+  '313038188':
+    God: Loki
+    Location:
+      X: 100
+      Y: 64
+      Z: 200
+      World: world
