@@ -246,6 +246,7 @@ public class PrayerService
 			if (addBelief(player, pendingGodInvitation, true, BelieverJoinGodEvent.Reason.INVITATION))
 			{
 				ctx.believerService().clearInvitation(believerId);
+				ctx.rankService().countConvert(pendingGodInvitation);
 
 				ctx.plugin().log(player.getName() + " accepted the invitation to join " + pendingGodInvitation);
 
@@ -499,6 +500,7 @@ public class PrayerService
 				ctx.holyLandService().addPrayer(player, godName, altarBlock.getLocation());
 			}
 
+			ctx.rankService().countPrayer(godName);
 			ctx.questService().handlePrayer(godName, player.getUniqueId());
 
 

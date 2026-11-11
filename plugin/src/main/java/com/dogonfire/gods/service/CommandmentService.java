@@ -437,6 +437,7 @@ public class CommandmentService
 		ctx.effectService().sacrifice(godName, burning, EffectRules.sacrificeMood(verdict));
 		if (verdict == SacrificeRules.Verdict.GOOD)
 		{
+			ctx.rankService().countSacrifice(godName);
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.believerService().addPrayer(believer.getUniqueId(), godName);
 

@@ -959,6 +959,7 @@ public class QuestService
 		QuestInfo quest = snapshot(godName);
 		if (quest != null)
 		{
+			ctx.rankService().countQuest(godName);
 			ctx.fire(new QuestCompleteEvent(quest));
 		}
 		removeQuest(godName);

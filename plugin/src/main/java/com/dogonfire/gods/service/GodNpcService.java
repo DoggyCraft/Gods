@@ -15,8 +15,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.api.event.GodAscendEvent;
-import com.dogonfire.gods.api.event.GodDescendEvent;
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.config.Themes;
 import com.dogonfire.gods.integration.npc.CitizensNpcs;
@@ -26,13 +24,10 @@ import com.dogonfire.gods.integration.npc.MannequinNpcs;
 import com.dogonfire.gods.integration.npc.NpcProviders;
 import com.dogonfire.gods.integration.npc.NpcSpec;
 import com.dogonfire.gods.integration.npc.SkinResolver;
-import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.AltarKind;
 import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.NpcSkin;
-import com.dogonfire.gods.storage.CleanupGuard;
-import com.dogonfire.gods.util.LegacyDates;
 
 /**
  * The god as a figure at its main altar (config.yml's {@code npc} section): it stands on the spot in front of the main
@@ -42,8 +37,8 @@ import com.dogonfire.gods.util.LegacyDates;
  * <ul>
  * <li>Never saved: every NPC is made again from gods.yml and altars.yml. {@link #start()} removes strays a crash left
  * behind, {@link #stop()} (reload, disable) removes them all.</li>
- * <li>Only for a god that has descended ({@link #checkDescent}, {@link DescentRules}): its religion reached the
- * milestone of config.yml's {@code npc.descend}. Other gods have no NPC (their altars still have floating text).</li>
+ * <li>Only for a god that has descended (its rank is {@code DESCENDED} or higher, see {@link RankService}): its religion reached the
+ * milestone of config.yml's {@code ranks.descended}. Other gods have no NPC (their altars still have floating text).</li>
  * <li>Shown for an existing god whose main altar is registered as its praying altar, when the chunks of its sign,
  * altar block and spot are loaded and a figure fits on the spot; at most {@link GodNpcRules#MAX_NPCS}. Shown or
  * updated when a chunk with the altar is scanned, the main altar changes, the god is created, and on the god's turn
@@ -217,53 +212,16 @@ public class GodNpcService
 	// Descending and ascending
 
 	/**
-	 * On the god's turn: does it descend to its main altar now, or ascend again ({@link DescentRules}, config.yml's
-	 * {@code npc.descend})? Only while gods have NPCs at all. Descending fires {@link GodDescendEvent} (cancelled: it
-	 * tries again on a later turn), shows the NPC with lightning (an effect, no damage) and the theme's effects, and the
-	 * god tells its believers; ascending removes the NPC, fires {@link GodAscendEvent} and the god says goodbye.
+	 * The god descended (it rose to the descended rank, see {@code RankService}): its NPC appears at its main altar,
+	 * with lightning (an effect, no damage) and the theme's effects, also when gods have no NPCs
 	 */
-	public void checkDescent(String godName)
+	public void descended(String godName)
 	{
-		if (this.provider == null || godName == null || !ctx.godService().godExist(godName))
+		refreshGod(godName);
+		Altar altar = ctx.altarRegistry().mainAltar(godName);
+		if (altar != null)
 		{
-			return;
-		}
-		// Its believers and priests come from believers.yml: not while that can't be trusted (see CleanupGuard)
-		if (ctx.storage().cleanupVerdict() != CleanupGuard.Verdict.ALLOWED)
-		{
-			return;
-		}
-		DescentRules.State state = ctx.godService().getDescentState(godName);
-		BlockPos mainSign = ctx.godService().getMainAltar(godName);
-		Altar altar = mainSign != null ? ctx.altarRegistry().atSign(mainSign) : null;
-		boolean hasMainAltar = altar != null && altar.kind() == AltarKind.PRAYING && godName.equals(altar.god());
-		DescentRules.Facts facts = new DescentRules.Facts(!ctx.priestService().getPriestsForGod(godName).isEmpty(), ctx.believerService().getBelieversForGod(godName).size(),
-				ctx.godService().getGodPower(godName), hasMainAltar, LegacyDates.SECONDS.now());
-		DescentRules.Outcome outcome = DescentRules.check(ctx.settings().ranks().of(com.dogonfire.gods.model.GodRank.DESCENDED), ctx.settings().ranks().dropGraceHours(), state, facts);
-		switch (outcome.change())
-		{
-			case NONE -> ctx.godService().setDescentState(godName, outcome.state());
-			case DESCEND ->
-			{
-				if (ctx.fire(new GodDescendEvent(godName, ctx.altarRegistry().mainAltarLocation(godName))).isCancelled())
-				{
-					ctx.godService().setDescentState(godName, new DescentRules.State(outcome.state().priestSince(), null, null));
-					return;
-				}
-				ctx.godService().setDescentState(godName, outcome.state());
-				ctx.plugin().log(godName + " descended to its main altar at " + AltarRegistry.describe(altar.block()) + ".");
-				refreshGod(godName);
-				descentEffects(godName, altar);
-				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_DESCENDED, 2);
-			}
-			case ASCEND ->
-			{
-				ctx.godService().setDescentState(godName, outcome.state());
-				ctx.plugin().log(godName + " ascended from its main altar (" + (facts.hasPriest() ? "too few believers" : "no priest") + ").");
-				refreshGod(godName);
-				ctx.fire(new GodAscendEvent(godName));
-				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_ASCENDED, 2);
-			}
+			descentEffects(godName, altar);
 		}
 	}
 
