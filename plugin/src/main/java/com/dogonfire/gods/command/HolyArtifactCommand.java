@@ -28,6 +28,7 @@ public final class HolyArtifactCommand extends SubCommand
 	{
 		Player player = (Player) sender;
 		String godName = believersGod(player);
+		requireRank(godName, this.ctx.settings().ranks().unlocks().holyArtifacts());
 		if (this.ctx.holyArtifactService().hasHolyArtifact(player))
 		{
 			throw new CommandException("command.holyartifact.already");

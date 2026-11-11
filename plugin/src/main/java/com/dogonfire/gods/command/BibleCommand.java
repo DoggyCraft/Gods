@@ -28,6 +28,7 @@ public final class BibleCommand extends SubCommand
 	{
 		Player player = (Player) sender;
 		String godName = believersGod(player);
+		requireRank(godName, this.ctx.settings().ranks().unlocks().bibles());
 		if (!this.ctx.holyBookService().giveBible(godName, player))
 		{
 			throw new CommandException("command.bible.failed", Messages.god(godName));

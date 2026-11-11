@@ -28,6 +28,7 @@ public final class EditBibleCommand extends SubCommand
 	{
 		Player player = (Player) sender;
 		String godName = believersGod(player);
+		requireRank(godName, this.ctx.settings().ranks().unlocks().bibles());
 		if (!this.ctx.holyBookService().giveEditBible(godName, player))
 		{
 			throw new CommandException("command.editbible.failed", Messages.god(godName));

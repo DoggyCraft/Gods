@@ -37,6 +37,11 @@ public final class AllyCommand extends SubCommand
 			throw new CommandException("command.ally.at-war", Messages.god(typed));
 		}
 		boolean allied = !this.ctx.relationService().hasAllianceRelation(godName, allyGodName);
+		if (allied)
+		{
+			// Ending an alliance is always possible
+			requireRank(godName, this.ctx.settings().ranks().unlocks().relations());
+		}
 		if (!this.ctx.relationService().setAlliance(godName, allyGodName, allied))
 		{
 			throw new CommandException("command.cancelled");

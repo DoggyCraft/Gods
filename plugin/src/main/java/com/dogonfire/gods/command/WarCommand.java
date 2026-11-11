@@ -37,6 +37,11 @@ public final class WarCommand extends SubCommand
 			throw new CommandException("command.war.allied", Messages.god(typed));
 		}
 		boolean atWar = !this.ctx.relationService().hasWarRelation(godName, enemyGodName);
+		if (atWar)
+		{
+			// Ending a war is always possible
+			requireRank(godName, this.ctx.settings().ranks().unlocks().relations());
+		}
 		if (!this.ctx.relationService().setWar(godName, enemyGodName, atWar))
 		{
 			throw new CommandException("command.cancelled");

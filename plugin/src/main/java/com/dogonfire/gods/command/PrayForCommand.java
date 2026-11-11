@@ -193,6 +193,7 @@ public final class PrayForCommand extends SubCommand
 	private void prayForQuest(Player player, String godName) throws CommandException
 	{
 		UUID playerId = player.getUniqueId();
+		requireRank(godName, this.ctx.settings().ranks().unlocks().quests());
 		int cost = prayers().questCost();
 		if (!canAfford(playerId, godName, cost))
 		{

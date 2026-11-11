@@ -28,6 +28,7 @@ public final class SetBibleCommand extends SubCommand
 	{
 		Player player = (Player) sender;
 		String godName = believersGod(player);
+		requireRank(godName, this.ctx.settings().ranks().unlocks().bibles());
 		// A priest of their own god, not just of any god
 		if (!this.ctx.priestService().isPriestForGod(player.getUniqueId(), godName))
 		{

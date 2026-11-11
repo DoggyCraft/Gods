@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.GodRank;
 
 /**
  * One {@code /g <name>} command. The constructor says who may use it ({@link #playerOnly()}, {@link #believerOnly()},
@@ -204,6 +205,18 @@ public abstract class SubCommand
 			throw new CommandException(this.notBeliever != null ? this.notBeliever : "command.no-god");
 		}
 		return godName;
+	}
+
+	/**
+	 * Stops the command ({@code command.rank-locked}, naming the rank as the god's type calls it) when the god's rank
+	 * hasn't unlocked a feature yet (config.yml's {@code ranks.unlocks})
+	 */
+	protected final void requireRank(String godName, GodRank needed) throws CommandException
+	{
+		if (!this.ctx.rankService().hasUnlocked(godName, needed))
+		{
+			throw new CommandException("command.rank-locked", Messages.god(godName), Messages.text("rank", this.ctx.rankService().rankName(godName, needed)));
+		}
 	}
 
 	/** The online player with exactly that name (ignoring case), or else the message */

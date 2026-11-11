@@ -615,6 +615,8 @@ command:
   invalid: <red>Invalid Gods command!
   # Another plugin stopped what the command was about to do
   cancelled: <red>Another plugin stopped that.
+  # Your god's rank hasn't unlocked that yet (config.yml's ranks.unlocks): <god>, <rank> (the rank it needs, as its god type calls it)
+  rank-locked: <red><gold><god></gold> must rise to <hl><rank></hl> before its religion can do that.
   # /gods without a command
   gods:
     # <plugin> is "Gods vX.Y", <amount> the number of gods, <believers> the number of believers

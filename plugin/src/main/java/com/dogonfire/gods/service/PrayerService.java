@@ -143,7 +143,7 @@ public class PrayerService
 			
 			ctx.questService().handleJoinReligion(player, godName);
 
-			if (ctx.settings().bibles().enabled() && ctx.settings().bibles().giveOnJoin())
+			if (ctx.settings().bibles().enabled() && ctx.settings().bibles().giveOnJoin() && ctx.rankService().hasUnlocked(godName, ctx.settings().ranks().unlocks().bibles()))
 			{
 				ctx.holyBookService().giveBible(godName, player);
 			}

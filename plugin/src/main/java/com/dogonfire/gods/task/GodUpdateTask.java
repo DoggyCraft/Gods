@@ -168,7 +168,7 @@ public final class GodUpdateTask implements Runnable
 				}
 			}
 
-			if (ctx.settings().holyArtifacts().enabled())
+			if (ctx.settings().holyArtifacts().enabled() && ctx.rankService().hasUnlocked(godName, ctx.settings().ranks().unlocks().holyArtifacts()))
 			{
 				if (!ctx.believerService().hasRecentHolyArtifactBlessing(believer.getUniqueId()))
 				{
@@ -430,7 +430,9 @@ public final class GodUpdateTask implements Runnable
 
 		if (!ctx.questService().hasQuest(godName))
 		{
-			if (numberOfBelievers < ctx.settings().quests().requiredBelievers() || ctx.godService().getMinutesSinceLastQuest(godName) < ctx.settings().quests().minMinutesBetweenQuests())
+			// Quests come with the rank config.yml's ranks.unlocks.quests names, and enough believers online
+			if (!ctx.rankService().hasUnlocked(godName, ctx.settings().ranks().unlocks().quests()) || numberOfBelievers < ctx.settings().quests().requiredBelievers()
+					|| ctx.godService().getMinutesSinceLastQuest(godName) < ctx.settings().quests().minMinutesBetweenQuests())
 			{
 				return;
 			}
