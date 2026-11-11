@@ -6,5 +6,9 @@
  * <p>
  * The events about a god carry its name ({@link com.dogonfire.gods.api.event.GodEvent#getGodName()}); get a snapshot
  * of it with {@link com.dogonfire.gods.api.GodsApi#getGod(String)} if you need more.
+ * <p>
+ * Listen to the concrete events. {@link com.dogonfire.gods.api.event.GodEvent} and
+ * {@link com.dogonfire.gods.api.event.QuestEvent} only share what their events carry: they have no handler list, so
+ * Bukkit refuses a listener for them.
  */
 package com.dogonfire.gods.api.event;

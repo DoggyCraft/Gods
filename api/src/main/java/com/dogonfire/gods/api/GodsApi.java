@@ -151,7 +151,7 @@ public interface GodsApi
 	 * {@link com.dogonfire.gods.api.event.GodBlessPlayerEvent}.
 	 *
 	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
-	 *         (blessings are off), {@link ActionResult#NOT_POSSIBLE} (the player was blessed too recently) or
+	 *         (blessings are off), {@link ActionResult#NOT_POSSIBLE} (the player is offline or was blessed too recently) or
 	 *         {@link ActionResult#CANCELLED}
 	 */
 	ActionResult bless(String godName, Player player);
@@ -161,7 +161,7 @@ public interface GodsApi
 	 * {@link com.dogonfire.gods.api.event.GodCursePlayerEvent}.
 	 *
 	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
-	 *         (curses are off), {@link ActionResult#NOT_POSSIBLE} (the player was cursed too recently) or
+	 *         (curses are off), {@link ActionResult#NOT_POSSIBLE} (the player is offline or was cursed too recently) or
 	 *         {@link ActionResult#CANCELLED}
 	 */
 	ActionResult curse(String godName, Player player);
@@ -189,8 +189,8 @@ public interface GodsApi
 	 * {@link com.dogonfire.gods.api.event.GodBlessPlayerEvent}.
 	 *
 	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NO_SUCH_GOD}, {@link ActionResult#FEATURE_DISABLED}
-	 *         (holy artifacts are off), {@link ActionResult#NOT_POSSIBLE} (the player carries one already, or Gods is
-	 *         not enabled in their world) or {@link ActionResult#CANCELLED}
+	 *         (holy artifacts are off), {@link ActionResult#NOT_POSSIBLE} (the player is offline or carries one
+	 *         already, Gods is not enabled in their world, or the god has no type yet) or {@link ActionResult#CANCELLED}
 	 */
 	ActionResult giveHolyArtifact(String godName, Player player);
 

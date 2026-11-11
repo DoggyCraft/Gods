@@ -12,6 +12,9 @@ public class GodMoodChangeEvent extends GodEvent implements Cancellable
 {
 	private static final HandlerList HANDLERS = new HandlerList();
 
+	private static final float MIN_MOOD = -100.0F;
+	private static final float MAX_MOOD = 100.0F;
+
 	private final float oldMood;
 	private float newMood;
 	private boolean cancelled;
@@ -35,10 +38,18 @@ public class GodMoodChangeEvent extends GodEvent implements Cancellable
 		return this.newMood;
 	}
 
-	/** Changes the mood the god gets; it is kept within -100 to 100 */
+	/**
+	 * Changes the mood the god gets; it is kept within -100 to 100 (so an infinity becomes -100 or 100)
+	 *
+	 * @throws IllegalArgumentException if {@code newMood} is NaN
+	 */
 	public void setNewMood(float newMood)
 	{
-		this.newMood = newMood;
+		if (Float.isNaN(newMood))
+		{
+			throw new IllegalArgumentException("The new mood of " + getGodName() + " is NaN");
+		}
+		this.newMood = Math.max(MIN_MOOD, Math.min(MAX_MOOD, newMood));
 	}
 
 	@Override

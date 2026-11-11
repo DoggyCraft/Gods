@@ -252,7 +252,7 @@ public final class GodsApiService implements GodsApi
 		{
 			return ActionResult.FEATURE_DISABLED;
 		}
-		if (ctx.believerService().hasRecentBlessing(player.getUniqueId()))
+		if (!player.isOnline() || ctx.believerService().hasRecentBlessing(player.getUniqueId()))
 		{
 			return ActionResult.NOT_POSSIBLE;
 		}
@@ -272,7 +272,7 @@ public final class GodsApiService implements GodsApi
 		{
 			return ActionResult.FEATURE_DISABLED;
 		}
-		if (ctx.believerService().hasRecentCursing(player.getUniqueId()))
+		if (!player.isOnline() || ctx.believerService().hasRecentCursing(player.getUniqueId()))
 		{
 			return ActionResult.NOT_POSSIBLE;
 		}
@@ -312,7 +312,7 @@ public final class GodsApiService implements GodsApi
 		{
 			return ActionResult.FEATURE_DISABLED;
 		}
-		if (!ctx.plugin().isEnabledInWorld(player.getWorld()) || ctx.holyArtifactService().hasHolyArtifact(player))
+		if (!player.isOnline() || !ctx.plugin().isEnabledInWorld(player.getWorld()) || ctx.holyArtifactService().hasHolyArtifact(player) || ctx.godService().getDivineForceForGod(god.get()) == null)
 		{
 			return ActionResult.NOT_POSSIBLE;
 		}

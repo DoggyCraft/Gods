@@ -2,7 +2,11 @@ package com.dogonfire.gods.api.event;
 
 import com.dogonfire.gods.api.QuestInfo;
 
-/** An event about a god's quest. */
+/**
+ * An event about a god's quest. Like {@link GodEvent}, it has no handler list of its own, so Bukkit refuses an
+ * {@code @EventHandler} for it; listen to {@link QuestStartEvent}, {@link QuestCompleteEvent} and
+ * {@link QuestFailEvent}.
+ */
 public abstract class QuestEvent extends GodEvent
 {
 	private final QuestInfo quest;
