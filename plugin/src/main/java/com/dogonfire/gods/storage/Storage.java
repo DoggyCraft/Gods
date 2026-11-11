@@ -45,6 +45,7 @@ public final class Storage
 	private final List<DataFile>	files;
 	// System.nanoTime() when the data was last (re)loaded, or null; starts the cleanup grace period
 	private Long					loadedAt;
+	private boolean					loadIncomplete;
 
 	/**
 	 * The data files in {@code dataFolder}, written by a background thread of their own.
@@ -138,10 +139,15 @@ public final class Storage
 		return this.files;
 	}
 
-	/** After the data files were (re)loaded: starts the {@link CleanupGuard#GRACE_PERIOD} */
-	public void dataLoaded()
+	/**
+	 * After the data files were (re)loaded: starts the {@link CleanupGuard#GRACE_PERIOD}.
+	 *
+	 * @param complete false if loading one of them failed: nothing is then removed until a later load works
+	 */
+	public void dataLoaded(boolean complete)
 	{
 		this.loadedAt = System.nanoTime();
+		this.loadIncomplete = !complete;
 	}
 
 	/**
@@ -151,7 +157,7 @@ public final class Storage
 	 */
 	public CleanupGuard.Verdict cleanupVerdict()
 	{
-		boolean readOnly = this.gods.isReadOnly() || this.believers.isReadOnly() || this.holyLands.isReadOnly() || this.bibles.isReadOnly();
+		boolean readOnly = this.loadIncomplete || this.gods.isReadOnly() || this.believers.isReadOnly() || this.holyLands.isReadOnly() || this.bibles.isReadOnly();
 		Duration sinceLoad = this.loadedAt != null ? Duration.ofNanos(System.nanoTime() - this.loadedAt) : null;
 		return CleanupGuard.check(readOnly, this.gods.size(), this.believers.size(), sinceLoad);
 	}
@@ -245,6 +251,10 @@ public final class Storage
 			if (file.isReadOnly())
 			{
 				this.logger.severe(file.name() + " could not be read and was not saved. Fix it before the next start.");
+			}
+			else if (file.isEditedOnDisk())
+			{
+				this.logger.warning(file.name() + " was edited on disk, so it was not saved: your edit is kept, the changes made in the game since are not.");
 			}
 		}
 	}

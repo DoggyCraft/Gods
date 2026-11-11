@@ -55,7 +55,7 @@ class CleanupGuardTest
 		Storage storage = Fixtures.storage(this.dir);
 		storage.gods().load();
 		storage.believers().load();
-		storage.dataLoaded();
+		storage.dataLoaded(true);
 
 		assertTrue(storage.believers().isReadOnly());
 		assertEquals(Verdict.FILE_NOT_READABLE, storage.cleanupVerdict());
@@ -69,7 +69,7 @@ class CleanupGuardTest
 		Storage storage = Fixtures.storage(this.dir);
 		storage.gods().load();
 		storage.believers().load();
-		storage.dataLoaded();
+		storage.dataLoaded(true);
 
 		assertEquals(Verdict.NO_BELIEVERS, storage.cleanupVerdict());
 		storage.close();
@@ -83,7 +83,7 @@ class CleanupGuardTest
 		Storage storage = Fixtures.storage(this.dir);
 		storage.gods().load();
 		storage.believers().load();
-		storage.dataLoaded();
+		storage.dataLoaded(true);
 
 		assertEquals(Verdict.GRACE_PERIOD, storage.cleanupVerdict());
 		storage.close();

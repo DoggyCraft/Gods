@@ -3,6 +3,7 @@ package com.dogonfire.gods.storage;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -74,7 +75,18 @@ public abstract class Repository
 		{
 			clear();
 			this.unknownKeys.clear();
-			read(this.file.yaml());
+			try
+			{
+				read(this.file.yaml());
+			}
+			catch (RuntimeException ex)
+			{
+				// Odd YAML (a list where a section belongs, ...): use what was read, but never write over the file
+				this.logger.log(Level.SEVERE, "Could not read " + this.file.name() + ": " + ex, ex);
+				this.logger.severe(this.file.name() + " is used as far as it could be read, but it will NOT be saved until it is fixed, so nothing in it is overwritten. Fix it and run /g reload.");
+				this.file.markUnreadable();
+				return false;
+			}
 		}
 		if (read && this.file.isDirty())
 		{

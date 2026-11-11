@@ -255,4 +255,75 @@ class StorageTest
 		again.close();
 	}
 
+	@Test
+	void aHandEditIsNeverOverwrittenBeforeReload() throws IOException
+	{
+		Storage storage = storage();
+		storage.quests().load();
+		storage.quests().getOrCreate("Thor").setAmount(1);
+		storage.quests().save();
+		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+
+		Path file = this.dir.resolve("quests.yml");
+		String edit = "Thor:\n  Amount: 5\n";
+		Files.writeString(file, edit);
+		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+
+		// Saved (and autosaved) in the game after the edit
+		storage.quests().getOrCreate("Thor").setAmount(2);
+		storage.quests().save();
+		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+		storage.flush();
+		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+
+		assertEquals(edit, Files.readString(file));
+		assertTrue(storage.quests().file().isEditedOnDisk());
+		assertTrue(storage.quests().file().isDirty(), "the changes stay marked until the reload decides");
+
+		// /g reload reads the edit
+		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
+		assertTrue(storage.quests().load());
+		storage.finishReload();
+		assertFalse(storage.quests().file().isEditedOnDisk());
+		assertEquals(5, storage.quests().find("Thor").amount());
+
+		// And saving works again after it
+		storage.quests().getOrCreate("Thor").setAmount(7);
+		storage.quests().save();
+		storage.close();
+		assertEquals(7, YamlConfiguration.loadConfiguration(file.toFile()).getInt("Thor.Amount"));
+	}
+
+	@Test
+	void closeNeverOverwritesAHandEdit() throws IOException
+	{
+		Storage storage = storage();
+		storage.quests().load();
+		storage.quests().getOrCreate("Thor").setAmount(1);
+		storage.quests().save();
+		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+
+		Path file = this.dir.resolve("quests.yml");
+		String edit = "Thor:\n  Amount: 5\n";
+		Files.writeString(file, edit);
+		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+
+		storage.quests().getOrCreate("Thor").setAmount(2);
+		storage.quests().markDirty();
+		storage.close();
+
+		assertEquals(edit, Files.readString(file));
+	}
+
+	@Test
+	void aFileThatWasNeverLoadedIsNeverWritten() throws IOException
+	{
+		Files.writeString(this.dir.resolve("bibles.yml"), "Thor:\n  Title: Old\n");
+		Storage storage = storage();
+		storage.bibles().getOrCreate("Thor").setTitle("New");
+		storage.bibles().save();
+		storage.close();
+
+		assertEquals("Thor:\n  Title: Old\n", Files.readString(this.dir.resolve("bibles.yml")));
+	}
 }

@@ -54,6 +54,9 @@ public final class DataFile
 	private boolean								loaded;
 	// When the file was last read or written by Gods, to see on /g reload whether someone edited it since
 	private volatile FileTime				knownModified;
+	// Set by the writer thread when the file was edited on disk since Gods last read or wrote it: it is then not written
+	// until it is read again (/g reload), so the edit wins; the changes in memory stay marked dirty until then
+	private volatile boolean				editedOnDisk;
 	// Set by prepareReload: the next load keeps the data in memory instead of reading the unchanged file again
 	private boolean								keepOnNextLoad;
 	private boolean								lastLoadKept;
@@ -131,6 +134,7 @@ public final class DataFile
 			return !this.readOnly;
 		}
 		this.lastLoadKept = false;
+		this.editedOnDisk = false;
 
 		boolean firstLoad = !this.loaded;
 		this.loaded = true;
@@ -190,10 +194,11 @@ public final class DataFile
 				loadedYaml = upgraded.yaml();
 				repaired |= upgraded.changed();
 			}
-			catch (VersionedYaml.LoadException ex)
+			catch (VersionedYaml.LoadException | RuntimeException ex)
 			{
 				// Use what is there, but never write over the file that could not be upgraded
-				this.logger.severe(ex.getMessage() + (ex.getCause() != null ? ": " + ex.getCause().getMessage() : ""));
+				this.logger.log(Level.SEVERE, (ex instanceof VersionedYaml.LoadException ? "" : "Could not upgrade " + name() + ": ") + ex.getMessage()
+						+ (ex.getCause() != null ? ": " + ex.getCause().getMessage() : ""), ex instanceof RuntimeException ? ex : null);
 				this.logger.severe(name() + " is used as it is, but it will NOT be saved until it can be upgraded, so nothing in it is overwritten. Fix the problem and restart the server or run /g reload.");
 				this.yaml = loadedYaml;
 				this.readOnly = true;
@@ -275,6 +280,13 @@ public final class DataFile
 		}
 	}
 
+	/** The repository could not read the data: like a file that can't be parsed, it is not written until it loads again */
+	void markUnreadable()
+	{
+		this.readOnly = true;
+		this.dirty = false;
+	}
+
 	/** The data changed; the next {@link #flush()} (autosave, reload or disable) writes it */
 	public void markDirty()
 	{
@@ -289,12 +301,21 @@ public final class DataFile
 	}
 
 	/**
+	 * True when the file was edited (or deleted) on disk since Gods last read or wrote it: it is not written until it
+	 * is read again by /g reload, so the edit wins over the changes in memory
+	 */
+	public boolean isEditedOnDisk()
+	{
+		return this.editedOnDisk;
+	}
+
+	/**
 	 * Main thread: if anything changed, turns the data into YAML text and queues the write. Does nothing for a file
-	 * that could not be read.
+	 * that was never loaded, could not be read, or was edited on disk since Gods last read or wrote it.
 	 */
 	public void flush()
 	{
-		if (!this.dirty || this.readOnly)
+		if (!this.loaded || !this.dirty || this.readOnly || this.editedOnDisk)
 		{
 			return;
 		}
@@ -313,8 +334,21 @@ public final class DataFile
 		}
 	}
 
+	/** Writer thread */
 	private void write(String text)
 	{
+		if (this.editedOnDisk || !Objects.equals(modifiedTime(), this.knownModified))
+		{
+			// Someone edited the file since Gods read or wrote it: never write over that. /g reload reads it.
+			this.dirty = true;
+			if (!this.editedOnDisk)
+			{
+				this.editedOnDisk = true;
+				this.logger.warning(name() + " was edited on disk; Gods won't save it until /g reload, which reads your edit (changes made in the game since are dropped).");
+			}
+			return;
+		}
+
 		try
 		{
 			AtomicFiles.write(this.file, text);

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -253,37 +254,53 @@ public class Gods extends JavaPlugin
 
 	/**
 	 * Loads the messages and the data of every enabled feature, in the order the services depend on each other.
-	 * Data of a feature that is switched off is not read (and so not written).
+	 * Data of a feature that is switched off is not read (and so not written). A step that fails is logged and the
+	 * others still run; nothing is then removed because of what another file says until the next (re)load works.
 	 */
 	private void loadData()
 	{
+		boolean complete = true;
 		if (this.settings.bibles().enabled())
 		{
-			this.ctx.holyBookService().load();
+			complete &= loadStep("bibles.yml", () -> this.ctx.holyBookService().load());
 		}
 		if (this.settings.marriage().enabled())
 		{
-			this.ctx.marriageService().load();
+			complete &= loadStep("marriages.yml", () -> this.ctx.marriageService().load());
 		}
 		if (this.settings.holyLand().enabled())
 		{
-			this.ctx.holyLandService().load();
+			complete &= loadStep("holyland.yml", () -> this.ctx.holyLandService().load());
 		}
 
 		// Old lang/<language>_*.yml files (Gods 0.9.x and before MiniMessage) become the new message files first
-		LegacyLangFiles.migrate(getDataFolder().toPath().resolve("lang"), this::getResource, getLogger());
-		this.ctx.messages().load(this.settings.general().language(), this.settings.general().serverName());
-		this.ctx.godService().load();
-		this.ctx.questService().load();
-		this.ctx.believerService().load();
-		this.ctx.godListService().load();
+		loadStep("the old language files", () -> LegacyLangFiles.migrate(getDataFolder().toPath().resolve("lang"), this::getResource, getLogger()));
+		loadStep("the message files", () -> this.ctx.messages().load(this.settings.general().language(), this.settings.general().serverName()));
+		complete &= loadStep("gods.yml", () -> this.ctx.godService().load());
+		complete &= loadStep("quests.yml", () -> this.ctx.questService().load());
+		complete &= loadStep("believers.yml", () -> this.ctx.believerService().load());
+		complete &= loadStep("whitelist.yml and blacklist.yml", () -> this.ctx.godListService().load());
 
 		this.knownPlayerIds = null;
 		// Nothing is removed because of what another file says for a few minutes, in case an edit is still going on
-		this.storage.dataLoaded();
+		this.storage.dataLoaded(complete);
 	}
 
-	/** The UUID of a player the server has seen, by name (any case), or null; for upgrading old data files */
+	/** Runs one step of {@link #loadData()}; returns false (after logging it) if it failed */
+	private boolean loadStep(String what, Runnable step)
+	{
+		try
+		{
+			step.run();
+			return true;
+		}
+		catch (RuntimeException ex)
+		{
+			getLogger().log(Level.SEVERE, "Could not load " + what + "; going on without it. Dead gods and inactive priests are not removed until this is fixed and Gods is reloaded.", ex);
+			return false;
+		}
+	}
+
 	/** Registers /g (alias /gods) and every subcommand: the one place a new command is added */
 	private void registerCommands()
 	{
@@ -306,6 +323,7 @@ public class Gods extends JavaPlugin
 		command.setTabCompleter(router);
 	}
 
+	/** The UUID of a player the server has seen, by name (any case), or null; for upgrading old data files */
 	private UUID knownPlayerId(String name)
 	{
 		if (this.knownPlayerIds == null)

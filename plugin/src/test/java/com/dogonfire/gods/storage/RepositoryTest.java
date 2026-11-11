@@ -31,7 +31,7 @@ class RepositoryTest
 	private final List<Runnable>	queued	= new ArrayList<>();
 
 	/** Knows the top-level sections that have a "Power" */
-	static final class PowerRepository extends Repository
+	static class PowerRepository extends Repository
 	{
 		final Map<String, Integer> powers = new LinkedHashMap<>();
 
@@ -123,6 +123,55 @@ class RepositoryTest
 		assertTrue(repository.isReadOnly());
 		repository.save();
 		assertTrue(this.queued.isEmpty());
+	}
+
+	@Test
+	void dataTheRepositoryCanNotMakeSenseOfIsUsedButNeverWritten() throws IOException
+	{
+		Files.writeString(this.dir.resolve("data.yml"), "Thor:\n  Power: 3\nOdin: 4\n");
+		PowerRepository repository = new PowerRepository(new DataFile(this.dir.resolve("data.yml"), LOG, this.queued::add, null))
+		{
+			@Override
+			protected void read(YamlConfiguration yaml)
+			{
+				super.read(yaml);
+				// What Bukkit's getters throw on odd YAML
+				throw new ClassCastException("a number where a section belongs");
+			}
+		};
+		assertFalse(repository.load());
+		assertTrue(repository.isReadOnly());
+		assertEquals(Map.of("Thor", 3), repository.powers);
+		repository.save();
+		assertTrue(this.queued.isEmpty());
+		assertEquals("Thor:\n  Power: 3\nOdin: 4\n", read());
+	}
+
+	@Test
+	void aMigrationThatThrowsLeavesTheFileUsedButNeverWritten() throws IOException
+	{
+		Files.writeString(this.dir.resolve("data.yml"), "Thor:\n  Power: 3\n");
+		Migration throwing = new Migration()
+		{
+			@Override
+			public int fromVersion()
+			{
+				return 1;
+			}
+
+			@Override
+			public YamlConfiguration migrate(YamlConfiguration old)
+			{
+				throw new NullPointerException("odd YAML");
+			}
+		};
+		PowerRepository repository = repository(new VersionedYaml("data-version", 2, 1, List.of(throwing)));
+		assertFalse(repository.load());
+		assertTrue(repository.isReadOnly());
+		assertEquals(Map.of("Thor", 3), repository.powers);
+		repository.save();
+		assertTrue(this.queued.isEmpty());
+		assertEquals("Thor:\n  Power: 3\n", read());
 	}
 
 	@Test
