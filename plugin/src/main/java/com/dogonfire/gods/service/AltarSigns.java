@@ -1,11 +1,18 @@
 package com.dogonfire.gods.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.bukkit.ChatColor;
+
+import com.dogonfire.gods.model.GodGender;
 
 /**
  * Reading the text of altar signs, without the server so it can be tested. Altars are written on the front of a wall
  * sign on an altar block: "Altar / of / &lt;god&gt;" (praying), "Curses / On / &lt;player&gt;" and
- * "Blessings / On / &lt;player&gt;". A new praying altar is a sign with only the god's name on it.
+ * "Blessings / On / &lt;player&gt;". A new praying altar is a sign with the god's name on it, and maybe "God" or
+ * "Goddess" on another line.
  */
 public final class AltarSigns
 {
@@ -16,15 +23,10 @@ public final class AltarSigns
 	/** Why the text of a new praying altar sign is not a god name */
 	public enum Problem
 	{
-		/** More than one line is written */
+		/** More than the name and a gender word is written */
 		INVALID_SIGN,
 		/** The name is too short */
 		INVALID_GOD_NAME
-	}
-
-	/** The god name written on a new praying altar sign (untrimmed), or the problem with the sign */
-	public record GodNameLine(String godName, Problem problem)
-	{
 	}
 
 	private AltarSigns()
@@ -91,37 +93,80 @@ public final class AltarSigns
 	}
 
 	/**
-	 * The god's name on a new praying altar sign: the first written line, with every other line empty. The name is
-	 * returned as written (the caller trims and formats it).
+	 * What a new praying altar sign says: the god's name (as written; the caller trims and formats it), and the gender
+	 * the player chose by writing "God" or "Goddess" (the language's words, any case) on another line, or null when
+	 * they didn't (the god then chooses). A sign with only one written line is the god's name, as altars always were,
+	 * even if that name is a gender word. Problem is null when the sign is fine.
 	 */
-	public static GodNameLine godNameOnNewSign(String[] lines)
+	public record NewAltar(String godName, GodGender gender, Problem problem)
 	{
-		String godName = "";
-		int line = 0;
-		while (godName.isEmpty() && line < 4)
+		static NewAltar problem(Problem problem)
 		{
-			String text = lines[line++];
-			godName = (text != null) ? text : "";
+			return new NewAltar(null, null, problem);
 		}
-		line--;
+	}
 
-		for (int other = 0; other < 4; other++)
+	/**
+	 * Reads a new praying altar sign: one line with the god's name, and maybe one more with a gender word; nothing
+	 * else.
+	 *
+	 * @param maleWords   the words for a male god ("God")
+	 * @param femaleWords the words for a female god ("Goddess")
+	 */
+	public static NewAltar newPrayingAltar(String[] lines, Collection<String> maleWords, Collection<String> femaleWords)
+	{
+		List<String> written = new ArrayList<>();
+		for (String text : lines)
 		{
-			if (other == line)
+			if (text != null && !ChatColor.stripColor(text).isBlank())
 			{
-				continue;
-			}
-			String text = lines[other];
-			if ((text != null) && (text.length() > 0))
-			{
-				return new GodNameLine(null, Problem.INVALID_SIGN);
+				written.add(text);
 			}
 		}
 
-		if (godName.length() <= 1)
+		if (written.isEmpty())
 		{
-			return new GodNameLine(null, Problem.INVALID_GOD_NAME);
+			return NewAltar.problem(Problem.INVALID_GOD_NAME);
 		}
-		return new GodNameLine(godName, null);
+		if (written.size() > 2)
+		{
+			return NewAltar.problem(Problem.INVALID_SIGN);
+		}
+
+		String godName = written.get(0);
+		GodGender gender = null;
+		if (written.size() == 2)
+		{
+			GodGender first = genderWord(written.get(0), maleWords, femaleWords);
+			GodGender second = genderWord(written.get(1), maleWords, femaleWords);
+			if ((first == null) == (second == null))
+			{
+				// Two names, or two gender words
+				return NewAltar.problem(Problem.INVALID_SIGN);
+			}
+			godName = first == null ? written.get(0) : written.get(1);
+			gender = first == null ? second : first;
+		}
+
+		if (godName.trim().length() <= 1)
+		{
+			return NewAltar.problem(Problem.INVALID_GOD_NAME);
+		}
+		return new NewAltar(godName, gender, null);
+	}
+
+	/** The gender a line names (any case, colors ignored), or null if it is no gender word */
+	public static GodGender genderWord(String line, Collection<String> maleWords, Collection<String> femaleWords)
+	{
+		String word = plain(line);
+		if (femaleWords.stream().anyMatch(female -> plain(female).equalsIgnoreCase(word)))
+		{
+			return GodGender.Female;
+		}
+		if (maleWords.stream().anyMatch(male -> plain(male).equalsIgnoreCase(word)))
+		{
+			return GodGender.Male;
+		}
+		return null;
 	}
 }

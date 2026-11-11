@@ -22,6 +22,8 @@ public enum Voice
 	BELIEVER_ACCEPTED_MARRIAGE_PROPOSAL("believer-accepted-marriage-proposal"),
 	BELIEVER_ACCEPTED_YOUR_MARRIAGE_PROPOSAL("believer-accepted-your-marriage-proposal"),
 	BELIEVER_ALTAR_BUILT("believer-altar-built"),
+	/** A new god, created at an altar without a gender word on the sign, chose its gender */
+	BELIEVER_GOD_CHOSE_GENDER("believer-god-chose-gender"),
 	BELIEVER_BAD_SACRIFICE("believer-bad-sacrifice"),
 	BELIEVER_CURSED_ANGRY("believer-cursed-angry"),
 	BELIEVER_GOOD_SACRIFICE("believer-good-sacrifice"),

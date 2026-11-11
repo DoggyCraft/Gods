@@ -42,6 +42,15 @@ class GodRulesTest
 		assertEquals("sun_male", GodRules.voice(null, null, 0L));
 	}
 
+	/** A god without a gender word on its sign chooses its gender from its seed, the same one a god without a gender speaks with */
+	@Test
+	void aGodChoosesItsGenderFromItsSeed()
+	{
+		assertEquals(GodGender.Female, GodRules.chosenGender(42L));
+		assertEquals(GodGender.Male, GodRules.chosenGender(43L));
+		assertEquals(GodRules.voice(GodType.SEA, GodGender.None, 7L), GodRules.voice(GodType.SEA, GodRules.chosenGender(7L), 0L));
+	}
+
 	@Test
 	void powerIsTheBelieversPowerButAtLeastTheMinimum()
 	{

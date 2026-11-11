@@ -530,3 +530,6 @@ believers-defend-holy-land-success:
 - Our den is safe! You have defended our Holy Land like a mother bear, my children!
 believers-new-player-accepted:
 - A new creature joins our herd! Make them feel welcome, my children!
+# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself
+believer-god-chose-gender:
+- 'All creatures, hear me! I have chosen to be the God of <player> and of you all!'

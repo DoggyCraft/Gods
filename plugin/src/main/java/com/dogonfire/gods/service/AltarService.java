@@ -6,6 +6,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
@@ -22,7 +24,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
-import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
 /**
@@ -189,13 +190,22 @@ public class AltarService
 		return this.droppedItems.take(item.getUniqueId(), System.currentTimeMillis());
 	}
 
-	public GodGender getGodGenderFromAltarBlock(Block block)
+	/** What a sign written as a new praying altar says: the god's name and maybe a gender word ({@link AltarSigns}) */
+	public AltarSigns.NewAltar readNewPrayingAltar(String[] lines)
 	{
-		if (block.getRelative(BlockFace.UP).getType().equals(Material.REDSTONE_TORCH))
+		return AltarSigns.newPrayingAltar(lines, genderWords("altar.gender-words.male", "God"), genderWords("altar.gender-words.female", "Goddess"));
+	}
+
+	/** The words of this language that choose a gender on an altar sign (messages.yml), and the English one */
+	private List<String> genderWords(String key, String english)
+	{
+		List<String> words = new ArrayList<String>();
+		for (Component word : ctx.messages().lines(key))
 		{
-			return GodGender.Female;
+			words.add(Messages.plain(word));
 		}
-		return GodGender.Male;
+		words.add(english);
+		return words;
 	}
 
 	public GodType getGodTypeForAltarBlockType(Material altarBlockType)
@@ -254,8 +264,8 @@ public class AltarService
 			return false;
 		}
 
-		// The god's name is the one line the player wrote on the sign
-		AltarSigns.GodNameLine nameLine = AltarSigns.godNameOnNewSign(event.getLines());
+		// The god's name, and maybe "God" or "Goddess" on another line
+		AltarSigns.NewAltar nameLine = readNewPrayingAltar(event.getLines());
 		if (nameLine.problem() == AltarSigns.Problem.INVALID_SIGN)
 		{
 			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.invalid-sign", 10);
@@ -302,7 +312,7 @@ public class AltarService
 			return false;
 		}
 		
-		if (ctx.prayerService().addAltar(event.getPlayer(), godName, event.getBlock().getLocation()))
+		if (ctx.prayerService().addAltar(event.getPlayer(), godName, event.getBlock().getLocation(), nameLine.gender()))
 		{
 			if ((ctx.settings().holyLand().enabled()) && (ctx.permissions().hasPermission(player, "gods.holyland")))
 			{

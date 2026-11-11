@@ -127,12 +127,19 @@ class LegacyLangFilesTest
 		}
 	}
 
+	/** Situations the old files never had (the bundled voice files have them, and servers fall back to those) */
+	private static final java.util.Set<Voice> NEW_VOICES = java.util.Set.of(Voice.BELIEVER_GOD_CHOSE_GENDER);
+
 	@Test
 	void everyOldVoiceKeyTheCodeUsesHasANewKey() throws IOException
 	{
 		Map<String, List<String>> converted = LegacyLangFiles.convertVoice(fixture("english_sun_male.yml"));
 		for (Voice voice : Voice.values())
 		{
+			if (NEW_VOICES.contains(voice))
+			{
+				continue;
+			}
 			assertTrue(converted.containsKey(voice.key()), voice.key());
 		}
 	}

@@ -529,3 +529,6 @@ believers-defend-holy-land-success:
 - Our love has protected our Holy Land! I am so proud of you, my children!
 believers-new-player-accepted:
 - A new heart has joined our family! Show them our love, my children!
+# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself
+believer-god-chose-gender:
+- 'I have chosen to be your God, <player>, and I will love you all!'

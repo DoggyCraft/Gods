@@ -38,12 +38,23 @@ public class PrayerService
 		this.ctx = ctx;
 	}
 
-	public boolean addAltar(Player player, String godName, Location location)
+	/**
+	 * A player built a praying altar: they believe in its god from now on, and the god is created if it doesn't exist.
+	 *
+	 * @param gender the gender written on the sign, or null for none (a new god then chooses its own and says so)
+	 */
+	public boolean addAltar(Player player, String godName, Location location, GodGender gender)
 	{
-		if (addBeliefByAltar(player, godName, location, true))
+		boolean newGod = !ctx.godService().godExist(godName);
+		if (addBeliefByAltar(player, godName, location, true, gender))
 		{
-
-			ctx.godSpeech().say(godName, player, Voice.BELIEVER_ALTAR_BUILT, 2 + this.random.nextInt(30), Messages.player(player.getName()));
+			int delay = 2;
+			if (newGod && gender == null)
+			{
+				ctx.godSpeech().say(godName, player, Voice.BELIEVER_GOD_CHOSE_GENDER, delay, Messages.player(player.getName()));
+				delay = 40;
+			}
+			ctx.godSpeech().say(godName, player, Voice.BELIEVER_ALTAR_BUILT, delay + this.random.nextInt(30), Messages.player(player.getName()));
 
 			return true;
 		}
@@ -162,7 +173,8 @@ public class PrayerService
 		}
 	}
 
-	private boolean addBeliefByAltar(Player player, String godName, Location prayerLocation, boolean allowChangeGod)
+	/** @param gender the gender a new god gets; null lets it choose its own (from its seed) */
+	private boolean addBeliefByAltar(Player player, String godName, Location prayerLocation, boolean allowChangeGod, GodGender gender)
 	{
 		if (!ctx.godService().godExist(godName))
 		{
@@ -174,7 +186,8 @@ public class PrayerService
 
 			Block altarBlock = ctx.altarService().getAltarBlockFromSign(prayerLocation.getBlock());
 
-			GodGender godGender = ctx.altarService().getGodGenderFromAltarBlock(altarBlock);
+			long seed = ctx.godService().newSeed();
+			GodGender godGender = gender != null ? gender : GodRules.chosenGender(seed);
 
 			ctx.plugin().logDebug("Altar is " + altarBlock.getType().name());
 
@@ -187,7 +200,7 @@ public class PrayerService
 				return false;
 			}
 
-			ctx.godService().createGod(godName, player.getLocation(), godGender, godType);
+			ctx.godService().createGod(godName, player.getLocation(), godGender, godType, seed);
 
 			if (ctx.settings().gods().broadcastNewGods())
 			{
@@ -407,18 +420,16 @@ public class PrayerService
 			return false;
 		}
 
-		if (addBeliefByAltar(player, godName, location, ctx.believerService().getChangingGod(player.getUniqueId())))
+		boolean newGod = godName != null && !ctx.godService().godExist(godName);
+		if (addBeliefByAltar(player, godName, location, ctx.believerService().getChangingGod(player.getUniqueId()), null))
 		{
+			if (newGod)
+			{
+				// An old altar sign of a god that is gone: the new god chooses its gender
+				ctx.godSpeech().say(godName, player, Voice.BELIEVER_GOD_CHOSE_GENDER, 2, Messages.player(player.getName()));
+			}
 			Block altarBlock = ctx.altarService().getAltarBlockFromSign(player.getWorld().getBlockAt(location));
 
-			if (ctx.godService().getGenderForGod(godName) == GodGender.None)
-			{
-				GodGender godGender = ctx.altarService().getGodGenderFromAltarBlock(altarBlock);
-
-				ctx.plugin().logDebug("God did not have a gender, setting gender to " + godGender);
-
-				ctx.godService().setGenderForGod(godName, godGender);
-			}
 			if (ctx.godService().getDivineForceForGod(godName) == null)
 			{
 				GodType godType = ctx.altarService().getGodTypeForAltarBlockType(altarBlock.getType());

@@ -247,8 +247,10 @@ public class AltarListener implements Listener
 		}
 		else
 		{
-			// A praying altar is a sign with only the god's name on it; leave other signs alone
-			if (AltarSigns.writtenLines(event.getLines()) != 1)
+			// A praying altar is a sign with the god's name on it, and maybe "God" or "Goddess" on another line; leave
+			// other signs alone
+			int written = AltarSigns.writtenLines(event.getLines());
+			if (written != 1 && (written != 2 || ctx.altarService().readNewPrayingAltar(event.getLines()).problem() == AltarSigns.Problem.INVALID_SIGN))
 			{
 				return;
 			}

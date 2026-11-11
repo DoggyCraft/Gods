@@ -64,9 +64,18 @@ public final class GodRules
 		}
 		else if (gender == GodGender.None)
 		{
-			gender = (seed & 1L) == 0L ? GodGender.Female : GodGender.Male;
+			gender = chosenGender(seed);
 		}
 		return GodVoices.name(type, gender);
+	}
+
+	/**
+	 * The gender a god chooses itself (when its altar sign didn't say), fixed by its seed: the same one a god without a
+	 * gender speaks with
+	 */
+	public static GodGender chosenGender(long seed)
+	{
+		return (seed & 1L) == 0L ? GodGender.Female : GodGender.Male;
 	}
 
 	/** A god's power: the power of all its believers, but at least {@code minPower} (the whitelist's) */

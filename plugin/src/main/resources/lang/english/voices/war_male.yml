@@ -495,3 +495,6 @@ believers-defend-holy-land-success:
 - The enemy has been crushed! Our Holy Land still stands! Well fought, soldiers!
 believers-new-player-accepted:
 - A new recruit has joined our army! Train them well, soldiers!
+# Said to the player whose altar created the god without a gender word on the sign: the god chose its gender itself
+believer-god-chose-gender:
+- 'To arms, <player>! I have chosen to be your God of War!'

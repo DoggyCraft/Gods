@@ -76,7 +76,8 @@ public class GodService
 		return GodRules.formatGodName(godName);
 	}
 
-	public void createGod(String godName, Location location, GodGender godGender, GodType godType)
+	/** Creates a god at its first altar, with its gender, type and seed (its personality, see {@link #getSeedForGod}) */
+	public void createGod(String godName, Location location, GodGender godGender, GodType godType, long seed)
 	{
 		setHomeForGod(godName, location);
 		setGenderForGod(godName, godGender);
@@ -87,6 +88,10 @@ public class GodService
 		if (god != null)
 		{
 			god.setCreated(LegacyDates.SECONDS.now());
+			if (seed != 0L)
+			{
+				god.setSeed(seed);
+			}
 		}
 
 		this.repository.markDirty();
@@ -268,6 +273,18 @@ public class GodService
 		GodGender godGender = godType != null ? getGenderForGod(godName) : null;
 		long seed = godGender == GodGender.None ? getSeedForGod(godName) : 0L;
 		return GodRules.voice(godType, godGender, seed);
+	}
+
+	/** A new seed for a god about to be created (never 0, which means none) */
+	public long newSeed()
+	{
+		long seed;
+		do
+		{
+			seed = this.random.nextLong();
+		}
+		while (seed == 0L);
+		return seed;
 	}
 
 	/** The god's personality: a random number, made once and kept */
