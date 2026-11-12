@@ -77,9 +77,9 @@ believer-random-neutral-speech:
 - Pray to me, and we will all become stronger!
 - Pray to me for a better world!
 - Do not listen to the words of false Gods! Pray to me!
-- Listen to the words of <hl><player></hl>, he will help you to understand!
-- If you feel lost, talk to <hl><player></hl>! He will show you the light!
-- Remember, <hl><player></hl> is our priest, he will guide you towards the light!
+- Listen to the words of <hl><player></hl>, they will help you to understand!
+- If you feel lost, talk to <hl><player></hl>! They will show you the light!
+- Remember, <hl><player></hl> is our priest, they will guide you towards the light!
 believer-random-displeased-speech:
 - We are losing faith, my children... Pray harder!
 - I can sense your lack of faith... Pray to me and listen to my words!
@@ -195,7 +195,7 @@ believer-holy-artifact-blessing:
 believers-slay-quest-failed:
 - My Children, I am displeased in you. You have failed to perform this simple task for me...
 believers-lost-believer:
-- <hl><player></hl> has lost his faith in me. I do no longer feel him as part of our religion...
+- <hl><player></hl> has lost their faith in me. I do no longer feel them as part of our religion...
 believers-removed-priest:
 - Oh no! I find myself having no priest! I must find a priest to do my bidding!
 believers-slay-quest-completed:
@@ -463,7 +463,7 @@ default-bible-text-4:
 - '<hl><player></hl> said: "Hey yo! You can eat whatever you want here in <hl><server></hl> but NOT any <hl><type></hl>! Keep your hands off <hl><type></hl> and all is cool, OK?"'
 - '<hl><player></hl> now said: "You can eat anything you want here in <hl><server></hl> but i pity the fool that eats any <hl><type></hl>! Anyone who eats <hl><type></hl> will feel my wrath!"'
 default-bible-text-5:
-- But alas, on <hl><player></hl>'s first and only fishing day, the foul <hl><type></hl> crept upon the innocent creation and tempted the firstborn to eat the very forbidden food which <hl><player></hl> had warned him about!
+- But alas, on <hl><player></hl>'s first and only fishing day, the foul <hl><type></hl> crept upon the innocent creation and tempted the firstborn to eat the very forbidden food which <hl><player></hl> had warned against!
 - And so, <hl><player></hl> took a day off. But on returning, <hl><player></hl> saw a <hl><type></hl> sitting on the innocent creation laughing while shoving the forbidden food down the throat of the firstborn!
 default-bible-text-6:
 - '<hl><player></hl> was furious when learning about this event and cursed the <hl><type></hl> saying: "Forever will you and your kind be cursed! You shall be hunted down and slain whereever you are found!"'
