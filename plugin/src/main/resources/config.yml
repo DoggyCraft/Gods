@@ -210,6 +210,11 @@ holy-land:
   # god's rank into a square of chunks around the altar (ranks.unlocks.holy-land-radius-chunks) as believers pray there.
   # Chunks of another religion's holy land and neutral land are never taken. A god may hold power / 10 + 3 holy lands.
   enabled: false
+  # Who protects holy and neutral land from building, breaking, using blocks, fighting, mobs, explosions and ender
+  # pearls: on (Gods), off (nobody: leave it to your claim plugin), or auto (off while GriefPrevention or WorldGuard is
+  # on the server, whose claims and regions protect land, on otherwise). Either way holy land is still claimed, grows,
+  # is shown on entering, counts for ranks, gives its aura and can be attacked.
+  protection: auto
   # Whether players can fight each other in a new god's holy land.
   default-pvp: false
   # Whether mobs can hurt players in a new god's holy land.

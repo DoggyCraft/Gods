@@ -103,7 +103,8 @@ public class SettingsLoader
 						bool("holy-land.lightning"),
 						bool("holy-land.allow-interaction-in-neutral-lands"),
 						atLeast("holy-land.delete-abandoned-after-days", 0),
-						materials("holy-land.breakable-blocks")),
+						materials("holy-land.breakable-blocks"),
+						holyLandProtection("holy-land.protection")),
 				new Settings.Marriage(
 						bool("marriage.enabled"),
 						bool("marriage.wedding-fireworks")),
@@ -334,6 +335,21 @@ public class SettingsLoader
 		DevotionLevel fallback = DevotionLevel.byKey(defaults().getString(path, "follower"));
 		fallback = fallback != null ? fallback : DevotionLevel.FOLLOWER;
 		warn(path, value, fallback.key());
+		return fallback;
+	}
+
+	/** auto, on or off; anything else is warned about and the default used */
+	private Settings.HolyLandProtection holyLandProtection(String path)
+	{
+		Object value = this.config.get(path);
+		Settings.HolyLandProtection protection = Settings.HolyLandProtection.parse(value);
+		if (protection != null)
+		{
+			return protection;
+		}
+		Settings.HolyLandProtection fallback = Settings.HolyLandProtection.parse(defaults().get(path, "auto"));
+		fallback = fallback != null ? fallback : Settings.HolyLandProtection.AUTO;
+		warn(path, value, fallback.name().toLowerCase(Locale.ROOT));
 		return fallback;
 	}
 

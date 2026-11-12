@@ -263,6 +263,19 @@ class SettingsLoaderTest
 		assertWarned("min-miracles");
 	}
 
+	/** holy-land.protection is auto, on or off, also when YAML reads an unquoted on or off as true or false */
+	@Test
+	void holyLandProtection() throws Exception
+	{
+		assertEquals(Settings.HolyLandProtection.AUTO, load("").holyLand().protection());
+		assertEquals(Settings.HolyLandProtection.ON, load("holy-land:\n  protection: on\n").holyLand().protection());
+		assertEquals(Settings.HolyLandProtection.OFF, load("holy-land:\n  protection: off\n").holyLand().protection());
+		assertEquals(Settings.HolyLandProtection.OFF, load("holy-land:\n  protection: 'OFF'\n").holyLand().protection());
+		assertEquals(Settings.HolyLandProtection.AUTO, load("holy-land:\n  protection: Auto\n").holyLand().protection());
+		assertEquals(Settings.HolyLandProtection.AUTO, load("holy-land:\n  protection: sometimes\n").holyLand().protection());
+		assertWarned("holy-land.protection");
+	}
+
 	/** Unlocks name a rank; an unknown one gets the default */
 	@Test
 	void unlocksNameARank() throws Exception

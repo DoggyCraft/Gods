@@ -38,7 +38,8 @@ import com.dogonfire.gods.service.HolyLandRules;
 import com.dogonfire.gods.service.HolyLandService;
 
 /**
- * Holy land and neutral land protection (building, breaking, interacting, PvP, mobs, explosions, teleports), the titles
+ * Holy land and neutral land protection (building, breaking, interacting, PvP, mobs, explosions, teleports; only while
+ * holy-land.protection says Gods protects land, {@link HolyLandService#protects}), the titles
  * shown when entering land, and kills and meals in contested holy lands. Registered only while holy land is enabled
  * (see {@code Gods#startFeatures}); the logic is in {@link HolyLandService}.
  */
@@ -61,6 +62,12 @@ public class HolyLandListener implements Listener
 		return ctx.settings().holyLand().enabled() && world != null && ctx.plugin().isEnabledInWorld(world);
 	}
 
+	/** Whether holy and neutral land in this world protect themselves (holy-land.protection; see HolyLandService#protects) */
+	private boolean isProtectedIn(World world)
+	{
+		return isActiveIn(world) && lands().protects();
+	}
+
 	private static String nullToEmpty(String text)
 	{
 		return text != null ? text : "";
@@ -73,7 +80,7 @@ public class HolyLandListener implements Listener
 	public void onBlockPlace(BlockPlaceEvent event)
 	{
 		Player player = event.getPlayer();
-		if (!isActiveIn(player.getWorld()))
+		if (!isProtectedIn(player.getWorld()))
 		{
 			return;
 		}
@@ -118,7 +125,7 @@ public class HolyLandListener implements Listener
 	{
 		Player player = event.getPlayer();
 
-		if (!isActiveIn(player.getWorld()))
+		if (!isProtectedIn(player.getWorld()))
 		{
 			return;
 		}
@@ -166,7 +173,7 @@ public class HolyLandListener implements Listener
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
 		Player player = event.getPlayer();
-		if (!isActiveIn(player.getWorld()))
+		if (!isProtectedIn(player.getWorld()))
 		{
 			return;
 		}
@@ -249,7 +256,7 @@ public class HolyLandListener implements Listener
 	{
 		Location location = event.getEntity().getLocation();
 
-		if (!isActiveIn(location.getWorld()))
+		if (!isProtectedIn(location.getWorld()))
 		{
 			return;
 		}
@@ -310,7 +317,7 @@ public class HolyLandListener implements Listener
 	/** Explosions don't destroy blocks in holy lands or neutral lands. */
 	private void protectBlocksFromExplosion(List<Block> blocks)
 	{
-		if (blocks.isEmpty() || !isActiveIn(blocks.get(0).getWorld()))
+		if (blocks.isEmpty() || !isProtectedIn(blocks.get(0).getWorld()))
 		{
 			return;
 		}
@@ -335,7 +342,7 @@ public class HolyLandListener implements Listener
 	public void onCreatureSpawn(CreatureSpawnEvent event)
 	{
 		// Only what the world spawns by itself: eggs, breeding, golems, commands and plugins are let in
-		if (!HolyLandRules.isWorldSpawn(event.getSpawnReason()) || !isActiveIn(event.getLocation().getWorld()))
+		if (!HolyLandRules.isWorldSpawn(event.getSpawnReason()) || !isProtectedIn(event.getLocation().getWorld()))
 		{
 			return;
 		}
@@ -398,7 +405,7 @@ public class HolyLandListener implements Listener
 		Player player = event.getPlayer();
 		Location to = event.getTo();
 
-		if (to == null || !isActiveIn(to.getWorld()))
+		if (to == null || !isProtectedIn(to.getWorld()))
 		{
 			return;
 		}

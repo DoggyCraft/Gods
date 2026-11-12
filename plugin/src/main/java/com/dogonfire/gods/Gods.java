@@ -403,6 +403,12 @@ public class Gods extends JavaPlugin
 		if (this.settings.holyLand().enabled())
 		{
 			registerFeature(new HolyLandListener(this.ctx));
+			if (this.settings.holyLand().protection() == Settings.HolyLandProtection.AUTO)
+			{
+				String claimPlugin = this.ctx.holyLandService().claimPlugin();
+				getLogger().info(claimPlugin != null ? "Holy land protection is left to " + claimPlugin + " (holy-land.protection: auto)."
+						: "Holy land protects itself: neither GriefPrevention nor WorldGuard is on the server (holy-land.protection: auto).");
+			}
 		}
 		if (this.settings.marriage().enabled())
 		{

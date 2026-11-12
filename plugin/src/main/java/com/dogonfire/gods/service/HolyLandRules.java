@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
+import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.model.ChunkKey;
 
 /** What holy land and neutral land keep out, and which chunks an altar's land takes, without a server so it can be tested */
@@ -21,11 +22,26 @@ public final class HolyLandRules
 	 */
 	private static final Set<SpawnReason> WORLD_SPAWNS = EnumSet.of(SpawnReason.NATURAL, SpawnReason.CHUNK_GEN, SpawnReason.SPAWNER, SpawnReason.TRIAL_SPAWNER, SpawnReason.JOCKEY, SpawnReason.MOUNT, SpawnReason.PATROL, SpawnReason.RAID, SpawnReason.REINFORCEMENTS, SpawnReason.VILLAGE_INVASION, SpawnReason.TRAP, SpawnReason.SILVERFISH_BLOCK, SpawnReason.NETHER_PORTAL);
 
-	/** The radius of chunks /g setneutralland sets or clears around the player: 1 is 3x3 chunks */
+	/** The radius of chunks /g setsafe sets or clears around the player: 1 is 3x3 chunks */
 	public static final int NEUTRAL_RADIUS_CHUNKS = 1;
 
 	private HolyLandRules()
 	{
+	}
+
+	/**
+	 * Whether holy and neutral land protect themselves (building, breaking, using blocks, fighting, mobs, explosions,
+	 * ender pearls): {@code on} always, {@code off} never, {@code auto} unless a claim plugin (GriefPrevention or
+	 * WorldGuard) is on the server.
+	 */
+	public static boolean protects(Settings.HolyLandProtection protection, boolean claimPluginPresent)
+	{
+		return switch (protection != null ? protection : Settings.HolyLandProtection.AUTO)
+		{
+			case ON -> true;
+			case OFF -> false;
+			case AUTO -> !claimPluginPresent;
+		};
 	}
 
 	/** Whether a mob spawned this way is one the world spawned by itself */

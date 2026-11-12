@@ -64,7 +64,7 @@ class BundledConfigTest
 				new Settings.ItemBlessings(true, 10, 3, 10, 50, 100),
 				new Settings.HolyArtifacts(true, 1440),
 				new Settings.Quests(false, 180, 1, true, true, true, false, rewards),
-				new Settings.HolyLand(false, false, true, false, true, 14, Set.of(Material.SMOOTH_STONE)),
+				new Settings.HolyLand(false, false, true, false, true, 14, Set.of(Material.SMOOTH_STONE), Settings.HolyLandProtection.AUTO),
 				new Settings.Marriage(true, true),
 				new Settings.Bibles(true, false),
 				new Settings.Chat(false),

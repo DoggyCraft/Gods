@@ -86,7 +86,7 @@ class ConfigV1ToV2Test
 				new Settings.ItemBlessings(false, 20, 7, 15, 60, 120),
 				new Settings.HolyArtifacts(false, 720),
 				new Settings.Quests(true, 60, 4, false, false, false, true, Map.of(Material.DIAMOND, 200, Material.EMERALD, 150)),
-				new Settings.HolyLand(true, true, false, true, false, 30, Set.of(Material.SMOOTH_STONE, Material.GRAVEL)),
+				new Settings.HolyLand(true, true, false, true, false, 30, Set.of(Material.SMOOTH_STONE, Material.GRAVEL), Settings.HolyLandProtection.AUTO),
 				new Settings.Marriage(false, false),
 				new Settings.Bibles(false, true),
 				new Settings.Chat(true),

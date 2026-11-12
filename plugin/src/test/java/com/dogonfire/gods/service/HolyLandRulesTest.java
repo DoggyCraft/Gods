@@ -10,6 +10,7 @@ import java.util.Set;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.model.ChunkKey;
 
 class HolyLandRulesTest
@@ -88,5 +89,17 @@ class HolyLandRulesTest
 		assertFalse(HolyLandRules.goesWithAltar("Thor", "Thor", land, List.of(chunk(1, 0))), "another altar of Thor stands in it");
 		assertFalse(HolyLandRules.goesWithAltar("Odin", "Thor", land, List.of()), "another god's land");
 		assertFalse(HolyLandRules.goesWithAltar("Thor", null, land, List.of()));
+	}
+
+	/** auto leaves protection to GriefPrevention or WorldGuard when one is on the server */
+	@Test
+	void protectionIsLeftToClaimPluginsOnAuto()
+	{
+		assertTrue(HolyLandRules.protects(Settings.HolyLandProtection.AUTO, false));
+		assertFalse(HolyLandRules.protects(Settings.HolyLandProtection.AUTO, true));
+		assertTrue(HolyLandRules.protects(Settings.HolyLandProtection.ON, true));
+		assertTrue(HolyLandRules.protects(Settings.HolyLandProtection.ON, false));
+		assertFalse(HolyLandRules.protects(Settings.HolyLandProtection.OFF, false));
+		assertFalse(HolyLandRules.protects(null, true));
 	}
 }

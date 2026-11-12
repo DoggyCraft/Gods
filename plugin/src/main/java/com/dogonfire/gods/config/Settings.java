@@ -175,8 +175,44 @@ public record Settings(
 	{
 	}
 
-	public record HolyLand(boolean enabled, boolean defaultPvp, boolean defaultMobDamage, boolean lightning, boolean allowInteractionInNeutralLands, int deleteAbandonedAfterDays, Set<Material> breakableBlocks)
+	/**
+	 * @param protection whether holy and neutral land protect themselves ({@code holy-land.protection}); see
+	 *                   {@code HolyLandRules.protects}
+	 */
+	public record HolyLand(boolean enabled, boolean defaultPvp, boolean defaultMobDamage, boolean lightning, boolean allowInteractionInNeutralLands, int deleteAbandonedAfterDays, Set<Material> breakableBlocks,
+			HolyLandProtection protection)
 	{
+	}
+
+	/** Who protects holy and neutral land ({@code holy-land.protection}) */
+	public enum HolyLandProtection
+	{
+		/** Gods, unless GriefPrevention or WorldGuard is on the server: then their claims and regions protect it */
+		AUTO,
+		/** Gods, always */
+		ON,
+		/** Nobody: the land is still claimed and shown, but other plugins protect it (or nothing does) */
+		OFF;
+
+		/** {@code auto}, {@code on} or {@code off} (any case; YAML's true and false for an unquoted on and off), or null */
+		public static HolyLandProtection parse(Object value)
+		{
+			if (value instanceof Boolean on)
+			{
+				return on ? ON : OFF;
+			}
+			if (value instanceof String text)
+			{
+				return switch (text.trim().toLowerCase(java.util.Locale.ROOT))
+				{
+					case "auto" -> AUTO;
+					case "on", "true" -> ON;
+					case "off", "false" -> OFF;
+					default -> null;
+				};
+			}
+			return null;
+		}
 	}
 
 	public record Marriage(boolean enabled, boolean weddingFireworks)

@@ -59,6 +59,22 @@ public class HolyLandService
 		this.repository.load();
 	}
 
+	/**
+	 * Whether holy and neutral land protect themselves now (holy-land.protection; with {@code auto}, not while
+	 * GriefPrevention or WorldGuard is on the server). Read at use time. Claims, growth, titles, aura and attacks don't
+	 * depend on it.
+	 */
+	public boolean protects()
+	{
+		return HolyLandRules.protects(ctx.settings().holyLand().protection(), claimPlugin() != null);
+	}
+
+	/** The claim plugin on the server that holy-land.protection auto leaves protection to, or null */
+	public String claimPlugin()
+	{
+		return ctx.griefPrevention() != null ? "GriefPrevention" : ctx.worldGuard() != null ? "WorldGuard" : null;
+	}
+
 	// ---------------------------------------------------------------------
 	// Chunks
 
