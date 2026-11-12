@@ -57,6 +57,12 @@ public final class BlessingRules
 		return (int) (200.0F * effectPower(godPower));
 	}
 
+	/** The kind of mob a curse sends: one of the theme's curse mobs, picked at random; null if there are none */
+	public static <T> T curseMob(Random random, java.util.List<T> curseMobs)
+	{
+		return curseMobs.isEmpty() ? null : curseMobs.get(random.nextInt(curseMobs.size()));
+	}
+
 	/** How many hostile mobs a curse sends */
 	public static int curseMobs(float godPower)
 	{

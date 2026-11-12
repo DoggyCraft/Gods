@@ -114,6 +114,8 @@ class ThemesLoaderTest
 			assertFalse(theme.unholyFoods().isEmpty(), type + " unholy foods");
 			assertFalse(theme.sacrificeNeeds().isEmpty(), type + " sacrifice needs");
 			assertFalse(theme.slayTargets().isEmpty(), type + " slay targets");
+			assertFalse(theme.curseMobs().isEmpty(), type + " curse mobs");
+			assertFalse(theme.peacefulMobs().isEmpty(), type + " peaceful mobs");
 			// A god must be able to pick a holy and a different unholy mob and food
 			Set<EntityType> mobs = new HashSet<>(theme.holyMobs());
 			mobs.addAll(theme.unholyMobs());
@@ -127,6 +129,59 @@ class ThemesLoaderTest
 		}
 		assertFalse(themes.of(null).holyMobs().isEmpty());
 		assertEquals(Theme.SignStyle.PLAIN, themes.of(null).sign());
+	}
+
+	/**
+	 * The default theme keeps the curse mobs and peaceful mobs Gods had built in; every theme's curse mobs can be
+	 * spawned and attack, and its peaceful mobs are no monsters and keep the old ones
+	 */
+	@Test
+	void curseMobsAttackAndPeacefulMobsArePeaceful() throws Exception
+	{
+		Themes themes = load("");
+		assertEquals(List.of(EntityType.SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIFIED_PIGLIN, EntityType.SPIDER, EntityType.WOLF), themes.defaults().curseMobs());
+		List<EntityType> oldPeaceful = List.of(EntityType.BAT, EntityType.SQUID, EntityType.CHICKEN, EntityType.PIG, EntityType.COW, EntityType.OCELOT,
+				EntityType.SHEEP, EntityType.VILLAGER, EntityType.MOOSHROOM, EntityType.IRON_GOLEM);
+		assertEquals(oldPeaceful, themes.defaults().peacefulMobs());
+		List<Theme> all = new ArrayList<>(themes.types().values());
+		all.add(themes.defaults());
+		for (Theme theme : all)
+		{
+			for (EntityType mob : theme.curseMobs())
+			{
+				assertTrue(mob.isSpawnable() && org.bukkit.entity.Mob.class.isAssignableFrom(mob.getEntityClass()), mob.name());
+			}
+			for (EntityType mob : theme.peacefulMobs())
+			{
+				assertFalse(org.bukkit.entity.Enemy.class.isAssignableFrom(mob.getEntityClass()), mob.name());
+			}
+			assertTrue(theme.peacefulMobs().containsAll(oldPeaceful), theme.peacefulMobs().toString());
+		}
+		// Themed: evil curses with wither skeletons, frost with strays, the sea with drowned
+		assertTrue(themes.of(GodType.EVIL).curseMobs().contains(EntityType.WITHER_SKELETON));
+		assertTrue(themes.of(GodType.FROST).curseMobs().contains(EntityType.STRAY));
+		assertTrue(themes.of(GodType.SEA).curseMobs().contains(EntityType.DROWNED));
+		assertTrue(themes.of(GodType.SEA).peacefulMobs().contains(EntityType.DOLPHIN));
+	}
+
+	/** An admin's peaceful-mobs: [] lets nothing but the holy mob spawn; a type without the key takes the default's */
+	@Test
+	void curseAndPeacefulMobsCanBeChanged() throws Exception
+	{
+		Themes themes = load("""
+				evil:
+				  peaceful-mobs: []
+				  curse-mobs:
+				    add: [warden]
+				    remove: [vex]
+				default:
+				  curse-mobs: [zombie]
+				""");
+		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+		assertTrue(themes.of(GodType.EVIL).peacefulMobs().isEmpty());
+		assertEquals(List.of(EntityType.WITHER_SKELETON, EntityType.CAVE_SPIDER, EntityType.WITCH, EntityType.WARDEN), themes.of(GodType.EVIL).curseMobs());
+		assertEquals(List.of(EntityType.ZOMBIE), themes.defaults().curseMobs());
+		assertEquals(List.of(EntityType.STRAY, EntityType.SKELETON, EntityType.WOLF), themes.of(GodType.FROST).curseMobs());
 	}
 
 	/** The altar blocks of 0.9.x still make the same god types, and no block makes two god types */

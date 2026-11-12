@@ -1,6 +1,7 @@
 package com.dogonfire.gods.service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -508,25 +509,13 @@ public class BlessingService
 			return false;
 		}
 
-		EntityType mobType;
-
-		switch (this.random.nextInt(5))
+		// The god type's curse mobs (themes.yml curse-mobs), else the default theme's
+		List<EntityType> curseMobs = ctx.commandmentService().themeForGod(godName).curseMobs();
+		EntityType mobType = BlessingRules.curseMob(this.random, curseMobs.isEmpty() ? ctx.themes().defaults().curseMobs() : curseMobs);
+		if (mobType == null)
 		{
-		case 0:
-			mobType = EntityType.SKELETON;
-			break;
-		case 1:
-			mobType = EntityType.ZOMBIE;
-			break;
-		case 2:
-			mobType = EntityType.ZOMBIFIED_PIGLIN;
-			break;
-		case 3:
-			mobType = EntityType.SPIDER;
-			break;
-		default:
-			mobType = EntityType.WOLF;
-			break;
+			ctx.plugin().logDebug(godName + " has no mob to curse with (themes.yml curse-mobs)");
+			return false;
 		}
 		int numberOfMobs = BlessingRules.curseMobs(godPower);
 

@@ -111,7 +111,7 @@ Gods from before ranks get a rank on their first turn: the highest their believe
 
 Themes
 ---------
-Each god type has a theme: the mobs it holds holy or wants slain, the foods it wants eaten or forbids, what it wants sacrificed, what its slay quests ask for, its altar blocks and how its altar signs look. Gods' own themes are built into the jar ([themes.yml](plugin/src/main/resources/themes.yml)) and use mobs, foods and blocks up to the newest Minecraft; whatever your server's version doesn't have is skipped.
+Each god type has a theme: the mobs it holds holy or wants slain, the foods it wants eaten or forbids, what it wants sacrificed, what its slay quests ask for, the mobs its curses send (`curse-mobs`: evil sends wither skeletons and vexes, frost strays, the sea drowned, ...), the peaceful mobs that may still spawn in its holy land when it doesn't allow mob spawning (`peaceful-mobs`: the sea's dolphins and fish, the sun's camels and armadillos, ...), its altar blocks and how its altar signs look. Gods' own themes are built into the jar ([themes.yml](plugin/src/main/resources/themes.yml)) and use mobs, foods and blocks up to the newest Minecraft; whatever your server's version doesn't have is skipped.
 
 To change a theme, put only your changes in `plugins/Gods/themes.yml` (Gods writes a commented example there once and never touches it again). A list replaces Gods' list; `add:` and `remove:` change it:
 

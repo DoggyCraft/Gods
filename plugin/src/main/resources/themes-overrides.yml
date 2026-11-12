@@ -13,6 +13,9 @@
 #   unholy-foods     foods the god forbids (each god picks one)
 #   sacrifice-needs  items the god may come to want sacrificed
 #   slay-targets     mobs slay quests ask for, besides the god's unholy mob
+#   curse-mobs       mobs a curse sends after the cursed player (one kind per curse, picked at random)
+#   peaceful-mobs    mobs the world may still spawn in the god's holy land when the god doesn't allow mob spawning
+#                    (besides its holy mob); [] for none
 #   altar-blocks     blocks an altar is built on to make a god of this type; config.yml's altars.block-types replaces
 #                    them for every god type it lists
 #   sign             how altar signs look:

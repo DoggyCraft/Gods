@@ -2,11 +2,15 @@ package com.dogonfire.gods.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -57,5 +61,20 @@ class BlessingRulesTest
 		assertFalse(BlessingRules.curseOver(NOW.minus(Duration.ofMinutes(10)), NOW, 10));
 		assertFalse(BlessingRules.curseOver(NOW.minus(Duration.ofMinutes(11)).plusMillis(1), NOW, 10), "whole minutes");
 		assertTrue(BlessingRules.curseOver(NOW.minus(Duration.ofMinutes(11)), NOW, 10));
+	}
+
+	/** A curse sends one of the theme's curse mobs, each of them now and then; none without any */
+	@Test
+	void curseMobsComeFromTheList()
+	{
+		Random random = new Random(5);
+		List<String> mobs = List.of("stray", "skeleton", "wolf");
+		Set<String> seen = new HashSet<>();
+		for (int i = 0; i < 100; i++)
+		{
+			seen.add(BlessingRules.curseMob(random, mobs));
+		}
+		assertEquals(Set.copyOf(mobs), seen);
+		assertNull(BlessingRules.curseMob(random, List.of()));
 	}
 }

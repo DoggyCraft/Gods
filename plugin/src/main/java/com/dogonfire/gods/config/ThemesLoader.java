@@ -59,10 +59,12 @@ public final class ThemesLoader
 	public static final String			UNHOLY_FOODS	= "unholy-foods";
 	public static final String			SACRIFICE_NEEDS	= "sacrifice-needs";
 	public static final String			SLAY_TARGETS	= "slay-targets";
+	public static final String			CURSE_MOBS		= "curse-mobs";
+	public static final String			PEACEFUL_MOBS	= "peaceful-mobs";
 	public static final String			ALTAR_BLOCKS	= "altar-blocks";
 	public static final String			SIGN			= "sign";
 
-	public static final List<String>	LIST_KEYS		= List.of(HOLY_MOBS, UNHOLY_MOBS, HOLY_FOODS, UNHOLY_FOODS, SACRIFICE_NEEDS, SLAY_TARGETS, ALTAR_BLOCKS);
+	public static final List<String>	LIST_KEYS		= List.of(HOLY_MOBS, UNHOLY_MOBS, HOLY_FOODS, UNHOLY_FOODS, SACRIFICE_NEEDS, SLAY_TARGETS, CURSE_MOBS, PEACEFUL_MOBS, ALTAR_BLOCKS);
 	public static final List<String>	SIGN_KEYS		= List.of("messages", "dye", "glowing");
 
 	/**
@@ -89,7 +91,7 @@ public final class ThemesLoader
 	/** The effect lists, as paths: effects.pleased.particles, ... */
 	public static final List<String>	EFFECT_KEYS		= effectKeys();
 
-	private static final Set<String>	MOB_KEYS		= Set.of(HOLY_MOBS, UNHOLY_MOBS, SLAY_TARGETS);
+	private static final Set<String>	MOB_KEYS		= Set.of(HOLY_MOBS, UNHOLY_MOBS, SLAY_TARGETS, CURSE_MOBS, PEACEFUL_MOBS);
 
 	private static List<String> effectKeys()
 	{
@@ -712,6 +714,8 @@ public final class ThemesLoader
 				materials(section, UNHOLY_FOODS, raw, bundledNames, false),
 				materials(section, SACRIFICE_NEEDS, raw, bundledNames, false),
 				mobs(section, SLAY_TARGETS, raw, bundledNames),
+				mobs(section, CURSE_MOBS, raw, bundledNames),
+				mobs(section, PEACEFUL_MOBS, raw, bundledNames),
 				materials(section, ALTAR_BLOCKS, raw, bundledNames, true),
 				new Theme.SignStyle(
 						sign.getOrDefault("messages", Theme.SignStyle.PLAIN.messages()).trim().toLowerCase(Locale.ROOT),

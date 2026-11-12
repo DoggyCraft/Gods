@@ -15,7 +15,8 @@ import com.dogonfire.gods.model.NpcSkin;
 
 /**
  * What one god type is about (a section of themes.yml, merged by {@link ThemesLoader}): the mobs and foods its gods pick
- * their commandments from, what they may want sacrificed, what their slay quests ask for, the blocks their altars are
+ * their commandments from, what they may want sacrificed, what their slay quests ask for, the mobs their curses send
+ * and their holy land lets spawn, the blocks their altars are
  * built on and how their altar signs look. Only names this server has are in it. Every list is unmodifiable.
  *
  * @param holyMobs       a god forbids killing one of these (picked once and kept)
@@ -24,6 +25,9 @@ import com.dogonfire.gods.model.NpcSkin;
  * @param unholyFoods    a god forbids eating one of these (picked once and kept)
  * @param sacrificeNeeds what a god may come to want sacrificed
  * @param slayTargets    what slay quests ask for, besides the god's unholy mob
+ * @param curseMobs      what a curse of these gods sends after a player (one kind per curse)
+ * @param peacefulMobs   what the world may spawn in the holy land of these gods when they don't allow mob spawning
+ *                       (besides the god's holy mob); empty for none
  * @param altarBlocks    the blocks an altar to this god type is built on (config.yml's altars.block-types may replace
  *                       them, see {@link Themes#altars()})
  * @param sign           how altar signs of these gods look
@@ -39,6 +43,8 @@ public record Theme(
 		List<Material> unholyFoods,
 		List<Material> sacrificeNeeds,
 		List<EntityType> slayTargets,
+		List<EntityType> curseMobs,
+		List<EntityType> peacefulMobs,
 		List<Material> altarBlocks,
 		SignStyle sign,
 		Effects effects,

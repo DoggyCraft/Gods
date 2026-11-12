@@ -157,19 +157,13 @@ public class HolyLandService
 		return first[random.nextInt(first.length)] + second[random.nextInt(second.length)] + third[random.nextInt(third.length)];
 	}
 
-	/** The mobs that may spawn in a holy land whose god doesn't allow mob spawning */
-	public boolean isMobTypeAllowedToSpawn(EntityType mobType)
+	/**
+	 * Whether the world may spawn this mob in the holy land of a god that doesn't allow mob spawning: the peaceful mobs
+	 * of its god type's theme (themes.yml peaceful-mobs)
+	 */
+	public boolean isMobTypeAllowedToSpawn(String godName, EntityType mobType)
 	{
-		return (mobType == EntityType.BAT) ||
-			(mobType == EntityType.SQUID) ||
-			(mobType == EntityType.CHICKEN) ||
-			(mobType == EntityType.PIG) ||
-			(mobType == EntityType.COW) ||
-			(mobType == EntityType.OCELOT) ||
-			(mobType == EntityType.SHEEP) ||
-			(mobType == EntityType.VILLAGER) ||
-			(mobType == EntityType.MOOSHROOM) ||
-			(mobType == EntityType.IRON_GOLEM);
+		return ctx.commandmentService().themeForGod(godName).peacefulMobs().contains(mobType);
 	}
 
 	/** Gives the land to {@code godName} (keeping when it was first prayed in) and counts it as prayed in now */

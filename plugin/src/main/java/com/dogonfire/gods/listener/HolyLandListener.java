@@ -375,7 +375,7 @@ public class HolyLandListener implements Listener
 				return;
 			}
 
-			if (!lands().isMobTypeAllowedToSpawn(event.getEntityType()))
+			if (!lands().isMobTypeAllowedToSpawn(godName, event.getEntityType()))
 			{
 				ctx.plugin().logDebug("Prevented banned " + event.getEntityType() + " from spawning in Holy Land of " + godName);
 				event.setCancelled(true);

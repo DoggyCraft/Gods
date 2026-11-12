@@ -10,6 +10,9 @@
 #   sacrifice-needs  items the god may come to want sacrificed (each god's seed picks five; its forbidden food may be
 #                    wanted burnt too)
 #   slay-targets     mobs slay quests ask for, besides the god's unholy mob
+#   curse-mobs       mobs a curse sends after the cursed player (one kind per curse, picked at random)
+#   peaceful-mobs    mobs the world may still spawn in the god's holy land when the god doesn't allow mob spawning
+#                    (besides its holy mob; its unholy mob never spawns there); [] for none
 #   altar-blocks     blocks an altar is built on to make a god of this type (config.yml's altars.block-types replaces
 #                    them for the god types it lists)
 #   sign             how altar signs look: messages (the texts under altar.sign.<messages> in messages.yml), dye (the
@@ -42,6 +45,8 @@ default:
   sacrifice-needs: [poppy, cooked_porkchop, rabbit_hide, rabbit_foot, cactus, bread, carrot, iron_pickaxe, iron_ingot, gold_ingot,
     apple, book, cake, melon_slice, cookie, pumpkin, sugar_cane, egg, wheat, netherrack, potato, bone, feather]
   slay-targets: [sheep, spider, chicken, cow, pig]
+  curse-mobs: [skeleton, zombie, zombified_piglin, spider, wolf]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem]
   altar-blocks: []
   sign:
     messages: default
@@ -91,6 +96,9 @@ frost:
   sacrifice-needs: [snowball, packed_ice, blue_ice, powder_snow_bucket, leather, rabbit_hide, rabbit_foot, cod, salmon,
     sweet_berries, spruce_log, white_wool, feather, bone, iron_ingot, goat_horn]
   slay-targets: [stray, zombie, skeleton, spider, creeper, husk]
+  curse-mobs: [stray, skeleton, wolf]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, polar_bear, fox,
+    rabbit, goat, wolf]
   altar-blocks: [snow_block, packed_ice, blue_ice]
   sign:
     messages: frost
@@ -136,6 +144,9 @@ love:
   sacrifice-needs: [poppy, rose_bush, pink_tulip, peony, lilac, allium, pink_petals, cake, cookie, sugar, honeycomb, gold_ingot,
     diamond, amethyst_shard, pink_dye, red_dye, emerald, string]
   slay-targets: [witch, pillager, vindicator, zombie, skeleton, spider]
+  curse-mobs: [bee, witch, vex]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, rabbit, cat, horse,
+    parrot, fox]
   altar-blocks: [diamond_block, cherry_planks, cherry_log, cherry_wood, pink_wool, pink_concrete, pink_terracotta]
   sign:
     messages: love
@@ -181,6 +192,8 @@ evil:
   sacrifice-needs: [bone, rotten_flesh, spider_eye, fermented_spider_eye, gunpowder, wither_rose, soul_sand, soul_soil,
     crying_obsidian, obsidian, sculk, netherrack, coal, ink_sac, ghast_tear, black_dye, blaze_powder]
   slay-targets: [sheep, cow, pig, chicken, rabbit, horse]
+  curse-mobs: [wither_skeleton, vex, cave_spider, witch]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, glow_squid, cat]
   altar-blocks: [obsidian, crying_obsidian, sculk, soul_sand, soul_soil, blackstone, polished_blackstone_bricks,
     chiseled_polished_blackstone]
   sign:
@@ -226,6 +239,9 @@ sea:
   sacrifice-needs: [kelp, sea_pickle, prismarine_shard, prismarine_crystals, nautilus_shell, turtle_scute, ink_sac, glow_ink_sac,
     cod, salmon, tropical_fish, lapis_lazuli, seagrass, tube_coral, brain_coral, fishing_rod]
   slay-targets: [drowned, guardian, zombie, skeleton, creeper]
+  curse-mobs: [drowned, guardian]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, glow_squid, cod,
+    salmon, tropical_fish, dolphin, turtle, axolotl, nautilus]
   altar-blocks: [lapis_block, prismarine, prismarine_bricks, dark_prismarine, sea_lantern]
   sign:
     messages: sea
@@ -271,6 +287,9 @@ moon:
   sacrifice-needs: [ender_pearl, chorus_fruit, end_stone, purpur_block, phantom_membrane, glowstone_dust, glow_ink_sac, bone,
     string, clock, feather, rabbit_foot, rabbit_hide, white_wool, quartz]
   slay-targets: [zombie, skeleton, spider, creeper, drowned]
+  curse-mobs: [phantom, enderman, spider, skeleton]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, fox, wolf, cat,
+    glow_squid]
   altar-blocks: [end_stone, end_stone_bricks, purpur_block, purpur_pillar]
   sign:
     messages: moon
@@ -320,6 +339,9 @@ sun:
   sacrifice-needs: [sunflower, dandelion, gold_ingot, gold_nugget, glowstone_dust, honeycomb, wheat, hay_block, sandstone, sand,
     cactus, torch, orange_tulip, oxeye_daisy, sugar_cane, egg]
   slay-targets: [zombie, skeleton, husk, drowned, spider, creeper]
+  curse-mobs: [husk, blaze, magma_cube]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, camel, armadillo,
+    bee, horse, llama, rabbit]
   altar-blocks: [sandstone, chiseled_sandstone, cut_sandstone, smooth_sandstone, gold_block, raw_gold_block, glowstone,
     honeycomb_block]
   sign:
@@ -366,6 +388,9 @@ thunder:
   sacrifice-needs: [copper_ingot, raw_copper, lightning_rod, redstone, iron_ingot, gunpowder, wind_charge, breeze_rod,
     glowstone_dust, quartz, feather, string]
   slay-targets: [drowned, zombie, skeleton, spider, witch]
+  curse-mobs: [breeze, witch, skeleton]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, horse, donkey,
+    parrot, goat]
   altar-blocks: [quartz_block, chiseled_quartz_block, quartz_pillar, quartz_bricks,
     copper_block, exposed_copper, weathered_copper, oxidized_copper,
     waxed_copper_block, waxed_exposed_copper, waxed_weathered_copper, waxed_oxidized_copper,
@@ -417,6 +442,9 @@ party:
   sacrifice-needs: [cake, cookie, firework_rocket, firework_star, note_block, jukebox, music_disc_cat, sugar, cocoa_beans, emerald,
     gunpowder, paper, lime_wool, magenta_wool, pumpkin_pie, honey_bottle, candle, egg]
   slay-targets: [creeper, witch, pillager, zombie, skeleton]
+  curse-mobs: [pillager, vindicator, witch]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, parrot, llama, panda,
+    rabbit, frog]
   altar-blocks: [emerald_block, note_block, jukebox, lime_concrete, magenta_concrete, lime_glazed_terracotta,
     magenta_glazed_terracotta]
   sign:
@@ -459,6 +487,9 @@ war:
   sacrifice-needs: [iron_sword, iron_axe, bow, crossbow, arrow, shield, iron_ingot, iron_helmet, gunpowder, flint, leather, bone,
     netherrack, raw_iron]
   slay-targets: [pillager, vindicator, zombie, skeleton, spider, creeper]
+  curse-mobs: [vindicator, pillager, piglin_brute, skeleton]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, horse, wolf, donkey,
+    mule, llama]
   altar-blocks: [netherrack, iron_block, raw_iron_block, nether_bricks, red_nether_bricks, chiseled_nether_bricks,
     smithing_table, fletching_table]
   sign:
@@ -504,6 +535,9 @@ werewolves:
   unholy-foods: [bread, baked_potato, carrot, apple, melon_slice, beetroot, pumpkin_pie, sweet_berries]
   sacrifice-needs: [bone, beef, mutton, porkchop, rabbit_hide, rabbit_foot, leather, rotten_flesh, spruce_log, feather, chicken]
   slay-targets: [sheep, rabbit, pig, cow, chicken]
+  curse-mobs: [wolf]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, wolf, fox, rabbit,
+    goat, horse]
   altar-blocks: [podzol, coarse_dirt, spruce_wood, stripped_spruce_wood, stripped_spruce_log]
   sign:
     messages: werewolves
@@ -549,6 +583,10 @@ creatures:
   sacrifice-needs: [wheat, wheat_seeds, carrot, hay_block, lead, egg, feather, leather, bone_meal, beetroot_seeds, melon_seeds,
     pumpkin_seeds, torchflower_seeds, slime_ball, string, oak_sapling]
   slay-targets: [zombie, skeleton, spider, creeper, witch]
+  curse-mobs: [spider, cave_spider, slime, silverfish, bee]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, rabbit, horse,
+    donkey, fox, wolf, panda, turtle, frog, goat, camel, armadillo, axolotl, llama, parrot, polar_bear, cat, dolphin,
+    glow_squid, bee]
   altar-blocks: [oak_log, spruce_log, birch_log, jungle_log, acacia_log, dark_oak_log, mangrove_log, pale_oak_log, hay_block,
     bone_block]
   sign:
@@ -595,6 +633,9 @@ wisdom:
   sacrifice-needs: [book, paper, writable_book, ink_sac, glow_ink_sac, feather, lapis_lazuli, amethyst_shard, bookshelf, map,
     compass, clock, spyglass, emerald, candle]
   slay-targets: [zombie, skeleton, spider, creeper, witch]
+  curse-mobs: [witch, zombie_villager, vex]
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, parrot, cat, llama,
+    wandering_trader]
   altar-blocks: [bookshelf, chiseled_bookshelf, amethyst_block, calcite]
   sign:
     messages: wisdom
@@ -640,6 +681,10 @@ nature:
   sacrifice-needs: [oak_sapling, birch_sapling, azalea, flowering_azalea, moss_block, honeycomb, wheat_seeds, melon, pumpkin,
     sugar_cane, bone_meal, dandelion, poppy, cornflower, lily_of_the_valley, sweet_berries, vine, lily_pad, cactus]
   slay-targets: [creeper, zombie, skeleton, spider, witch]
+  curse-mobs: [bee, spider, cave_spider, slime]
+  # Unused while a nature god's holy land lets every mob spawn
+  peaceful-mobs: [bat, squid, chicken, pig, cow, ocelot, sheep, villager, mooshroom, iron_golem, bee, fox, rabbit,
+    frog]
   altar-blocks: [melon, pumpkin, moss_block, azalea_leaves, flowering_azalea_leaves, mossy_cobblestone, mossy_stone_bricks]
   sign:
     messages: nature
