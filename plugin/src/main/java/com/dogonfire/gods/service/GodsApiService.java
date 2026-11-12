@@ -568,6 +568,44 @@ public final class GodsApiService implements GodsApi
 		return done(ctx.rankService().setRank(god.get(), ApiSnapshots.modelRank(rank)));
 	}
 
+	// ---------------------------------------------------------------------
+	// Devotion
+
+	@Override
+	public ActionResult addDevotion(UUID playerId, int points)
+	{
+		checkThread();
+		if (!ctx.devotionService().enabled())
+		{
+			return ActionResult.FEATURE_DISABLED;
+		}
+		if (playerId == null || ctx.believerService().getGodForBeliever(playerId) == null)
+		{
+			return ActionResult.NOT_BELIEVER;
+		}
+		ctx.devotionService().addPoints(playerId, points, com.dogonfire.gods.api.event.BelieverDevotionChangeEvent.Cause.API);
+		return ActionResult.SUCCESS;
+	}
+
+	@Override
+	public ActionResult setDevotionLevel(UUID playerId, com.dogonfire.gods.api.DevotionLevel level)
+	{
+		checkThread();
+		if (!ctx.devotionService().enabled())
+		{
+			return ActionResult.FEATURE_DISABLED;
+		}
+		if (playerId == null || ctx.believerService().getGodForBeliever(playerId) == null)
+		{
+			return ActionResult.NOT_BELIEVER;
+		}
+		if (level == null)
+		{
+			return ActionResult.NOT_POSSIBLE;
+		}
+		return done(ctx.devotionService().setLevel(playerId, ApiSnapshots.modelDevotion(level)));
+	}
+
 	/** Whether the player is in the god's priest list as stored (see {@link #getBeliever}) */
 	private boolean isPriest(String godName, UUID playerId)
 	{

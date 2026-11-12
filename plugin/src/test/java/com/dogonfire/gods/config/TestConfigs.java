@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodRank;
 
@@ -63,6 +64,20 @@ public final class TestConfigs
 		return new Settings.Ranks(conditions, 24,
 				new Settings.Unlocks(GodRank.RECOGNIZED, GodRank.RECOGNIZED, GodRank.EXALTED, GodRank.EXALTED, GodRank.GREATER, GodRank.GREATER, extraRegions),
 				new Settings.Aura(true, "regeneration", 0, 15));
+	}
+
+	/** The devotion of the bundled config.yml (devotion section) */
+	public static Settings.Devotion defaultDevotion()
+	{
+		Map<DevotionLevel, Integer> levels = new EnumMap<>(DevotionLevel.class);
+		levels.put(DevotionLevel.FOLLOWER, 0);
+		levels.put(DevotionLevel.DEVOTEE, 150);
+		levels.put(DevotionLevel.ZEALOT, 600);
+		levels.put(DevotionLevel.SAINT, 2000);
+		return new Settings.Devotion(true, new Settings.DevotionPoints(10, 15, 40, 30, 5, 5), levels, 10, 3, 5, 75, 0,
+				new Settings.DevotionUnlocks(DevotionLevel.DEVOTEE, DevotionLevel.ZEALOT, DevotionLevel.ZEALOT, DevotionLevel.SAINT, DevotionLevel.SAINT,
+						DevotionLevel.SAINT),
+				25, 2, true);
 	}
 
 	/** Settings from {@code config}, with the bundled config as its defaults, the way Gods loads them. */

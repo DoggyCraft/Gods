@@ -11,6 +11,7 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
@@ -272,5 +273,23 @@ class SettingsLoaderTest
 		assertWarned("ranks.unlocks.quests");
 		assertEquals(8, unlocks.holyLandExtraRegions(GodRank.GREATER));
 		assertEquals("speed", load("ranks:\n  aura:\n    effect: minecraft:Speed\n").ranks().aura().effect());
+	}
+
+	/** Devotion levels never need fewer points than the level below; unlocks name a level */
+	@Test
+	void devotionLevelsRiseAndUnlocksNameALevel() throws Exception
+	{
+		Settings.Devotion devotion = load("devotion:\n  levels:\n    devotee: 0\n    zealot: 50\n    saint: 20\n  unlocks:\n    holy-artifacts: Saint\n    praise: pope\n")
+				.devotion();
+		assertEquals(1, devotion.threshold(DevotionLevel.DEVOTEE));
+		assertEquals(50, devotion.threshold(DevotionLevel.ZEALOT));
+		assertEquals(51, devotion.threshold(DevotionLevel.SAINT));
+		assertEquals(0, devotion.threshold(DevotionLevel.FOLLOWER));
+		assertWarned("devotion.levels.devotee");
+		assertWarned("devotion.levels.saint");
+		assertEquals(DevotionLevel.SAINT, devotion.unlocks().holyArtifacts());
+		assertEquals(DevotionLevel.SAINT, devotion.unlocks().praise());
+		assertWarned("devotion.unlocks.praise");
+		assertEquals(10, load("devotion:\n  blessing-chance-multiplier: 50\n").devotion().blessingChanceMultiplier());
 	}
 }

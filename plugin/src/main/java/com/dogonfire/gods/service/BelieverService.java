@@ -35,6 +35,8 @@ public class BelieverService
 	public void load()
 	{
 		this.repository.load();
+		// Believers from before devotion get their starting devotion once
+		ctx.devotionService().seedAll();
 	}
 
 	private static Instant now()
@@ -122,8 +124,14 @@ public class BelieverService
 			return false;
 		}
 
-		BelieverRules.recordPrayer(getOrCreate(believerId), godName, amount, now, recordJoin);
+		Believer believer = getOrCreate(believerId);
+		String oldGod = believer.godName();
+		BelieverRules.recordPrayer(believer, godName, amount, now, recordJoin);
 		changed();
+		if (oldGod != null && !oldGod.equals(godName))
+		{
+			ctx.devotionService().leftGod(believerId, oldGod);
+		}
 		ctx.chatService().refresh(believerId);
 		return true;
 	}
@@ -212,6 +220,7 @@ public class BelieverService
 		}
 		believer.setGodName(null);
 		changed();
+		ctx.devotionService().leftGod(believerId, godName);
 		ctx.chatService().refresh(believerId);
 		ctx.fire(new BelieverLeaveGodEvent(godName, believerId, reason));
 	}
@@ -352,10 +361,20 @@ public class BelieverService
 	// ---------------------------------------------------------------------
 	// Invitations and priest offers
 
-	public void setInvitation(UUID believerId, String godName)
+	/** The god invites the player; {@code inviter} is the believer who sent it, or null (the god itself, through the API) */
+	public void setInvitation(UUID believerId, String godName, UUID inviter)
 	{
-		getOrCreate(believerId).setInvitation(godName, now());
+		Believer believer = getOrCreate(believerId);
+		believer.setInvitation(godName, now());
+		believer.setInvitedBy(inviter);
 		changed();
+	}
+
+	/** Who sent the player's pending invitation, or null if nobody (the god itself) or it isn't known */
+	public UUID getInviter(UUID believerId)
+	{
+		Believer believer = find(believerId);
+		return believer != null ? believer.invitedBy() : null;
 	}
 
 	/** The god that invited the player in the last {@link BelieverRules#INVITATION_SECONDS} seconds, or null */
@@ -376,6 +395,7 @@ public class BelieverService
 		if (believer != null)
 		{
 			believer.setInvitation(null, null);
+			believer.setInvitedBy(null);
 		}
 		changed();
 	}

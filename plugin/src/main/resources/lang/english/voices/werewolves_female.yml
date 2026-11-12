@@ -555,3 +555,13 @@ priests-main-altar-moved:
 # Said to the priests when the main altar is gone and the god has no altar left
 priests-main-altar-lost:
 - 'The pack has no altar left! Build me a new one, priest, before the next full moon.'
+# Said to a believer who rose to a new devotion level (<player>, and <level>: its name, as the god type calls it)
+believer-devotion-level-up:
+- '<hl><player></hl>, the pack has heard your howls. You are my <hl><level></hl> now!'
+# Said to a believer who fell to a lower devotion level after not praying for long (<player>, and <level>: their new level)
+believer-devotion-level-down:
+- '<hl><player></hl>, you have run alone too long. You are only my <hl><level></hl> now. Return to the pack.'
+# Said now and then to the other believers about a believer whose level has config.yml's devotion.unlocks.praise
+# (<player>, and <level>: their level)
+believers-devoted-praised:
+- 'Howl for <hl><player></hl>, my <hl><level></hl>! Hunt as they hunt, and the moon will smile on you all.'

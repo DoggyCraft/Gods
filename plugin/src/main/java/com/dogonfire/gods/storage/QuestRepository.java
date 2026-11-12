@@ -23,7 +23,8 @@ import com.dogonfire.gods.util.LegacyDates;
 /**
  * quests.yml: one {@link Quest} per god name and the {@link QuestTarget}s, with the keys Gods has always written:
  * <pre>
- * &lt;god name&gt;: Type, Amount, TargetType, MaxDuration, Progress, Players, CreatedTime, Location.World/X/Y/Z/Ground
+ * &lt;god name&gt;: Type, Amount, TargetType, MaxDuration, Progress, Players, Contributors, CreatedTime,
+ *                 Location.World/X/Y/Z/Ground
  * QuestTargets.&lt;hash&gt;: God, Location.World/X/Y/Z
  * </pre>
  * plus {@code data-version: 2}. Version 1 (no {@code data-version}) has the same keys; its upgrade
@@ -48,13 +49,14 @@ public final class QuestRepository extends Repository
 	private static final String				MAX_DURATION	= "MaxDuration";
 	private static final String				PROGRESS		= "Progress";
 	private static final String				PLAYERS			= "Players";
+	private static final String				CONTRIBUTORS	= "Contributors";
 	private static final String				CREATED_TIME	= "CreatedTime";
 	private static final String				LOCATION		= "Location";
 	private static final String				WORLD			= "World";
 	private static final String				GROUND			= "Ground";
 	private static final String				GOD				= "God";
 
-	private static final Set<String>		KNOWN			= Set.of(TYPE, AMOUNT, TARGET_TYPE, MAX_DURATION, PROGRESS, PLAYERS, CREATED_TIME, LOCATION);
+	private static final Set<String>		KNOWN			= Set.of(TYPE, AMOUNT, TARGET_TYPE, MAX_DURATION, PROGRESS, PLAYERS, CONTRIBUTORS, CREATED_TIME, LOCATION);
 	private static final Set<String>		KNOWN_TARGET	= Set.of(GOD, LOCATION);
 
 	/** Quest types Gods 0.9.x made that can no longer be completed or talked about; dropped on load */
@@ -207,6 +209,14 @@ public final class QuestRepository extends Repository
 		{
 			extras.put(PLAYERS, toPlain(section.get(PLAYERS)));
 		}
+		if (section.isList(CONTRIBUTORS))
+		{
+			quest.setContributors(new ArrayList<String>(section.getStringList(CONTRIBUTORS)));
+		}
+		else if (section.contains(CONTRIBUTORS))
+		{
+			extras.put(CONTRIBUTORS, toPlain(section.get(CONTRIBUTORS)));
+		}
 		// One that can't be parsed is kept in the extras and written back as it was
 		quest.setCreatedTime(readTime(section, CREATED_TIME, DATES, extras));
 
@@ -289,6 +299,10 @@ public final class QuestRepository extends Repository
 			if (quest.players() != null)
 			{
 				section.set(PLAYERS, new ArrayList<String>(quest.players()));
+			}
+			if (quest.contributors() != null)
+			{
+				section.set(CONTRIBUTORS, new ArrayList<String>(quest.contributors()));
 			}
 			section.set(CREATED_TIME, DATES.format(quest.createdTime()));
 			if (quest.location() != null)

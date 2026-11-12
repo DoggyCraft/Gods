@@ -28,6 +28,7 @@ import com.dogonfire.gods.service.HolyPowerService;
 import com.dogonfire.gods.service.MarriageService;
 import com.dogonfire.gods.service.MoodService;
 import com.dogonfire.gods.service.RankService;
+import com.dogonfire.gods.service.DevotionService;
 import com.dogonfire.gods.service.Permissions;
 import com.dogonfire.gods.service.PrayerService;
 import com.dogonfire.gods.service.PriestService;
@@ -56,6 +57,7 @@ public final class GodsContext
 	private final GodService				godService;
 	private final MoodService				moodService;
 	private final RankService				rankService;
+	private final DevotionService			devotionService;
 	private final RelationService			relationService;
 	private final PriestService				priestService;
 	private final BlessingService			blessingService;
@@ -99,6 +101,7 @@ public final class GodsContext
 		this.commandmentService = new CommandmentService(this, storage.gods());
 		this.prayerService = new PrayerService(this);
 		this.believerService = new BelieverService(this, storage.believers());
+		this.devotionService = new DevotionService(this, storage.believers());
 		this.questService = new QuestService(this, storage.quests());
 		this.altarService = new AltarService(this);
 		this.altarRegistry = new AltarRegistry(this, storage.altars());
@@ -180,6 +183,11 @@ public final class GodsContext
 	public RankService rankService()
 	{
 		return this.rankService;
+	}
+
+	public DevotionService devotionService()
+	{
+		return this.devotionService;
 	}
 
 	public MoodService moodService()

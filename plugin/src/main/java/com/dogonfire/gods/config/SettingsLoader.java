@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
@@ -125,7 +126,8 @@ public class SettingsLoader
 				new Settings.Npc(
 						bool("npc.enabled"),
 						npcProvider("npc.provider")),
-				loadRanks());
+				loadRanks(),
+				loadDevotion());
 	}
 
 	private Settings.Ranks loadRanks()
@@ -258,6 +260,61 @@ public class SettingsLoader
 		}
 		this.logger.warning("Invalid mood '" + value + "' for " + path + "." + key + " in config.yml (angry, displeased, neutral, pleased or exalted); it doesn't count.");
 		return null;
+	}
+
+	private Settings.Devotion loadDevotion()
+	{
+		Settings.DevotionPoints points = new Settings.DevotionPoints(
+				atLeast("devotion.points.prayer", 0),
+				atLeast("devotion.points.sacrifice", 0),
+				atLeast("devotion.points.quest", 0),
+				atLeast("devotion.points.convert", 0),
+				atLeast("devotion.points.holy-food", 0),
+				atLeast("devotion.points.unholy-mob", 0));
+		// Each level needs at least one point, and never fewer than the level below
+		Map<DevotionLevel, Integer> levels = new EnumMap<>(DevotionLevel.class);
+		int below = 0;
+		for (DevotionLevel level : DevotionLevel.values())
+		{
+			int needed = level == DevotionLevel.FOLLOWER ? 0 : atLeast("devotion.levels." + level.key(), below + 1);
+			levels.put(level, needed);
+			below = needed;
+		}
+		Settings.DevotionUnlocks unlocks = new Settings.DevotionUnlocks(
+				devotionLevel("devotion.unlocks.prayfor-discount"),
+				devotionLevel("devotion.unlocks.holy-artifacts"),
+				devotionLevel("devotion.unlocks.more-blessings"),
+				devotionLevel("devotion.unlocks.praise"),
+				devotionLevel("devotion.unlocks.title"),
+				devotionLevel("devotion.unlocks.priesthood"));
+		return new Settings.Devotion(
+				bool("devotion.enabled"),
+				points,
+				Collections.unmodifiableMap(levels),
+				atLeast("devotion.commandment-cooldown-minutes", 0),
+				atLeast("devotion.fade-after-days", 0),
+				between("devotion.fade-percent-per-day", 0, 100),
+				between("devotion.keep-level-percent", 0, 100),
+				between("devotion.kept-on-changing-god-percent", 0, 100),
+				unlocks,
+				between("devotion.prayfor-discount-percent", 0, 100),
+				between("devotion.blessing-chance-multiplier", 1, 10),
+				bool("devotion.chat-title"));
+	}
+
+	/** A devotion level (follower, devotee, zealot, saint); an unknown one is warned about and the default used */
+	private DevotionLevel devotionLevel(String path)
+	{
+		Object value = this.config.get(path);
+		DevotionLevel level = value instanceof String text ? DevotionLevel.byKey(text) : null;
+		if (level != null)
+		{
+			return level;
+		}
+		DevotionLevel fallback = DevotionLevel.byKey(defaults().getString(path, "follower"));
+		fallback = fallback != null ? fallback : DevotionLevel.FOLLOWER;
+		warn(path, value, fallback.key());
+		return fallback;
 	}
 
 	/** A rank (spirit, recognized, descended, exalted, greater); an unknown one is warned about and the default used */

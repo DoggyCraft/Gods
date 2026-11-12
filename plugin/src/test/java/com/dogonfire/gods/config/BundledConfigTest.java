@@ -71,7 +71,8 @@ class BundledConfigTest
 				new Settings.Effects(true, true, true, true, 32),
 				new Settings.AltarTexts(Settings.FloatingText.ALL, 32),
 				new Settings.Npc(true, Settings.NpcProvider.AUTO),
-				TestConfigs.defaultRanks());
+				TestConfigs.defaultRanks(),
+				TestConfigs.defaultDevotion());
 	}
 
 	@Test

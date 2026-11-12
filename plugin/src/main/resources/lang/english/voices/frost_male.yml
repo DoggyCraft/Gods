@@ -555,3 +555,13 @@ priests-main-altar-moved:
 # Said to the priests when the main altar is gone and the god has no altar left
 priests-main-altar-lost:
 - 'My last altar has melted away! Build me a new one in the cold, priest.'
+# Said to a believer who rose to a new devotion level (<player>, and <level>: its name, as the god type calls it)
+believer-devotion-level-up:
+- '<hl><player></hl>, your faith is as unbreakable as ice. You are my <hl><level></hl> now!'
+# Said to a believer who fell to a lower devotion level after not praying for long (<player>, and <level>: their new level)
+believer-devotion-level-down:
+- '<hl><player></hl>, your faith has thawed. You are only my <hl><level></hl> now. Pray to me in the cold.'
+# Said now and then to the other believers about a believer whose level has config.yml's devotion.unlocks.praise
+# (<player>, and <level>: their level)
+believers-devoted-praised:
+- 'The frost bows to <hl><player></hl>, my <hl><level></hl>. Let their faith be as lasting as eternal ice for you all.'

@@ -558,3 +558,13 @@ priests-main-altar-moved:
 # Said to the priests when the main altar is gone and the god has no altar left
 priests-main-altar-lost:
 - 'The sea has taken every altar of mine. Build me a new one, priest.'
+# Said to a believer who rose to a new devotion level (<player>, and <level>: its name, as the god type calls it)
+believer-devotion-level-up:
+- '<hl><player></hl>, your faith is as deep as the ocean. You are my <hl><level></hl> now!'
+# Said to a believer who fell to a lower devotion level after not praying for long (<player>, and <level>: their new level)
+believer-devotion-level-down:
+- '<hl><player></hl>, you have drifted away from me. You are only my <hl><level></hl> now. Return to the tide.'
+# Said now and then to the other believers about a believer whose level has config.yml's devotion.unlocks.praise
+# (<player>, and <level>: their level)
+believers-devoted-praised:
+- 'The waves sing of <hl><player></hl>, my <hl><level></hl>. Sail by their faith, all of you.'

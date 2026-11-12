@@ -93,7 +93,8 @@ class ConfigV1ToV2Test
 				new Settings.Effects(true, true, true, true, 32),
 				new Settings.AltarTexts(Settings.FloatingText.ALL, 32),
 				new Settings.Npc(true, Settings.NpcProvider.AUTO),
-				TestConfigs.defaultRanks());
+				TestConfigs.defaultRanks(),
+				TestConfigs.defaultDevotion());
 
 		assertEquals(expected, settings);
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());

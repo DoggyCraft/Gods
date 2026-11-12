@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.bukkit.Material;
 
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodMood;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
@@ -39,7 +40,8 @@ public record Settings(
 		Effects effects,
 		AltarTexts altarTexts,
 		Npc npc,
-		Ranks ranks)
+		Ranks ranks,
+		Devotion devotion)
 {
 	/** @param worlds the worlds Gods is active in; empty for every world (also worlds loaded later) */
 	public record General(boolean debug, String language, String serverName, List<String> worlds)
@@ -299,6 +301,65 @@ public record Settings(
 	 * @param seconds   how long it lasts each time
 	 */
 	public record Aura(boolean enabled, String effect, int amplifier, int seconds)
+	{
+	}
+
+	/**
+	 * Believers' devotion to their god (the devotion section of config.yml; see {@code service/DevotionRules}).
+	 *
+	 * @param enabled                    whether believers earn devotion and levels unlock anything; off, nothing needs a
+	 *                                   level
+	 * @param points                     what each deed earns
+	 * @param levels                     the points each level needs (every level has an entry, 0 for
+	 *                                   {@link DevotionLevel#FOLLOWER}, never less than the level below)
+	 * @param commandmentCooldownMinutes eating the holy food and slaying the unholy mob earn points at most this often
+	 * @param fadeAfterDays              devotion starts fading after this many days without a prayer
+	 * @param fadePercentPerDay          then it loses this percent of its points per day; 0: it never fades
+	 * @param keepLevelPercent           a level is kept until the points fall below this percent of what it needs
+	 * @param keptOnChangingGodPercent   the percent of their points a believer keeps when they leave or change god
+	 * @param unlocks                    the lowest level each unlock needs
+	 * @param prayForDiscountPercent     how much less /g prayfor costs from {@link DevotionUnlocks#prayForDiscount()} on
+	 * @param blessingChanceMultiplier   how many times likelier the god's blessings are from
+	 *                                   {@link DevotionUnlocks#moreBlessings()} on
+	 * @param chatTitle                  the title ({@link DevotionUnlocks#title()}) shows in religion chat
+	 */
+	public record Devotion(boolean enabled, DevotionPoints points, Map<DevotionLevel, Integer> levels, int commandmentCooldownMinutes, int fadeAfterDays,
+			int fadePercentPerDay, int keepLevelPercent, int keptOnChangingGodPercent, DevotionUnlocks unlocks, int prayForDiscountPercent,
+			int blessingChanceMultiplier, boolean chatTitle)
+	{
+		/** The points a level needs (0 for a follower) */
+		public int threshold(DevotionLevel level)
+		{
+			return this.levels.getOrDefault(level, 0);
+		}
+	}
+
+	/**
+	 * The devotion points each deed earns ({@code devotion.points})
+	 *
+	 * @param prayer    a prayer at an altar
+	 * @param sacrifice a sacrifice the god wanted
+	 * @param quest     taking part in a completed quest
+	 * @param convert   inviting a player who joins
+	 * @param holyFood  eating the god's holy food
+	 * @param unholyMob slaying the god's unholy mob
+	 */
+	public record DevotionPoints(int prayer, int sacrifice, int quest, int convert, int holyFood, int unholyMob)
+	{
+	}
+
+	/**
+	 * The lowest devotion level each unlock needs ({@code devotion.unlocks})
+	 *
+	 * @param prayForDiscount /g prayfor costs less ({@link Devotion#prayForDiscountPercent()})
+	 * @param holyArtifacts   the believer may be given a holy artifact (by the god, or /g holyartifact)
+	 * @param moreBlessings   the god's blessings are likelier ({@link Devotion#blessingChanceMultiplier()})
+	 * @param praise          the god praises the believer by name to its other believers
+	 * @param title           the level's name is the believer's title (%gods_devotion_title%, religion chat)
+	 * @param priesthood      the god prefers the believer as its priest, and asks them at once
+	 */
+	public record DevotionUnlocks(DevotionLevel prayForDiscount, DevotionLevel holyArtifacts, DevotionLevel moreBlessings, DevotionLevel praise, DevotionLevel title,
+			DevotionLevel priesthood)
 	{
 	}
 

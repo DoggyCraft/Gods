@@ -46,7 +46,7 @@ public class QuestListener implements Listener
 			return;
 		}
 
-		ctx.questService().handleKilledMob(godName, event.getEntityType().name());
+		ctx.questService().handleKilledMob(godName, player.getUniqueId(), event.getEntityType().name());
 	}
 
 	@EventHandler(ignoreCancelled = true)

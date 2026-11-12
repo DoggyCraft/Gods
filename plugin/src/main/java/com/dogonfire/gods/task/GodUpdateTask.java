@@ -557,6 +557,8 @@ public final class GodUpdateTask implements Runnable
 		ctx.altarTexts().refreshGod(godName);
 		ctx.rankService().evaluate(godName);
 		ctx.rankService().aura(godName);
+		ctx.devotionService().update(godName);
+		ctx.devotionService().praise(godName);
 		ctx.godNpcs().refreshGod(godName);
 
 		long timeAfter = System.currentTimeMillis();

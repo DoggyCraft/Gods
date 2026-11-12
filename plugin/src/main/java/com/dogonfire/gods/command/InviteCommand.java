@@ -29,7 +29,7 @@ public final class InviteCommand extends SubCommand
 		{
 			throw new CommandException("command.invite.already", Messages.player(playerName), Messages.god(godName));
 		}
-		this.ctx.prayerService().invite(godName, invited);
+		this.ctx.prayerService().invite(godName, invited, ((Player) sender).getUniqueId());
 		send(sender, "command.invite.done", Messages.player(playerName), Messages.god(godName));
 	}
 

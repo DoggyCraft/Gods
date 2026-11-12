@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.NpcSkin;
 
@@ -35,6 +36,7 @@ import com.dogonfire.gods.model.NpcSkin;
  * @param npcSkins       the skins of these gods' NPCs at their main altars, per gender (a god's own skin, set with
  *                       /g godskin, comes first; see {@code GodNpcRules.skin} for the whole order)
  * @param rankNames      what these gods' ranks are called
+ * @param devotionNames  what these gods' believers' devotion levels are called
  */
 public record Theme(
 		List<EntityType> holyMobs,
@@ -49,8 +51,31 @@ public record Theme(
 		SignStyle sign,
 		Effects effects,
 		NpcSkins npcSkins,
-		RankNames rankNames)
+		RankNames rankNames,
+		DevotionNames devotionNames)
 {
+	/**
+	 * What a theme calls its believers' devotion levels ({@code devotion} in themes.yml): a name for every level.
+	 *
+	 * @param names the name of each level (every level has one)
+	 */
+	public record DevotionNames(Map<DevotionLevel, String> names)
+	{
+		/** The name of a level */
+		public String of(DevotionLevel level)
+		{
+			String name = this.names.get(level);
+			return name != null ? name : fallback(level);
+		}
+
+		/** A level's key with a capital, for a level no section names */
+		public static String fallback(DevotionLevel level)
+		{
+			String key = level.key();
+			return key.substring(0, 1).toUpperCase(Locale.ROOT) + key.substring(1);
+		}
+	}
+
 	/**
 	 * What a theme's ranks are called ({@code ranks} in themes.yml): a name for every rank.
 	 *

@@ -15,6 +15,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.api.event.BelieverDevotionChangeEvent;
 import com.dogonfire.gods.api.event.BelieverJoinGodEvent;
 import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
 import com.dogonfire.gods.api.event.BelieverPrayEvent;
@@ -51,7 +52,7 @@ class ApiSurfaceTest
 			GodCreateEvent.class, GodMoodChangeEvent.class, GodGenderChangeEvent.class, PriestAssignEvent.class, PriestRemoveEvent.class, GodBlessPlayerEvent.class,
 			GodCursePlayerEvent.class, QuestEvent.class, QuestStartEvent.class, QuestCompleteEvent.class, QuestFailEvent.class,
 			HolyLandClaimEvent.class, HolyLandAttackStartEvent.class, GodRelationChangeEvent.class, GodDescendEvent.class, GodAscendEvent.class,
-			GodRankChangeEvent.class);
+			GodRankChangeEvent.class, DevotionLevel.class, BelieverDevotionChangeEvent.class);
 
 	@Test
 	void onlyExposesJavaBukkitAndApiTypes()
@@ -106,6 +107,8 @@ class ApiSurfaceTest
 		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
 				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class,
 				java.time.Instant.class);
+		// BelieverInfo before devotion
+		BelieverInfo.class.getConstructor(java.util.UUID.class, String.class, int.class, int.class, boolean.class, java.time.Instant.class, java.time.Instant.class);
 	}
 
 	/** The NPC methods came after the rest and have defaults, so other implementations (test doubles) still compile */
@@ -117,6 +120,9 @@ class ApiSurfaceTest
 		// So do the rank methods
 		assertTrue(GodsApi.class.getMethod("getRankProgress", String.class).isDefault());
 		assertTrue(GodsApi.class.getMethod("setRank", String.class, GodRank.class).isDefault());
+		// And the devotion methods
+		assertTrue(GodsApi.class.getMethod("addDevotion", java.util.UUID.class, int.class).isDefault());
+		assertTrue(GodsApi.class.getMethod("setDevotionLevel", java.util.UUID.class, DevotionLevel.class).isDefault());
 	}
 
 	/** Bukkit only lets plugins listen to an event that has a static getHandlerList */

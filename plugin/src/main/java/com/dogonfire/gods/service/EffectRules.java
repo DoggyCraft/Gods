@@ -135,6 +135,17 @@ public final class EffectRules
 	 * A god rose to a new rank: pleased waves at its main altar, grander for higher ranks (more than a prayer of that
 	 * rank, and a little more again for each rank)
 	 */
+	/**
+	 * A believer rose to a devotion level: the god's pleased particles rise around them, more for higher levels, with a
+	 * chime that rises with the level
+	 */
+	public static Waves devotionUp(com.dogonfire.gods.model.DevotionLevel level)
+	{
+		int step = level != null ? level.ordinal() : 0;
+		return new Waves(BLESSING.waves() + step, BLESSING.particles() + 2 * step, BLESSING.rise() + 0.2 * step, BLESSING.radius() + 0.1 * step, BLESSING.ticksApart(),
+				1.2F + 0.15F * step);
+	}
+
 	public static Waves rankUp(GodRank rank)
 	{
 		int step = rank != null ? rank.ordinal() : 0;

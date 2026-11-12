@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import com.dogonfire.gods.migration.BelieversV1ToV2;
 import com.dogonfire.gods.migration.VersionedYaml;
 import com.dogonfire.gods.model.Believer;
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
@@ -26,7 +27,7 @@ import com.dogonfire.gods.util.LegacyDates;
  * data-version: 2
  * &lt;uuid&gt;: God, Prayers, LastPrayer, Joined, PrayerPower, ReligionChat, Hunting, Invitation.God/Time,
  *         LastPriestOffer, ChangingGod, LastBlessingTime, LastCursingTime, LastItemBlessingTime,
- *         LastHolyArtifactBlessingTime
+ *         LastHolyArtifactBlessingTime, Invitation.By, Devotion, DevotionLevel, DevotionSince, DevotionFaded
  * Unresolved.&lt;name&gt;: entries of very old versions, keyed by a player name the upgrade couldn't turn into a UUID
  * </pre>
  * Version 1 (no {@code data-version}) is upgraded by {@link BelieversV1ToV2}, which moves entries keyed by player
@@ -53,9 +54,15 @@ public final class BelieverRepository extends Repository
 	private static final String			LAST_CURSING				= "LastCursingTime";
 	private static final String			LAST_ITEM_BLESSING			= "LastItemBlessingTime";
 	private static final String			LAST_ARTIFACT_BLESSING		= "LastHolyArtifactBlessingTime";
+	private static final String			INVITATION_BY				= "Invitation.By";
+	private static final String			DEVOTION					= "Devotion";
+	private static final String			DEVOTION_LEVEL				= "DevotionLevel";
+	private static final String			DEVOTION_SINCE				= "DevotionSince";
+	private static final String			DEVOTION_FADED				= "DevotionFaded";
 
 	private static final Set<String>	KNOWN						= Set.of(GOD, PRAYERS, LAST_PRAYER, JOINED, PRAYER_POWER, RELIGION_CHAT, HUNTING, INVITATION,
-			LAST_PRIEST_OFFER, CHANGING_GOD, LAST_BLESSING, LAST_CURSING, LAST_ITEM_BLESSING, LAST_ARTIFACT_BLESSING);
+			LAST_PRIEST_OFFER, CHANGING_GOD, LAST_BLESSING, LAST_CURSING, LAST_ITEM_BLESSING, LAST_ARTIFACT_BLESSING, DEVOTION, DEVOTION_LEVEL, DEVOTION_SINCE,
+			DEVOTION_FADED);
 
 	private static final LegacyDates	DATES						= LegacyDates.SECONDS;
 
@@ -85,6 +92,8 @@ public final class BelieverRepository extends Repository
 		if (believer == null)
 		{
 			believer = new Believer(id);
+			// A new believer starts with no devotion; only believers from before devotion lack it (and are seeded)
+			believer.setDevotion(0);
 			this.believers.put(id, believer);
 		}
 		return believer;
@@ -155,6 +164,8 @@ public final class BelieverRepository extends Repository
 			believer.setLastCursing(readTime(section, LAST_CURSING, DATES, extras));
 			believer.setLastItemBlessing(readTime(section, LAST_ITEM_BLESSING, DATES, extras));
 			believer.setLastHolyArtifactBlessing(readTime(section, LAST_ARTIFACT_BLESSING, DATES, extras));
+			believer.setInvitedBy(parseId(section.getString(INVITATION_BY)));
+			readDevotion(section, believer, extras);
 			believer.setExtras(extras);
 			this.believers.put(id, believer);
 		}
@@ -162,8 +173,55 @@ public final class BelieverRepository extends Repository
 		logger().info("Loaded " + this.believers.size() + " believers.");
 	}
 
+	/**
+	 * Devotion: a believer without {@code Devotion} is from before devotion (seeded once by the devotion service). A
+	 * value that can't be read (not a number, an unknown level) is kept in the extras as it was.
+	 */
+	private void readDevotion(ConfigurationSection section, Believer believer, Map<String, Object> extras)
+	{
+		Object points = section.get(DEVOTION);
+		if (points instanceof Number number)
+		{
+			believer.setDevotion(Math.max(0, number.intValue()));
+		}
+		else if (points != null)
+		{
+			extras.put(DEVOTION, toPlain(points));
+			logger().info("Ignoring the devotion '" + points + "' of believer " + believer.id() + " in believers.yml: it is not a number");
+		}
+		String level = section.getString(DEVOTION_LEVEL);
+		if (level != null)
+		{
+			believer.setDevotionLevel(DevotionLevel.byKey(level));
+			if (believer.devotionLevel() == null)
+			{
+				extras.put(DEVOTION_LEVEL, level);
+			}
+		}
+		believer.setDevotionSince(readTime(section, DEVOTION_SINCE, DATES, extras));
+		believer.setDevotionFaded(readTime(section, DEVOTION_FADED, DATES, extras));
+	}
+
+	private static void writeDevotion(ConfigurationSection section, Believer believer)
+	{
+		if (believer.devotion() != null)
+		{
+			section.set(DEVOTION, believer.devotion());
+		}
+		if (believer.devotionLevel() != null && believer.devotionLevel() != DevotionLevel.FOLLOWER)
+		{
+			section.set(DEVOTION_LEVEL, believer.devotionLevel().key());
+		}
+		setTime(section, DEVOTION_SINCE, believer.devotionSince());
+		setTime(section, DEVOTION_FADED, believer.devotionFaded());
+	}
+
 	private static UUID parseId(String key)
 	{
+		if (key == null)
+		{
+			return null;
+		}
 		try
 		{
 			return UUID.fromString(key);
@@ -203,6 +261,10 @@ public final class BelieverRepository extends Repository
 			{
 				setTime(section, INVITATION_TIME, believer.invitationTime());
 				section.set(INVITATION_GOD, believer.invitationGod());
+				if (believer.invitedBy() != null)
+				{
+					section.set(INVITATION_BY, believer.invitedBy().toString());
+				}
 			}
 			setTime(section, LAST_PRIEST_OFFER, believer.lastPriestOffer());
 			setTime(section, CHANGING_GOD, believer.changingGod());
@@ -210,6 +272,7 @@ public final class BelieverRepository extends Repository
 			setTime(section, LAST_CURSING, believer.lastCursing());
 			setTime(section, LAST_ITEM_BLESSING, believer.lastItemBlessing());
 			setTime(section, LAST_ARTIFACT_BLESSING, believer.lastHolyArtifactBlessing());
+			writeDevotion(section, believer);
 			writeExtras(section, believer.extras());
 		}
 	}

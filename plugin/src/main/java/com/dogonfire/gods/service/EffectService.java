@@ -194,18 +194,27 @@ public class EffectService
 	/** A god blessed this player: a soft glow in its colors rises around them, with a high chime */
 	public void blessing(String godName, Player player)
 	{
-		aroundPlayer(godName, player, Theme.EffectMood.PLEASED, EffectRules.BLESSING, 0.1);
+		aroundPlayer(godName, player, Theme.EffectMood.PLEASED, EffectRules.BLESSING, 0.1, effects().blessingsOn());
 	}
 
 	/** A god cursed this player: a dark swirl sinks around them, with a low sound */
 	public void curse(String godName, Player player)
 	{
-		aroundPlayer(godName, player, Theme.EffectMood.ANGRY, EffectRules.CURSE, 2.0);
+		aroundPlayer(godName, player, Theme.EffectMood.ANGRY, EffectRules.CURSE, 2.0, effects().blessingsOn());
 	}
 
-	private void aroundPlayer(String godName, Player player, Theme.EffectMood mood, EffectRules.Waves waves, double startHeight)
+	/**
+	 * A believer rose to a devotion level: the god's pleased glow rises around them, grander for higher levels (shown
+	 * whenever effects are on)
+	 */
+	public void devotionUp(String godName, Player player, com.dogonfire.gods.model.DevotionLevel level)
 	{
-		if (!effects().blessingsOn() || player == null || !player.isOnline())
+		aroundPlayer(godName, player, Theme.EffectMood.PLEASED, EffectRules.devotionUp(level), 0.1, effects().enabled());
+	}
+
+	private void aroundPlayer(String godName, Player player, Theme.EffectMood mood, EffectRules.Waves waves, double startHeight, boolean on)
+	{
+		if (!on || player == null || !player.isOnline())
 		{
 			return;
 		}

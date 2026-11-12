@@ -102,6 +102,12 @@ public enum Voice
 	BELIEVERS_GOD_RANK_UP("believers-god-rank-up"),
 	/** The god fell to a lower rank (<rank>; not below the descended rank, which has its own words) */
 	BELIEVERS_GOD_RANK_DOWN("believers-god-rank-down"),
+	/** The believer rose to a new devotion level (<level>, as the god type calls it; config.yml devotion) */
+	BELIEVER_DEVOTION_LEVEL_UP("believer-devotion-level-up"),
+	/** The believer fell to a lower devotion level after not praying for long (<level>: their new level) */
+	BELIEVER_DEVOTION_LEVEL_DOWN("believer-devotion-level-down"),
+	/** The god praises a believer (<player>) whose level (<level>) has devotion.unlocks.praise to its other believers */
+	BELIEVERS_DEVOTED_PRAISED("believers-devoted-praised"),
 	BELIEVERS_GIVE_BIBLES_QUEST_PROGRESS("believers-give-bibles-quest-progress"),
 	BELIEVERS_GIVE_ITEMS_QUEST_COMPLETED("believers-give-items-quest-completed"),
 	BELIEVERS_GIVE_ITEMS_QUEST_FAILED("believers-give-items-quest-failed"),

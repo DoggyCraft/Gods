@@ -71,6 +71,18 @@ public final class ApiSnapshots
 		return rank != null ? com.dogonfire.gods.api.GodRank.valueOf(rank.name()) : com.dogonfire.gods.api.GodRank.SPIRIT;
 	}
 
+	/** A devotion level as the API shows it */
+	public static com.dogonfire.gods.api.DevotionLevel devotion(com.dogonfire.gods.model.DevotionLevel level)
+	{
+		return level != null ? com.dogonfire.gods.api.DevotionLevel.valueOf(level.name()) : com.dogonfire.gods.api.DevotionLevel.FOLLOWER;
+	}
+
+	/** The model's devotion level for the API's */
+	public static com.dogonfire.gods.model.DevotionLevel modelDevotion(com.dogonfire.gods.api.DevotionLevel level)
+	{
+		return com.dogonfire.gods.model.DevotionLevel.valueOf(level.name());
+	}
+
 	/** The model's rank for the API's */
 	public static com.dogonfire.gods.model.GodRank modelRank(com.dogonfire.gods.api.GodRank rank)
 	{
@@ -155,6 +167,7 @@ public final class ApiSnapshots
 		{
 			return null;
 		}
-		return new BelieverInfo(believer.id(), believer.godName(), believer.prayers(), believer.prayerPower(), priest, believer.joined(), believer.lastPrayer());
+		return new BelieverInfo(believer.id(), believer.godName(), believer.prayers(), believer.prayerPower(), priest, believer.joined(), believer.lastPrayer(),
+				devotion(believer.devotionLevel()), believer.devotion() != null ? believer.devotion() : 0);
 	}
 }

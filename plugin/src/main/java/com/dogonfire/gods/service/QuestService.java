@@ -733,7 +733,8 @@ public class QuestService
 		return true;
 	}
 
-	public void handleKilledMob(String godName, String mobType)
+	/** The believer killed a mob: counts for the god's slay quest */
+	public void handleKilledMob(String godName, UUID playerId, String mobType)
 	{
 		if (!hasQuest(godName) || questType(godName) != QuestType.SLAY)
 		{
@@ -745,6 +746,8 @@ public class QuestService
 		{
 			return;
 		}
+
+		addContributor(godName, playerId);
 
 		if (addProgress(godName))
 		{
@@ -790,6 +793,7 @@ public class QuestService
 			ctx.messages().broadcast(ctx.plugin().getServer(), "broadcast.pilgrimage", Messages.displayName(player.getDisplayName()), Messages.type(targetType(questGod)));
 		}
 
+		addContributor(godName, playerId);
 		ctx.believerService().setHunting(playerId, false);
 
 		removeSuccessQuestForGod(godName);
@@ -876,6 +880,7 @@ public class QuestService
 			return false;
 		}
 
+		addContributor(godName, player.getUniqueId());
 		boolean completed = addProgress(godName);
 		ctx.believerService().increasePrayerPower(player.getUniqueId(), 1);
 
@@ -960,9 +965,63 @@ public class QuestService
 		if (quest != null)
 		{
 			ctx.rankService().countQuest(godName);
+			rewardDevotion(godName);
 			ctx.fire(new QuestCompleteEvent(quest));
 		}
 		removeQuest(godName);
+	}
+
+	/** The believer's deed counted for the god's quest: they earn devotion when it is completed (saved with the quest) */
+	private void addContributor(String godName, UUID playerId)
+	{
+		Quest quest = this.repository.find(godName);
+		if (quest == null || playerId == null)
+		{
+			return;
+		}
+		List<String> contributors = quest.contributors() != null ? new ArrayList<String>(quest.contributors()) : new ArrayList<String>();
+		if (!contributors.contains(playerId.toString()))
+		{
+			contributors.add(playerId.toString());
+			quest.setContributors(contributors);
+			this.repository.markDirty();
+		}
+	}
+
+	/**
+	 * A completed quest earns devotion: for the believers whose deeds counted, or, for a quest that doesn't know who did
+	 * it, for the god's believers online, who share its rewards
+	 */
+	private void rewardDevotion(String godName)
+	{
+		Quest quest = this.repository.find(godName);
+		java.util.Set<UUID> believers = new java.util.LinkedHashSet<UUID>();
+		if (quest != null && quest.contributors() != null)
+		{
+			for (String contributor : quest.contributors())
+			{
+				try
+				{
+					UUID id = UUID.fromString(contributor);
+					if (godName.equals(ctx.believerService().getGodForBeliever(id)))
+					{
+						believers.add(id);
+					}
+				}
+				catch (IllegalArgumentException ex)
+				{
+					// Not a player id (a hand edit): it earns nothing
+				}
+			}
+		}
+		if (believers.isEmpty())
+		{
+			believers.addAll(ctx.believerService().getOnlineBelieversForGod(godName));
+		}
+		for (UUID believerId : believers)
+		{
+			ctx.devotionService().earn(believerId, godName, DevotionService.Deed.QUEST);
+		}
 	}
 
 	/** Takes away the quest's pilgrimage chest, if it has one; never throws */

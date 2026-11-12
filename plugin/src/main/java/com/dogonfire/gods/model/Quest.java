@@ -22,6 +22,7 @@ public final class Quest
 	private String				targetType;		// TargetType: the mob, the item, the holy book title, the holy mountain
 	private Integer				maxDuration;	// MaxDuration, in minutes
 	private List<String>		players;		// Players: UUIDs of the players that counted already (GIVEITEMS, CONVERT)
+	private List<String>		contributors;	// Contributors: UUIDs of the believers whose deeds counted (they earn devotion)
 	private QuestLocation		location;		// Location.World/X/Y/Z/Ground: the pilgrimage chest
 	private Instant				createdTime;	// CreatedTime
 
@@ -137,6 +138,17 @@ public final class Quest
 	public void setPlayers(List<String> players)
 	{
 		this.players = players;
+	}
+
+	/** The believers whose deeds counted for it (slain mobs, sacrifices, the pilgrimage); null if none are stored */
+	public List<String> contributors()
+	{
+		return this.contributors;
+	}
+
+	public void setContributors(List<String> contributors)
+	{
+		this.contributors = contributors;
 	}
 
 	public QuestLocation location()

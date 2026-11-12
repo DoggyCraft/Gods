@@ -19,6 +19,8 @@
 #                    sign's dye color) and glowing (glowing text)
 #   ranks            what the gods' ranks are called (config.yml's ranks section): spirit, recognized, descended,
 #                    exalted and greater, each a name (shown in /g info, /g list, above altars and by PlaceholderAPI)
+#   devotion         what the gods' believers' devotion levels are called (config.yml's devotion section): follower,
+#                    devotee, zealot and saint, each a name (shown in /g devotion, /g followers and by PlaceholderAPI)
 #   effects          how the gods' effects look and sound (config.yml's effects section switches them): symbol (text that
 #                    floats up at prayers), and pleased, neutral and angry, each with particles (particle ids),
 #                    sounds (sound ids like block.amethyst_block.chime) and colors (dye colors or "#RRGGBB", for dust
@@ -58,6 +60,11 @@ default:
     descended: Descended
     exalted: Exalted
     greater: Greater God
+  devotion:
+    follower: Follower
+    devotee: Devotee
+    zealot: Zealot
+    saint: Saint
   effects:
     symbol: "✦"
     pleased:
@@ -110,6 +117,11 @@ frost:
     descended: Glacier
     exalted: Avalanche
     greater: Eternal Winter
+  devotion:
+    follower: Frostbound
+    devotee: Snowkeeper
+    zealot: Icebearer
+    saint: Saint of Winter
   effects:
     symbol: "❄"
     pleased:
@@ -158,6 +170,11 @@ love:
     descended: Beloved
     exalted: Adored
     greater: Heart of the World
+  devotion:
+    follower: Admirer
+    devotee: Devoted Heart
+    zealot: Ardent
+    saint: Saint of Hearts
   effects:
     symbol: "♥"
     pleased:
@@ -206,6 +223,11 @@ evil:
     descended: Dread
     exalted: Scourge
     greater: Endless Night
+  devotion:
+    follower: Acolyte
+    devotee: Cultist
+    zealot: Fanatic
+    saint: Dark Saint
   effects:
     symbol: "☠"
     pleased:
@@ -253,6 +275,11 @@ sea:
     descended: Breaker
     exalted: Maelstrom
     greater: Leviathan
+  devotion:
+    follower: Deckhand
+    devotee: Tidecaller
+    zealot: Stormrider
+    saint: Saint of the Deep
   effects:
     symbol: "≈"
     pleased:
@@ -301,6 +328,11 @@ moon:
     descended: Half Moon
     exalted: Full Moon
     greater: Eclipse
+  devotion:
+    follower: Stargazer
+    devotee: Nightwatcher
+    zealot: Moonsworn
+    saint: Saint of the Night
   effects:
     symbol: "☾"
     pleased:
@@ -354,6 +386,11 @@ sun:
     descended: High Noon
     exalted: Blazing Sun
     greater: Eternal Sun
+  devotion:
+    follower: Sunseeker
+    devotee: Lightbearer
+    zealot: Sunsworn
+    saint: Radiant Saint
   effects:
     symbol: "☀"
     pleased:
@@ -408,6 +445,11 @@ thunder:
     descended: Bolt
     exalted: Thunderstorm
     greater: Wrath of the Heavens
+  devotion:
+    follower: Listener
+    devotee: Stormcaller
+    zealot: Thunderborn
+    saint: Saint of the Storm
   effects:
     symbol: "⚡"
     pleased:
@@ -457,6 +499,11 @@ party:
     descended: Life of the Party
     exalted: Grand Festival
     greater: Eternal Feast
+  devotion:
+    follower: Guest
+    devotee: Regular
+    zealot: Party Animal
+    saint: Legend of the Feast
   effects:
     symbol: "♫"
     pleased:
@@ -502,6 +549,11 @@ war:
     descended: Warhost
     exalted: Conqueror
     greater: Eternal War
+  devotion:
+    follower: Recruit
+    devotee: Warrior
+    zealot: Crusader
+    saint: War Saint
   effects:
     symbol: "⚔"
     pleased:
@@ -549,6 +601,11 @@ werewolves:
     descended: Pack
     exalted: Alpha
     greater: Great Wolf
+  devotion:
+    follower: Pup
+    devotee: Packmate
+    zealot: Howler
+    saint: Alpha of the Pack
   effects:
     symbol: "☽"
     pleased:
@@ -599,6 +656,11 @@ creatures:
     descended: Herd
     exalted: Wild Host
     greater: Beast Eternal
+  devotion:
+    follower: Herder
+    devotee: Beastfriend
+    zealot: Wildheart
+    saint: Saint of Beasts
   effects:
     symbol: "❦"
     pleased:
@@ -647,6 +709,11 @@ wisdom:
     descended: Sage
     exalted: Oracle
     greater: Omniscience
+  devotion:
+    follower: Student
+    devotee: Scholar
+    zealot: Sage
+    saint: Enlightened Saint
   effects:
     symbol: "✧"
     pleased:
@@ -696,6 +763,11 @@ nature:
     descended: Sapling
     exalted: Old Oak
     greater: World Tree
+  devotion:
+    follower: Seedling
+    devotee: Gardener
+    zealot: Grovekeeper
+    saint: Saint of the Wild
   effects:
     symbol: "❀"
     pleased:

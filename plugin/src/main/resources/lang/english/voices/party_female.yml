@@ -554,3 +554,13 @@ priests-main-altar-moved:
 # Said to the priests when the main altar is gone and the god has no altar left
 priests-main-altar-lost:
 - 'No altars left?! Build me a new one, priest, the party cannot stop!'
+# Said to a believer who rose to a new devotion level (<player>, and <level>: its name, as the god type calls it)
+believer-devotion-level-up:
+- '<hl><player></hl>, you never miss a party! You are my <hl><level></hl> now. Drinks are on me!'
+# Said to a believer who fell to a lower devotion level after not praying for long (<player>, and <level>: their new level)
+believer-devotion-level-down:
+- '<hl><player></hl>, where have you been? You are only my <hl><level></hl> now. Get back to the party!'
+# Said now and then to the other believers about a believer whose level has config.yml's devotion.unlocks.praise
+# (<player>, and <level>: their level)
+believers-devoted-praised:
+- 'Raise your cups to <hl><player></hl>, my <hl><level></hl>! Nobody parties in my name like they do!'

@@ -298,6 +298,7 @@ public class CommandmentService
 
 		if (foodType.equals(eatFoodType.name()))
 		{
+			ctx.devotionService().earn(player.getUniqueId(), godName, DevotionService.Deed.HOLY_FOOD);
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));
 
 			if (ctx.blessingService().blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
@@ -345,6 +346,7 @@ public class CommandmentService
 		EntityType unholyMobType = getUnholyMobTypeForGod(godName);
 		if ((unholyMobType != null) && (mobType.equals(unholyMobType.name())))
 		{
+			ctx.devotionService().earn(player.getUniqueId(), godName, DevotionService.Deed.UNHOLY_MOB);
 			if (ctx.blessingService().blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
 			{
 				ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));
@@ -438,6 +440,7 @@ public class CommandmentService
 		if (verdict == SacrificeRules.Verdict.GOOD)
 		{
 			ctx.rankService().countSacrifice(godName);
+			ctx.devotionService().earn(believer.getUniqueId(), godName, DevotionService.Deed.SACRIFICE);
 			ctx.moodService().addMoodForGod(godName, ctx.moodService().getPleasedModifierForGod(godName));
 			ctx.believerService().addPrayer(believer.getUniqueId(), godName);
 

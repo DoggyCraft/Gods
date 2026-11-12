@@ -555,3 +555,13 @@ priests-main-altar-moved:
 # Said to the priests when the main altar is gone and the god has no altar left
 priests-main-altar-lost:
 - 'My last altar has returned to the earth. Raise a new one for me, priest.'
+# Said to a believer who rose to a new devotion level (<player>, and <level>: its name, as the god type calls it)
+believer-devotion-level-up:
+- '<hl><player></hl>, your faith has grown deep roots. You are my <hl><level></hl> now!'
+# Said to a believer who fell to a lower devotion level after not praying for long (<player>, and <level>: their new level)
+believer-devotion-level-down:
+- '<hl><player></hl>, your faith is wilting. You are only my <hl><level></hl> now. Tend to it with prayer.'
+# Said now and then to the other believers about a believer whose level has config.yml's devotion.unlocks.praise
+# (<player>, and <level>: their level)
+believers-devoted-praised:
+- 'The forest whispers the name of <hl><player></hl>, my <hl><level></hl>. Grow as they have grown.'

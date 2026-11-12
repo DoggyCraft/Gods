@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.dogonfire.gods.model.Believer;
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.util.LegacyDates;
 
 class BelieverRepositoryTest
@@ -140,5 +141,62 @@ class BelieverRepositoryTest
 		assertEquals("Loki", written.getString(id + ".God"));
 		assertFalse(written.contains(id + ".Invitation"));
 		assertFalse(written.contains(id + ".Prayers"));
+	}
+
+	/** Devotion and who sent an invitation survive a save; a new believer starts with 0 points, an old one has none */
+	@Test
+	void devotionIsSavedAndReadBack() throws IOException
+	{
+		Fixtures.copy("legacy/believers-0.9.yml", this.dir, "believers.yml");
+		Storage storage = Fixtures.storage(this.dir);
+		storage.believers().load();
+		Believer thor = storage.believers().find(THOR_BELIEVER);
+		assertNull(thor.devotion(), "a believer from before devotion is seeded once");
+		thor.setDevotion(640);
+		thor.setDevotionLevel(DevotionLevel.ZEALOT);
+		thor.setDevotionSince(LegacyDates.SECONDS.parse("10:00:00 01-11-2026"));
+		thor.setDevotionFaded(LegacyDates.SECONDS.parse("11:00:00 05-11-2026"));
+		thor.setInvitedBy(ODIN_BELIEVER);
+		UUID id = UUID.randomUUID();
+		assertEquals(0, storage.believers().getOrCreate(id).devotion());
+		storage.believers().markDirty();
+		storage.close();
+
+		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("believers.yml").toFile());
+		assertEquals(640, written.getInt(THOR_BELIEVER + ".Devotion"));
+		assertEquals("zealot", written.getString(THOR_BELIEVER + ".DevotionLevel"));
+		assertEquals("10:00:00 01-11-2026", written.getString(THOR_BELIEVER + ".DevotionSince"));
+		assertEquals(ODIN_BELIEVER.toString(), written.getString(THOR_BELIEVER + ".Invitation.By"));
+		assertEquals(0, written.getInt(id + ".Devotion", -1));
+		assertFalse(written.contains(id + ".DevotionLevel"), "a follower's level isn't written");
+		assertFalse(written.contains(ODIN_BELIEVER + ".Devotion"));
+
+		Storage again = Fixtures.storage(this.dir);
+		assertTrue(again.believers().load());
+		Believer read = again.believers().find(THOR_BELIEVER);
+		assertEquals(640, read.devotion());
+		assertEquals(DevotionLevel.ZEALOT, read.devotionLevel());
+		assertEquals(thor.devotionSince(), read.devotionSince());
+		assertEquals(thor.devotionFaded(), read.devotionFaded());
+		assertEquals(ODIN_BELIEVER, read.invitedBy());
+		again.close();
+	}
+
+	/** A devotion that can't be read is kept as it was */
+	@Test
+	void anUnreadableDevotionIsKept() throws IOException
+	{
+		Files.writeString(this.dir.resolve("believers.yml"), "data-version: 2\n" + THOR_BELIEVER + ":\n  God: Thor\n  Devotion: lots\n  DevotionLevel: pope\n");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.believers().load());
+		Believer thor = storage.believers().find(THOR_BELIEVER);
+		assertNull(thor.devotion());
+		assertNull(thor.devotionLevel());
+		storage.believers().markDirty();
+		storage.close();
+
+		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("believers.yml").toFile());
+		assertEquals("lots", written.getString(THOR_BELIEVER + ".Devotion"));
+		assertEquals("pope", written.getString(THOR_BELIEVER + ".DevotionLevel"));
 	}
 }

@@ -241,11 +241,16 @@ public class PrayerService
 		String pendingGodInvitation = ctx.believerService().getInvitation(believerId);
 		if (pendingGodInvitation != null)
 		{
+			UUID inviter = ctx.believerService().getInviter(believerId);
 			ctx.plugin().logDebug("pendingGodInvitation is " + pendingGodInvitation);
 			if (addBelief(player, pendingGodInvitation, true, BelieverJoinGodEvent.Reason.INVITATION))
 			{
 				ctx.believerService().clearInvitation(believerId);
 				ctx.rankService().countConvert(pendingGodInvitation);
+				if (inviter != null)
+				{
+					ctx.devotionService().earn(inviter, pendingGodInvitation, DevotionService.Deed.CONVERT);
+				}
 
 				ctx.plugin().log(player.getName() + " accepted the invitation to join " + pendingGodInvitation);
 
@@ -307,7 +312,16 @@ public class PrayerService
 	/** The god invites the player to join it; they answer with /g yes or /g no */
 	public void invite(String godName, Player invited)
 	{
-		ctx.believerService().setInvitation(invited.getUniqueId(), godName);
+		invite(godName, invited, null);
+	}
+
+	/**
+	 * The god invites the player to join it, for {@code inviter} (the believer who asked, who earns devotion if they join; null for the
+	 * god itself); they answer with /g yes or /g no
+	 */
+	public void invite(String godName, Player invited, UUID inviter)
+	{
+		ctx.believerService().setInvitation(invited.getUniqueId(), godName, inviter);
 		ctx.plugin().log(godName + " invited to " + invited.getName() + " to join the religion");
 		ctx.godSpeech().say(godName, invited, Voice.PLAYER_INVITE, 10, Messages.player(invited.getName()));
 		ctx.godSpeech().sendInfo(invited.getUniqueId(), "god.question-hint", 40);
@@ -500,6 +514,7 @@ public class PrayerService
 			}
 
 			ctx.rankService().countPrayer(godName);
+			ctx.devotionService().earn(player.getUniqueId(), godName, DevotionService.Deed.PRAYER);
 			ctx.questService().handlePrayer(godName, player.getUniqueId());
 
 

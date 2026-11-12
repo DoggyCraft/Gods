@@ -26,6 +26,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
 import com.dogonfire.gods.integration.npc.SkinTextures;
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
@@ -84,6 +85,8 @@ public final class ThemesLoader
 
 	/** The names of the ranks: {@code ranks.<rank>} ({@link GodRank#key()}), each a text */
 	public static final String			RANKS			= "ranks";
+	/** The names of the devotion levels: {@code devotion.<level>} ({@link DevotionLevel#key()}), each a text */
+	public static final String			DEVOTION		= "devotion";
 
 	public static final String			EFFECTS			= "effects";
 	public static final String			SYMBOL			= "symbol";
@@ -232,7 +235,8 @@ public final class ThemesLoader
 	 * ({@link #SKIN_ENTRIES}; only valid signed textures; a section's skins don't take the default section's, that
 	 * fallback is {@code GodNpcRules.skin}'s)
 	 */
-	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, RawSkin> npc, Map<String, String> ranks)
+	public record RawTheme(Map<String, List<String>> lists, Map<String, String> sign, Map<String, String> symbol, Map<String, RawSkin> npc, Map<String, String> ranks,
+			Map<String, String> devotion)
 	{
 	}
 
@@ -337,7 +341,9 @@ public final class ThemesLoader
 			symbol.putAll(own.symbol());
 			Map<String, String> ranks = new LinkedHashMap<>(defaults.ranks());
 			ranks.putAll(own.ranks());
-			merged.put(name, new RawTheme(lists, sign, symbol, own.npc(), ranks));
+			Map<String, String> devotion = new LinkedHashMap<>(defaults.devotion());
+			devotion.putAll(own.devotion());
+			merged.put(name, new RawTheme(lists, sign, symbol, own.npc(), ranks, devotion));
 		}
 		return merged;
 	}
@@ -384,11 +390,13 @@ public final class ThemesLoader
 			readSymbol(section, symbol);
 		}
 		Map<String, String> ranks = new LinkedHashMap<>();
+		Map<String, String> devotion = new LinkedHashMap<>();
 		if (section != null)
 		{
 			readRanks(section, ranks, name, logger);
+			readDevotion(section, devotion, name, logger);
 		}
-		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, name, logger, Map.of()) : Map.of(), ranks);
+		return new RawTheme(lists, sign, symbol, section != null ? readNpc(section, name, logger, Map.of()) : Map.of(), ranks, devotion);
 	}
 
 	private static void readSign(ConfigurationSection section, Map<String, String> sign)
@@ -437,6 +445,41 @@ public final class ThemesLoader
 			else
 			{
 				ranks.put(rank.key(), text.trim());
+			}
+		}
+	}
+
+	/**
+	 * The {@code devotion} section: a name per devotion level ({@code follower}, {@code devotee}, ...). An unknown level
+	 * or a name that isn't text is warned about and skipped.
+	 */
+	private static void readDevotion(ConfigurationSection section, Map<String, String> devotion, String name, Logger logger)
+	{
+		if (!section.isSet(DEVOTION))
+		{
+			return;
+		}
+		ConfigurationSection names = section.getConfigurationSection(DEVOTION);
+		if (names == null)
+		{
+			logger.warning("themes.yml " + name + ".devotion must be a section with a name per level (follower, devotee, zealot, saint), ignoring it.");
+			return;
+		}
+		for (String key : names.getKeys(false))
+		{
+			DevotionLevel level = DevotionLevel.byKey(key);
+			Object value = names.get(key);
+			if (level == null)
+			{
+				logger.warning("Unknown devotion level '" + key + "' in themes.yml " + name + ".devotion (follower, devotee, zealot, saint), ignoring it.");
+			}
+			else if (!(value instanceof String text) || text.isBlank())
+			{
+				logger.warning("themes.yml " + name + ".devotion." + key + " must be a name, ignoring it.");
+			}
+			else
+			{
+				devotion.put(level.key(), text.trim());
 			}
 		}
 	}
@@ -580,11 +623,17 @@ public final class ThemesLoader
 		Map<String, String> symbol = new LinkedHashMap<>(base.symbol());
 		Map<String, RawSkin> npc = base.npc();
 		Map<String, String> ranks = new LinkedHashMap<>(base.ranks());
+		Map<String, String> devotion = new LinkedHashMap<>(base.devotion());
 		for (String key : override.getKeys(false))
 		{
 			if (key.equals(RANKS))
 			{
 				readRanks(override, ranks, name, logger);
+				continue;
+			}
+			if (key.equals(DEVOTION))
+			{
+				readDevotion(override, devotion, name, logger);
 				continue;
 			}
 			if (key.equals(NPC))
@@ -622,7 +671,7 @@ public final class ThemesLoader
 			}
 			applyList(override, key, lists, fallback, name, logger);
 		}
-		return new RawTheme(lists, sign, symbol, npc, ranks);
+		return new RawTheme(lists, sign, symbol, npc, ranks, devotion);
 	}
 
 	/** The admin's changes to the effects: {@code symbol}, and a section per mood with the effect lists */
@@ -723,7 +772,8 @@ public final class ThemesLoader
 						glowing(section, sign.get("glowing"))),
 				effects(section, raw, bundledNames),
 				npcSkins(raw.npc()),
-				rankNames(raw.ranks()));
+				rankNames(raw.ranks()),
+				devotionNames(raw.devotion()));
 	}
 
 	/** The rank names of a theme: its own, else the default section's, else the rank's key with a capital */
@@ -736,6 +786,18 @@ public final class ThemesLoader
 			names.put(rank, name != null ? name : Theme.RankNames.fallback(rank));
 		}
 		return new Theme.RankNames(java.util.Collections.unmodifiableMap(names));
+	}
+
+	/** The devotion level names of a theme: its own, else the default section's, else the level's key with a capital */
+	private static Theme.DevotionNames devotionNames(Map<String, String> devotion)
+	{
+		Map<DevotionLevel, String> names = new java.util.EnumMap<>(DevotionLevel.class);
+		for (DevotionLevel level : DevotionLevel.values())
+		{
+			String name = devotion.get(level.key());
+			names.put(level, name != null ? name : Theme.DevotionNames.fallback(level));
+		}
+		return new Theme.DevotionNames(java.util.Collections.unmodifiableMap(names));
 	}
 
 	/** The NPC skins of a theme (checked when read) */

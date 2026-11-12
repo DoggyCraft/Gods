@@ -24,6 +24,8 @@
 #                      glowing   true or false
 #   ranks            what the ranks are called (config.yml's ranks section): spirit, recognized, descended, exalted
 #                    and/or greater, each a name; yours replaces Gods' name of each one you list
+#   devotion         what believers' devotion levels are called (config.yml's devotion section): follower, devotee,
+#                    zealot and/or saint, each a name; yours replaces Gods' name of each one you list
 #   effects          how the effects look and sound:
 #                      symbol    text that floats up at prayers (like ❄), "" for none
 #                      pleased, neutral, angry: each with particles (particle ids like end_rod), sounds (sound ids
@@ -60,6 +62,8 @@
 #     glowing: false
 #   ranks:
 #     greater: Ice Queen
+#   devotion:
+#     saint: Keeper of the Long Night
 #   effects:
 #     pleased:
 #       sounds: [block.bell.use]

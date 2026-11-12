@@ -342,3 +342,67 @@ ranks:
     amplifier: 0
     # How long it lasts each time it is given, in seconds.
     seconds: 15
+
+devotion:
+  # Believers grow in devotion to their god: follower (every believer), devotee, zealot and saint. Each god type has
+  # its own names for the levels (themes.yml). Believers earn devotion points by serving their god (points) and rise a
+  # level as soon as they have the points it needs (levels); each level unlocks something (unlocks). Devotion fades
+  # when a believer stops praying, but a level is only lost after real neglect (keep-level-percent).
+  # /g devotion shows a believer's level and how to earn more.
+  # Believers from before devotion start with 10 points per prayer to their god (prayers.min-minutes-between-prayers
+  # apart), at most what a zealot needs, so saints are always earned.
+  # Off: nobody earns devotion, nothing needs a level (holy artifacts are for every believer) and no level gives more.
+  enabled: true
+  # The devotion points each deed earns.
+  points:
+    # A prayer at an altar (at most one every prayers.min-minutes-between-prayers).
+    prayer: 10
+    # A sacrifice the god wanted.
+    sacrifice: 15
+    # Taking part in a completed quest: the believers who counted for it (the slayers, the sacrificers, the pilgrim),
+    # or, for a quest that doesn't know who did it, every believer online who shares its rewards.
+    quest: 40
+    # Inviting a player (/g invite) who then joins.
+    convert: 30
+    # Eating the god's holy food (see commandment-cooldown-minutes).
+    holy-food: 5
+    # Slaying the god's unholy mob (see commandment-cooldown-minutes).
+    unholy-mob: 5
+  # Eating the holy food and slaying the unholy mob earn points at most once in this many minutes per believer.
+  commandment-cooldown-minutes: 10
+  # The devotion points each level needs (a follower is every believer). With a prayer every few hours, a believer is
+  # a devotee after a few days and a zealot after about two weeks; a saint takes weeks of prayers, sacrifices and quests.
+  levels:
+    devotee: 150
+    zealot: 600
+    saint: 2000
+  # A believer's devotion starts to fade after this many days without a prayer.
+  fade-after-days: 3
+  # Then it loses this many percent of its points each day until they pray again. 0: devotion never fades.
+  fade-percent-per-day: 5
+  # A believer keeps their level until their points fall below this percent of what the level needs, so only real
+  # neglect costs a level (a saint at 2000 points loses the level about nine days after their last prayer). 100: as
+  # soon as they have fewer points than it needs.
+  keep-level-percent: 75
+  # The percent of their points a believer keeps when they leave their god or change to another. 0: they start over.
+  kept-on-changing-god-percent: 0
+  # The lowest level each unlock needs (follower, devotee, zealot or saint).
+  unlocks:
+    # /g prayfor costs less (prayfor-discount-percent).
+    prayfor-discount: devotee
+    # The god may give the believer a holy artifact (its own gifts and /g holyartifact).
+    holy-artifacts: zealot
+    # The god's blessings (effects, items, healing, holy artifacts) come more often (blessing-chance-multiplier).
+    more-blessings: zealot
+    # The god now and then praises the believer by name to its other believers.
+    praise: saint
+    # The level's name becomes the believer's title: %gods_devotion_title% and, with chat-title, religion chat.
+    title: saint
+    # The god prefers the believer when it chooses a priest, and asks them on its next turn.
+    priesthood: saint
+  # How much less /g prayfor costs from unlocks.prayfor-discount on, in percent.
+  prayfor-discount-percent: 25
+  # How many times as likely the god's blessings are from unlocks.more-blessings on. 1 to 10.
+  blessing-chance-multiplier: 2
+  # Show the believer's title (unlocks.title) before their name in religion chat (/g chat).
+  chat-title: true

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.integration.npc.SkinTextures;
 import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.model.NpcSkin;
@@ -342,6 +343,53 @@ class ThemesLoaderTest
 		}
 		assertEquals("Leviathan", themes.of(GodType.SEA).rankNames().of(GodRank.GREATER));
 		assertEquals("Tide", themes.of(GodType.SEA).rankNames().of(GodRank.SPIRIT));
+	}
+
+
+	/** Every god type names every devotion level its own way; gods without a type have the generic names */
+	@Test
+	void everyGodTypeNamesItsDevotionLevels() throws Exception
+	{
+		Themes themes = load("");
+		Theme.DevotionNames generic = themes.of(null).devotionNames();
+		assertEquals(List.of("Follower", "Devotee", "Zealot", "Saint"), Arrays.stream(DevotionLevel.values()).map(generic::of).toList());
+		for (GodType type : GodType.values())
+		{
+			Theme.DevotionNames names = themes.of(type).devotionNames();
+			Set<String> distinct = new HashSet<>();
+			for (DevotionLevel level : DevotionLevel.values())
+			{
+				String name = names.of(level);
+				assertFalse(name.isBlank(), type + " " + level);
+				assertTrue(distinct.add(name), type + " names two levels " + name);
+				assertFalse(name.equals(generic.of(level)), type + " has the generic name for " + level);
+			}
+		}
+		assertEquals("Saint of the Deep", themes.of(GodType.SEA).devotionNames().of(DevotionLevel.SAINT));
+	}
+
+	/** An admin's devotion names replace Gods' one by one; odd ones are mentioned */
+	@Test
+	void devotionLevelsAreRenamedOneByOne() throws Exception
+	{
+		Themes themes = load("""
+				default:
+				  devotion:
+				    saint: Blessed One
+				frost:
+				  devotion:
+				    saint: Keeper of the Long Night
+				    pope: Too much
+				    zealot: ''
+				sun: { devotion: bright }
+				""");
+		assertEquals("Keeper of the Long Night", themes.of(GodType.FROST).devotionNames().of(DevotionLevel.SAINT));
+		assertEquals("Icebearer", themes.of(GodType.FROST).devotionNames().of(DevotionLevel.ZEALOT));
+		assertEquals("Blessed One", themes.of(null).devotionNames().of(DevotionLevel.SAINT));
+		assertEquals("Radiant Saint", themes.of(GodType.SUN).devotionNames().of(DevotionLevel.SAINT));
+		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("pope")), "Warnings: " + this.log.warnings());
+		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("frost.devotion.zealot")));
+		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sun.devotion")));
 	}
 
 	/** An admin's names replace Gods' one by one; odd ones are mentioned */

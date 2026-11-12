@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /**
  * One player's entry in believers.yml: the god they believe in (none after leaving it), their prayers and prayer
- * power, chat mode, a pending invitation and the times of their last prayer, blessings and offers. Every player who
+ * power, devotion, chat mode, a pending invitation and the times of their last prayer, blessings and offers. Every player who
  * ever prayed, was invited or offered priesthood has one. Times are {@code null} when never set (or unreadable). A
  * plain data object: {@code BelieverService} changes it and marks the repository dirty.
  */
@@ -30,6 +30,11 @@ public final class Believer
 	private Instant				lastCursing;					// LastCursingTime
 	private Instant				lastItemBlessing;				// LastItemBlessingTime
 	private Instant				lastHolyArtifactBlessing;		// LastHolyArtifactBlessingTime
+	private UUID				invitedBy;						// Invitation.By: who invited them, if Gods knows
+	private Integer				devotion;						// Devotion: their devotion points; null for a believer from before devotion
+	private DevotionLevel		devotionLevel;					// DevotionLevel: null reads as FOLLOWER
+	private Instant				devotionSince;					// DevotionSince: when they reached their level
+	private Instant				devotionFaded;					// DevotionFaded: how far fading has been counted
 
 	/** Keys of the entry this version doesn't know, written back unchanged */
 	private Map<String, Object>	extras	= new LinkedHashMap<String, Object>();
@@ -189,6 +194,60 @@ public final class Believer
 	public void setLastHolyArtifactBlessing(Instant lastHolyArtifactBlessing)
 	{
 		this.lastHolyArtifactBlessing = lastHolyArtifactBlessing;
+	}
+
+	/** Who sent their pending invitation, or null if it came from the god itself (the API) or isn't known */
+	public UUID invitedBy()
+	{
+		return this.invitedBy;
+	}
+
+	public void setInvitedBy(UUID invitedBy)
+	{
+		this.invitedBy = invitedBy;
+	}
+
+	/** Their devotion points; null for a believer from before devotion, who is seeded once */
+	public Integer devotion()
+	{
+		return this.devotion;
+	}
+
+	public void setDevotion(Integer devotion)
+	{
+		this.devotion = devotion;
+	}
+
+	/** Their devotion level; null when never set (a follower) */
+	public DevotionLevel devotionLevel()
+	{
+		return this.devotionLevel;
+	}
+
+	public void setDevotionLevel(DevotionLevel devotionLevel)
+	{
+		this.devotionLevel = devotionLevel;
+	}
+
+	public Instant devotionSince()
+	{
+		return this.devotionSince;
+	}
+
+	public void setDevotionSince(Instant devotionSince)
+	{
+		this.devotionSince = devotionSince;
+	}
+
+	/** Up to when their devotion has faded; null if it never did */
+	public Instant devotionFaded()
+	{
+		return this.devotionFaded;
+	}
+
+	public void setDevotionFaded(Instant devotionFaded)
+	{
+		this.devotionFaded = devotionFaded;
 	}
 
 	public Map<String, Object> extras()

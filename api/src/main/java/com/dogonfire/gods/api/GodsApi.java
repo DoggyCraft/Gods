@@ -383,4 +383,41 @@ public interface GodsApi
 	{
 		return ActionResult.NOT_POSSIBLE;
 	}
+
+	// ---------------------------------------------------------------------
+	// Devotion
+
+	/**
+	 * Gives the believer devotion points (or, with a negative amount, takes them; never below 0), as serving their god
+	 * does. Reaching a higher level makes them rise at once, with the god's words and effect; losing points makes them
+	 * fall only below what their level needs to be kept (Gods' config, {@code devotion.keep-level-percent}). Fires a
+	 * {@link com.dogonfire.gods.api.event.BelieverDevotionChangeEvent} (cause {@code API}) when the level changes; if it is
+	 * cancelled, the points still change but the level stays.
+	 *
+	 * @param playerId the believer, online or not
+	 * @param points   the points to add (negative to take)
+	 * @return {@link ActionResult#SUCCESS}, {@link ActionResult#NOT_BELIEVER} if they believe in no god,
+	 *         {@link ActionResult#FEATURE_DISABLED} while devotion is off, or {@link ActionResult#NOT_POSSIBLE} where
+	 *         Gods doesn't support it
+	 */
+	default ActionResult addDevotion(UUID playerId, int points)
+	{
+		return ActionResult.NOT_POSSIBLE;
+	}
+
+	/**
+	 * Gives the believer a devotion level, with the points it needs (keeping more if they have more, or, for a lower
+	 * level, the points that level needs), and the god's words and effect for a rise. Fires a
+	 * {@link com.dogonfire.gods.api.event.BelieverDevotionChangeEvent} (cause {@code API}) when the level changes.
+	 *
+	 * @param playerId the believer, online or not
+	 * @param level    their new level
+	 * @return {@link ActionResult#SUCCESS} (also if they had that level already), {@link ActionResult#NOT_BELIEVER},
+	 *         {@link ActionResult#FEATURE_DISABLED} while devotion is off, {@link ActionResult#CANCELLED}, or
+	 *         {@link ActionResult#NOT_POSSIBLE} where Gods doesn't support it
+	 */
+	default ActionResult setDevotionLevel(UUID playerId, DevotionLevel level)
+	{
+		return ActionResult.NOT_POSSIBLE;
+	}
 }

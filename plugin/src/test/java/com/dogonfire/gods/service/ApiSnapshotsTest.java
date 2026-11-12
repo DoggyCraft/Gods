@@ -85,6 +85,13 @@ class ApiSnapshotsTest
 			assertEquals(rank, ApiSnapshots.modelRank(ApiSnapshots.rank(rank)));
 		}
 		assertEquals(com.dogonfire.gods.api.GodRank.SPIRIT, ApiSnapshots.rank(null));
+
+		assertEquals(names(com.dogonfire.gods.model.DevotionLevel.values()), names(com.dogonfire.gods.api.DevotionLevel.values()));
+		for (com.dogonfire.gods.model.DevotionLevel level : com.dogonfire.gods.model.DevotionLevel.values())
+		{
+			assertEquals(level, ApiSnapshots.modelDevotion(ApiSnapshots.devotion(level)));
+		}
+		assertEquals(com.dogonfire.gods.api.DevotionLevel.FOLLOWER, ApiSnapshots.devotion(null));
 	}
 
 	@Test
@@ -235,6 +242,12 @@ class ApiSnapshotsTest
 
 		BelieverInfo info = ApiSnapshots.believer(believer, true);
 		assertEquals(new BelieverInfo(BELIEVER, "Zeus", 7, 3, true, CREATED, CREATED.plusSeconds(60)), info);
+		assertEquals(com.dogonfire.gods.api.DevotionLevel.FOLLOWER, info.devotion());
+
+		believer.setDevotion(640);
+		believer.setDevotionLevel(com.dogonfire.gods.model.DevotionLevel.ZEALOT);
+		assertEquals(new BelieverInfo(BELIEVER, "Zeus", 7, 3, true, CREATED, CREATED.plusSeconds(60), com.dogonfire.gods.api.DevotionLevel.ZEALOT, 640),
+				ApiSnapshots.believer(believer, true));
 	}
 
 	/** GodInfo.home: in front of the main altar, facing it; without a main altar the home from before main altars */
