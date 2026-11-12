@@ -27,7 +27,8 @@ import com.dogonfire.gods.util.LegacyDates;
  * data-version: 2
  * &lt;uuid&gt;: God, Prayers, LastPrayer, Joined, PrayerPower, ReligionChat, Hunting, Invitation.God/Time,
  *         LastPriestOffer, ChangingGod, LastBlessingTime, LastCursingTime, LastItemBlessingTime,
- *         LastHolyArtifactBlessingTime, Invitation.By, Devotion, DevotionLevel, DevotionSince, DevotionFaded
+ *         LastHolyArtifactBlessingTime, Invitation.By, Devotion, DevotionLevel, DevotionSince, DevotionFaded,
+ *         PrayerPowerDecayed
  * Unresolved.&lt;name&gt;: entries of very old versions, keyed by a player name the upgrade couldn't turn into a UUID
  * </pre>
  * Version 1 (no {@code data-version}) is upgraded by {@link BelieversV1ToV2}, which moves entries keyed by player
@@ -59,10 +60,11 @@ public final class BelieverRepository extends Repository
 	private static final String			DEVOTION_LEVEL				= "DevotionLevel";
 	private static final String			DEVOTION_SINCE				= "DevotionSince";
 	private static final String			DEVOTION_FADED				= "DevotionFaded";
+	private static final String			PRAYER_POWER_DECAYED		= "PrayerPowerDecayed";
 
 	private static final Set<String>	KNOWN						= Set.of(GOD, PRAYERS, LAST_PRAYER, JOINED, PRAYER_POWER, RELIGION_CHAT, HUNTING, INVITATION,
 			LAST_PRIEST_OFFER, CHANGING_GOD, LAST_BLESSING, LAST_CURSING, LAST_ITEM_BLESSING, LAST_ARTIFACT_BLESSING, DEVOTION, DEVOTION_LEVEL, DEVOTION_SINCE,
-			DEVOTION_FADED);
+			DEVOTION_FADED, PRAYER_POWER_DECAYED);
 
 	private static final LegacyDates	DATES						= LegacyDates.SECONDS;
 
@@ -155,6 +157,7 @@ public final class BelieverRepository extends Repository
 			believer.setLastPrayer(readTime(section, LAST_PRAYER, DATES, extras));
 			believer.setJoined(readTime(section, JOINED, DATES, extras));
 			believer.setPrayerPower(section.getInt(PRAYER_POWER));
+			believer.setPrayerPowerDecayed(readTime(section, PRAYER_POWER_DECAYED, DATES, extras));
 			believer.setReligionChat(section.getBoolean(RELIGION_CHAT));
 			believer.setHunting(section.getBoolean(HUNTING));
 			believer.setInvitation(section.getString(INVITATION_GOD), readTime(section, INVITATION_TIME, DATES, extras));
@@ -249,6 +252,7 @@ public final class BelieverRepository extends Repository
 			{
 				section.set(PRAYER_POWER, believer.prayerPower());
 			}
+			setTime(section, PRAYER_POWER_DECAYED, believer.prayerPowerDecayed());
 			if (believer.religionChat())
 			{
 				section.set(RELIGION_CHAT, true);

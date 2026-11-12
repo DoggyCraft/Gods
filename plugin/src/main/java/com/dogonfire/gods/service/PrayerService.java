@@ -30,6 +30,9 @@ import com.dogonfire.gods.model.GodType;
  */
 public class PrayerService
 {
+	/** At most this many believers leave for not praying on one turn of their god (so a backlog is not one burst) */
+	public static final int			MAX_LOST_PER_TURN	= 5;
+
 	private final Random			random	= new Random();
 	private final GodsContext		ctx;
 
@@ -546,44 +549,25 @@ public class PrayerService
 		}
 	}
 
+	/**
+	 * The god's turn: the prayer power of believers who stopped praying decays
+	 * ({@link BelieverService#decayPrayerPower}), and those it brought to 0 leave: the god tells its believers, a
+	 * priest stops being one, and their entry goes (devotion with it), with {@link BelieverLeaveGodEvent.Reason#INACTIVE}.
+	 * At most {@link #MAX_LOST_PER_TURN} leave per turn, the rest on later turns. Call it only while cleanups are
+	 * allowed ({@code Storage.cleanupVerdict()}).
+	 */
 	public void removeLostBelievers(String godName)
 	{
-		if (this.random.nextInt(100) > 0)
+		List<UUID> lost = ctx.believerService().decayPrayerPower(godName);
+		for (UUID believerId : lost.subList(0, Math.min(lost.size(), MAX_LOST_PER_TURN)))
 		{
-			return;
-		}
-
-		Set<UUID> believers = ctx.believerService().getBelieversForGod(godName);
-		Set<UUID> managedBelievers = new HashSet<UUID>();
-
-		if (believers.size() == 0)
-		{
-			return;
-		}
-
-		ctx.plugin().logDebug("Managing lost believers for " + godName);
-
-		for (int n = 0; n < 5; n++)
-		{
-			UUID believerId = (UUID) believers.toArray()[this.random.nextInt(believers.size())];
-			if (!managedBelievers.contains(believerId) && !ctx.believerService().hasUnreadableLastPrayer(believerId))
+			String believerName = ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
+			if (believerName != null)
 			{
-				long timeDiff = System.currentTimeMillis() - ctx.believerService().getLastPrayerTime(believerId).getTime();
-
-				if (timeDiff > 3600000L * ctx.settings().believers().maxHoursWithoutPrayer())
-				{
-					String believerName = ctx.plugin().getServer().getOfflinePlayer(believerId).getName();
-					if (believerName != null)
-					{
-
-						ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_LOST_BELIEVER, 2 + this.random.nextInt(100), Messages.player(believerName));
-					}
-
-					ctx.believerService().removeBeliever(godName, believerId, BelieverLeaveGodEvent.Reason.INACTIVE);
-				}
+				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_LOST_BELIEVER, 2 + this.random.nextInt(100), Messages.player(believerName));
 			}
-
-			managedBelievers.add(believerId);
+			ctx.priestService().removePriest(godName, believerId);
+			ctx.believerService().removeBeliever(godName, believerId, BelieverLeaveGodEvent.Reason.INACTIVE);
 		}
 	}
 }

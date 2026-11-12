@@ -75,7 +75,7 @@ class ConfigV1ToV2Test
 		Settings expected = new Settings(
 				new Settings.General(true, "danish", "DoggyCraft", List.of("world", "world_nether")),
 				new Settings.GodSettings(false, true, false, 0.5D, 0.05D, true, false),
-				new Settings.Believers(true, 600, 200),
+				TestConfigs.believers(true, 600, 4),
 				new Settings.Priests(5, 2, 48, 24, "lp user $PlayerName parent add priest", "lp user $PlayerName parent remove priest"),
 				Settings.Altars.of(altars),
 				new Settings.Prayers(false, 15, 25, 12, 15, 55),
@@ -210,7 +210,7 @@ class ConfigV1ToV2Test
 		Files.writeString(file, old);
 
 		VersionedYaml format = new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()),
-				new ConfigV4ToV5(TestConfigs::resource, this.log.logger())));
+				new ConfigV4ToV5(TestConfigs::resource, this.log.logger()), new ConfigV5ToV6(TestConfigs::resource, this.log.logger())));
 		YamlConfiguration loaded = format.load(file.toFile(), this.log.logger());
 
 		assertEquals(Gods.CONFIG_VERSION, loaded.getInt("config-version"));
@@ -230,7 +230,7 @@ class ConfigV1ToV2Test
 	private VersionedYaml format()
 	{
 		return new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1, List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()),
-				new ConfigV4ToV5(TestConfigs::resource, this.log.logger())), ConfigV1ToV2::isVersion2Layout);
+				new ConfigV4ToV5(TestConfigs::resource, this.log.logger()), new ConfigV5ToV6(TestConfigs::resource, this.log.logger())), ConfigV1ToV2::isVersion2Layout);
 	}
 
 	/** A version 2 config whose config-version was removed by hand is not reset to the defaults */

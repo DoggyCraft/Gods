@@ -67,6 +67,23 @@ public final class TestConfigs
 	}
 
 	/** The devotion of the bundled config.yml (devotion section) */
+	/** The bundled config's believers section, with these first settings */
+	public static Settings.Believers believers(boolean leaveReligionOnDeath, int minSecondsBetweenChangingGod, int decayAfterDays)
+	{
+		Map<DevotionLevel, Double> multipliers = new EnumMap<>(DevotionLevel.class);
+		multipliers.put(DevotionLevel.FOLLOWER, 1.0D);
+		multipliers.put(DevotionLevel.DEVOTEE, 1.5D);
+		multipliers.put(DevotionLevel.ZEALOT, 2.0D);
+		multipliers.put(DevotionLevel.SAINT, 3.0D);
+		return new Settings.Believers(leaveReligionOnDeath, minSecondsBetweenChangingGod, decayAfterDays, multipliers, 2, 10);
+	}
+
+	/** The bundled config's believers section */
+	public static Settings.Believers defaultBelievers()
+	{
+		return believers(false, 5 * 60, 3);
+	}
+
 	public static Settings.Devotion defaultDevotion()
 	{
 		Map<DevotionLevel, Integer> levels = new EnumMap<>(DevotionLevel.class);

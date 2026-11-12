@@ -1,8 +1,11 @@
 package com.dogonfire.gods.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -10,8 +13,10 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.BelieverLeaveGodEvent;
+import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.Believer;
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.storage.BelieverRepository;
 import com.dogonfire.gods.util.LegacyDates;
 
@@ -303,6 +308,43 @@ public class BelieverService
 		changed();
 
 		ctx.godSpeech().sendInfo(believerId, "prayer.power", 10, Messages.amount(prayerPower));
+	}
+
+	/**
+	 * The god's turn: decays the prayer power of every believer of {@code godName} who hasn't prayed for their quiet
+	 * period ({@link BelieverRules#decay}; the quiet period of their devotion level while devotion is on, else a
+	 * follower's). Quiet: nobody is told. Skips believers whose last prayer couldn't be read. Call it only while
+	 * cleanups are allowed ({@code Storage.cleanupVerdict()}).
+	 *
+	 * @return the believers whose prayer power the decay has brought to 0, who now leave their religion
+	 */
+	public List<UUID> decayPrayerPower(String godName)
+	{
+		Settings.Believers settings = ctx.settings().believers();
+		boolean devotion = ctx.devotionService().enabled();
+		Instant now = Instant.now();
+		List<UUID> lost = new ArrayList<>();
+		for (Believer believer : this.repository.all())
+		{
+			if (!godName.equals(believer.godName()) || hasUnreadableLastPrayer(believer.id()))
+			{
+				continue;
+			}
+			DevotionLevel level = devotion ? ctx.devotionService().getLevel(believer.id()) : DevotionLevel.FOLLOWER;
+			BelieverRules.Decay decay = BelieverRules.decay(settings, believer.prayerPower(), believer.lastPrayer(), believer.prayerPowerDecayed(),
+					BelieverRules.quietPeriod(settings, level), now);
+			if (decay.power() != believer.prayerPower() || !Objects.equals(decay.decayedUntil(), believer.prayerPowerDecayed()))
+			{
+				believer.setPrayerPower(decay.power());
+				believer.setPrayerPowerDecayed(decay.decayedUntil());
+				changed();
+			}
+			if (decay.lost())
+			{
+				lost.add(believer.id());
+			}
+		}
+		return lost;
 	}
 
 	public void clearPrayerPower(UUID believerId)

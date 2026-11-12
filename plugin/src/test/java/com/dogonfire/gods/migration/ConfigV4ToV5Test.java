@@ -127,11 +127,12 @@ class ConfigV4ToV5Test
 		Files.writeString(file, VERSION_4);
 
 		VersionedYaml format = new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1,
-				List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()), migration()),
+				List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()), migration(),
+						new ConfigV5ToV6(TestConfigs::resource, this.log.logger())),
 				ConfigV1ToV2::isVersion2Layout);
 		YamlConfiguration loaded = format.load(file.toFile(), this.log.logger());
 
-		assertEquals(5, Gods.CONFIG_VERSION);
+		assertTrue(Gods.CONFIG_VERSION >= 5);
 		assertEquals(Gods.CONFIG_VERSION, loaded.getInt("config-version"));
 		assertEquals(VERSION_4, Files.readString(this.dir.resolve("config.yml.v4.bak")));
 		String onDisk = Files.readString(file);

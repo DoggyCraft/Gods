@@ -7,7 +7,7 @@
 # is kept as config.yml.v1.bak.
 
 # The version of this file's layout. Gods uses it to upgrade old configs; don't change it.
-config-version: 5
+config-version: 6
 
 general:
   # Log extra information to the console, for finding problems.
@@ -40,8 +40,27 @@ believers:
   leave-religion-on-death: false
   # How long a player must wait after joining a religion before they can change to another god, in seconds.
   min-seconds-between-changing-god: 300
-  # Believers who haven't prayed for this many hours leave their religion.
-  max-hours-without-prayer: 154
+  # Believers who stop praying lose their prayer power and leave their religion when it is gone. After a quiet period
+  # without a prayer (decay-after-days, longer for devoted believers: decay-after-multiplier), their prayer power
+  # falls once a day: first by decay-percent-per-day percent of it (rounded up), then by decay-per-day. When the decay
+  # has brought it to 0 they leave. A prayer ends the decay and starts the quiet period over. Having 0 prayer power
+  # (e.g. after spending it on /g prayfor) never makes a believer who keeps praying leave.
+  # With the defaults a follower with 20 prayer power leaves 9 days after their last prayer, a saint 15 days after.
+  # The days without a prayer before a follower's prayer power starts to decay.
+  decay-after-days: 3
+  # How many times decay-after-days each devotion level waits (devotion.levels). Devotion fades on its own
+  # (devotion.fade-after-days), so a neglectful saint may fall to zealot first and then has a zealot's quiet period.
+  # While devotion is off every believer waits as long as a follower. 0.1 to 100.
+  decay-after-multiplier:
+    follower: 1.0
+    devotee: 1.5
+    zealot: 2.0
+    saint: 3.0
+  # The prayer power a believer loses each day of decay, after the percent below.
+  decay-per-day: 2
+  # The percent of their prayer power (rounded up) a believer loses each day of decay. With both at 0, prayer power
+  # never decays and believers never leave for not praying.
+  decay-percent-per-day: 10
 
 priests:
   # A god needs this many believers to choose a priest. Each further priest needs 6 more believers.

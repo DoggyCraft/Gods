@@ -530,11 +530,6 @@ public final class GodUpdateTask implements Runnable
 
 		boolean godTalk = ctx.priestService().managePriests(godName);
 
-		if (ctx.storage().cleanupVerdict() == CleanupGuard.Verdict.ALLOWED)
-		{
-			ctx.prayerService().removeLostBelievers(godName);
-		}
-
 		if (!godTalk)
 		{
 			manageBelievers(godName);
@@ -555,11 +550,17 @@ public final class GodUpdateTask implements Runnable
 
 		manageHolyLands();
 
+		ctx.devotionService().update(godName);
+		// After devotion faded: the quiet period before prayer power decays is that of the level they have now
+		if (ctx.storage().cleanupVerdict() == CleanupGuard.Verdict.ALLOWED)
+		{
+			ctx.prayerService().removeLostBelievers(godName);
+		}
+
 		// Its mood and believers may have changed: the text above its altars follows
 		ctx.altarTexts().refreshGod(godName);
 		ctx.rankService().evaluate(godName);
 		ctx.rankService().aura(godName);
-		ctx.devotionService().update(godName);
 		ctx.devotionService().praise(godName);
 		ctx.godNpcs().refreshGod(godName);
 

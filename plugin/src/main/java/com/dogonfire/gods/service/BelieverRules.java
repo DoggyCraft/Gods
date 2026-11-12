@@ -1,8 +1,11 @@
 package com.dogonfire.gods.service;
 
+import java.time.Duration;
 import java.time.Instant;
 
+import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.model.Believer;
+import com.dogonfire.gods.model.DevotionLevel;
 
 /**
  * The time rules for believers, without Bukkit so they can be tested: when a prayer counts, how long until the next
@@ -115,5 +118,66 @@ public final class BelieverRules
 	public static boolean invitationExpired(Instant time, Instant now)
 	{
 		return secondsSince(time, now) > INVITATION_SECONDS;
+	}
+
+	// ---------------------------------------------------------------------
+	// Prayer power decay
+
+	/**
+	 * How long a believer of {@code level} may go without a prayer before their prayer power decays:
+	 * {@code believers.decay-after-days} times the level's {@code decay-after-multiplier}, to the minute. Null is a
+	 * follower.
+	 */
+	public static Duration quietPeriod(Settings.Believers believers, DevotionLevel level)
+	{
+		return Duration.ofMinutes(Math.round(believers.decayAfterDays() * 24.0D * 60.0D * believers.multiplier(level)));
+	}
+
+	/** Prayer power after one day of decay: {@code percent} percent of it (rounded up) and then {@code perDay} go, never below 0 */
+	public static int decayOneDay(int power, int perDay, int percent)
+	{
+		if (power <= 0)
+		{
+			return 0;
+		}
+		int lost = (int) (((long) power * percent + 99) / 100) + perDay;
+		return Math.max(0, power - lost);
+	}
+
+	/**
+	 * Prayer power after decay, up to when it is counted, and whether the believer has run out
+	 *
+	 * @param power        the prayer power left
+	 * @param decayedUntil up to when decay is counted (null: it never decayed)
+	 * @param lost         the believer leaves their religion: the decay has brought their prayer power to 0
+	 */
+	public record Decay(int power, Instant decayedUntil, boolean lost)
+	{
+	}
+
+	/**
+	 * The decay of a believer's prayer power: from {@code quiet} after their last prayer (or from where decay was
+	 * counted to, if later), every whole day takes {@link #decayOneDay}. The believer is lost when at least one day of
+	 * decay has passed since the quiet period ended and their prayer power is 0 then, also when it was 0 before; never
+	 * while they pray within their quiet period, whatever their prayer power, and never when nothing decays
+	 * ({@link Settings.Believers#decays()}). A missing last prayer counts as long ago, like the old 1970 fallback.
+	 */
+	public static Decay decay(Settings.Believers believers, int power, Instant lastPrayer, Instant decayedUntil, Duration quiet, Instant now)
+	{
+		if (!believers.decays())
+		{
+			return new Decay(power, decayedUntil, false);
+		}
+		Instant quietEnds = Instant.ofEpochMilli(millis(lastPrayer)).plus(quiet);
+		Instant start = decayedUntil != null && decayedUntil.isAfter(quietEnds) ? decayedUntil : quietEnds;
+		long days = now.isAfter(start) ? Duration.between(start, now).toDays() : 0;
+		int left = Math.max(0, power);
+		for (long day = 0; day < days && left > 0; day++)
+		{
+			left = decayOneDay(left, believers.decayPerDay(), believers.decayPercentPerDay());
+		}
+		Instant counted = days >= 1 ? start.plus(Duration.ofDays(days)) : decayedUntil;
+		boolean lost = left == 0 && !now.isBefore(quietEnds.plus(Duration.ofDays(1)));
+		return new Decay(left, counted, lost);
 	}
 }

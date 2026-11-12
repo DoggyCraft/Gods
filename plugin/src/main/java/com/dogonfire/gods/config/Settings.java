@@ -61,8 +61,30 @@ public record Settings(
 	{
 	}
 
-	public record Believers(boolean leaveReligionOnDeath, int minSecondsBetweenChangingGod, int maxHoursWithoutPrayer)
+	/**
+	 * Believers ({@code believers}). A believer who stops praying loses prayer power and leaves their religion when the
+	 * decay has brought it to 0 (see {@code BelieverRules.decay}).
+	 *
+	 * @param decayAfterDays     days without a prayer before a follower's prayer power starts to decay
+	 * @param decayMultipliers   how many times {@code decayAfterDays} the quiet period is for each devotion level
+	 * @param decayPerDay        prayer power lost on each day of decay
+	 * @param decayPercentPerDay percent of their prayer power (rounded up) lost on each day of decay, before
+	 *                           {@code decayPerDay}
+	 */
+	public record Believers(boolean leaveReligionOnDeath, int minSecondsBetweenChangingGod, int decayAfterDays, Map<DevotionLevel, Double> decayMultipliers, int decayPerDay,
+			int decayPercentPerDay)
 	{
+		/** How many times decay-after-days a believer of this level waits before their prayer power decays (1 if unset) */
+		public double multiplier(DevotionLevel level)
+		{
+			return this.decayMultipliers.getOrDefault(level != null ? level : DevotionLevel.FOLLOWER, 1.0D);
+		}
+
+		/** Whether prayer power decays at all (else believers never leave for not praying) */
+		public boolean decays()
+		{
+			return this.decayPerDay > 0 || this.decayPercentPerDay > 0;
+		}
 	}
 
 	/** @param assignCommand console command run when a player becomes a priest ($PlayerName is replaced), or "" */

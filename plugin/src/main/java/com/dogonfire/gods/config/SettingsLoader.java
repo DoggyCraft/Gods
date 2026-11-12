@@ -49,10 +49,7 @@ public class SettingsLoader
 		return new Settings(
 				loadGeneral(),
 				loadGods(),
-				new Settings.Believers(
-						bool("believers.leave-religion-on-death"),
-						atLeast("believers.min-seconds-between-changing-god", 0),
-						atLeast("believers.max-hours-without-prayer", 0)),
+				loadBelievers(),
 				new Settings.Priests(
 						atLeast("priests.min-believers", 0),
 						atLeast("priests.max-per-god", 0),
@@ -128,6 +125,29 @@ public class SettingsLoader
 						npcProvider("npc.provider")),
 				loadRanks(),
 				loadDevotion());
+	}
+
+	private Settings.Believers loadBelievers()
+	{
+		Map<DevotionLevel, Double> multipliers = new EnumMap<>(DevotionLevel.class);
+		for (DevotionLevel level : DevotionLevel.values())
+		{
+			String path = "believers.decay-after-multiplier." + level.key();
+			double multiplier = atLeast(path, 0.1D);
+			if (multiplier > 100.0D)
+			{
+				warn(path, multiplier, 100.0D);
+				multiplier = 100.0D;
+			}
+			multipliers.put(level, multiplier);
+		}
+		return new Settings.Believers(
+				bool("believers.leave-religion-on-death"),
+				atLeast("believers.min-seconds-between-changing-god", 0),
+				between("believers.decay-after-days", 1, 365),
+				Collections.unmodifiableMap(multipliers),
+				atLeast("believers.decay-per-day", 0),
+				between("believers.decay-percent-per-day", 0, 100));
 	}
 
 	private Settings.Ranks loadRanks()

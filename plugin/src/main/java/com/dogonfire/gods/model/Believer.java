@@ -20,6 +20,7 @@ public final class Believer
 	private Instant				lastPrayer;						// LastPrayer
 	private Instant				joined;							// Joined: when they started praying to this god
 	private int					prayerPower;					// PrayerPower
+	private Instant				prayerPowerDecayed;				// PrayerPowerDecayed: how far the decay of their prayer power has been counted
 	private boolean				religionChat;					// ReligionChat
 	private boolean				hunting;						// Hunting
 	private String				invitationGod;					// Invitation.God
@@ -97,6 +98,17 @@ public final class Believer
 	public void setPrayerPower(int prayerPower)
 	{
 		this.prayerPower = prayerPower;
+	}
+
+	/** Up to when the decay of their prayer power has been counted; null if it never decayed */
+	public Instant prayerPowerDecayed()
+	{
+		return this.prayerPowerDecayed;
+	}
+
+	public void setPrayerPowerDecayed(Instant prayerPowerDecayed)
+	{
+		this.prayerPowerDecayed = prayerPowerDecayed;
 	}
 
 	public boolean religionChat()

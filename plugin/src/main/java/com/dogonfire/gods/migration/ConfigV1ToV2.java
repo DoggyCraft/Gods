@@ -39,7 +39,6 @@ public final class ConfigV1ToV2 implements Migration
 
 			Map.entry("Settings.LeaveReligionOnDeath", "believers.leave-religion-on-death"),
 			Map.entry("Settings.MinSecondsBetweenChangingGod", "believers.min-seconds-between-changing-god"),
-			Map.entry("Settings.MaxBelieverPrayerTime", "believers.max-hours-without-prayer"),
 
 			Map.entry("Settings.MinBelieversForPriest", "priests.min-believers"),
 			Map.entry("Settings.MaxPriestsPrGod", "priests.max-per-god"),
@@ -110,6 +109,8 @@ public final class ConfigV1ToV2 implements Migration
 	/** The minimum god power for item blessings. Gods 0.9.x saved it under the second name but read the first. */
 	static final String	MIN_GOD_POWER		= "ItemBlessing.MinGodPowerForItemBlessings";
 	static final String	OLD_MIN_GOD_POWER	= "ItemBlessing.MinGodPowerItemBlessings";
+	/** Hours without prayer before a believer left; config.yml 6 has a quiet period in days instead ({@link ConfigV5ToV6}) */
+	static final String	MAX_BELIEVER_PRAYER_TIME	= "Settings.MaxBelieverPrayerTime";
 
 	static final String	ALTAR_BLOCK_TYPES	= "Altars.BlockTypes";
 	static final String	REWARD_VALUES		= "Quests.RewardValues";
@@ -180,6 +181,12 @@ public final class ConfigV1ToV2 implements Migration
 			config.set("item-blessings.min-god-power", old.get(OLD_MIN_GOD_POWER));
 		}
 
+		// The bundled config is already version 6, where believers leave when their prayer power decays
+		if (old.get(MAX_BELIEVER_PRAYER_TIME) instanceof Number hours)
+		{
+			config.set(ConfigV5ToV6.DECAY_AFTER_DAYS, ConfigV5ToV6.decayAfterDays(hours.doubleValue()));
+		}
+
 		// Gods without these sections (or with empty ones) used the built-in defaults, which the bundled config has
 		ConfigurationSection altars = old.getConfigurationSection(ALTAR_BLOCK_TYPES);
 		if (altars != null && !altars.getKeys(false).isEmpty())
@@ -217,7 +224,7 @@ public final class ConfigV1ToV2 implements Migration
 		List<String> leftOut = new ArrayList<>();
 		for (String key : old.getKeys(true))
 		{
-			if (old.isConfigurationSection(key) || MOVED.containsKey(key) || OBSOLETE.contains(key) || key.equals(MIN_GOD_POWER) || key.equals(OLD_MIN_GOD_POWER) || key.equals(BREAKABLE_BLOCKS) || key.startsWith(ALTAR_BLOCK_TYPES + ".") || key.startsWith(REWARD_VALUES + "."))
+			if (old.isConfigurationSection(key) || MOVED.containsKey(key) || OBSOLETE.contains(key) || key.equals(MIN_GOD_POWER) || key.equals(OLD_MIN_GOD_POWER) || key.equals(MAX_BELIEVER_PRAYER_TIME) || key.equals(BREAKABLE_BLOCKS) || key.startsWith(ALTAR_BLOCK_TYPES + ".") || key.startsWith(REWARD_VALUES + "."))
 			{
 				continue;
 			}
