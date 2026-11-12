@@ -919,7 +919,7 @@ command:
     - ''
     - <white>  1 - Place a block (the block decides the type of God)
     - <white>  2 - Place a torch, lantern, candle or fire on top
-    - <white>  3 - Place a wall sign on the side of the block
+    - <white>  3 - Place a wall sign or a hanging sign on the side of the block
     - <white>  4 - Write the name of your God on the sign, and <aqua>God<white>, <aqua>Goddess<white> or <aqua>Deity<white>
     - <white>      on another line to choose (or let your God choose)
     - ''

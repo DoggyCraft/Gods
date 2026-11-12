@@ -146,7 +146,7 @@ public class AltarRegistry
 	 */
 	public void register(Block sign, AltarSigns.AltarSign altar, UUID creator)
 	{
-		Block behind = AltarService.blockBehindSign(sign);
+		Block behind = ctx.altarService().attachedBlock(sign);
 		if (behind == null || altar == null)
 		{
 			return;
@@ -335,7 +335,7 @@ public class AltarRegistry
 		{
 			return;
 		}
-		AltarSigns.AltarSign tagged = block.getState() instanceof Sign sign && AltarService.isWallSign(block) ? ctx.altarService().readTaggedAltar(sign) : null;
+		AltarSigns.AltarSign tagged = block.getState() instanceof Sign sign && AltarService.isAltarSignType(block) ? ctx.altarService().readTaggedAltar(sign) : null;
 		if (tagged == null)
 		{
 			remove(signPos, "its sign was broken or moved");
@@ -411,12 +411,12 @@ public class AltarRegistry
 		List<AltarScan.Found> found = new ArrayList<>();
 		for (BlockState state : chunk.getTileEntities())
 		{
-			if (!(state instanceof Sign sign) || !AltarService.isWallSign(state.getBlock()))
+			if (!(state instanceof Sign sign) || !AltarService.isAltarSignType(state.getBlock()))
 			{
 				continue;
 			}
 			AltarSigns.AltarSign altar = ctx.altarService().readTaggedAltar(sign);
-			Block behind = altar != null ? AltarService.blockBehindSign(state.getBlock()) : null;
+			Block behind = altar != null ? ctx.altarService().attachedBlock(state.getBlock()) : null;
 			if (behind != null)
 			{
 				found.add(new AltarScan.Found(pos(state.getBlock()), pos(behind), AltarKind.byKey(altar.kind().key()), altar.god()));

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -15,7 +16,6 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
@@ -31,12 +31,13 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.integration.GriefPreventionIntegration;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.Altar;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
 /**
  * Altars: a block of an altar type (its god type's theme, or config.yml) with a light on top ({@link AltarLights}) and
- * a wall sign on it. Recognizes altar blocks and signs, turns newly written signs into praying, cursing and blessing
+ * a wall sign or wall hanging sign on its side ({@link AltarGeometry}). Recognizes altar blocks and signs, turns newly written signs into praying, cursing and blessing
  * altars (the text rules are in {@link AltarSigns}), and remembers who dropped which item, for sacrifices. Has no data
  * file. The events are handled by {@code listener/AltarListener}. Main thread only.
  */
@@ -91,16 +92,42 @@ public class AltarService
 		});
 	}
 
-	/** Any wooden wall sign (oak, spruce, ..., bamboo, crimson, warped) can be an altar sign. */
-	public static boolean isWallSign(Block block)
+	/**
+	 * Any wooden wall sign or wall hanging sign (oak, spruce, ..., bamboo, crimson, warped) can be an altar sign; standing
+	 * and ceiling hanging signs can't ({@link AltarGeometry}).
+	 */
+	public static boolean isAltarSignType(Block block)
 	{
-		return block != null && Tag.WALL_SIGNS.isTagged(block.getType());
+		return mount(block) != null;
 	}
 
-	/** The sign item that a wall sign block drops, e.g. SPRUCE_SIGN for SPRUCE_WALL_SIGN. */
+	/** How the sign is mounted, or null if it is no wall sign or wall hanging sign */
+	public static AltarGeometry.Mount mount(Block block)
+	{
+		if (block == null)
+		{
+			return null;
+		}
+		if (Tag.WALL_SIGNS.isTagged(block.getType()))
+		{
+			return AltarGeometry.Mount.WALL;
+		}
+		return Tag.WALL_HANGING_SIGNS.isTagged(block.getType()) ? AltarGeometry.Mount.WALL_HANGING : null;
+	}
+
+	/** The sides of a sign that show an altar's text: both for a hanging sign, the front for a wall sign */
+	private static List<Side> textSides(Block block)
+	{
+		return mount(block) == AltarGeometry.Mount.WALL_HANGING ? List.of(Side.FRONT, Side.BACK) : List.of(Side.FRONT);
+	}
+
+	/**
+	 * The sign item that a wall sign or wall hanging sign block drops, e.g. SPRUCE_SIGN for SPRUCE_WALL_SIGN and
+	 * SPRUCE_HANGING_SIGN for SPRUCE_WALL_HANGING_SIGN.
+	 */
 	public static ItemStack getSignItem(Material wallSignType)
 	{
-		Material item = Material.getMaterial(wallSignType.name().replace("_WALL_SIGN", "_SIGN"));
+		Material item = Material.getMaterial(wallSignType.name().replace("_WALL_", "_"));
 
 		return new ItemStack((item != null && item.isItem()) ? item : Material.OAK_SIGN, 1);
 	}
@@ -112,7 +139,7 @@ public class AltarService
 	public void finishAltarSignLater(Block signBlock, AltarSigns.AltarSign altar, UUID builder)
 	{
 		ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> {
-			if (!isWallSign(signBlock))
+			if (!isAltarSignType(signBlock))
 			{
 				// Gone within the tick; a god founded at it needs another main altar
 				ctx.altarRegistry().notBuilt(AltarRegistry.pos(signBlock), altar.god());
@@ -151,14 +178,47 @@ public class AltarService
 				tags.get(this.playerKey, PersistentDataType.STRING), null);
 	}
 
-	/** The block a wall sign hangs on (whatever it is), or null if the block is no wall sign */
-	public static Block blockBehindSign(Block sign)
+	/**
+	 * The block a wall sign or wall hanging sign hangs on (whatever it is: the block behind a wall sign; for a hanging
+	 * sign the side {@link AltarGeometry#attached} picks), or null if the block is neither. Never loads a chunk: a
+	 * neighbor in an unloaded chunk counts as no altar block that may hold the sign, so the registry keeps an altar block
+	 * it knows there.
+	 */
+	public Block attachedBlock(Block sign)
 	{
-		if (!isWallSign(sign) || !(sign.getBlockData() instanceof Directional directional))
+		BlockFace side = attachedSide(sign, false);
+		return side != null ? sign.getRelative(side) : null;
+	}
+
+	/**
+	 * The side of the sign its block is on ({@link AltarGeometry#attached}), or null if it is no altar sign type; with
+	 * {@code mustBeLit}, null unless that block is a lit altar block
+	 */
+	private BlockFace attachedSide(Block sign, boolean mustBeLit)
+	{
+		AltarGeometry.Mount mount = mount(sign);
+		if (mount == null || !(sign.getBlockData() instanceof Directional directional))
 		{
 			return null;
 		}
-		return sign.getRelative(directional.getFacing().getOppositeFace());
+		BlockFace facing = directional.getFacing();
+		if (mount == AltarGeometry.Mount.WALL && !mustBeLit)
+		{
+			// The block behind it, without reading it
+			return facing.getOppositeFace();
+		}
+		Altar known = ctx.altarRegistry().atSign(AltarRegistry.pos(sign));
+		Predicate<BlockFace> isKnown = side -> known != null && known.block().equals(AltarRegistry.pos(sign.getRelative(side)));
+		// A side in an unloaded chunk can't be read: it may hold the sign (so a known altar block there is kept)
+		Predicate<BlockFace> holds = side -> !isLoaded(sign.getRelative(side)) || sign.getRelative(side).getType().isSolid();
+		Predicate<BlockFace> lit = side -> isLoaded(sign.getRelative(side)) && isLitAltarBlock(sign.getRelative(side));
+		return mustBeLit ? AltarGeometry.altarSide(mount, facing, isKnown, holds, lit) : AltarGeometry.attached(mount, facing, isKnown, holds, lit);
+	}
+
+	/** Whether the block's chunk is loaded (reading a block in an unloaded chunk would load it) */
+	private static boolean isLoaded(Block block)
+	{
+		return block.getWorld().isChunkLoaded(block.getX() >> 4, block.getZ() >> 4);
 	}
 
 	/** The online player a curse or blessing sign is about, or null */
@@ -213,25 +273,32 @@ public class AltarService
 		{
 			return true;
 		}
-		SignSide front = sign.getSide(Side.FRONT);
 		Theme.SignStyle style = signStyle(altar);
-		// The text without its colors: the server may write the same colors with other codes
-		String[] lines = front.getLines();
 		String[] text = signText(altar);
-		for (int line = 0; line < text.length; line++)
+		for (Side side : textSides(block))
 		{
-			if (!AltarSigns.plain(line < lines.length ? lines[line] : "").equals(AltarSigns.plain(text[line])))
+			SignSide signSide = sign.getSide(side);
+			// The text without its colors: the server may write the same colors with other codes
+			String[] lines = signSide.getLines();
+			for (int line = 0; line < text.length; line++)
+			{
+				if (!AltarSigns.plain(line < lines.length ? lines[line] : "").equals(AltarSigns.plain(text[line])))
+				{
+					return false;
+				}
+			}
+			if (signSide.getColor() != style.dye() || signSide.isGlowingText() != style.glowing())
 			{
 				return false;
 			}
 		}
-		return front.getColor() == style.dye() && front.isGlowingText() == style.glowing();
+		return true;
 	}
 
 	/**
-	 * Tags the sign as this altar (its kind, god and player) and writes its front in the god type's style: the text of
-	 * {@code altar.sign.<style>.<kind>} in messages.yml, the theme's dye color and glowing text. Waxes it, so players
-	 * can't edit it.
+	 * Tags the sign as this altar (its kind, god and player) and writes it in the god type's style (a wall sign's front,
+	 * both sides of a hanging sign): the text of {@code altar.sign.<style>.<kind>} in messages.yml, the theme's dye color
+	 * and glowing text. Waxes it, so players can't edit it.
 	 */
 	public void markAltarSign(Block block, AltarSigns.AltarSign altar)
 	{
@@ -245,15 +312,18 @@ public class AltarService
 		setOrRemove(tags, this.playerNameKey, altar.playerName());
 		setOrRemove(tags, this.playerKey, altar.playerId() != null ? altar.playerId().toString() : null);
 
-		SignSide front = sign.getSide(Side.FRONT);
 		String[] text = signText(altar);
-		for (int line = 0; line < text.length; line++)
-		{
-			front.setLine(line, text[line]);
-		}
 		Theme.SignStyle style = signStyle(altar);
-		front.setColor(style.dye());
-		front.setGlowingText(style.glowing());
+		for (Side side : textSides(block))
+		{
+			SignSide signSide = sign.getSide(side);
+			for (int line = 0; line < text.length; line++)
+			{
+				signSide.setLine(line, text[line]);
+			}
+			signSide.setColor(style.dye());
+			signSide.setGlowingText(style.glowing());
+		}
 		sign.setWaxed(true);
 		sign.update();
 	}
@@ -305,30 +375,14 @@ public class AltarService
 		return ctx.themes().of(type).sign();
 	}
 
+	/**
+	 * The altar block a wall sign or wall hanging sign hangs on ({@link AltarGeometry}): a block of an altar type with a
+	 * light on top, or null if it hangs on none
+	 */
 	public Block getAltarBlockFromSign(Block block)
 	{
-		if (!isWallSign(block))
-		{
-			return null;
-		}
-		BlockData bd = block.getBlockData();
-		if (!(bd instanceof Directional)) {
-			return null;
-		}
-		Directional directional = (Directional) bd;
-
-		Block altarBlock = block.getRelative(directional.getFacing().getOppositeFace());
-
-		ctx.plugin().logDebug("getAltarBlockFromSign(): AltarBlock block is " + altarBlock.getType().name());
-		if (getGodTypeForAltarBlockType(altarBlock.getType()) == null)
-		{
-			return null;
-		}
-		if (!isAltarLight(altarBlock.getRelative(BlockFace.UP).getType()))
-		{
-			return null;
-		}
-		return altarBlock;
+		BlockFace side = attachedSide(block, true);
+		return side != null ? block.getRelative(side) : null;
 	}
 
 	/** True if the block is a light that marks an altar when it stands on top of the altar block ({@link AltarLights}) */
@@ -362,7 +416,7 @@ public class AltarService
 	/** The online player named on line 3 of a sign whose first line is the given keyword. */
 	private Player getPlayerFromAltarSign(Block block, String[] lines, String keyword)
 	{
-		if (!isWallSign(block))
+		if (!isAltarSignType(block))
 		{
 			return null;
 		}
@@ -571,9 +625,9 @@ public class AltarService
 			return false;
 		}
 
-		for (BlockFace face : new BlockFace[] { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST })
+		for (BlockFace face : AltarClicks.SIDES)
 		{
-			if (isWallSign(block.getRelative(face)))
+			if (isAltarSignType(block.getRelative(face)))
 			{
 				return true;
 			}
@@ -607,7 +661,8 @@ public class AltarService
 
 	/**
 	 * The praying sign of the altar whose block or light this is ({@link AltarClicks#chooseSign}: a tagged praying
-	 * sign first), or null if it has none. Only wall signs hanging on the altar block count.
+	 * sign first), or null if it has none. Only signs hanging on the altar block count: wall signs facing away from it,
+	 * and wall hanging signs whose altar block it is ({@link AltarGeometry}).
 	 */
 	public Block findPrayingSign(Block clicked)
 	{
@@ -621,7 +676,9 @@ public class AltarService
 		for (BlockFace side : AltarClicks.SIDES)
 		{
 			Block sign = altarBlock.getRelative(side);
-			if (!isWallSign(sign) || !(sign.getBlockData() instanceof Directional directional) || !AltarClicks.hangsOn(side, directional.getFacing()))
+			AltarGeometry.Mount mount = mount(sign);
+			if (mount == null || !(sign.getBlockData() instanceof Directional directional) || !AltarGeometry.hangsOn(mount, side, directional.getFacing())
+					|| (mount == AltarGeometry.Mount.WALL_HANGING && !altarBlock.equals(getAltarBlockFromSign(sign))))
 			{
 				continue;
 			}
@@ -651,7 +708,7 @@ public class AltarService
 		return altarBlock == null ? AltarClaims.mayBuild(signSpot) : AltarClaims.mayBuild(signSpot, griefPrevention.claimAt(player, altarBlock.getLocation()));
 	}
 
-	/** A wall sign on an altar block (a block with an altar type and a light on top). */
+	/** A wall sign or wall hanging sign on an altar block (a block with an altar type and a light on top). */
 	public boolean isAltarSign(Block block)
 	{
 		return getAltarBlockFromSign(block) != null;

@@ -27,6 +27,7 @@ import com.dogonfire.gods.config.Theme;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.service.AltarClicks;
+import com.dogonfire.gods.service.AltarGeometry;
 import com.dogonfire.gods.service.AltarService;
 import com.dogonfire.gods.service.AltarSigns;
 
@@ -79,7 +80,7 @@ public class AltarListener implements Listener
 		}
 
 		// A finished altar whose light is gone does nothing until it is lit again: say so
-		if (AltarService.isWallSign(block) && block.getState() instanceof Sign sign && ctx.altarService().readTaggedAltar(sign) != null)
+		if (AltarService.isAltarSignType(block) && block.getState() instanceof Sign sign && ctx.altarService().readTaggedAltar(sign) != null)
 		{
 			if (event.getHand() == EquipmentSlot.HAND)
 			{
@@ -251,8 +252,9 @@ public class AltarListener implements Listener
 			return;
 		}
 
-		// Altars are written on the front of the sign
-		if (event.getSide() != Side.FRONT)
+		// Altars are written on the front of a wall sign (its back faces the altar block), on either side of a hanging
+		// sign (both sides get the altar's text)
+		if (event.getSide() != Side.FRONT && AltarService.mount(block) != AltarGeometry.Mount.WALL_HANGING)
 		{
 			return;
 		}

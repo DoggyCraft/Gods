@@ -39,15 +39,6 @@ public final class AltarClicks
 	}
 
 	/**
-	 * True if a wall sign on this side of a block hangs on it: a wall sign faces away from the block it is attached to,
-	 * so a sign east of the block must face east.
-	 */
-	public static boolean hangsOn(BlockFace side, BlockFace signFacing)
-	{
-		return side == signFacing;
-	}
-
-	/**
 	 * True if a right click on the altar block or its light prays, as clicking the altar's sign does. Never with the off
 	 * hand, never while sneaking (sneak-clicking keeps vanilla's use, like placing a block against the altar), never on
 	 * a block with a use of its own (a note block, jukebox, chiseled bookshelf, smithing table; a candle cake, which is

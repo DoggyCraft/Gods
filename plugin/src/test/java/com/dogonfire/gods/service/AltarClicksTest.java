@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.bukkit.block.BlockFace;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.service.AltarClicks.Candidate;
@@ -71,15 +70,6 @@ class AltarClicksTest
 		// A block in hand prays; sneaking places it
 		assertTrue(AltarClicks.praysOnClick(Part.BLOCK, true, false, false, "SNOW_BLOCK", "COBBLESTONE"));
 		assertTrue(AltarClicks.praysOnClick(Part.LIGHT, true, false, false, "CANDLE", "RED_CANDLE"));
-	}
-
-	/** A wall sign faces away from the block it hangs on */
-	@Test
-	void aSignHangsOnTheBlockItFacesAwayFrom()
-	{
-		assertTrue(AltarClicks.hangsOn(BlockFace.EAST, BlockFace.EAST));
-		assertFalse(AltarClicks.hangsOn(BlockFace.EAST, BlockFace.NORTH));
-		assertFalse(AltarClicks.hangsOn(BlockFace.EAST, BlockFace.WEST));
 	}
 
 	@Test
