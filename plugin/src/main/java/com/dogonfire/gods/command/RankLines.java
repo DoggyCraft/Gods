@@ -37,7 +37,8 @@ final class RankLines
 	{
 		return switch (condition.condition())
 		{
-			case PRIEST, MAIN_ALTAR -> ctx.messages().component(condition.met() ? "command.rank.value.yes" : "command.rank.value.no");
+			// Has one or not, as a count a player reads at a glance: "Priest: 0/1"
+			case PRIEST, MAIN_ALTAR -> ctx.messages().component("command.rank.value.count", Messages.text("current", condition.met() ? 1 : 0), Messages.text("required", 1));
 			case MOOD -> ctx.messages().component("command.rank.value.mood", Messages.component("current", ctx.messages().moodName(mood(condition.current()))),
 					Messages.component("required", ctx.messages().moodName(mood(condition.required()))));
 			case HOURS_AFTER_PRIEST, HOURS_AT_PREVIOUS_RANK -> ctx.messages().component("command.rank.value.hours", Messages.text("current", condition.current()),
