@@ -13,7 +13,7 @@ The plugin for adding Gods to minecraft!
 
 A God is an entity that exist because a player has chosen to believe in it.
 
-A player shows his faith in a god by building an altar for his god and using the altar to pray. 
+A player shows their faith in a god by building an altar for their god and using the altar to pray.
 In this way, many gods may exist at a time, all with names created by the players.
 
 The main purpose for believing in these Gods is to gain from the help the Gods provide (see below) and to provide some basic faction play based on ideology and culture (I.e. "My god is better than yours because apples are holy!").
@@ -109,6 +109,29 @@ Rising to a rank shows an effect at the main altar (grander for each rank; the d
 
 Gods from before ranks get a rank on their first turn: the highest their believers, power, priest, mood, altars, holy land and age allow, with their lifetime stats (which Gods didn't count before) set to what that rank asks for, so they keep it. A god that had descended stays descended.
 
+Devotion
+---------
+Believers have ranks too: every believer is a follower of their god and grows in devotion by serving it, to devotee, zealot and saint. Each god type names the levels its own way (`devotion` in its theme): a sea god's believers rise from Deckhand through Tidecaller and Stormrider to Saint of the Deep, a party god's from Guest to Legend of the Feast. `/g devotion [player]` (permission `gods.devotion`) shows a believer's level and points and, for your own, the next level, what earns points and what each level brings; `/g info` and `/g followers` show it too, and PlaceholderAPI's `%gods_devotion%`.
+
+Believers earn devotion points (config.yml's `devotion.points`, the defaults):
+
+| Deed | Points |
+|---|---|
+| A prayer at an altar (at most one every `prayers.min-minutes-between-prayers`, 30) | 10 |
+| A sacrifice the god wanted | 15 |
+| Taking part in a completed quest (the slayers, sacrificers or pilgrim who counted for it; for a quest that doesn't know who did it, the believers online who share its rewards) | 40 |
+| Inviting a player (`/g invite`) who joins | 30 |
+| Eating the god's holy food, slaying its unholy mob (once per `commandment-cooldown-minutes`, 10) | 5 each |
+
+| Level | Points (`devotion.levels`) | Brings (`devotion.unlocks`) |
+|---|---|---|
+| Follower | every believer | |
+| Devotee | 150 (about 15 prayers: a few days of regular prayer) | `/g prayfor` costs 25 % less |
+| Zealot | 600 (about two weeks) | the god may give them a holy artifact (only zealots and saints get one); its gifts (items, healing, holy artifacts) come twice as often |
+| Saint | 2000 (weeks of prayers, sacrifices and quests) | the god now and then praises them by name to its other believers; their level is their title (`%gods_devotion_title%`, and before their name in religion chat); the god asks them first when it needs a priest |
+
+A believer rises as soon as they have the points, and the god congratulates them with an effect around them. Devotion fades when a believer stops praying: after `fade-after-days` (3) without a prayer they lose `fade-percent-per-day` (5 %) of their points each day. A level is only lost when the points fall below `keep-level-percent` (75 %) of what it needs, so a few days off never cost one; a saint who stops praying falls about nine days after their last prayer. Leaving the god or changing to another keeps `kept-on-changing-god-percent` (0: they start over). Believers from before devotion start with 10 points per prayer to their god, at most a zealot's 600, so every saint is earned. `devotion.enabled: false` switches it all off: nobody earns devotion, nothing needs a level (holy artifacts are for every believer again) and no level gives more.
+
 Themes
 ---------
 Each god type has a theme: the mobs it holds holy or wants slain, the foods it wants eaten or forbids, what it wants sacrificed, what its slay quests ask for, the mobs its curses send (`curse-mobs`: evil sends wither skeletons and vexes, frost strays, the sea drowned, ...), the peaceful mobs that may still spawn in its holy land when it doesn't allow mob spawning (`peaceful-mobs`: the sea's dolphins and fish, the sun's camels and armadillos, ...), its altar blocks and how its altar signs look. Gods' own themes are built into the jar ([themes.yml](plugin/src/main/resources/themes.yml)) and use mobs, foods and blocks up to the newest Minecraft; whatever your server's version doesn't have is skipped.
@@ -149,7 +172,7 @@ frost:
       particles: {add: [cloud]}
 ```
 
-Messages
+Messages and placeholders
 ---------
 Everything players see is in `plugins/Gods/lang/<language>/`, in [MiniMessage](https://docs.advntr.dev/minimessage/format.html): `messages.yml` for the messages, `voices/<type>_<gender>.yml` for what each god says. A message you remove falls back to Gods' own.
 
@@ -159,6 +182,28 @@ A god's words have two formats in `messages.yml`: `god.speech` for words to one 
 god:
   speech: '<gold>\<<god>>: <white><bold><message>'
   speech-believers: '<gold>[<god>] <yellow><message>'
+```
+
+With [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) installed, chat, tab list and name tag plugins can show a player's religion:
+
+| Placeholder | Shows |
+|---|---|
+| `%gods_name%` | the player's god (empty without one) |
+| `%gods_name_space%` | the god with a space after it (empty without one) |
+| `%gods_color%` | the god type's color code, like `&b` |
+| `%gods_prayerpower%` | the player's prayer power |
+| `%gods_rank%` | the god's rank, as its god type calls it |
+| `%gods_devotion%` | the player's devotion level, as their god's type calls it |
+| `%gods_devotion_points%` | the player's devotion points |
+| `%gods_devotion_title%` | their devotion level once it is a title (a saint's, `devotion.unlocks.title`), else empty |
+| `%gods_tag%` | the god as a ready-made tag, like `[Zeus] ` in the god's color, for name tags, chat or the tab list; empty without a god |
+
+`%gods_tag%` is `placeholder.tag` in `messages.yml` (`placeholder.tag-priest` for priests), with `<god>`, `<god-color>…</god-color>`, `<rank>`, `<devotion>` and `<title>`. With the [TAB](https://github.com/NEZNAMY/TAB) plugin, for example, in its `groups.yml`:
+
+```yaml
+_DEFAULT_:
+  tagprefix: "%gods_tag%"
+  tabprefix: "%gods_tag%"
 ```
 
 Links
@@ -207,10 +252,10 @@ if (gods != null) {
 }
 ```
 
-- **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest, main altar, descent and rank; `home()` is the spot in front of the main altar), a god's progress towards its next rank (`getRankProgress(god)`), the god's figure at its altar (`getNpc(god)`, `isGodNpc(entity)`), believers (`getBeliever(uuid)`), and whose holy land a location is.
+- **Read**: gods (`getGods()`, `getGod(name)`, `getGod(player)`; `GodInfo` snapshots with type, gender, mood, power, believers, priests, allies, enemies, home, holy land and current quest, main altar, descent and rank; `home()` is the spot in front of the main altar), a god's progress towards its next rank (`getRankProgress(god)`), the god's figure at its altar (`getNpc(god)`, `isGodNpc(entity)`), believers (`getBeliever(uuid)`, with their devotion level and points), and whose holy land a location is.
 - **Speak as a god**: `say(god, player, text)` with a [MiniMessage](https://docs.advntr.dev/minimessage/format.html) text, `sayToBelievers(god, text)`, and the god's own voice lines with `sayVoiceLine(god, player, situation)` / `getVoiceLine(god, situation)`. The situations are the keys of the voice files (`getVoiceSituations()`, e.g. `believer-random-pleased-speech`).
-- **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood or its gender (`setGender`, which ignores the priests' cooldown), start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars, and set its rank (`setRank`, bypassing the conditions). Each returns an `ActionResult`.
-- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent`, `GodRelationChangeEvent`, `GodDescendEvent`, `GodAscendEvent` and `GodRankChangeEvent` (a rise can be cancelled, a fall can't). Most can be cancelled.
+- **Act as a god**: bless, curse, heal, give an item or a holy artifact, smite, change its mood or its gender (`setGender`, which ignores the priests' cooldown), start, complete or fail its quest, invite a player, offer, assign or remove priests, and declare alliances and wars, and set its rank (`setRank`, bypassing the conditions); give a believer devotion (`addDevotion`) or a devotion level (`setDevotionLevel`). Each returns an `ActionResult`.
+- **Events** in `com.dogonfire.gods.api.event`: `GodSpeakEvent`, `BelieverPrayEvent`, `BelieverJoinGodEvent`, `BelieverLeaveGodEvent`, `GodCreateEvent`, `GodMoodChangeEvent`, `GodGenderChangeEvent`, `PriestAssignEvent`, `PriestRemoveEvent`, `GodBlessPlayerEvent`, `GodCursePlayerEvent`, `QuestStartEvent`, `QuestCompleteEvent`, `QuestFailEvent`, `HolyLandClaimEvent`, `HolyLandAttackStartEvent`, `GodRelationChangeEvent`, `GodDescendEvent`, `GodAscendEvent`, `GodRankChangeEvent` (a rise can be cancelled, a fall can't) and `BelieverDevotionChangeEvent` (likewise). Most can be cancelled.
 
 Everything a god says to a player fires a `GodSpeakEvent` first, so a plugin can, for example, let a god speak through an NPC instead of the chat:
 
