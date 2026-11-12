@@ -193,18 +193,18 @@ holy-land:
     neutral: <white>Neutral Land
     neutral-subtitle: <green>You are safe against mobs and PvP
     # <god> owning the land
-    holy-land: <gold>Holyland of <god>
+    holy-land: <gold>Holy Land of <god>
     # The subtitle in your own holy land: <description> of your god
     description: <white><description>
     # The subtitle in a named holy land of another god: its <name>
     holy-land-name: <white><name>
     # The subtitle in a holy land of another god: its god's <description>
     other-description: <description>
-    contested: <gold>Holyland of <god>
+    contested: <gold>Holy Land of <god>
     # <minutes> left of the battle
     contested-subtitle: <red>Contested <minutes> min
-  size: <aqua>You religion now has claimed <hl><claimed></hl>/<hl><max></hl> Holyland
-  cannot-claim-more: <red>You cannot claim more Holyland
+  size: <aqua>Your religion now has claimed <hl><claimed></hl>/<hl><max></hl> regions of Holy Land
+  cannot-claim-more: <red>Your religion cannot claim more Holy Land
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
   attacking-hint: <aqua>Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
   # <minutes> left of the battle
@@ -990,7 +990,7 @@ command:
     relations: '<aqua>Religious relations: '
     alliance: <green> Alliance with <gold><god>
     war: <red> War with <gold><god>
-    holy-land: '<aqua>Holyland claimed: <gold><claimed>/<max>'
+    holy-land: '<aqua>Holy Land claimed: <gold><claimed>/<max> regions'
     # Only the God's believers see where its main altar is; <world>, <x>, <y>, <z> are its altar block
     main-altar: '<aqua>Main altar: <yellow><world> <x>, <y>, <z>'
     # Shown to its priests when the God has none

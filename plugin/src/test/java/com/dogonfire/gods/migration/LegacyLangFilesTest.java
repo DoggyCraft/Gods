@@ -63,7 +63,9 @@ class LegacyLangFilesTest
 			// Each follower shows their devotion level
 			"command.followers.line", "command.followers.you", "command.followers.you-below",
 			// 0.9.x named the oak log by its old material name, LOG
-			"names.item.OAK_LOG");
+			"names.item.OAK_LOG",
+			// "Holy Land", as the other messages say, not "Holyland"
+			"holy-land.size", "holy-land.cannot-claim-more");
 
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test
