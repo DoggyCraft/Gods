@@ -172,6 +172,8 @@ public class AltarListener implements Listener
 						ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_CURSED_PLAYER_SET, player.getUniqueId(), Messages.displayName(cursedPlayer.getDisplayName()));
 
 						ctx.plugin().log(player.getName() + " asked " + godName + " for curses on " + cursedPlayer.getName());
+						// The first curse comes now; more follow now and then
+						ctx.blessingService().curseCursedPlayer(godName, cursedPlayer);
 					}
 				}
 				else
@@ -209,6 +211,8 @@ public class AltarListener implements Listener
 						ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_BLESSED_PLAYER_SET, player.getUniqueId(), Messages.displayName(blessedPlayer.getDisplayName()));
 
 						ctx.plugin().log(player.getName() + " asked " + godName + " for blessings on " + blessedPlayer.getName());
+						// The first blessing comes now, so the priest sees it work; more follow now and then
+						ctx.blessingService().blessBlessedPlayer(godName, blessedPlayer);
 					}
 				}
 				else

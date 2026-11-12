@@ -381,21 +381,29 @@ public class BlessingService
 
 		if (this.random.nextInt(1 + 100 / godPower) == 0)
 		{
-			Player player = ctx.plugin().getServer().getPlayer(blessedPlayer);
-
-			if ((player == null) || (!ctx.permissions().hasPermission(player, "gods.blessings")))
-			{
-				return;
-			}
-
-			if (blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
-			{
-
-				ctx.godSpeech().say(godName, player, Voice.PLAYER_BLESSED, 2 + this.random.nextInt(10), Messages.player(player.getName()));
-
-				ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_BLESSED, player.getUniqueId(), Messages.player(player.getName()));
-			}
+			blessBlessedPlayer(godName, ctx.plugin().getServer().getPlayer(blessedPlayer));
 		}
+	}
+
+	/**
+	 * The god blesses its blessed player now: when a priest names them, and now and then after that. Not while they were
+	 * blessed too recently ({@link #blessPlayer}'s cooldown) or lack gods.blessings.
+	 *
+	 * @return whether they were blessed
+	 */
+	public boolean blessBlessedPlayer(String godName, Player player)
+	{
+		if ((player == null) || (!ctx.permissions().hasPermission(player, "gods.blessings")))
+		{
+			return false;
+		}
+		if (!blessPlayer(godName, player.getUniqueId(), ctx.godService().getGodPower(godName)))
+		{
+			return false;
+		}
+		ctx.godSpeech().say(godName, player, Voice.PLAYER_BLESSED, 2 + this.random.nextInt(10), Messages.player(player.getName()));
+		ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_BLESSED, player.getUniqueId(), Messages.player(player.getName()));
+		return true;
 	}
 
 	public void manageCursedPlayer(String godName)
@@ -416,19 +424,29 @@ public class BlessingService
 
 		if (this.random.nextInt(1 + 100 / godPower) == 0)
 		{
-			if (!ctx.permissions().hasPermission(cursedPlayer, "gods.curses"))
-			{
-				return;
-			}
-
-			if (cursePlayer(godName, cursedPlayer.getUniqueId(), godPower))
-			{
-
-				ctx.godSpeech().say(godName, cursedPlayer, Voice.PLAYER_CURSED, 2 + this.random.nextInt(10), Messages.displayName(cursedPlayer.getDisplayName()));
-
-				ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_CURSED, cursedPlayer.getUniqueId(), Messages.displayName(cursedPlayer.getDisplayName()));
-			}
+			curseCursedPlayer(godName, cursedPlayer);
 		}
+	}
+
+	/**
+	 * The god curses its cursed player now: when a priest names them, and now and then after that. Not while they were
+	 * cursed too recently ({@link #cursePlayer}'s cooldown) or lack gods.curses.
+	 *
+	 * @return whether they were cursed
+	 */
+	public boolean curseCursedPlayer(String godName, Player cursedPlayer)
+	{
+		if ((cursedPlayer == null) || (!ctx.permissions().hasPermission(cursedPlayer, "gods.curses")))
+		{
+			return false;
+		}
+		if (!cursePlayer(godName, cursedPlayer.getUniqueId(), 1 + (int) ctx.godService().getGodPower(godName)))
+		{
+			return false;
+		}
+		ctx.godSpeech().say(godName, cursedPlayer, Voice.PLAYER_CURSED, 2 + this.random.nextInt(10), Messages.displayName(cursedPlayer.getDisplayName()));
+		ctx.godSpeech().sayToBelieversExcept(godName, Voice.BELIEVERS_PLAYER_CURSED, cursedPlayer.getUniqueId(), Messages.displayName(cursedPlayer.getDisplayName()));
+		return true;
 	}
 
 	/**
