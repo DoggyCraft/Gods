@@ -166,12 +166,12 @@ public final class AltarSigns
 	}
 
 	/**
-	 * The player name on line 3 of a sign whose first line is {@code keyword} (any case), e.g. "curses"; null if the
-	 * sign isn't like that or names nobody.
+	 * The player named on a sign whose first line is {@code keyword} (any case), e.g. "curses": the first line below it
+	 * with text, skipping "On" (the old "Curses / On / name" layout); null if the sign isn't like that or names nobody.
 	 */
 	public static String namedPlayer(String[] lines, String keyword)
 	{
-		if (lines == null || lines.length < 3 || lines[0] == null)
+		if (lines == null || lines.length < 2 || lines[0] == null)
 		{
 			return null;
 		}
@@ -181,13 +181,15 @@ public final class AltarSigns
 			return null;
 		}
 
-		String playerName = lines[2];
-		if ((playerName == null) || (playerName.trim().length() < 1))
+		for (int line = 1; line < lines.length; line++)
 		{
-			return null;
+			String text = plain(lines[line]);
+			if (!text.isEmpty() && !text.equalsIgnoreCase("on"))
+			{
+				return text;
+			}
 		}
-
-		return plain(playerName);
+		return null;
 	}
 
 	/** The number of lines with visible text */

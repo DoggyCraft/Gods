@@ -59,6 +59,9 @@ class AltarClicksTest
 		assertFalse(AltarClicks.praysOnClick(Part.BLOCK, true, false, false, "COARSE_DIRT", "DIAMOND_HOE"));
 		assertFalse(AltarClicks.praysOnClick(Part.BLOCK, true, false, false, "SNOW_BLOCK", "WATER_BUCKET"));
 		assertFalse(AltarClicks.praysOnClick(Part.BLOCK, true, false, false, "SNOW_BLOCK", "COW_SPAWN_EGG"));
+		// Putting a sign (wall or hanging) on the altar block
+		assertFalse(AltarClicks.praysOnClick(Part.BLOCK, true, false, false, "NETHERRACK", "OAK_SIGN"));
+		assertFalse(AltarClicks.praysOnClick(Part.BLOCK, true, false, false, "NETHERRACK", "CRIMSON_HANGING_SIGN"));
 	}
 
 	@Test

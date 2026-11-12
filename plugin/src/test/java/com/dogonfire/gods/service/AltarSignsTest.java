@@ -32,6 +32,9 @@ class AltarSignsTest
 		assertNull(AltarSigns.namedPlayer(new String[] { "Curses", "On", "  ", "" }, AltarSigns.CURSES));
 		assertNull(AltarSigns.namedPlayer(new String[] { "Blessings", "On", "Notch", "" }, AltarSigns.CURSES));
 		assertNull(AltarSigns.namedPlayer(new String[] { "Curses", "On" }, AltarSigns.CURSES));
+		// The name may be on any line below the keyword; "On" of the old layout is skipped
+		assertEquals("fido2603", AltarSigns.namedPlayer(new String[] { "Blessings", "fido2603", "", "" }, AltarSigns.BLESSINGS));
+		assertEquals("Notch", AltarSigns.namedPlayer(new String[] { "Blessings", "on", "", "Notch" }, AltarSigns.BLESSINGS));
 	}
 
 	private static final AltarSigns.GenderWords	WORDS	= new AltarSigns.GenderWords(List.of("God"), List.of("Goddess", "Gudinde"), List.of("Deity", "Guddom"));

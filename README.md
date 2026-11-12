@@ -43,7 +43,7 @@ Building an altar
 3. Place a wall sign or a hanging sign on the side of the block (a hanging sign's bracket on the block) and write the name of your god on it (on either side of a hanging sign; the finished altar shows it on both). To choose its gender, write `God`, `Goddess` or `Deity` (non-binary) on another line; otherwise the god chooses and tells you.
 4. Right-click the sign to pray, or the altar block or its light. Sneak to use the block as usual (placing blocks against it); items that do something to the block (flint and steel on a candle, an axe, honeycomb, ...) and blocks with a use of their own (note blocks, jukeboxes, chiseled bookshelves, candle cakes) keep it.
 
-Gods writes the sign in the style of the god's type and remembers it, so the text can't be changed. Signs with `Curses` or `Blessings` on the first line and a player's name on the third let priests curse or bless that player.
+Gods writes the sign in the style of the god's type and remembers it, so the text can't be changed. Signs with `Curses` or `Blessings` on the first line and a player's name on a line below let priests curse or bless that player.
 
 With [GriefPrevention](https://www.spigotmc.org/resources/griefprevention.1884/) installed, new altars (praying, curse and blessing signs) can only be built inside a claim where you have build trust (your own, or one you are trusted in); elsewhere the sign is refused. Altars that already stand keep working wherever they are. Set `altars.require-claim: false` in config.yml to allow altars anywhere. Without GriefPrevention the setting does nothing. A priest can also make their claim the holy land of their god with `/g holyclaim` (see Holy Land above).
 

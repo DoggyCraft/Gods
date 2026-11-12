@@ -14,9 +14,12 @@ public final class AltarClicks
 	/** The sides of an altar block a wall sign can hang on */
 	public static final List<BlockFace>	SIDES				= List.of(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
 
-	/** Items that do something to the block they are used on (light candles, strip logs, wax copper, ...): vanilla wins */
+	/**
+	 * Items that do something to the block they are used on (light candles, strip logs, wax copper, ...), and signs (so a
+	 * sign is put on an altar block without sneaking): vanilla wins
+	 */
 	private static final Set<String>	BLOCK_TOOLS			= Set.of("FLINT_AND_STEEL", "FIRE_CHARGE", "HONEYCOMB", "SHEARS", "BONE_MEAL", "BUCKET", "POTION", "BRUSH");
-	private static final List<String>	BLOCK_TOOL_SUFFIXES	= List.of("_AXE", "_SHOVEL", "_HOE", "_BUCKET", "_SPAWN_EGG");
+	private static final List<String>	BLOCK_TOOL_SUFFIXES	= List.of("_AXE", "_SHOVEL", "_HOE", "_BUCKET", "_SPAWN_EGG", "_SIGN");
 
 	/** The part of an altar a click is on */
 	public enum Part
