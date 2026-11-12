@@ -7,12 +7,13 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Material;
 
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.HolyPower;
 
 /**
  * The rules of holy powers, without Bukkit so they can be tested: the lore line that describes a power (and reading it
  * back from artifacts made before artifacts were tagged), how long a player waits between uses, how far the area
- * powers reach, where TELEPORT may put a player and how hard EARTHQUAKE hits.
+ * powers reach, where TELEPORT may put a player, how hard EARTHQUAKE hits and how strong a new artifact is.
  */
 public final class HolyPowerRules
 {
@@ -87,6 +88,27 @@ public final class HolyPowerRules
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * The strength of a new artifact with this power from a god of this rank: 1 for spirits and recognized gods (what
+	 * every artifact had before ranks), 2 from descended gods, 3 from exalted ones and 4 from greater gods. FIREBALL's
+	 * strength is its cooldown in seconds and ICE has none, so they stay at 1. The caps of {@link #effectRadius},
+	 * {@link #teleportDistance} and {@link #earthquakeDamage} still apply.
+	 */
+	public static int strength(HolyPower power, GodRank rank)
+	{
+		if (power == HolyPower.FIREBALL || power == HolyPower.ICE || rank == null)
+		{
+			return 1;
+		}
+		return switch (rank)
+		{
+		case SPIRIT, RECOGNIZED -> 1;
+		case DESCENDED -> 2;
+		case EXALTED -> 3;
+		case GREATER -> 4;
+		};
 	}
 
 	/** The sun, moon and storm powers change the whole world, so only one of them runs in a world at a time */

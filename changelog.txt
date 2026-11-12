@@ -37,7 +37,7 @@ New
 * Gods keeps track of where altars are (plugins/Gods/altars.yml): new altars are added when built, existing ones as their chunks load or when they are used, and destroyed ones are dropped.
 * Mobs and items without a name in messages.yml show a readable one (Cooked Beef) instead of COOKED_BEEF.
 * Quests work again (pilgrimage, slay, item sacrifice and give-items quests); they were never generated before.
-* Holy artifacts work: every god type has artifacts, each power does what its lore says, and powers have a cooldown.
+* Holy artifacts work: every god type has artifacts, each power does what its lore says, and powers have a cooldown. New artifacts are as strong as the god's rank when it gives them (1 up to recognized, as before, then 2, 3 and 4 for descended, exalted and greater gods; fireballs and ice spikes stay as they are), and their lore shows the real reach of freeze, nature and teleport and how hard an earthquake hits. Existing artifacts keep their strength.
 * An API for other plugins (gods-api on JitPack): read gods and believers, make gods speak (custom text or their own voice lines), act as a god (bless, curse, heal, give items and artifacts, smite, quests, priests, war and alliance), and events for prayers, believers, priests, blessings, quests, holy land and relations. GodSpeakEvent lets e.g. an NPC plugin say a god's words.
 * All messages are MiniMessage and can be changed, including the ones that were hard-coded.
 * /g reload reloads everything, and reads only the data files you edited on disk.

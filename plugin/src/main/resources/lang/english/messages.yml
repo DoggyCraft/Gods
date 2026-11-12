@@ -1067,7 +1067,8 @@ artifact:
     awesome: <blue>Awesome
     epic: <dark_purple>Epic
     legendary: <gold>Legendary
-  # The third lore line: <value> is the power's strength, <double> twice that
+  # The third lore line: <value> is the power's strength (1, and more from gods of higher ranks), <double> twice that,
+  # <radius> how far FREEZE and NATURE reach, <distance> how far TELEPORT goes, <hearts> how hard EARTHQUAKE hits
   power:
     KNOWLEDGE: <green>Boosts <value> levels of xp
     CALLMOON: <green>Calls the moon for <value> min
@@ -1076,12 +1077,12 @@ artifact:
     TAME: <green>Tame all beasts within <double> blocks
     LIGHTNING: <green>Lightning strikes up to <value> enemies
     LIGHTNING_STORM: <green>Creates a thunderstorm lasting <value> minutes
-    TELEPORT: <green>Teleport up to <value> blocks
-    FREEZE: <green>Freezes all water within a <value> block radius
+    TELEPORT: <green>Teleport up to <distance> blocks
+    FREEZE: <green>Freezes all water within a <radius> block radius
     ICE: <green>Shoots ice spike which freezes a target on hit
     FIREBALL: <green>Fires a fireball with a <value> seconds cooldown
-    EARTHQUAKE: <green>Earthquake in <value> block radius
-    NATURE: <green>Grows nature in a radius of <value> blocks
+    EARTHQUAKE: <green>Earthquake that hurts for <hearts> hearts
+    NATURE: <green>Grows nature in a radius of <radius> blocks
     FIREWORK: <green>Shoots <value> firework rockets
     DRUNK: <green>Gets you drunk for <value> seconds!
   # Per god type: the first lore line, and the names of its two artifact items (in the order of the items Gods picks

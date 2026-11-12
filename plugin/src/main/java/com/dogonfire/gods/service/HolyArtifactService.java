@@ -94,7 +94,8 @@ public class HolyArtifactService
 		int index = this.random.nextInt(kind.items().length);
 		Material material = kind.items()[index];
 		HolyPower holyPower = kind.power();
-		int powerValue = 1;
+		// As strong as the giving god's rank is now; the item keeps it
+		int powerValue = HolyPowerRules.strength(holyPower, ctx.rankService().getRank(godName));
 		Messages messages = ctx.messages();
 		List<String> names = messages.raw("artifact.kind." + godType.name() + ".items");
 		Component baseName = messages.parse(names.isEmpty() ? material.name() : names.get(index % names.size()));
@@ -114,7 +115,9 @@ public class HolyArtifactService
 		List<String> lore = new ArrayList<String>();
 		lore.add(messages.legacy("artifact.kind." + godType.name() + ".lore"));
 		lore.add(usesLine(0));
-		lore.add(messages.legacy("artifact.power." + holyPower.name(), Messages.text("value", powerValue), Messages.text("double", 2 * powerValue)));
+		lore.add(messages.legacy("artifact.power." + holyPower.name(), Messages.text("value", powerValue), Messages.text("double", 2 * powerValue),
+				Messages.text("radius", HolyPowerRules.effectRadius(powerValue)), Messages.text("distance", HolyPowerRules.teleportDistance(powerValue)),
+				Messages.text("hearts", (int) (HolyPowerRules.earthquakeDamage(powerValue) / 2))));
 		itemMeta.setLore(lore);
 
 		switch (this.random.nextInt(6))

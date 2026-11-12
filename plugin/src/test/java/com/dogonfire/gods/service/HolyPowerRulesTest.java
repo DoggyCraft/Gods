@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 
+import com.dogonfire.gods.model.GodRank;
 import com.dogonfire.gods.model.HolyPower;
 import com.dogonfire.gods.service.HolyPowerRules.PowerDescription;
 
@@ -145,5 +146,34 @@ class HolyPowerRulesTest
 		assertEquals(6.0D, HolyPowerRules.earthquakeDamage(1));
 		assertEquals(10.0D, HolyPowerRules.earthquakeDamage(10));
 		assertTrue(HolyPowerRules.earthquakeDamage(0) > 0.0D);
+	}
+
+	/** A new artifact is as strong as its god's rank: 1 as before for spirits and recognized gods, up to 4 for greater gods */
+	@Test
+	void artifactsGrowStrongerWithTheGodsRank()
+	{
+		assertEquals(1, HolyPowerRules.strength(HolyPower.CALLSUN, GodRank.SPIRIT));
+		assertEquals(1, HolyPowerRules.strength(HolyPower.CALLSUN, GodRank.RECOGNIZED));
+		assertEquals(2, HolyPowerRules.strength(HolyPower.CALLSUN, GodRank.DESCENDED));
+		assertEquals(3, HolyPowerRules.strength(HolyPower.CALLSUN, GodRank.EXALTED));
+		assertEquals(4, HolyPowerRules.strength(HolyPower.CALLSUN, GodRank.GREATER));
+		assertEquals(1, HolyPowerRules.strength(HolyPower.HEALING, null));
+		for (GodRank rank : GodRank.values())
+		{
+			// A fireball's strength is its cooldown, an ice spike has none
+			assertEquals(1, HolyPowerRules.strength(HolyPower.FIREBALL, rank));
+			assertEquals(1, HolyPowerRules.strength(HolyPower.ICE, rank));
+			for (HolyPower power : HolyPower.values())
+			{
+				int strength = HolyPowerRules.strength(power, rank);
+				assertTrue(strength >= 1 && strength <= 4, power + " " + rank);
+				// The caps hold however strong
+				assertTrue(HolyPowerRules.effectRadius(strength) <= 30);
+				assertTrue(HolyPowerRules.teleportDistance(strength) <= 48);
+				assertTrue(HolyPowerRules.earthquakeDamage(strength) <= 10.0D);
+			}
+		}
+		// A greater god's sky power keeps its world busy for 4 minutes
+		assertEquals(4 * 60000L, HolyPowerRules.worldBusyMillis(HolyPowerRules.strength(HolyPower.LIGHTNING_STORM, GodRank.GREATER)));
 	}
 }
