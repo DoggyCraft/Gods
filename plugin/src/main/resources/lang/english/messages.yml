@@ -673,6 +673,93 @@ command:
     quests: <red>Quests are not enabled on this server
     npc: <red>God figures at altars are not enabled on this server
     devotion: <red>Devotion is not enabled on this server
+  admin:
+    parameters: \<action> ...
+    description: Admin tools for gods and believers (/g admin lists them)
+    header: '<yellow>Gods admin actions:'
+    # One action: <action>, <parameters> and <description>
+    line: '<aqua>/g admin <action> <parameters> <gray>- <description>'
+    # <action> as typed
+    unknown: <red><action> is not an admin action. /g admin lists them
+    # <action>, and <parameters>: its parameters
+    usage: '<green>Usage: /gods admin <action> <parameters>'
+    # <god> as typed
+    no-god: <red>There is no God called <gold><god>
+    # <player> as typed
+    no-player: <red>No believer called <hl><player></hl> is known
+    # <player>
+    not-believer: <red><player> does not believe in a God
+    # <value> as typed
+    not-a-number: <red><value> is not a number
+    info:
+      parameters: \<god>
+      description: Show a God's rank, stats, devotion, main altar, figure and quest
+      # Shown where a God has none (no main altar, no quest, no known type)
+      none: none
+      # <god>, <type> ("God of the Sun"), <rank> (its name for its rank) and <rank-key> (spirit ... greater),
+      # <rank-since> and <descended> (times, or -), <npc> (yes/no: its figure stands at its main altar), <power>,
+      # <mood> (-100 to 100) and <mood-name>, <amount> (believers), <devotion> (believers per devotion level),
+      # <priests>, <prayers>, <sacrifices>, <quests>, <converts> (its lifetime stats), <main-altar> and <quest>
+      lines:
+      - '<yellow>--------- <gold><god></gold> (<type>) ---------'
+      - '<aqua>Rank: <yellow><rank></yellow> (<rank-key>) since <yellow><rank-since></yellow>, descended: <yellow><descended></yellow>, figure: <yellow><npc>'
+      - '<aqua>Power: <yellow><power></yellow>, mood: <yellow><mood></yellow> (<mood-name>)'
+      - '<aqua>Believers: <yellow><amount></yellow> (<devotion>), priests: <yellow><priests>'
+      - '<aqua>Stats: <yellow><prayers></yellow> prayers, <yellow><sacrifices></yellow> sacrifices, <yellow><quests></yellow> quests, <yellow><converts></yellow> converts'
+      - '<aqua>Main altar: <yellow><main-altar></yellow>, quest: <yellow><quest>'
+    setrank:
+      parameters: \<god> \<rank>
+      description: Give a God a rank, whatever its conditions (spirit, recognized, descended, exalted, greater or its type's names for them)
+      # <rank> as typed
+      unknown: <red><rank> is not a rank. Use spirit, recognized, descended, exalted or greater
+      # <god>, <rank>
+      already: <yellow><gold><god></gold> already is <rank>
+      # <god>, <rank> (its name for the rank) and <rank-key>
+      done: <aqua><gold><god></gold> is now <yellow><rank></yellow> (<rank-key>)
+    devotion:
+      parameters: \<player> \<level/+points/-points/points>
+      description: Give a believer a devotion level, or add, take or set their devotion points
+      # <value> as typed
+      unknown: <red><value> is not a devotion level or a number. Use follower, devotee, zealot, saint or +/- points
+      # <player>, <level> and <amount>: their devotion points now
+      done: <aqua><gold><player></gold> is now <yellow><level></yellow> with <yellow><amount></yellow> devotion points
+    prayerpower:
+      parameters: \<player> \<+n/-n/n>
+      description: Add, take or set a believer's prayer power
+      # <player>, and <amount>: their prayer power now
+      done: <aqua><gold><player></gold> now has <yellow><amount></yellow> prayer power
+    mood:
+      parameters: \<god> \<+n/-n/n/=-n>
+      description: Change a God's mood (-100 to 100); +n and -n add and take, n and =-n set it
+      # <god>, <mood> (-100 to 100) and <mood-name>
+      done: <aqua>The mood of <gold><god></gold> is now <yellow><mood></yellow> (<mood-name>)
+    gender:
+      parameters: \<god> \<god/goddess/deity>
+      description: Change a God's gender, without the priests' cooldown
+      # <god>, and <gender> ("God", "Goddess", "Deity")
+      already: <yellow><gold><god></gold> already is a <gender>
+      # <god>, and <gender>. The god tells its believers itself (believers-gender-changed).
+      done: <aqua>You made <gold><god></gold> a <yellow><gender>
+    godskin:
+      parameters: \<god> \<player/reset>
+      description: Give any God's figure a player's skin, or its theme's again (the answers are command.godskin's)
+    quest:
+      parameters: \<god> \<start/complete/fail>
+      description: Start a quest for a God, or complete or fail its quest (with rewards, words and events)
+      # <god>
+      not-started: <red><gold><god></gold> could not get a quest now (it has one, or none could be made)
+      # <god>
+      no-quest: <red><gold><god></gold> has no quest
+      # <god>
+      start: <aqua><gold><god></gold> has a new quest
+      # <god>
+      complete: <aqua>The quest of <gold><god></gold> is completed
+      # <god>
+      fail: <aqua>The quest of <gold><god></gold> has failed
+    setaltar:
+      parameters: \<god>
+      description: Make the praying altar you look at a God's main altar (the other answers are command.setaltar's)
+      no-altar: <red>Look at the sign, the block or the light of an altar, at most 5 blocks away
   access:
     parameters: '[open/close]'
     description: Set your religion as open or invite only

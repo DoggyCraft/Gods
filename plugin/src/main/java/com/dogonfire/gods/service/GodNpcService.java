@@ -366,6 +366,12 @@ public class GodNpcService
 		return this.provider != null ? this.provider.godOf(entity) : null;
 	}
 
+	/** Whether the god's NPC stands at its main altar now (with any provider) */
+	public boolean isShown(String godName)
+	{
+		return this.provider != null && godName != null && this.shown.contains(godName);
+	}
+
 	/** The entity of the god's NPC, or null (none, or a provider without server-side entities) */
 	public Entity entity(String godName)
 	{

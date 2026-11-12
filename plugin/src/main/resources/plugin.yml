@@ -20,6 +20,16 @@ permissions:
   gods.*:
     children:
       gods.accept: true
+      gods.admin: true
+      gods.admin.info: true
+      gods.admin.setrank: true
+      gods.admin.devotion: true
+      gods.admin.prayerpower: true
+      gods.admin.mood: true
+      gods.admin.gender: true
+      gods.admin.godskin: true
+      gods.admin.quest: true
+      gods.admin.setaltar: true
       gods.altar.build: true
       gods.altar.pray: true
       gods.altar.sacrifice: true
@@ -213,3 +223,43 @@ permissions:
   gods.setsafe:
     default: op
     description: "The Player can set safe or neutral lands"
+  gods.admin:
+    default: op
+    description: "Allows /g admin; each action also needs its own gods.admin.<action> (all given with this one)"
+    children:
+      gods.admin.info: true
+      gods.admin.setrank: true
+      gods.admin.devotion: true
+      gods.admin.prayerpower: true
+      gods.admin.mood: true
+      gods.admin.gender: true
+      gods.admin.godskin: true
+      gods.admin.quest: true
+      gods.admin.setaltar: true
+  gods.admin.info:
+    default: op
+    description: "Allows /g admin info: a God's rank, stats, devotion, main altar, figure and quest"
+  gods.admin.setrank:
+    default: op
+    description: "Allows /g admin setrank: give a God any rank"
+  gods.admin.devotion:
+    default: op
+    description: "Allows /g admin devotion: set a believer's devotion level or points"
+  gods.admin.prayerpower:
+    default: op
+    description: "Allows /g admin prayerpower: set a believer's prayer power"
+  gods.admin.mood:
+    default: op
+    description: "Allows /g admin mood: change a God's mood"
+  gods.admin.gender:
+    default: op
+    description: "Allows /g admin gender: change a God's gender without the cooldown"
+  gods.admin.godskin:
+    default: op
+    description: "Allows /g admin godskin: give any God's figure a player's skin"
+  gods.admin.quest:
+    default: op
+    description: "Allows /g admin quest: start, complete or fail a God's quest"
+  gods.admin.setaltar:
+    default: op
+    description: "Allows /g admin setaltar: make the altar you look at a God's main altar"

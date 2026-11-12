@@ -30,6 +30,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.dogonfire.gods.api.GodsApi;
 import com.dogonfire.gods.command.AcceptCommand;
 import com.dogonfire.gods.command.AccessCommand;
+import com.dogonfire.gods.command.AdminCommand;
 import com.dogonfire.gods.command.AllyCommand;
 import com.dogonfire.gods.command.AttackCommand;
 import com.dogonfire.gods.command.BibleCommand;
@@ -348,7 +349,7 @@ public class Gods extends JavaPlugin
 	{
 		CommandRouter router = new CommandRouter(this.ctx.messages(), this.ctx.permissions(), CommandChecks.of(this.ctx), new Overview(this.ctx));
 		for (SubCommand command : List.of(
-				new AcceptCommand(this.ctx), new AccessCommand(this.ctx), new AllyCommand(this.ctx), new AttackCommand(this.ctx),
+				new AcceptCommand(this.ctx), new AccessCommand(this.ctx), new AdminCommand(this.ctx), new AllyCommand(this.ctx), new AttackCommand(this.ctx),
 				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx), new DevotionCommand(this.ctx),
 				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx), new GenderCommand(this.ctx), new GodSkinCommand(this.ctx),
 				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),

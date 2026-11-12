@@ -61,4 +61,23 @@ class PluginYmlTest
 		assertTrue(commands > 30);
 		assertTrue(problems.isEmpty(), String.join(", ", problems));
 	}
+
+	/** Every /g admin action has its node, a child of gods.* and of gods.admin, for ops only */
+	@Test
+	void everyAdminActionHasItsNode() throws IOException, InvalidConfigurationException
+	{
+		YamlConfiguration flat = new YamlConfiguration();
+		flat.options().pathSeparator('/');
+		flat.loadFromString(Files.readString(Path.of("src/main/resources/plugin.yml")));
+		ConfigurationSection declared = flat.getConfigurationSection("permissions");
+		assertEquals("op", declared.getString("gods.admin/default"));
+		for (String action : AdminArgs.ACTIONS)
+		{
+			String node = AdminArgs.permission(action);
+			assertTrue(declared.isConfigurationSection(node), node + " is not declared");
+			assertEquals("op", declared.getString(node + "/default"), node);
+			assertTrue(declared.getBoolean("gods.*/children/" + node), node + " is not a child of gods.*");
+			assertTrue(declared.getBoolean("gods.admin/children/" + node), node + " is not a child of gods.admin");
+		}
+	}
 }
