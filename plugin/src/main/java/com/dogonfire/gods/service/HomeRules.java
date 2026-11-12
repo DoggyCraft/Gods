@@ -52,11 +52,25 @@ public final class HomeRules
 	 */
 	public static Home home(Altar mainAltar, GodHome legacy)
 	{
+		return home(mainAltar, legacy, false);
+	}
+
+	/**
+	 * The religion's home, as {@link #home(Altar, GodHome)}; while the god's figure stands on the spot in front of the
+	 * main altar, the home is the block beyond it (one further from the altar, facing it), so no one lands inside the
+	 * figure
+	 *
+	 * @param figureStands whether the god's NPC stands at its main altar now
+	 */
+	public static Home home(Altar mainAltar, GodHome legacy, boolean figureStands)
+	{
 		if (mainAltar != null)
 		{
-			BlockPos spot = MainAltarRules.standingSpot(mainAltar);
 			BlockPos block = mainAltar.block();
-			Set<BlockPos> keepClear = Set.of(mainAltar.sign(), block, block.up(1), block.up(2));
+			BlockPos figure = MainAltarRules.standingSpot(mainAltar);
+			BlockPos spot = figureStands ? new BlockPos(figure.world(), 2 * figure.x() - mainAltar.sign().x(), figure.y(), 2 * figure.z() - mainAltar.sign().z()) : figure;
+			Set<BlockPos> keepClear = figureStands ? Set.of(mainAltar.sign(), block, block.up(1), block.up(2), figure, figure.up(1))
+					: Set.of(mainAltar.sign(), block, block.up(1), block.up(2));
 			return new Home(spot.world(), spot.x() + 0.5D, spot.y(), spot.z() + 0.5D, GodNpcRules.facingYaw(mainAltar), block, keepClear);
 		}
 		if (legacy != null && legacy.world() != null)

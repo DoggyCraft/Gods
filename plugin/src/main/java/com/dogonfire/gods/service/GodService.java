@@ -453,7 +453,8 @@ public class GodService
 		{
 			return null;
 		}
-		return HomeRules.home(ctx.altarRegistry().mainAltar(godName), god.home());
+		// Beyond the god's figure while it stands at its main altar, so no one lands inside it
+		return HomeRules.home(ctx.altarRegistry().mainAltar(godName), god.home(), ctx.godNpcs().isShown(godName));
 	}
 
 	/** The sign of the god's main altar, or null; see {@link AltarRegistry#mainAltar} */

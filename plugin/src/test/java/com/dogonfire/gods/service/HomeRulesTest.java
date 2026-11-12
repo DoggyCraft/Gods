@@ -35,6 +35,17 @@ class HomeRulesTest
 		assertTrue(home.keepClear().containsAll(Set.of(SIGN, BLOCK, BLOCK.up(1), BLOCK.up(2))));
 	}
 
+	/** While the god's figure stands in front of the altar, the home is the block beyond it, facing the altar */
+	@Test
+	void beyondTheGodsFigure()
+	{
+		HomeRules.Home home = HomeRules.home(MAIN, LEGACY, true);
+		assertEquals(new BlockPos("world", 10, 64, 13), home.spot());
+		assertEquals(GodNpcRules.facingYaw(MAIN), home.yaw());
+		assertTrue(home.keepClear().containsAll(Set.of(SIGN, BLOCK, SPOT, SPOT.up(1))));
+		assertEquals(SPOT, HomeRules.home(MAIN, LEGACY, false).spot());
+	}
+
 	/** A god without a main altar keeps the home from before main altars */
 	@Test
 	void withoutAMainAltarTheOldHome()
