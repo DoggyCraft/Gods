@@ -47,7 +47,12 @@ class LegacyLangFilesTest
 	 */
 	private static final java.util.Set<String> REWRITTEN_VOICES = java.util.Set.of(
 			// "just specified his location as our home": the home is the main altar now
-			Voice.BELIEVERS_SET_HOME.key());
+			Voice.BELIEVERS_SET_HOME.key(),
+			// "the only true god": the god names its own gender (<gender>), so a goddess or a deity says it right
+			Voice.BELIEVER_RANDOM_NEUTRAL_SPEECH.key(),
+			// The holy book called the god "he" ("his creation", "the wrong God"), whatever its gender
+			Voice.DEFAULT_BIBLE_TEXT_1.key(), Voice.DEFAULT_BIBLE_TEXT_2.key(), Voice.DEFAULT_BIBLE_TEXT_3.key(), Voice.DEFAULT_BIBLE_TEXT_4.key(),
+			Voice.DEFAULT_BIBLE_TEXT_5.key(), Voice.DEFAULT_BIBLE_TEXT_6.key());
 
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test

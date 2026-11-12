@@ -257,10 +257,15 @@ public class GodSpeech
 		return true;
 	}
 
-	private static TagResolver withGod(String godName, TagResolver... tags)
+	/** The given tags, with {@code <god>} (the god's name) and {@code <gender>} (its gender's name) unless given */
+	private TagResolver withGod(String godName, TagResolver... tags)
 	{
 		TagResolver given = TagResolver.resolver(tags);
-		return given.has("god") ? given : TagResolver.resolver(given, Messages.god(godName));
+		if (!given.has("god"))
+		{
+			given = TagResolver.resolver(given, Messages.god(godName));
+		}
+		return given.has("gender") ? given : TagResolver.resolver(given, ctx.godService().genderTag(godName));
 	}
 
 	// ---------------------------------------------------------------------

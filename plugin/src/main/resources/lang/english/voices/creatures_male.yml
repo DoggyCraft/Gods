@@ -1,8 +1,9 @@
 # The voice of creatures gods: what the god says in each situation. The god says one of the lines of a key, picked
 # at random. The text is MiniMessage (https://docs.advntr.dev/minimessage/format.html), shown after the god's name in
 # white bold (god.speech in messages.yml). '' or [] makes the god say nothing.
-# Tags: <player>, <type>, <amount> (what they are depends on the situation), <god> (the god's name), <server> (the
-# server name); <hl>...</hl> is the gold highlight. A key missing here falls back to the bundled file of this voice.
+# Tags: <player>, <type>, <amount> (what they are depends on the situation), <god> (the god's name), <gender>
+# (its gender: God, Goddess or Deity), <server> (the server name); <hl>...</hl> is the gold highlight. A key missing
+# here falls back to the bundled file of this voice.
 
 messages-version: 2
 believers-claimed-holy-land:
@@ -51,7 +52,7 @@ believer-random-neutral-speech:
 - Pray at my altars!
 - Children, go forth and build altars in my name!
 - My children, do not listen to the words of the false gods!
-- I am the only true god for <hl><server></hl>
+- I am the only true <gender> for <hl><server></hl>
 - <hl><server></hl> needs my powers
 - Only I have the power to handle <hl><server></hl>!
 - Pray at my altars and i will show you the light!
@@ -451,26 +452,26 @@ believers-sacrifice-item-type:
 default-bible-text-1:
 - 'Before time, there was a cold room. Then, through a door, <hl><player></hl> entered the room, booted up the server and installed minecraft. <hl><player></hl> nodded and thus spake: ''Let''s rock...'
 - 'In the beginning there was only darknesss. Then out of nothing, <hl><player></hl> created the BLOCKS. <hl><player></hl> saw it was good and thus spake: ''Cool'''
-- 'From the darknesss, <hl><player></hl> made light and from the light he made <hl><server></hl>. <hl><player></hl> saw it was good and thus spake: ''I rock!'
+- 'From the darknesss, <hl><player></hl> made light and from the light made <hl><server></hl>. <hl><player></hl> saw it was good and thus spake: ''I rock!'
 - 'In only 3 days <hl><player></hl> made the world from a single block of dirt. <hl><player></hl> saw that it was good and thus spake: ''I shall call it ... <hl><server></hl>!'''
 default-bible-text-2:
 - Next, <hl><player></hl> decided to populate the fields with life. First among living things was the original mob. It was named '<hl><type></hl> - The firstborn'.
 - <hl><player></hl> gave life to the world and through infinite wisdom, decided to spawn some mobs. And first among them was the <hl><type></hl>.
-- '<hl><player></hl> mumbled to himself "Hmm, this map sux... Oh, I know: Let''s have some mobs!". And <hl><player></hl> started to spawn some <hl><type></hl>!'
+- '<hl><player></hl> mumbled "Hmm, this map sux... Oh, I know: Let''s have some mobs!". And <hl><player></hl> started to spawn some <hl><type></hl>!'
 default-bible-text-3:
-- '<hl><player></hl> saw that his poor creation was starving and thus spake: "Lo and behold: A <hl><type></hl>! You must eat it!"'
-- '<hl><player></hl> could see that his poor creation hungry and therefore said to it: "Here, have some <hl><type></hl>! That is serious good eating, trust me!"'
+- '<hl><player></hl> saw that the poor creation was starving and thus spake: "Lo and behold: A <hl><type></hl>! You must eat it!"'
+- '<hl><player></hl> could see that the poor creation was hungry and therefore said to it: "Here, have some <hl><type></hl>! That is serious good eating, trust me!"'
 default-bible-text-4:
-- 'And thus <hl><player></hl> spoke upon his creation and said: "You are to eat all things in <hl><server></hl> except the <hl><type></hl>! That, you must never eat!"'
-- '<hl><player></hl> turned to his creation and spoke: "You may eat all things in <hl><server></hl> except the <hl><type></hl>! You must never eat the <hl><type></hl>! <hl><type></hl> is not for eating! Is that clear enough?"'
+- 'And thus <hl><player></hl> spoke upon the creation and said: "You are to eat all things in <hl><server></hl> except the <hl><type></hl>! That, you must never eat!"'
+- '<hl><player></hl> turned to the creation and spoke: "You may eat all things in <hl><server></hl> except the <hl><type></hl>! You must never eat the <hl><type></hl>! <hl><type></hl> is not for eating! Is that clear enough?"'
 - '<hl><player></hl> said: "Hey yo! You can eat whatever you want here in <hl><server></hl> but NOT any <hl><type></hl>! Keep your hands off <hl><type></hl> and all is cool, OK?"'
 - '<hl><player></hl> now said: "You can eat anything you want here in <hl><server></hl> but i pity the fool that eats any <hl><type></hl>! Anyone who eats <hl><type></hl> will feel my wrath!"'
 default-bible-text-5:
-- But alas, on <hl><player></hl>'s first and only fishing day, the foul <hl><type></hl> crept upon his innocent creation and tempted the firstborn to eat the very forbidden food which <hl><player></hl> had warned him about!
-- And so, <hl><player></hl>'s took a day off. But when he returned he saw a <hl><type></hl> sitting on his innocent creation laughing while shoving the forbidden food down the throat of the firstborn!
+- But alas, on <hl><player></hl>'s first and only fishing day, the foul <hl><type></hl> crept upon the innocent creation and tempted the firstborn to eat the very forbidden food which <hl><player></hl> had warned him about!
+- And so, <hl><player></hl> took a day off. But on returning, <hl><player></hl> saw a <hl><type></hl> sitting on the innocent creation laughing while shoving the forbidden food down the throat of the firstborn!
 default-bible-text-6:
 - '<hl><player></hl> was furious when learning about this event and cursed the <hl><type></hl> saying: "Forever will you and your kind be cursed! You shall be hunted down and slain whereever you are found!"'
-- '<hl><player></hl> went angered and took the <hl><type></hl> by the throat, saying: "You just messed with the wrong God, dude! You better watch your back when walking down the street in the future, PUNK!"'
+- '<hl><player></hl> went angered and took the <hl><type></hl> by the throat, saying: "You just messed with the wrong <gender>, dude! You better watch your back when walking down the street in the future, PUNK!"'
 default-bible-text-7:
 - '"Never again shall anyone eat the nasty <hl><type></hl>!" said <hl><player></hl>. "Forever shall it be the cursed food!"'
 - '<hl><player></hl> thus spake: "Henceforth let it be known that <hl><type></hl> is the cursed food!". And behold: The very skies soon filled with burning <hl><type></hl> as a symbol of <hl><player></hl>''s will.'
