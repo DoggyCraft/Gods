@@ -53,6 +53,7 @@ import com.dogonfire.gods.command.HuntCommand;
 import com.dogonfire.gods.command.InfoCommand;
 import com.dogonfire.gods.command.InviteCommand;
 import com.dogonfire.gods.command.KickCommand;
+import com.dogonfire.gods.command.LandNameCommand;
 import com.dogonfire.gods.command.LeaveCommand;
 import com.dogonfire.gods.command.ListCommand;
 import com.dogonfire.gods.command.LoveCommand;
@@ -356,7 +357,7 @@ public class Gods extends JavaPlugin
 				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx), new DevotionCommand(this.ctx),
 				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx), new GenderCommand(this.ctx), new GodSkinCommand(this.ctx),
 				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HolyClaimCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),
-				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LeaveCommand(this.ctx),
+				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LandNameCommand(this.ctx), new LeaveCommand(this.ctx),
 				new ListCommand(this.ctx), new LoveCommand(this.ctx), new MarriagesCommand(this.ctx), new MarryCommand(this.ctx),
 				new PrayForCommand(this.ctx), new PvpCommand(this.ctx), new RankCommand(this.ctx), new RejectCommand(this.ctx), new ReloadCommand(this.ctx),
 				new SetAltarCommand(this.ctx), new SetBibleCommand(this.ctx), new SetPriestCommand(this.ctx), new SetSafeCommand(this.ctx),

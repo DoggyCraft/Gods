@@ -223,6 +223,28 @@ public class HolyLandService
 	}
 
 	/**
+	 * Renames the holy land at the location, if it is {@code godName}'s, and saves it at once; the god's believers online
+	 * hear holy-land.renamed. Check the name with {@link HolyLandNames#validName} first.
+	 *
+	 * @return the land's old name ("" if it had none), or null if no holy land of {@code godName} is there
+	 */
+	public String renameLand(Location location, String godName, String name, String byPlayer)
+	{
+		HolyLand land = find(location);
+		if (land == null || land.godName() == null || !land.godName().equals(godName))
+		{
+			return null;
+		}
+		String old = nullToEmpty(land.name());
+		land.setName(name);
+		this.repository.save();
+		ctx.plugin().log(byPlayer + " renamed the Holy Land '" + old + "' of " + godName + " to '" + name + "'");
+		ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.renamed", Messages.god(godName), Messages.player(byPlayer), Messages.text("name", name),
+				Messages.text("old", old));
+		return old;
+	}
+
+	/**
 	 * Whether the world may spawn this mob in the holy land of a god that doesn't allow mob spawning: the peaceful mobs
 	 * of its god type's theme (themes.yml peaceful-mobs)
 	 */

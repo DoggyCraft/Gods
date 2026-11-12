@@ -220,6 +220,9 @@ holy-land:
   # To the online believers of <god> when the GriefPrevention claim that was its Holy Land <name> is deleted or given to
   # someone who is not a priest of <god>
   claim-lost: '<red>The Holy Land <hl><name></hl> of <hl><god></hl> is lost with its claim'
+  # To the online believers of <god> when a priest, <player>, renames the Holy Land <old> ('' if it had no name) to
+  # <name> (/g landname)
+  renamed: '<aqua><player> named the Holy Land <hl><old></hl> of <hl><god></hl> <hl><name></hl>'
   # The names a new Holy Land gets, from the biome its altar stands in. A name is a random prefix + a random middle +
   # a random suffix, joined as they are: "Upper " + "Flower" + "field" is "Upper Flowerfield". So a prefix ends with
   # its space, a middle starts with a capital letter, and a suffix is joined to the middle (start it with a space for
@@ -1121,6 +1124,17 @@ command:
     done: <aqua>You kicked <yellow><player></yellow> from your religion!
     # To the believer who was kicked
     kicked: <red>You were kicked from the religion of <yellow><god></yellow>!
+  landname:
+    parameters: \<name>
+    description: Name the Holy Land of your God you stand in
+    not-priest: <red>Only priests can name the Holy Land of your God
+    # <god> is the priest's own God
+    not-own-land: <red>Stand in a Holy Land of <gold><god></gold> to name it
+    # <max> characters a name may have
+    invalid: <red>A Holy Land's name has 1 to <max> characters and no color codes
+    # <god>, <name> (the new name) and <old> (the old name, '' if it had none). The god's believers online hear
+    # holy-land.renamed.
+    done: <aqua>This Holy Land of <gold><god></gold> is now called <hl><name></hl>
   leave:
     parameters: ''
     description: Leave your religion
