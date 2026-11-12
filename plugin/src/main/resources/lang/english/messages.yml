@@ -644,7 +644,7 @@ command:
   gods:
     # <plugin> is "Gods vX.Y", <amount> the number of gods, <believers> the number of believers
     header:
-    - <yellow>------------------ <plugin> ------------------
+    - <yellow>-------------- <plugin> --------------
     - <aqua>By DogOnFire
     - ''
     - <aqua>There are currently <white><amount><aqua> Gods and
@@ -899,7 +899,7 @@ command:
     description: Show the list of Gods commands
     # <plugin> is "Gods vX.Y", <page> this page of the commands and <pages> how many there are
     header:
-    - <yellow>------------ <plugin> (page <page> of <pages>) ------------
+    - <yellow>-------- <plugin> (page <page> of <pages>) --------
     - <aqua>/gods<white> - Basic info
     # One per command: <usage> and <description>
     line: <aqua>/gods <usage><white> - <description>
