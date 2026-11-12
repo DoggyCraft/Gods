@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -508,11 +507,6 @@ public class PrayerService
 			if (ctx.settings().effects().prayerOn())
 			{
 				ctx.effectService().prayer(godName, altarBlock);
-			}
-			else
-			{
-				// The puff of flames prayers always had
-				location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 25);
 			}
 
 			return true;

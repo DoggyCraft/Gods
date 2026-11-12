@@ -224,7 +224,7 @@ effects:
   enabled: true
   # Particles rising around the altar and a sound when a believer prays: brighter when the god is pleased, darker and
   # shorter when it is angry. They grow with the god's rank (see ranks): a spirit's are a flicker, its symbol floats up
-  # from the descended rank on, and a greater god's are the grandest.
+  # from the descended rank on, and a greater god's are the grandest. Off: no effect at prayers at all.
   prayer: true
   # A burning sacrifice floats up, spins and shrinks (from the recognized rank on; a spirit's only flickers in the
   # fire), with an effect showing whether the god wanted it.
