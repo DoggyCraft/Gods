@@ -77,7 +77,7 @@ public final class InfoCommand extends SubCommand
 		}
 
 		send(sender, "command.info.believers",Messages.amount(this.ctx.believerService().getBelieversForGod(godName).size()));
-		send(sender, "command.info.power", Messages.text("power", this.ctx.godService().getGodPower(godName)));
+		send(sender, "command.info.power", Messages.text("power", String.format(java.util.Locale.ROOT, "%.2f", this.ctx.godService().getGodPower(godName))));
 		if (this.ctx.settings().commandments().enabled())
 		{
 			send(sender, "command.info.holy-food", Messages.type(this.ctx.messages().itemName(this.ctx.commandmentService().getHolyFoodTypeForGod(godName))));
