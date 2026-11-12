@@ -803,6 +803,9 @@ command:
     world-disabled: <red>Gods are not present in this world
     # <god> has no type yet (no altar was ever built to it)
     failed: <red><god> has no holy artifact to give
+    # The believer's devotion level is too low (config.yml devotion.unlocks.holy-artifacts); <level> is the level it
+    # needs, as the god type calls it
+    devotion-locked: <red><gold><god></gold> only trusts a <hl><level></hl> or more with a Holy Artifact. Serve your God, and /g devotion shows how far you are
     done: <gold><god><aqua> gave <player> a Holy artifact!
   home:
     parameters: ''

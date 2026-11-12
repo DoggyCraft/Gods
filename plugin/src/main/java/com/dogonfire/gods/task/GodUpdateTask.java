@@ -143,7 +143,7 @@ public final class GodUpdateTask implements Runnable
 				{
 					float power = ctx.godService().getGodPower(godName);
 
-					if (power >= ctx.settings().itemBlessings().minGodPower() && this.random.nextInt((int) (1.0F + 50.0F / power)) == 0)
+					if (power >= ctx.settings().itemBlessings().minGodPower() && this.random.nextInt(ctx.devotionService().blessingBound(believer.getUniqueId(), (int) (1.0F + 50.0F / power))) == 0)
 					{
 						double healing = ctx.blessingService().getHealthNeed(godName, believer);
 
@@ -168,13 +168,15 @@ public final class GodUpdateTask implements Runnable
 				}
 			}
 
-			if (ctx.settings().holyArtifacts().enabled() && ctx.rankService().hasUnlocked(godName, ctx.settings().ranks().unlocks().holyArtifacts()))
+			// From the god's rank ranks.unlocks.holy-artifacts names, to believers of the level devotion.unlocks.holy-artifacts names
+			if (ctx.settings().holyArtifacts().enabled() && ctx.rankService().hasUnlocked(godName, ctx.settings().ranks().unlocks().holyArtifacts())
+					&& ctx.devotionService().allows(believer.getUniqueId(), ctx.settings().devotion().unlocks().holyArtifacts()))
 			{
 				if (!ctx.believerService().hasRecentHolyArtifactBlessing(believer.getUniqueId()))
 				{
 					float power = ctx.godService().getGodPower(godName);
 
-					if ((power >= ctx.settings().itemBlessings().minGodPower()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
+					if ((power >= ctx.settings().itemBlessings().minGodPower()) && (this.random.nextInt(ctx.devotionService().blessingBound(believer.getUniqueId(), (int) (1.0F + 100.0F / power))) == 0))
 					{
 						ctx.blessingService().blessPlayerWithHolyArtifact(godName, believer);
 						ctx.believerService().setHolyArtifactBlessingTime(believer.getUniqueId());
@@ -291,7 +293,7 @@ public final class GodUpdateTask implements Runnable
 				if (ctx.settings().itemBlessings().enabled())
 				{
 					float power = ctx.godService().getGodPower(godName);
-					if ((power >= ctx.settings().itemBlessings().minGodPower()) && (this.random.nextInt((int) (1.0F + 100.0F / power)) == 0))
+					if ((power >= ctx.settings().itemBlessings().minGodPower()) && (this.random.nextInt(ctx.devotionService().blessingBound(believer.getUniqueId(), (int) (1.0F + 100.0F / power))) == 0))
 					{
 						double healing = ctx.blessingService().getHealthNeed(godName, believer);
 						if ((healing > 1.0D) && (this.random.nextInt(2) == 0))

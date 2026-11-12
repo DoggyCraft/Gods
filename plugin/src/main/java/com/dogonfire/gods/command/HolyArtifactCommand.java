@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.DevotionLevel;
 
 /** /g holyartifact: the player's god gives them a holy artifact, if they don't carry one */
 public final class HolyArtifactCommand extends SubCommand
@@ -29,6 +30,11 @@ public final class HolyArtifactCommand extends SubCommand
 		Player player = (Player) sender;
 		String godName = believersGod(player);
 		requireRank(godName, this.ctx.settings().ranks().unlocks().holyArtifacts());
+		DevotionLevel needed = this.ctx.settings().devotion().unlocks().holyArtifacts();
+		if (!this.ctx.devotionService().allows(player.getUniqueId(), needed))
+		{
+			throw new CommandException("command.holyartifact.devotion-locked", Messages.god(godName), Messages.text("level", this.ctx.devotionService().levelName(godName, needed)));
+		}
 		if (this.ctx.holyArtifactService().hasHolyArtifact(player))
 		{
 			throw new CommandException("command.holyartifact.already");

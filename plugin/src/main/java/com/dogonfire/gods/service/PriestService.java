@@ -2,9 +2,7 @@ package com.dogonfire.gods.service;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +15,7 @@ import com.dogonfire.gods.api.event.PriestAssignEvent;
 import com.dogonfire.gods.api.event.PriestRemoveEvent;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.DevotionLevel;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.storage.CleanupGuard;
 import com.dogonfire.gods.storage.GodRepository;
@@ -138,21 +137,21 @@ public class PriestService
 
 		UUID pendingPriest = getPendingPriest(godName);
 
-		Map<UUID, Float> candidates = new HashMap<UUID, Float>();
+		List<DevotionRules.PriestCandidate<UUID>> candidates = new ArrayList<>();
 		for (UUID candidate : allBelievers)
 		{
 			Player player = ctx.plugin().getServer().getPlayer(candidate);
 			if (player != null && PriestRules.isCandidate(isPriest(candidate), candidate.equals(pendingPriest), ctx.believerService().hasRecentPriestOffer(candidate),
 					ctx.permissions().hasPermission(player, "gods.priest")))
 			{
-				candidates.put(candidate, ctx.believerService().getBelieverPower(candidate));
+				// Only devotion that is on counts
+				DevotionLevel level = ctx.devotionService().enabled() ? ctx.devotionService().getLevel(candidate) : DevotionLevel.FOLLOWER;
+				candidates.add(new DevotionRules.PriestCandidate<>(candidate, level, ctx.believerService().getBelieverPower(candidate)));
 			}
 		}
 
-		List<UUID> byPower = new ArrayList<UUID>(candidates.keySet());
-		byPower.sort((c1, c2) -> Float.compare(candidates.get(c2), candidates.get(c1)));
-
-		return PriestRules.pick(byPower, this.random);
+		// The most devoted first, then the strongest; a believer of devotion.unlocks.priesthood is always asked first
+		return DevotionRules.pickPriest(candidates, ctx.devotionService().preferredPriestLevel(), this.random);
 	}
 
 	public UUID getPendingPriest(String godName)
@@ -289,11 +288,13 @@ public class PriestService
 		if (PriestRules.wantsMorePriests(priestNames.size(), RankRules.maxPriests(ctx.settings().priests().maxPerGod(), ctx.rankService().getRank(godName),
 				ctx.settings().ranks().unlocks().extraPriest())))
 		{
-			if (this.random.nextInt(3) == 0)
+			UUID believerId = getNextBelieverForPriest(godName);
+			// A believer of the level devotion.unlocks.priesthood names is asked on this turn; others now and then
+			boolean devoted = believerId != null && ctx.devotionService().grants(believerId, ctx.settings().devotion().unlocks().priesthood());
+			if (devoted || this.random.nextInt(3) == 0)
 			{
 				ctx.plugin().logDebug(godName + " has too few priests. Finding one...");
 
-				UUID believerId = getNextBelieverForPriest(godName);
 				if (believerId == null)
 				{
 					ctx.plugin().logDebug(godName + " could not find a candidate for a priest");

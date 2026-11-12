@@ -124,7 +124,7 @@ public final class PrayForCommand extends SubCommand
 	private void prayForBlessing(Player player, String godName)
 	{
 		UUID playerId = player.getUniqueId();
-		int cost = prayers().blessingCost();
+		int cost = this.ctx.devotionService().prayForCost(playerId, prayers().blessingCost());
 		if (!canAfford(playerId, godName, cost))
 		{
 			return;
@@ -143,7 +143,7 @@ public final class PrayForCommand extends SubCommand
 	private void prayForHealth(Player player, String godName) throws CommandException
 	{
 		UUID playerId = player.getUniqueId();
-		int cost = prayers().healthCost();
+		int cost = this.ctx.devotionService().prayForCost(playerId, prayers().healthCost());
 		if (!canAfford(playerId, godName, cost))
 		{
 			return;
@@ -169,7 +169,7 @@ public final class PrayForCommand extends SubCommand
 	private void prayForItem(Player player, String godName)
 	{
 		UUID playerId = player.getUniqueId();
-		int cost = prayers().itemCost();
+		int cost = this.ctx.devotionService().prayForCost(playerId, prayers().itemCost());
 		if (!canAfford(playerId, godName, cost))
 		{
 			return;
@@ -194,7 +194,7 @@ public final class PrayForCommand extends SubCommand
 	{
 		UUID playerId = player.getUniqueId();
 		requireRank(godName, this.ctx.settings().ranks().unlocks().quests());
-		int cost = prayers().questCost();
+		int cost = this.ctx.devotionService().prayForCost(playerId, prayers().questCost());
 		if (!canAfford(playerId, godName, cost))
 		{
 			return;
