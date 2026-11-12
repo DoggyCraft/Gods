@@ -668,6 +668,7 @@ command:
     prayers: <red>Prayers are not enabled on this server
     quests: <red>Quests are not enabled on this server
     npc: <red>God figures at altars are not enabled on this server
+    devotion: <red>Devotion is not enabled on this server
   access:
     parameters: '[open/close]'
     description: Set your religion as open or invite only
@@ -717,6 +718,43 @@ command:
     description: Set the description of your religion
     not-priest: <red>Only priests can set religion info
     done: <aqua>You set your religion description to <yellow><description>
+  devotion:
+    parameters: '[player]'
+    description: Show your devotion to your God, or a player's
+    no-god: <red>You do not believe in any God.
+    # <player> as typed: neither online nor a believer of your God
+    no-player: <red>There is no believer called <hl><player></hl>
+    not-believer: <aqua><player> does not believe in a god
+    header: <yellow>--------- The devotion of <player> ---------
+    # <level>: their devotion level, as their God's type calls it (themes.yml); <amount>: their devotion points
+    level: '<aqua><player> is a <gold><level></gold> of <gold><god></gold> <gray>(<amount> devotion points)'
+    # Only the believer themselves sees the rest. <level>: the next level; <needed>: the points still missing
+    next: '<aqua>Next level: <gold><level></gold> <gray>(<needed> more points)'
+    top: <aqua>You have the highest devotion there is.
+    # <days>: days since their last prayer (config.yml devotion.fade-after-days and fade-percent-per-day)
+    fading: <red>Your devotion fades, you have not prayed for <days> days. Pray at an altar before you lose your level!
+    # The points each deed earns (config.yml devotion.points): <prayer>, <sacrifice>, <quest>, <convert>, <holy-food>,
+    # <unholy-mob>
+    earn:
+    - '<aqua>Earn devotion points by:'
+    - '<white> Praying at an altar <gray>+<prayer>'
+    - '<white> Sacrificing what your God wants <gray>+<sacrifice>'
+    - '<white> Taking part in a completed quest <gray>+<quest>'
+    - '<white> Inviting a player who joins <gray>+<convert>'
+    - '<white> Eating the holy food <gray>+<holy-food><white>, slaying the unholy creature <gray>+<unholy-mob>'
+    unlocks-header: '<aqua>What devotion brings:'
+    # One per unlock (config.yml devotion.unlocks): <unlock> (one of unlock.*) and <level> (the level it needs)
+    met: '<green> ✔ <unlock> <gray>(<level>)'
+    unmet: '<red> ✘ <unlock> <gray>(<level>)'
+    unlock:
+      # <percent>: config.yml devotion.prayfor-discount-percent
+      prayfor-discount: /g prayfor costs <percent>% less
+      holy-artifacts: Your God may give you a Holy Artifact
+      # <times>: config.yml devotion.blessing-chance-multiplier
+      more-blessings: Your God's gifts come <times> times as often
+      praise: Your God praises you to the other believers
+      title: Your devotion is your title
+      priesthood: You are the first your God asks to be a priest
   divorce:
     parameters: ''
     description: Divorce your partner
@@ -732,12 +770,15 @@ command:
     description: Show the followers of your/a God
     none: <gold><god><aqua> has no believers!
     header: <yellow>--------- The Followers of <god> ---------
-    # One per believer: <player> (padded to line up) and <when> they last prayed (time.*-ago)
-    line: <yellow><player><aqua> Prayed <gold><when>
+    # One per believer: <player> (padded to line up), <when> they last prayed (time.*-ago) and <devotion> (devotion, or
+    # nothing while devotion is off)
+    line: <yellow><player><aqua> Prayed <gold><when> <devotion>
     # The line of the player using the command
-    you: <gold><player><aqua> Prayed <gold><when>
+    you: <gold><player><aqua> Prayed <gold><when> <devotion>
     # Below the list, when the player isn't in it
-    you-below: <gold><player> Prayed <when>
+    you-below: <gold><player> Prayed <when> <devotion>
+    # Their devotion level, as the god type calls it (<level>)
+    devotion: <gray>(<level>)
   gender:
     parameters: \<god|goddess|deity>
     description: Change the gender of your God
@@ -847,6 +888,8 @@ command:
     next-rank-met: '<green><name> <value>'
     next-rank-unmet: '<red><name> <value>'
     next-rank-separator: '<gray>, '
+    # The believer's own devotion level (<level>, as the god type calls it) and points (<amount>)
+    devotion: '<aqua>Your devotion: <gold><level></gold> <gray>(<amount> points)'
     believers: '<aqua>Believers: <yellow><amount>'
     power: '<aqua>Exact power: <yellow><power>'
     holy-food: '<aqua>Holy food: <yellow><type>'
@@ -1043,6 +1086,17 @@ time:
 chat:
   believer: '<yellow>[<god>Chat] <red><player><yellow>: <white><message>'
   priest: '<yellow>[<god>Chat] <player>: <white><message>'
+  # The <player> of believer and priest for a believer with a devotion title (config.yml devotion.chat-title and
+  # devotion.unlocks.title): <title> (their devotion level, as the god type calls it) and <player>
+  titled-player: '<gold><title></gold> <player>'
+
+# PlaceholderAPI's %gods_tag%: the player's god as a ready-made tag for name tags, chat or the tab list (e.g. the TAB
+# plugin's tagprefix). Nothing for players without a god. <god>, <god-color>...</god-color> (the god's color),
+# <rank> (the god's rank), <devotion> (the player's devotion level) and <title> (their devotion title, or nothing)
+placeholder:
+  tag: '<god-color>[<god>]</god-color> '
+  # For the god's priests
+  tag-priest: '<god-color>[<god>]</god-color><gold>✝</gold> '
 
 holy-book:
   # The title of a new holy book (no colors)

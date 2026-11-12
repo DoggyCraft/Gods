@@ -63,26 +63,9 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 		}
 
 		// Chat plugins resolve placeholders on the async chat thread, where the YAML data must not be
-		// read; ChatService keeps a snapshot for that
-		String god;
-		int prayerPower;
-		ChatColor godColor;
-		String rankName;
-		if (Bukkit.isPrimaryThread())
-		{
-			god = this.ctx.believerService().getGodForBeliever(player.getUniqueId());
-			prayerPower = this.ctx.believerService().getPrayerPower(player.getUniqueId());
-			godColor = (god != null) ? this.ctx.godService().getColorForGod(god) : ChatColor.WHITE;
-			rankName = (god != null) ? this.ctx.rankService().getRankName(god) : "";
-		}
-		else
-		{
-			ChatService.ChatInfo info = this.ctx.chatService().getChatInfo(player.getUniqueId());
-			god = info.godName;
-			prayerPower = info.prayerPower;
-			godColor = info.godColor;
-			rankName = info.rankName;
-		}
+		// read; ChatService keeps a snapshot for that (refreshed on every change and every few seconds)
+		ChatService.ChatInfo info = this.ctx.chatService().info(player.getUniqueId(), Bukkit.isPrimaryThread());
+		String god = info.godName;
 
 		return switch (identifier)
 		{
@@ -91,11 +74,19 @@ public class GodsPlaceholderExpansion extends PlaceholderExpansion
 			// %gods_name%
 			case "name" -> (god == null) ? "" : god;
 			// %gods_prayerpower%
-			case "prayerpower" -> String.valueOf(prayerPower);
+			case "prayerpower" -> String.valueOf(info.prayerPower);
 			// %gods_color%
-			case "color" -> "&" + ((godColor != null) ? godColor : ChatColor.WHITE).getChar();
+			case "color" -> "&" + ((info.godColor != null) ? info.godColor : ChatColor.WHITE).getChar();
 			// %gods_rank%: the god's rank, as its god type calls it
-			case "rank" -> rankName;
+			case "rank" -> info.rankName;
+			// %gods_devotion%: the player's devotion level, as their god's type calls it
+			case "devotion" -> info.devotionName;
+			// %gods_devotion_points%
+			case "devotion_points" -> String.valueOf(info.devotionPoints);
+			// %gods_devotion_title%: their level's name once it is a title (devotion.unlocks.title), else empty
+			case "devotion_title" -> info.devotionTitle;
+			// %gods_tag%: their god as a ready-made tag (placeholder.tag in messages.yml), empty without a god
+			case "tag" -> info.tag;
 			// An invalid placeholder (f.e. %gods_cakenomnom%)
 			default -> null;
 		};

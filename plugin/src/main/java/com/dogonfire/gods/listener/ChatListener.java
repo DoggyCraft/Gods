@@ -1,5 +1,7 @@
 package com.dogonfire.gods.listener;
 
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -55,7 +57,11 @@ public class ChatListener implements Listener
 		event.setCancelled(true);
 
 		// Rendered once, here on the chat thread (Messages is thread-safe)
-		String message = ctx.messages().legacy(info.priest ? "chat.priest" : "chat.believer", Messages.god(godName), Messages.player(player.getName()), Messages.text("message", event.getMessage()));
+		// A believer with a devotion title shows it before their name (config.yml devotion.chat-title)
+		TagResolver name = ctx.settings().devotion().chatTitle() && !info.devotionTitle.isEmpty()
+				? Messages.component("player", ctx.messages().component("chat.titled-player", Messages.player(player.getName()), Messages.text("title", info.devotionTitle)))
+				: Messages.player(player.getName());
+		String message = ctx.messages().legacy(info.priest ? "chat.priest" : "chat.believer", Messages.god(godName), name, Messages.text("message", event.getMessage()));
 
 		for (Player otherPlayer : ctx.plugin().getServer().getOnlinePlayers())
 		{

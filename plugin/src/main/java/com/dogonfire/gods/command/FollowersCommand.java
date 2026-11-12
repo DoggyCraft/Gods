@@ -57,7 +57,8 @@ public final class FollowersCommand extends SubCommand
 		Date now = new Date();
 		for (Follower follower : followers.subList(0, Math.min(SHOWN, followers.size())))
 		{
-			TagResolver row = TagResolver.resolver(Messages.player(String.format("%-20s", nameOf(follower.believerId()))), Messages.component("when", timeAgo(follower.lastPrayer(), now)));
+			TagResolver row = TagResolver.resolver(Messages.player(String.format("%-20s", nameOf(follower.believerId()))), Messages.component("when", timeAgo(follower.lastPrayer(), now)),
+					devotion(follower.believerId()));
 			if (believes && follower.believerId().equals(player.getUniqueId()))
 			{
 				playerShown = true;
@@ -75,10 +76,21 @@ public final class FollowersCommand extends SubCommand
 			{
 				if (follower.believerId().equals(player.getUniqueId()))
 				{
-					send(sender, "command.followers.you-below", Messages.player(String.format("%-20s", nameOf(follower.believerId()))), Messages.component("when", timeAgo(follower.lastPrayer(), now)));
+					send(sender, "command.followers.you-below", Messages.player(String.format("%-20s", nameOf(follower.believerId()))), Messages.component("when", timeAgo(follower.lastPrayer(), now)),
+							devotion(follower.believerId()));
 				}
 			}
 		}
+	}
+
+	/** {@code <devotion>}: the believer's devotion level (command.followers.devotion), nothing while devotion is off */
+	private TagResolver devotion(UUID believerId)
+	{
+		if (!this.ctx.devotionService().enabled())
+		{
+			return Messages.text("devotion", "");
+		}
+		return Messages.component("devotion", this.ctx.messages().component("command.followers.devotion", Messages.text("level", this.ctx.devotionService().getLevelName(believerId))));
 	}
 
 	@Override

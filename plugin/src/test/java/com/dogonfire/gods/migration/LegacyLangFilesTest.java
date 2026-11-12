@@ -59,7 +59,9 @@ class LegacyLangFilesTest
 	/** Messages whose text Gods rewrote after the old bundled files, like {@link #REWRITTEN_VOICES} */
 	private static final java.util.Set<String> REWRITTEN_MESSAGES = java.util.Set.of(
 			// Right clicking the altar block or its light prays too
-			"altar.pray-hint");
+			"altar.pray-hint",
+			// Each follower shows their devotion level
+			"command.followers.line", "command.followers.you", "command.followers.you-below");
 
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test

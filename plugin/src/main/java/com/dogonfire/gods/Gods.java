@@ -38,6 +38,7 @@ import com.dogonfire.gods.command.CheckCommand;
 import com.dogonfire.gods.command.CommandChecks;
 import com.dogonfire.gods.command.CommandRouter;
 import com.dogonfire.gods.command.DescriptionCommand;
+import com.dogonfire.gods.command.DevotionCommand;
 import com.dogonfire.gods.command.DivorceCommand;
 import com.dogonfire.gods.command.EditBibleCommand;
 import com.dogonfire.gods.command.FollowersCommand;
@@ -347,7 +348,7 @@ public class Gods extends JavaPlugin
 		CommandRouter router = new CommandRouter(this.ctx.messages(), this.ctx.permissions(), CommandChecks.of(this.ctx), new Overview(this.ctx));
 		for (SubCommand command : List.of(
 				new AcceptCommand(this.ctx), new AccessCommand(this.ctx), new AllyCommand(this.ctx), new AttackCommand(this.ctx),
-				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx),
+				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx), new DevotionCommand(this.ctx),
 				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx), new GenderCommand(this.ctx), new GodSkinCommand(this.ctx),
 				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),
 				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LeaveCommand(this.ctx),

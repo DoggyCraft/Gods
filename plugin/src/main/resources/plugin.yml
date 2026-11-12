@@ -27,6 +27,7 @@ permissions:
       gods.blessings: true
       gods.chat: true
       gods.check: true
+      gods.devotion: true
       gods.commandments: true
       gods.curses: true
       gods.divorce: true
@@ -110,6 +111,9 @@ permissions:
   gods.check:
     default: true
     description: "Allows the Player to check religion for another player"
+  gods.devotion:
+    default: true
+    description: "Allows the Player to see their devotion to their god, or a player's"
   gods.commandments:
     default: true
     description: "Allows the Player to receive commandments"

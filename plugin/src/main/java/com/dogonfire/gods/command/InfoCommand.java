@@ -69,6 +69,12 @@ public final class InfoCommand extends SubCommand
 		}
 
 		rank(sender, godName);
+		if (sender instanceof Player player && godName.equals(godOf(player)) && this.ctx.devotionService().enabled())
+		{
+			// The believer's own devotion (/g devotion shows more)
+			send(sender, "command.info.devotion", Messages.text("level", this.ctx.devotionService().getLevelName(player.getUniqueId())),
+					Messages.amount(this.ctx.devotionService().getPoints(player.getUniqueId())));
+		}
 
 		send(sender, "command.info.believers",Messages.amount(this.ctx.believerService().getBelieversForGod(godName).size()));
 		send(sender, "command.info.power", Messages.text("power", this.ctx.godService().getGodPower(godName)));
