@@ -57,8 +57,8 @@ altar:
   sign:
     default:
       praying: [Altar, of, <god>, '']
-      curses: [Curses, On, <player>, '']
-      blessings: [Blessings, On, <player>, '']
+      curses: [Curses, 'On', <player>, '']
+      blessings: [Blessings, 'On', <player>, '']
     frost:
       praying: ['<aqua>❄ Altar ❄', '<dark_aqua>of the frost', '<white><god>', '']
       curses: ['<dark_aqua>❄ Curses ❄', '<aqua>freeze', '<white><player>', '']
@@ -906,10 +906,10 @@ command:
     # Below every page but the last: <next> is the next page, <pages> how many there are
     next-page: <aqua>Use <white>/g help <next></white> for the next page (of <pages>)
     # <amount> is the page asked for, <pages> how many there are
-    no-page: <red>There is no page <amount>, the commands fill <pages> pages
+    no-page: <red>There is no page <amount>; the last page is <pages>
     altar:
     - <yellow>--------------- How to build an Altar ---------------
-    - <aqua>Build an altar to your God by following these simple steps:
+    - '<aqua>Build an altar to your God by following these simple steps:'
     - ''
     - <white>  1 - Place a block (the block decides the type of God)
     - <white>  2 - Place a torch, lantern or candle on top
@@ -921,7 +921,7 @@ command:
     - <aqua>Check what type of god you can make with <white>/g help blocks
     blocks-header:
     - <yellow>--------------- God Types ---------------
-    - <aqua>These are the block types you can use for making Gods:
+    - '<aqua>These are the block types you can use for making Gods:'
     - ''
     # One per god type that altars can make: <god_type> in the god type's color (<type_color>) and its <blocks>
     block-type: '<type_color><god_type><white>: <blocks>'

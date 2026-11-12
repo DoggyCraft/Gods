@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.message.Messages;
 
-/** /g list: the 15 most powerful gods that have believers */
+/** /g list: the 15 most powerful gods that have believers (players and the console) */
 public final class ListCommand extends SubCommand
 {
 	private static final int	SHOWN	= 15;
@@ -24,13 +24,13 @@ public final class ListCommand extends SubCommand
 	public ListCommand(GodsContext ctx)
 	{
 		super(ctx, "list", "gods.list");
-		playerOnly();
 	}
 
 	@Override
 	public void execute(CommandSender sender, List<String> args) throws CommandException
 	{
-		Player player = (Player) sender;
+		// The console sees the list too, without a god of its own
+		Player player = sender instanceof Player p ? p : null;
 		List<Ranked> gods = new ArrayList<>();
 		for (String godName : this.ctx.godService().getAllGods())
 		{
@@ -45,7 +45,7 @@ public final class ListCommand extends SubCommand
 			throw new CommandException("command.list.none");
 		}
 
-		String playerGod = godOf(player);
+		String playerGod = player != null ? godOf(player) : null;
 		send(sender, "command.list.header");
 		gods.sort(Comparator.comparingInt(Ranked::power).reversed());
 
@@ -78,7 +78,10 @@ public final class ListCommand extends SubCommand
 				rank++;
 			}
 		}
-		this.ctx.godSpeech().sendInfo(player.getUniqueId(), "help.info-hint", 80);
+		if (player != null)
+		{
+			this.ctx.godSpeech().sendInfo(player.getUniqueId(), "help.info-hint", 80);
+		}
 	}
 
 	/** <rank> (its place), <name> (the name and title, padded to line up), <power>, <believers> and <god-rank> of a line of the list */

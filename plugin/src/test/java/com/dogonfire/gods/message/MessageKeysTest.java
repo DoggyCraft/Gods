@@ -214,6 +214,43 @@ class MessageKeysTest
 		assertEquals(Messages.MESSAGES_VERSION, bundled("lang/english/messages.yml").getInt(Messages.VERSION_KEY));
 	}
 
+	/**
+	 * Every message and voice line is text: a line YAML reads as something else (e.g. an unquoted line ending in a
+	 * colon, which becomes a key) shows as "{text=null}" in game
+	 */
+	@Test
+	void everyMessageAndVoiceLineIsText() throws IOException
+	{
+		List<String> files = new ArrayList<>(List.of("lang/english/messages.yml"));
+		for (GodType type : GodType.values())
+		{
+			for (GodGender gender : List.of(GodGender.Male, GodGender.Female))
+			{
+				files.add("lang/english/voices/" + type.name().toLowerCase(java.util.Locale.ROOT) + "_" + gender.name().toLowerCase(java.util.Locale.ROOT) + ".yml");
+			}
+		}
+		List<String> notText = new ArrayList<>();
+		for (String file : files)
+		{
+			YamlConfiguration yaml = bundled(file);
+			for (String key : yaml.getKeys(true))
+			{
+				Object value = yaml.get(key);
+				if (value instanceof List<?> list)
+				{
+					for (int i = 0; i < list.size(); i++)
+					{
+						if (!(list.get(i) instanceof String))
+						{
+							notText.add(file + " " + key + "[" + i + "]: " + list.get(i));
+						}
+					}
+				}
+			}
+		}
+		assertTrue(notText.isEmpty(), "Lines that aren't text (quote them): " + notText);
+	}
+
 	private YamlConfiguration bundled(String path) throws IOException
 	{
 		try (InputStream in = getClass().getClassLoader().getResourceAsStream(path))
