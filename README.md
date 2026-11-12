@@ -130,7 +130,37 @@ Believers earn devotion points (config.yml's `devotion.points`, the defaults):
 | Zealot | 600 (about two weeks) | the god may give them a holy artifact (only zealots and saints get one); its gifts (items, healing, holy artifacts) come twice as often |
 | Saint | 2000 (weeks of prayers, sacrifices and quests) | the god now and then praises them by name to its other believers; their level is their title (`%gods_devotion_title%`, and before their name in religion chat); the god asks them first when it needs a priest |
 
-A believer rises as soon as they have the points, and the god congratulates them with an effect around them. Devotion fades when a believer stops praying: after `fade-after-days` (3) without a prayer they lose `fade-percent-per-day` (5 %) of their points each day. A level is only lost when the points fall below `keep-level-percent` (75 %) of what it needs, so a few days off never cost one; a saint who stops praying falls about nine days after their last prayer. Leaving the god or changing to another keeps `kept-on-changing-god-percent` (0: they start over). Believers from before devotion start with 10 points per prayer to their god, at most a zealot's 600, so every saint is earned. `devotion.enabled: false` switches it all off: nobody earns devotion, nothing needs a level (holy artifacts are for every believer again) and no level gives more.
+A believer rises as soon as they have the points, and the god congratulates them with an effect around them. Devotion fades when a believer stops praying: after `fade-after-days` (3) without a prayer they lose `fade-percent-per-day` (5 %) of their points each day. A level is only lost when the points fall below `keep-level-percent` (75 %) of what it needs, so a few days off never cost one; a saint who stops praying falls about nine days after their last prayer. Leaving the god or changing to another keeps `kept-on-changing-god-percent` (0: they start over). Believers from before devotion start with 10 points per prayer to their god, at most a zealot's 600, so every saint is earned. `devotion.enabled: false` switches it all off: nobody earns devotion, nothing needs a level (holy artifacts are for every believer again) and no level gives more. Holy artifacts start at zealot on purpose: they are the god's rarest gift, for believers who have served it for weeks.
+
+Prayer power and leaving a religion
+---------
+Believers gain prayer power by praying (1 a prayer), by sacrifices their god wanted, quests and slaying enemies of their religion, and spend it on `/g prayfor`. A wanted sacrifice counts as a prayer below too. A believer who stops praying loses it, and leaves their religion when it is gone (config.yml's `believers`, the defaults):
+
+*	After a quiet period without a prayer, `decay-after-days` (3) times their devotion level's `decay-after-multiplier`: a follower 3 days, a devotee 4.5, a zealot 6 and a saint 9 (with `devotion.enabled: false` everyone waits as long as a follower), their prayer power falls once a day: first by `decay-percent-per-day` (10 %, rounded up), then by `decay-per-day` (2).
+*	When that decay has brought it to 0, they leave: their god tells its believers it lost them, a priest stops being one, and their devotion is gone. A believer with 20 prayer power leaves 9 days after their last prayer as a follower, 15 as a saint; one who had none leaves on the first day of decay.
+*	A prayer stops the decay and starts the quiet period over. Having no prayer power never makes a believer who keeps praying leave (spending it all on `/g prayfor` is fine).
+*	Devotion fades on its own (above), so a saint who stops praying may fall to zealot after about nine days and then has a zealot's quiet period, which is already over.
+*	With both `decay-per-day` and `decay-percent-per-day` at 0, believers never leave for not praying. At most 5 believers of a god leave on one turn of the god.
+
+Config files from before (`believers.max-hours-without-prayer`, 154 hours) are upgraded to `decay-after-days`: half the old time in days (154 hours: 3 days), so with the decay a server keeps roughly its patience. Priests still stop being priests after `priests.max-hours-without-prayer` (72) without a prayer.
+
+Admin commands
+---------
+`/g admin <action> ...` (permission `gods.admin`, ops by default) changes a god or a believer the way the game does, with the same events, effects, words and saves. Each action also needs its own node (`gods.admin.<action>`, given with `gods.admin`; set one to false to keep it from someone who has `gods.admin`). `/g admin` alone lists the actions you may use.
+
+| Action | Does | Permission |
+|---|---|---|
+| `info <god>` | the god's rank, its time at it, descent and figure, power, mood, believers per devotion level, priests, lifetime stats, main altar and quest | `gods.admin.info` |
+| `setrank <god> <rank>` | gives the god a rank whatever its conditions (`spirit` to `greater`, or its type's name for it), with the rank's moment | `gods.admin.setrank` |
+| `devotion <player> <level/+n/-n/n>` | gives a believer a devotion level, or adds, takes or sets their points | `gods.admin.devotion` |
+| `prayerpower <player> <+n/-n/n>` | adds, takes or sets a believer's prayer power | `gods.admin.prayerpower` |
+| `mood <god> <+n/-n/n/=-n>` | changes the god's mood (-100 to 100): `+10` and `-10` add and take, `50` and `=-50` set it | `gods.admin.mood` |
+| `gender <god> <god/goddess/deity>` | changes the god's gender without the priests' cooldown | `gods.admin.gender` |
+| `godskin <god> <player/reset>` | gives any god's figure a player's skin, or its theme's again | `gods.admin.godskin` |
+| `quest <god> <start/complete/fail>` | starts a quest for the god, or completes (with its rewards) or fails its quest | `gods.admin.quest` |
+| `setaltar <god>` | makes the praying altar of that god you look at its main altar | `gods.admin.setaltar` |
+
+Players are online players or any believer Gods knows. `/g setpriest`, `/g setsafe` and `/g reload` stay as they are.
 
 Themes
 ---------
