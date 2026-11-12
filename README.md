@@ -26,6 +26,8 @@ Holy Land (`holy-land.enabled` in config.yml) is claimed per chunk, one holy lan
 
 With GriefPrevention installed, a priest can make their own claim the holy land of their god: standing in the claim, `/g holyclaim` (permission `gods.priest.holyclaim`) makes the whole claim holy land, at any height, when it is a whole claim (not a subclaim or an admin claim) that the priest owns and an altar of their god stands in it. It counts as one holy land whatever its size, toward the same power / 10 + 3, and doesn't grow with the rank: the claim is the land, and wins over any holy land of chunks it overlaps. It takes the place of the god's holy land of chunks whose altars all stand in the claim (keeping its name), so making a claim holy land doesn't cost an extra one; after a release that altar's chunks are claimed again at its next prayer. Running `/g holyclaim` again in it releases it. Prayers at its altars keep it from being abandoned and claim no chunks inside it; it goes with the last altar of its god in it, when GriefPrevention deletes the claim, when the claim is given to someone who isn't a priest of that god, or when it is resized so that no altar of the god is left in it. Without GriefPrevention such lands are kept in holyland.yml but hold no land until it is back.
 
+Every holy land gets a name from the biome its altar stands in: Flowerfield or Upper Cloverford on the plains, Frostmere in the snow, Far Sunwaste in the desert, Saltstrand by the sea, Emberpit in the Nether, Outer Stargate in the End, and so on, shown to other religions' believers who enter it. The words are in messages.yml (`holy-land.names.<group>`: a prefix, a middle and a suffix per group of biomes), so a server can change them or translate them. A priest standing in a holy land of their god can rename it with `/g landname <name>` (permission `gods.priest.landname`; up to 32 characters, no color codes); the god's believers hear of it.
+
 
 Installation
 ---------
@@ -158,11 +160,13 @@ Admin commands
 | `setrank <god> <rank>` | gives the god a rank whatever its conditions (`spirit` to `greater`, or its type's name for it), with the rank's moment | `gods.admin.setrank` |
 | `devotion <player> <level/+n/-n/n>` | gives a believer a devotion level, or adds, takes or sets their points | `gods.admin.devotion` |
 | `prayerpower <player> <+n/-n/n>` | adds, takes or sets a believer's prayer power | `gods.admin.prayerpower` |
+| `cooldown <player>` | lets a believer pray again at once: their last prayer moves back just far enough (`prayers.min-minutes-between-prayers`), so the decay of their prayer power hardly moves | `gods.admin.cooldown` |
 | `mood <god> <+n/-n/n/=-n>` | changes the god's mood (-100 to 100): `+10` and `-10` add and take, `50` and `=-50` set it | `gods.admin.mood` |
 | `gender <god> <god/goddess/deity>` | changes the god's gender without the priests' cooldown | `gods.admin.gender` |
 | `godskin <god> <player/reset>` | gives any god's figure a player's skin, or its theme's again | `gods.admin.godskin` |
 | `quest <god> <start/complete/fail>` | starts a quest for the god, or completes (with its rewards) or fails its quest | `gods.admin.quest` |
 | `setaltar <god>` | makes the praying altar of that god you look at its main altar | `gods.admin.setaltar` |
+| `priest <player> [god]` | makes a believer (online or not) a priest of their god, or no longer one if they are, with the priest commands and events of the game; a god may get more priests than `priests.max-per-god` this way (the answer says so) | `gods.admin.priest` |
 
 Players are online players or any believer Gods knows. `/g setpriest`, `/g setsafe` and `/g reload` stay as they are.
 
