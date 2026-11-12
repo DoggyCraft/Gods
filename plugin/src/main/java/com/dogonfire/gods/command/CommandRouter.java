@@ -97,7 +97,7 @@ public final class CommandRouter implements TabExecutor
 	 */
 	public boolean canUse(CommandSender sender, SubCommand command)
 	{
-		if (!command.isAvailable() || !hasPermission(sender, command.permission()))
+		if (!command.isAvailable() || !command.permitted(node -> hasPermission(sender, node)))
 		{
 			return false;
 		}
@@ -149,7 +149,7 @@ public final class CommandRouter implements TabExecutor
 			this.messages.send(sender, disabled);
 			return;
 		}
-		if (!hasPermission(sender, sub.permission()))
+		if (!sub.permitted(node -> hasPermission(sender, node)))
 		{
 			this.messages.send(sender, "command.no-permission");
 			return;

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -110,6 +111,15 @@ public abstract class SubCommand
 	public final String permission()
 	{
 		return this.permission;
+	}
+
+	/**
+	 * Whether the sender may use this command, given a check of single permission nodes (ops have every node). By
+	 * default: the command's {@link #permission()}. A command with permissions per action overrides it.
+	 */
+	public boolean permitted(Predicate<String> hasNode)
+	{
+		return this.permission == null || hasNode.test(this.permission);
 	}
 
 	public final boolean isPlayerOnly()

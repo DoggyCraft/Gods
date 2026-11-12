@@ -146,7 +146,7 @@ Config files from before (`believers.max-hours-without-prayer`, 154 hours) are u
 
 Admin commands
 ---------
-`/g admin <action> ...` (permission `gods.admin`, ops by default) changes a god or a believer the way the game does, with the same events, effects, words and saves. Each action also needs its own node (`gods.admin.<action>`, given with `gods.admin`; set one to false to keep it from someone who has `gods.admin`). `/g admin` alone lists the actions you may use.
+`/g admin <action> ...` (permission `gods.admin`, ops by default) changes a god or a believer the way the game does, with the same events, effects, words and saves. Each action has its own node, `gods.admin.<action>` (e.g. `gods.admin.info`): give someone only the actions they need, and they can use `/g admin` for those; `gods.admin` gives every action. `/g admin` alone lists the actions you may use.
 
 | Action | Does | Permission |
 |---|---|---|

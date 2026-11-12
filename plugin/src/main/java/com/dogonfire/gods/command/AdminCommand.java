@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -34,14 +35,21 @@ import com.dogonfire.gods.service.QuestService;
 
 /**
  * /g admin &lt;action&gt; ...: tools for server admins, each through the service method the game (and the API) uses,
- * so events, effects, words and saves are the same. The command needs gods.admin, each action also
- * gods.admin.&lt;action&gt; ({@link AdminArgs#ACTIONS}). Without an action it lists the actions the sender may use.
+ * so events, effects, words and saves are the same. Each action needs its own gods.admin.&lt;action&gt;
+ * ({@link AdminArgs#ACTIONS}); having any of them is enough to use the command, and gods.admin gives them all. Without an action it lists the actions the sender may use.
  */
 public final class AdminCommand extends SubCommand
 {
 	public AdminCommand(GodsContext ctx)
 	{
 		super(ctx, "admin", "gods.admin");
+	}
+
+	/** Any one action's gods.admin.&lt;action&gt; is enough to use /g admin (gods.admin gives them all) */
+	@Override
+	public boolean permitted(Predicate<String> hasNode)
+	{
+		return AdminArgs.ACTIONS.stream().anyMatch(action -> hasNode.test(AdminArgs.permission(action)));
 	}
 
 	/** Like the router: ops have every node, players through Gods' permission check, the console through Bukkit */

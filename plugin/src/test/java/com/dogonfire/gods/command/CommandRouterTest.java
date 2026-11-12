@@ -353,4 +353,29 @@ class CommandRouterTest
 	{
 		return commands.stream().map(SubCommand::name).toList();
 	}
+	/** A command can decide itself which nodes let a sender use it (like /g admin: any action's node) */
+	@Test
+	void aCommandMayAcceptAnyOfSeveralPermissions()
+	{
+		Fake tools = new Fake("tools", "gods.tools")
+		{
+			@Override
+			public boolean permitted(java.util.function.Predicate<String> hasNode)
+			{
+				return hasNode.test("gods.tools.a") || hasNode.test("gods.tools.b");
+			}
+		};
+		this.router.register(tools);
+
+		run(this.player, "tools");
+		assertEquals(List.of("no permission"), this.bob.received);
+		assertTrue(tools.runs.isEmpty());
+		assertTrue(complete(this.player, "to").isEmpty());
+
+		this.bob.permissions.add("gods.tools.b");
+		run(this.player, "tools");
+		assertEquals(1, tools.runs.size());
+		assertEquals(List.of("tools"), complete(this.player, "to"));
+	}
+
 }

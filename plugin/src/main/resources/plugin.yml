@@ -225,7 +225,7 @@ permissions:
     description: "The Player can set safe or neutral lands"
   gods.admin:
     default: op
-    description: "Allows /g admin; each action also needs its own gods.admin.<action> (all given with this one)"
+    description: "All /g admin actions; a single gods.admin.<action> is enough for that one action"
     children:
       gods.admin.info: true
       gods.admin.setrank: true
