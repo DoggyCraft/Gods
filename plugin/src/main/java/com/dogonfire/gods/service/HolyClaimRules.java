@@ -1,9 +1,11 @@
 package com.dogonfire.gods.service;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 import com.dogonfire.gods.model.BlockPos;
+import com.dogonfire.gods.model.ChunkKey;
 
 /**
  * Claim lands (/g holyclaim): a priest makes their GriefPrevention claim the holy land of their god. Who may, when it
@@ -117,6 +119,35 @@ public final class HolyClaimRules
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Whether a claim made holy land takes the place of one of the god's lands of chunks: the land holds a praying altar
+	 * of the god and every one it holds stands in the claim (the claim is those altars' land from now on, so it costs no
+	 * extra holy land). A land with an altar outside the claim stays.
+	 *
+	 * @param landChunks  the chunks of the god's land
+	 * @param altarBlocks the altar blocks of all the god's registered praying altars
+	 */
+	public static boolean replaces(ClaimInfo claim, Set<ChunkKey> landChunks, Collection<BlockPos> altarBlocks)
+	{
+		if (claim == null)
+		{
+			return false;
+		}
+		boolean holdsOne = false;
+		for (BlockPos block : altarBlocks)
+		{
+			if (landChunks.contains(ChunkKey.of(block.world(), block.x(), block.z())))
+			{
+				if (!claim.contains(block))
+				{
+					return false;
+				}
+				holdsOne = true;
+			}
+		}
+		return holdsOne;
 	}
 
 	/**

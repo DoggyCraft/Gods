@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.model.BlockPos;
+import com.dogonfire.gods.model.ChunkKey;
 import com.dogonfire.gods.service.HolyClaimRules.Answer;
 import com.dogonfire.gods.service.HolyClaimRules.ClaimInfo;
 import com.dogonfire.gods.service.HolyClaimRules.Loss;
@@ -112,5 +113,23 @@ class HolyClaimRulesTest
 		assertFalse(HolyClaimRules.anyInside(null, List.of(new BlockPos("world", 1, 1, 1))));
 		assertFalse(HolyClaimRules.anyInside(claim(), List.of()));
 		assertTrue(HolyClaimRules.anyInside(claim(), List.of(new BlockPos("world", 99, 1, 1), new BlockPos("world", 1, 1, 1))));
+	}
+
+	/** A claim takes the place of the god's land when every altar of that land stands in the claim */
+	@Test
+	void aClaimReplacesTheLandOfItsAltars()
+	{
+		// The land of chunks 0,0 to 1,1 (blocks 0..31); the claim covers blocks 0..20
+		java.util.Set<ChunkKey> land = java.util.Set.of(new ChunkKey("world", 0, 0), new ChunkKey("world", 1, 0), new ChunkKey("world", 0, 1), new ChunkKey("world", 1, 1));
+		BlockPos inside = new BlockPos("world", 5, 64, 5);
+		BlockPos outsideClaimInLand = new BlockPos("world", 25, 64, 25);
+		BlockPos elsewhere = new BlockPos("world", 500, 64, 500);
+
+		assertTrue(HolyClaimRules.replaces(claim(), land, List.of(inside, elsewhere)));
+		// Another altar of the land stands outside the claim: the land stays
+		assertFalse(HolyClaimRules.replaces(claim(), land, List.of(inside, outsideClaimInLand)));
+		// A land without an altar of the god isn't the claim's to replace
+		assertFalse(HolyClaimRules.replaces(claim(), land, List.of(elsewhere)));
+		assertFalse(HolyClaimRules.replaces(null, land, List.of(inside)));
 	}
 }

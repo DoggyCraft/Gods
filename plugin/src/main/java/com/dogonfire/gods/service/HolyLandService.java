@@ -491,7 +491,8 @@ public class HolyLandService
 	/**
 	 * /g holyclaim: {@code player}, a priest of {@code godName}, makes the GriefPrevention claim they stand in the holy
 	 * land of their god, or releases it when it already is ({@link HolyClaimRules#decide}). A new claim land counts as one
-	 * holy land whatever the claim's size, fires the cancellable {@link HolyLandClaimEvent} (at the altar block in it),
+	 * holy land whatever the claim's size, and takes the place of the god's lands of chunks whose altars all stand in it
+	 * ({@link HolyClaimRules#replaces}; it keeps the first one's name and age), fires the cancellable {@link HolyLandClaimEvent} (at the altar block in it),
 	 * and the god tells its believers; a release tells them too.
 	 *
 	 * @return what was done or why not
@@ -512,9 +513,22 @@ public class HolyLandService
 				}
 			}
 		}
+		// The god's lands of chunks whose altars all stand in the claim: the claim takes their place
+		List<HolyLand> replaced = new ArrayList<HolyLand>();
+		if (claim != null && existing == null)
+		{
+			List<BlockPos> altars = prayingAltarBlocks(godName);
+			for (HolyLand land : this.repository.all())
+			{
+				if (!land.isClaim() && godName.equals(land.godName()) && HolyClaimRules.replaces(claim, land.chunks(), altars))
+				{
+					replaced.add(land);
+				}
+			}
+		}
 		// A claim land without a god (a hand edit) is nobody's to take
 		String claimLandGod = existing == null ? null : existing.godName() != null ? existing.godName() : "";
-		HolyClaimRules.Answer answer = HolyClaimRules.decide(claim, player.getUniqueId(), godName, claimLandGod, altar != null, getHolyLandsForGod(godName), getMaximumHolyLandsForGod(godName));
+		HolyClaimRules.Answer answer = HolyClaimRules.decide(claim, player.getUniqueId(), godName, claimLandGod, altar != null, getHolyLandsForGod(godName) - replaced.size(), getMaximumHolyLandsForGod(godName));
 
 		if (answer == HolyClaimRules.Answer.RELEASE)
 		{
@@ -530,10 +544,20 @@ public class HolyLandService
 			{
 				return HolyClaimRules.Answer.CANCELLED;
 			}
+			// It keeps the name and age of the land it replaces
+			HolyLand first = replaced.isEmpty() ? null : replaced.getFirst();
+			for (HolyLand old : replaced)
+			{
+				this.repository.remove(old);
+			}
 			HolyLand land = this.repository.createClaim(ChunkKey.of(altar.world(), altar.x(), altar.z()), claim.id());
 			giveLand(land, godName);
 			land.setWorldName(altar.world());
-			land.setName(generateHolyLandName(altarBlock.getBlock().getBiome()));
+			if (first != null && first.firstPrayerTime() != null)
+			{
+				land.setFirstPrayerTime(first.firstPrayerTime());
+			}
+			land.setName(first != null && first.name() != null ? first.name() : generateHolyLandName(altarBlock.getBlock().getBiome()));
 			this.repository.save();
 			ctx.plugin().log(player.getName() + " made the GriefPrevention claim " + claim.id() + " in " + claim.world() + " the holy land " + land.name() + " of " + godName + ".");
 			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CLAIMED_HOLY_LAND, 1, Messages.player(player.getName()));
