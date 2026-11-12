@@ -35,7 +35,7 @@ Installation
 Building an altar
 ---------
 1. Place an altar block. The block decides the type of god: snow, packed or blue ice for a god of frost, prismarine or sea lanterns for the sea, copper for thunder, amethyst or bookshelves for wisdom, moss or azalea for nature, and so on. `/g help blocks` lists them all.
-2. Put a light on top: a torch (any kind), a lantern or a candle.
+2. Put a light on top: a torch (any kind), a lantern, a candle or fire (fire on netherrack, or soul fire on soul sand or soil, burns forever).
 3. Place a wall sign on the side of the block and write the name of your god on it. To choose its gender, write `God`, `Goddess` or `Deity` (non-binary) on another line; otherwise the god chooses and tells you.
 4. Right-click the sign to pray, or the altar block or its light. Sneak to use the block as usual (placing blocks against it); items that do something to the block (flint and steel on a candle, an axe, honeycomb, ...) and blocks with a use of their own (note blocks, jukeboxes, chiseled bookshelves, candle cakes) keep it.
 
@@ -130,7 +130,7 @@ Believers earn devotion points (config.yml's `devotion.points`, the defaults):
 | Follower | every believer | |
 | Devotee | 150 (about 15 prayers: a few days of regular prayer) | `/g prayfor` costs 25 % less |
 | Zealot | 600 (about two weeks) | the god may give them a holy artifact (only zealots and saints get one); its gifts (items, healing, holy artifacts) come twice as often |
-| Saint | 2000 (weeks of prayers, sacrifices and quests) | the god now and then praises them by name to its other believers; their level is their title (`%gods_devotion_title%`, and before their name in religion chat); the god asks them first when it needs a priest |
+| Saint | 2000 (weeks of prayers, sacrifices and quests) | the god now and then praises them by name to its other believers; their level is their title (`%gods_devotion_title%`, and before their name in religion chat); when the god needs a priest it asks them on its next turn (a god always asks its most devoted believer first, and of equals whoever joined first) |
 
 A believer rises as soon as they have the points, and the god congratulates them with an effect around them. Devotion fades when a believer stops praying: after `fade-after-days` (3) without a prayer they lose `fade-percent-per-day` (5 %) of their points each day. A level is only lost when the points fall below `keep-level-percent` (75 %) of what it needs, so a few days off never cost one; a saint who stops praying falls about nine days after their last prayer. Leaving the god or changing to another keeps `kept-on-changing-god-percent` (0: they start over). Believers from before devotion start with 10 points per prayer to their god, at most a zealot's 600, so every saint is earned. `devotion.enabled: false` switches it all off: nobody earns devotion, nothing needs a level (holy artifacts are for every believer again) and no level gives more. Holy artifacts start at zealot on purpose: they are the god's rarest gift, for believers who have served it for weeks.
 
