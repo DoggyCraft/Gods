@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.model.DevotionLevel;
@@ -166,39 +165,35 @@ public final class DevotionRules
 	/**
 	 * A believer the god could make its priest
 	 *
-	 * @param power their prayers' strength (BelieverService's believer power)
+	 * @param devotion how devoted they are within their level: their devotion points, or their prayer power while
+	 *            devotion is off
+	 * @param joined when they joined the god, or null if unknown
 	 */
-	public record PriestCandidate<T>(T id, DevotionLevel level, float power)
+	public record PriestCandidate<T>(T id, DevotionLevel level, double devotion, Instant joined)
 	{
 	}
 
-	/** The candidates, most devoted first and, at the same level, strongest first */
+	/**
+	 * The candidates in the order the god asks them: the highest devotion level first, then the most devotion (points,
+	 * or prayer power while devotion is off), then whoever joined first (unknown last)
+	 */
 	public static <T> List<PriestCandidate<T>> priestOrder(List<PriestCandidate<T>> candidates)
 	{
 		List<PriestCandidate<T>> ordered = new ArrayList<>(candidates);
 		ordered.sort(Comparator.<PriestCandidate<T>, DevotionLevel> comparing(PriestCandidate::level).reversed()
-				.thenComparing(Comparator.<PriestCandidate<T>>comparingDouble(PriestCandidate::power).reversed()));
+				.thenComparing(Comparator.<PriestCandidate<T>>comparingDouble(PriestCandidate::devotion).reversed())
+				.thenComparing(PriestCandidate::joined, Comparator.nullsLast(Comparator.naturalOrder())));
 		return ordered;
 	}
 
 	/**
-	 * The candidate the god offers priesthood: the most devoted one when they have {@code preferred} (the priesthood
-	 * unlock), else one of the three first in {@link #priestOrder}, as {@link PriestRules#pick} chooses
+	 * The candidate the god offers priesthood: the first in {@link #priestOrder}, never one at random
 	 *
-	 * @param preferred the level that is always preferred, or null for none (devotion off)
 	 * @return null if there are none
 	 */
-	public static <T> T pickPriest(List<PriestCandidate<T>> candidates, DevotionLevel preferred, Random random)
+	public static <T> T pickPriest(List<PriestCandidate<T>> candidates)
 	{
 		List<PriestCandidate<T>> ordered = priestOrder(candidates);
-		if (ordered.isEmpty())
-		{
-			return null;
-		}
-		if (preferred != null && ordered.getFirst().level().atLeast(preferred))
-		{
-			return ordered.getFirst().id();
-		}
-		return PriestRules.pick(ordered.stream().map(PriestCandidate::id).toList(), random);
+		return ordered.isEmpty() ? null : ordered.getFirst().id();
 	}
 }

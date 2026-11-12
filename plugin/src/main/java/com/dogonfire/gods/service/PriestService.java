@@ -124,7 +124,7 @@ public class PriestService
 		}
 	}
 
-	/** The believer to offer priesthood to, or null; see {@link PriestRules#pick} */
+	/** The believer to offer priesthood to (online, see {@link PriestRules#isCandidate}), or null; see {@link DevotionRules#priestOrder} */
 	private UUID getNextBelieverForPriest(String godName)
 	{
 		Set<UUID> allBelievers = ctx.believerService().getBelieversForGod(godName);
@@ -144,14 +144,16 @@ public class PriestService
 			if (player != null && PriestRules.isCandidate(isPriest(candidate), candidate.equals(pendingPriest), ctx.believerService().hasRecentPriestOffer(candidate),
 					ctx.permissions().hasPermission(player, "gods.priest")))
 			{
-				// Only devotion that is on counts
-				DevotionLevel level = ctx.devotionService().enabled() ? ctx.devotionService().getLevel(candidate) : DevotionLevel.FOLLOWER;
-				candidates.add(new DevotionRules.PriestCandidate<>(candidate, level, ctx.believerService().getBelieverPower(candidate)));
+				// Only devotion that is on counts; without it, prayer power is how devoted they are
+				boolean devotion = ctx.devotionService().enabled();
+				DevotionLevel level = devotion ? ctx.devotionService().getLevel(candidate) : DevotionLevel.FOLLOWER;
+				double devoted = devotion ? ctx.devotionService().getPoints(candidate) : ctx.believerService().getBelieverPower(candidate);
+				candidates.add(new DevotionRules.PriestCandidate<>(candidate, level, devoted, ctx.believerService().getJoined(candidate)));
 			}
 		}
 
-		// The most devoted first, then the strongest; a believer of devotion.unlocks.priesthood is always asked first
-		return DevotionRules.pickPriest(candidates, ctx.devotionService().preferredPriestLevel(), this.random);
+		// The most devoted, and of those whoever joined first
+		return DevotionRules.pickPriest(candidates);
 	}
 
 	public UUID getPendingPriest(String godName)

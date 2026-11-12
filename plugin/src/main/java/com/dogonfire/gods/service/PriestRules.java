@@ -1,8 +1,5 @@
 package com.dogonfire.gods.service;
 
-import java.util.List;
-import java.util.Random;
-
 /**
  * When a god wants a priest, who can become one, and when a priest is dropped, without Bukkit so it can be tested. The
  * numbers are kept exactly as they were.
@@ -47,20 +44,5 @@ public final class PriestRules
 	public static boolean isCandidate(boolean isPriest, boolean isPendingPriest, boolean offeredRecently, boolean hasPermission)
 	{
 		return !isPriest && !isPendingPriest && !offeredRecently && hasPermission;
-	}
-
-	/**
-	 * The candidate to offer priesthood: one of the three strongest, at random, or the strongest when there are fewer.
-	 *
-	 * @param byPower the candidates, strongest first
-	 * @return null if there are none
-	 */
-	public static <T> T pick(List<T> byPower, Random random)
-	{
-		if (byPower.isEmpty())
-		{
-			return null;
-		}
-		return byPower.size() > 2 ? byPower.get(random.nextInt(3)) : byPower.get(0);
 	}
 }

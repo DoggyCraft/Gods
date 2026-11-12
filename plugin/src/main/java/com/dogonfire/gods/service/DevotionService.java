@@ -209,12 +209,6 @@ public class DevotionService
 		return grants(believerId, settings().unlocks().moreBlessings()) ? DevotionRules.blessingBound(bound, settings().blessingChanceMultiplier()) : bound;
 	}
 
-	/** The level the god always prefers as its priest (devotion.unlocks.priesthood), or null while devotion is off */
-	public DevotionLevel preferredPriestLevel()
-	{
-		return enabled() ? settings().unlocks().priesthood() : null;
-	}
-
 	// ---------------------------------------------------------------------
 	// Earning
 

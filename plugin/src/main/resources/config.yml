@@ -427,7 +427,8 @@ devotion:
     praise: saint
     # The level's name becomes the believer's title: %gods_devotion_title% and, with chat-title, religion chat.
     title: saint
-    # The god prefers the believer when it chooses a priest, and asks them on its next turn.
+    # A god always asks its most devoted believer first when it chooses a priest (the highest level, then the most
+    # points, then whoever joined first); from this level on it asks them on its next turn instead of now and then.
     priesthood: saint
   # How much less /g prayfor costs from unlocks.prayfor-discount on, in percent.
   prayfor-discount-percent: 25

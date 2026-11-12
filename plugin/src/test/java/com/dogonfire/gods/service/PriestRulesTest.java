@@ -1,14 +1,7 @@
 package com.dogonfire.gods.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -52,20 +45,5 @@ class PriestRulesTest
 		assertFalse(PriestRules.isCandidate(false, true, false, true));
 		assertFalse(PriestRules.isCandidate(false, false, true, true));
 		assertFalse(PriestRules.isCandidate(false, false, false, false), "needs gods.priest");
-	}
-
-	@Test
-	void oneOfTheThreeStrongestIsPicked()
-	{
-		Random random = new Random(1);
-		assertNull(PriestRules.pick(List.of(), random));
-		assertEquals("a", PriestRules.pick(List.of("a", "b"), random));
-
-		Set<String> picked = new HashSet<String>();
-		for (int i = 0; i < 200; i++)
-		{
-			picked.add(PriestRules.pick(List.of("a", "b", "c", "d", "e"), random));
-		}
-		assertEquals(Set.of("a", "b", "c"), picked);
 	}
 }

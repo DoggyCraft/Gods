@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
@@ -175,34 +174,19 @@ class DevotionRulesTest
 	}
 
 	@Test
-	void godsPreferTheMostDevotedPriests()
+	void godsAskTheMostDevotedFirstThenWhoeverJoinedFirst()
 	{
-		List<DevotionRules.PriestCandidate<String>> candidates = List.of(new DevotionRules.PriestCandidate<>("strong follower", DevotionLevel.FOLLOWER, 90F),
-				new DevotionRules.PriestCandidate<>("weak zealot", DevotionLevel.ZEALOT, 5F), new DevotionRules.PriestCandidate<>("strong zealot", DevotionLevel.ZEALOT, 50F),
-				new DevotionRules.PriestCandidate<>("devotee", DevotionLevel.DEVOTEE, 70F));
-		assertEquals(List.of("strong zealot", "weak zealot", "devotee", "strong follower"),
+		Instant early = Instant.parse("2026-01-01T00:00:00Z");
+		Instant late = Instant.parse("2026-06-01T00:00:00Z");
+		List<DevotionRules.PriestCandidate<String>> candidates = List.of(new DevotionRules.PriestCandidate<>("strong follower", DevotionLevel.FOLLOWER, 90, early),
+				new DevotionRules.PriestCandidate<>("late zealot", DevotionLevel.ZEALOT, 50, late), new DevotionRules.PriestCandidate<>("early zealot", DevotionLevel.ZEALOT, 50, early),
+				new DevotionRules.PriestCandidate<>("unknown zealot", DevotionLevel.ZEALOT, 50, null), new DevotionRules.PriestCandidate<>("weak zealot", DevotionLevel.ZEALOT, 5, early),
+				new DevotionRules.PriestCandidate<>("devotee", DevotionLevel.DEVOTEE, 70, early));
+		assertEquals(List.of("early zealot", "late zealot", "unknown zealot", "weak zealot", "devotee", "strong follower"),
 				DevotionRules.priestOrder(candidates).stream().map(DevotionRules.PriestCandidate::id).toList());
 
-		// Without a saint: one of the three first, at random
-		for (int seed = 0; seed < 20; seed++)
-		{
-			String picked = DevotionRules.pickPriest(candidates, DevotionLevel.SAINT, new Random(seed));
-			assertTrue(List.of("strong zealot", "weak zealot", "devotee").contains(picked), picked);
-		}
-		// A saint is always asked first
-		List<DevotionRules.PriestCandidate<String>> withSaint = new java.util.ArrayList<>(candidates);
-		withSaint.add(new DevotionRules.PriestCandidate<>("saint", DevotionLevel.SAINT, 1F));
-		for (int seed = 0; seed < 20; seed++)
-		{
-			assertEquals("saint", DevotionRules.pickPriest(withSaint, DevotionLevel.SAINT, new Random(seed)));
-		}
-		// Devotion off: no level is always preferred
-		java.util.Set<String> picked = new java.util.HashSet<>();
-		for (int seed = 0; seed < 50; seed++)
-		{
-			picked.add(DevotionRules.pickPriest(withSaint, null, new Random(seed)));
-		}
-		assertTrue(picked.size() > 1, "picked " + picked);
-		assertNull(DevotionRules.pickPriest(List.<DevotionRules.PriestCandidate<String>>of(), DevotionLevel.SAINT, new Random()));
+		// Always the first of them, never one at random
+		assertEquals("early zealot", DevotionRules.pickPriest(candidates));
+		assertNull(DevotionRules.pickPriest(List.<DevotionRules.PriestCandidate<String>>of()));
 	}
 }

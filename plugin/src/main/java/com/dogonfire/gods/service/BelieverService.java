@@ -283,6 +283,13 @@ public class BelieverService
 		changed();
 	}
 
+	/** When the believer joined their god, or null if unknown */
+	public Instant getJoined(UUID believerId)
+	{
+		Believer believer = find(believerId);
+		return believer != null ? believer.joined() : null;
+	}
+
 	/** Whether the believer joined their god too recently to change again */
 	public boolean hasRecentGodChange(UUID believerId)
 	{
