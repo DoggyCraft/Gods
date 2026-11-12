@@ -89,6 +89,21 @@ public final class BelieverRules
 		return (int) Math.ceilDiv(diff, 60_000L);
 	}
 
+	/**
+	 * The last prayer that lets the believer pray again at once (/g admin cooldown): {@code now} minus the cooldown, so
+	 * the last prayer moves back by no more than the time still to wait and the decay's quiet period, which starts at
+	 * the last prayer, moves back by as little; null when no cooldown runs (never prayed, or long enough ago).
+	 */
+	public static Instant cooldownReset(Instant lastPrayer, Instant now, int minMinutesBetweenPrayers)
+	{
+		if (lastPrayer == null)
+		{
+			return null;
+		}
+		Instant ready = now.minus(Duration.ofMinutes(minMinutesBetweenPrayers));
+		return lastPrayer.isAfter(ready) ? ready : null;
+	}
+
 	/** Whether the believer prayed within the last {@code minMinutesBetweenPrayers} minutes (inclusive) */
 	public static boolean hasRecentPrayer(Instant lastPrayer, Instant now, int minMinutesBetweenPrayers)
 	{

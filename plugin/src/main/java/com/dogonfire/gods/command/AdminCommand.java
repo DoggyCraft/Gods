@@ -32,6 +32,7 @@ import com.dogonfire.gods.model.Quest;
 import com.dogonfire.gods.service.AltarRegistry;
 import com.dogonfire.gods.service.MainAltarRules;
 import com.dogonfire.gods.service.QuestService;
+import com.dogonfire.gods.service.RankRules;
 
 /**
  * /g admin &lt;action&gt; ...: tools for server admins, each through the service method the game (and the API) uses,
@@ -90,11 +91,13 @@ public final class AdminCommand extends SubCommand
 			case "setrank" -> setRank(sender, rest);
 			case "devotion" -> devotion(sender, rest);
 			case "prayerpower" -> prayerPower(sender, rest);
+			case "cooldown" -> cooldown(sender, rest);
 			case "mood" -> mood(sender, rest);
 			case "gender" -> gender(sender, rest);
 			case "godskin" -> godSkin(sender, rest);
 			case "quest" -> quest(sender, rest);
 			case "setaltar" -> setAltar(sender, rest);
+			case "priest" -> priest(sender, rest);
 			default -> throw new CommandException("command.admin.unknown", Messages.text("action", action));
 		}
 	}
@@ -310,6 +313,60 @@ public final class AdminCommand extends SubCommand
 		send(sender, "command.admin.prayerpower.done", Messages.player(name), Messages.amount(this.ctx.believerService().getPrayerPower(playerId)));
 	}
 
+	private void cooldown(CommandSender sender, List<String> args) throws CommandException
+	{
+		need("cooldown", args, 1, 1);
+		UUID playerId = believer(args.getFirst());
+		String name = playerName(playerId, args.getFirst());
+		if (!this.ctx.believerService().resetPrayerCooldown(playerId))
+		{
+			throw new CommandException("command.admin.cooldown.none", Messages.player(name));
+		}
+		this.ctx.plugin().log(sender.getName() + " reset the prayer cooldown of " + name);
+		send(sender, "command.admin.cooldown.done", Messages.player(name));
+	}
+
+	/**
+	 * Makes a believer a priest of their god, or no longer one, through the game's own {@code PriestService.assignPriest}
+	 * and {@code removePriest} (console commands, events); a new priest may take the god over its usual number of priests
+	 */
+	private void priest(CommandSender sender, List<String> args) throws CommandException
+	{
+		need("priest", args, 1, 2);
+		UUID playerId = believer(args.getFirst());
+		String name = playerName(playerId, args.getFirst());
+		String believed = this.ctx.believerService().getGodForBeliever(playerId);
+		String godName = args.size() > 1 ? god(args.get(1)) : believed;
+		if (!godName.equalsIgnoreCase(believed))
+		{
+			throw new CommandException("command.admin.priest.not-believer", Messages.player(name), Messages.god(godName));
+		}
+		godName = believed;
+		// The stored priests, so a priest who stopped praying (left out of getPriestsForGod) can be removed too
+		God god = this.ctx.storage().gods().find(godName);
+		if (god != null && god.priests().contains(playerId))
+		{
+			this.ctx.priestService().removePriest(godName, playerId);
+			this.ctx.plugin().log(sender.getName() + " removed " + name + " as priest of " + godName);
+			send(sender, "command.admin.priest.removed", Messages.player(name), Messages.god(godName));
+			return;
+		}
+		if (!this.ctx.priestService().assignPriest(godName, playerId))
+		{
+			throw new CommandException("command.cancelled");
+		}
+		this.ctx.plugin().log(sender.getName() + " made " + name + " priest of " + godName);
+		send(sender, "command.admin.priest.assigned", Messages.player(name), Messages.god(godName));
+		God changed = this.ctx.storage().gods().find(godName);
+		int priests = changed != null ? changed.priests().size() : 0;
+		int max = RankRules.maxPriests(this.ctx.settings().priests().maxPerGod(), this.ctx.rankService().getRank(godName),
+				this.ctx.settings().ranks().unlocks().extraPriest());
+		if (priests > max)
+		{
+			send(sender, "command.admin.priest.over-limit", Messages.god(godName), Messages.amount(priests), Messages.text("max", max));
+		}
+	}
+
 	private void mood(CommandSender sender, List<String> args) throws CommandException
 	{
 		need("mood", args, 2, 2);
@@ -505,6 +562,8 @@ public final class AdminCommand extends SubCommand
 					: List.of();
 			case "devotion" -> position == 1 ? allBelieverNames() : position == 2 ? devotionCompletions(args.get(1)) : List.of();
 			case "prayerpower" -> position == 1 ? allBelieverNames() : position == 2 ? List.of("+10", "-10", "0") : List.of();
+			case "cooldown" -> position == 1 ? allBelieverNames() : List.of();
+			case "priest" -> position == 1 ? allBelieverNames() : position == 2 ? godNames() : List.of();
 			case "mood" -> position == 1 ? godNames() : position == 2 ? List.of("+10", "-10", "0", "=-50", "50") : List.of();
 			case "gender" -> position == 1 ? godNames() : position == 2 ? List.of("god", "goddess", "deity") : List.of();
 			case "godskin" -> position == 1 ? godNames() : position == 2 ? withReset(onlinePlayerNames(sender)) : List.of();

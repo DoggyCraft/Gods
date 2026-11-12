@@ -13,7 +13,8 @@ import java.util.function.Function;
 public final class AdminArgs
 {
 	/** The actions of /g admin, in the order help lists them; each needs gods.admin.&lt;action&gt; */
-	public static final List<String> ACTIONS = List.of("info", "setrank", "devotion", "prayerpower", "mood", "gender", "godskin", "quest", "setaltar");
+	public static final List<String> ACTIONS = List.of("info", "setrank", "devotion", "prayerpower", "cooldown", "mood", "gender", "godskin", "quest", "setaltar",
+			"priest");
 
 	/** What /g admin quest does */
 	public static final List<String> QUEST_ACTIONS = List.of("start", "complete", "fail");

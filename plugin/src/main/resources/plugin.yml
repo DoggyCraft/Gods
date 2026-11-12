@@ -25,11 +25,13 @@ permissions:
       gods.admin.setrank: true
       gods.admin.devotion: true
       gods.admin.prayerpower: true
+      gods.admin.cooldown: true
       gods.admin.mood: true
       gods.admin.gender: true
       gods.admin.godskin: true
       gods.admin.quest: true
       gods.admin.setaltar: true
+      gods.admin.priest: true
       gods.altar.build: true
       gods.altar.pray: true
       gods.altar.sacrifice: true
@@ -239,11 +241,13 @@ permissions:
       gods.admin.setrank: true
       gods.admin.devotion: true
       gods.admin.prayerpower: true
+      gods.admin.cooldown: true
       gods.admin.mood: true
       gods.admin.gender: true
       gods.admin.godskin: true
       gods.admin.quest: true
       gods.admin.setaltar: true
+      gods.admin.priest: true
   gods.admin.info:
     default: op
     description: "Allows /g admin info: a God's rank, stats, devotion, main altar, figure and quest"
@@ -256,6 +260,9 @@ permissions:
   gods.admin.prayerpower:
     default: op
     description: "Allows /g admin prayerpower: set a believer's prayer power"
+  gods.admin.cooldown:
+    default: op
+    description: "Allows /g admin cooldown: let a believer pray again at once"
   gods.admin.mood:
     default: op
     description: "Allows /g admin mood: change a God's mood"
@@ -271,3 +278,6 @@ permissions:
   gods.admin.setaltar:
     default: op
     description: "Allows /g admin setaltar: make the altar you look at a God's main altar"
+  gods.admin.priest:
+    default: op
+    description: "Allows /g admin priest: make a believer a priest of their God, or no longer one"

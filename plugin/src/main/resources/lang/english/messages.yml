@@ -854,6 +854,25 @@ command:
       parameters: \<god>
       description: Make the praying altar you look at a God's main altar (the other answers are command.setaltar's)
       no-altar: <red>Look at the sign, the block or the light of an altar, at most 5 blocks away
+    cooldown:
+      parameters: \<player>
+      description: Let a believer pray again at once (their last prayer moves back just enough)
+      # <player>, whose prayer cooldown already is over
+      none: <yellow><gold><player></gold> can already pray
+      # <player>
+      done: <aqua><gold><player></gold> can pray again now
+    priest:
+      parameters: \<player> [god]
+      description: Make a believer a priest of their God, or no longer one (with the priest commands and events)
+      # <player>, and <god>: the God given, which they don't believe in
+      not-believer: <red><player> does not believe in <gold><god>
+      # <player> and <god>
+      assigned: <aqua><gold><player></gold> is now a priest of <gold><god>
+      # <player> and <god>
+      removed: <aqua><gold><player></gold> is no longer a priest of <gold><god>
+      # <god>, <amount> priests it has now and <max> it may usually have (priests.max-per-god and the rank's extra
+      # priest)
+      over-limit: <yellow><gold><god></gold> now has <amount> priests, more than the <max> it usually may have
   access:
     parameters: '[open/close]'
     description: Set your religion as open or invite only

@@ -158,6 +158,26 @@ public class BelieverService
 		return true;
 	}
 
+	/**
+	 * Lets the believer pray again at once (/g admin cooldown) by moving their last prayer back to just as long ago as
+	 * prayers.min-minutes-between-prayers ({@link BelieverRules#cooldownReset}); it stays a recent prayer, so the decay
+	 * of their prayer power is hardly moved.
+	 *
+	 * @return false if no cooldown was running
+	 */
+	public boolean resetPrayerCooldown(UUID believerId)
+	{
+		Believer believer = find(believerId);
+		Instant reset = BelieverRules.cooldownReset(believer != null ? believer.lastPrayer() : null, now(), ctx.settings().prayers().minMinutesBetweenPrayers());
+		if (reset == null)
+		{
+			return false;
+		}
+		believer.setLastPrayer(reset);
+		changed();
+		return true;
+	}
+
 	public void setLastPrayerDate(UUID believerId)
 	{
 		getOrCreate(believerId).setLastPrayer(now());

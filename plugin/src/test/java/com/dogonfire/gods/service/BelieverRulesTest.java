@@ -30,6 +30,19 @@ class BelieverRulesTest
 	}
 
 	@Test
+	void resettingTheCooldownMovesTheLastPrayerBackJustEnough()
+	{
+		Instant reset = BelieverRules.cooldownReset(NOW.minus(Duration.ofMinutes(2)), NOW, 30);
+		assertEquals(NOW.minus(Duration.ofMinutes(30)), reset);
+		Believer believer = believer("Thor", 3, Duration.ZERO);
+		believer.setLastPrayer(reset);
+		assertTrue(BelieverRules.canPray(believer, "Thor", NOW, 30));
+		assertNull(BelieverRules.cooldownReset(NOW.minus(Duration.ofMinutes(30)), NOW, 30), "the cooldown is over");
+		assertNull(BelieverRules.cooldownReset(NOW.minus(Duration.ofDays(3)), NOW, 30), "long ago: the decay's start stays");
+		assertNull(BelieverRules.cooldownReset(null, NOW, 30), "never prayed");
+	}
+
+	@Test
 	void aPrayerCountsOnlyAfterTheMinimumTime()
 	{
 		assertFalse(BelieverRules.canPray(believer("Thor", 3, Duration.ofMinutes(4)), "Thor", NOW, 5));
