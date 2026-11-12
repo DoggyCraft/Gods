@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -29,8 +30,9 @@ import com.dogonfire.gods.util.LegacyDates;
 
 /**
  * Holy lands: one land per altar, a set of chunks ({@link ChunkKey}) a god claims when a believer builds or prays at
- * the altar and that grows with the god's rank ({@link #claim}), neutral land chunks set by admins, and attacks on holy
- * lands (the rules are in {@link HolyLandContest}). Owns every change to holyland.yml ({@link HolyLandRepository});
+ * the altar and that grows with the god's rank ({@link #claim}), claim lands (a priest's GriefPrevention claim made holy
+ * land with /g holyclaim, {@link #holyClaim}; it wins over chunks it overlaps), neutral land chunks set by admins, and
+ * attacks on holy lands (the rules are in {@link HolyLandContest}). Owns every change to holyland.yml ({@link HolyLandRepository});
  * every change is written at once, as before. The events are handled by {@code listener/HolyLandListener}. Its data is
  * only loaded while holy land is enabled. Main thread only.
  */
@@ -90,9 +92,53 @@ public class HolyLandService
 		return ChunkKey.sameChunk(one.getBlockX(), one.getBlockZ(), two.getBlockX(), two.getBlockZ()) && one.getWorld() == two.getWorld();
 	}
 
+	/**
+	 * The holy land at a location: the claim land of the GriefPrevention claim there (it wins over a land of chunks
+	 * overlapping it), else the land of its chunk
+	 */
 	private HolyLand find(Location location)
 	{
-		return this.repository.find(chunkOf(location));
+		HolyLand claimLand = claimLandAt(location);
+		return claimLand != null ? claimLand : this.repository.find(chunkOf(location));
+	}
+
+	/**
+	 * Whether claim lands count in lookups now: only while GriefPrevention is on the server and there is a claim land.
+	 * Without GriefPrevention claim lands stay in holyland.yml untouched but hold no land.
+	 */
+	public boolean watchesClaims()
+	{
+		return this.repository.hasClaimLands() && ctx.griefPrevention() != null;
+	}
+
+	/**
+	 * Whether two locations of a player's move may be in different claim lands though they are in the same chunk: while
+	 * claim lands count, when the claim land at both differs (only asked when the block x or z changed)
+	 */
+	public boolean crossesClaimLandBorder(Location from, Location to)
+	{
+		if (!watchesClaims() || (from.getBlockX() == to.getBlockX() && from.getBlockZ() == to.getBlockZ()))
+		{
+			return false;
+		}
+		return claimLandAt(from) != claimLandAt(to);
+	}
+
+	/** The claim land of the top-level GriefPrevention claim at a location (any height), or null; no lookup without claim lands */
+	private HolyLand claimLandAt(Location location)
+	{
+		if (!watchesClaims() || location.getWorld() == null)
+		{
+			return null;
+		}
+		Long claimId = ctx.griefPrevention().topLevelClaimIdAt(location);
+		return claimId != null ? this.repository.findClaim(claimId) : null;
+	}
+
+	/** Whether the GriefPrevention claim of this id is a claim land */
+	public boolean isClaimLand(long claimId)
+	{
+		return this.repository.findClaim(claimId) != null;
 	}
 
 	/** Whether a chunk belongs to no holy land and isn't neutral land */
@@ -203,6 +249,11 @@ public class HolyLandService
 
 		for (HolyLand land : lands)
 		{
+			// Nobody can pray in a claim land while GriefPrevention is missing: it is left as it is
+			if (land.isClaim() && ctx.griefPrevention() == null)
+			{
+				continue;
+			}
 			Instant lastPrayer = land.lastPrayerTime();
 			// A time that couldn't be read (kept as it was in the extras, under its key in holyland.yml) proves nothing
 			if (lastPrayer == null && land.extras().containsKey("LastPrayerTime"))
@@ -246,14 +297,18 @@ public class HolyLandService
 		}
 	}
 
-	/** How many holy lands (one per altar that claimed land) the god holds */
+	/**
+	 * How many holy lands the god holds: one per altar that claimed land and one per claim land (/g holyclaim), whatever
+	 * its size; claim lands only while GriefPrevention is on the server
+	 */
 	public int getHolyLandsForGod(String godName)
 	{
 		int lands = 0;
+		boolean claims = ctx.griefPrevention() != null;
 
 		for (HolyLand land : this.repository.all())
 		{
-			if (godName != null && godName.equals(land.godName()))
+			if (godName != null && godName.equals(land.godName()) && (claims || !land.isClaim()))
 			{
 				lands++;
 			}
@@ -303,6 +358,18 @@ public class HolyLandService
 	 */
 	private void claim(Player player, String godName, Location altarBlock, Location sign, boolean built)
 	{
+		// In a claim land the claim is the land: the god's own counts as prayed in, no chunks are claimed in any
+		HolyLand claimLand = claimLandAt(altarBlock);
+		if (claimLand != null)
+		{
+			if (godName.equals(claimLand.godName()))
+			{
+				claimLand.setLastPrayerTime(DATES.now());
+				this.repository.save();
+			}
+			return;
+		}
+
 		ChunkKey center = chunkOf(altarBlock);
 		List<ChunkKey> footprint = HolyLandRules.footprint(center.world(), altarBlock.getBlockX(), altarBlock.getBlockZ(), sign.getBlockX(), sign.getBlockZ());
 		HolyLand land = this.repository.find(center);
@@ -372,8 +439,14 @@ public class HolyLandService
 	 */
 	public boolean altarRemoved(String godName, BlockPos block)
 	{
+		if (godName == null)
+		{
+			return;
+		}
+		claimLandAltarRemoved(godName, block);
+
 		HolyLand land = this.repository.find(ChunkKey.of(block.world(), block.x(), block.z()));
-		if (land == null || godName == null)
+		if (land == null)
 		{
 			return false;
 		}
@@ -396,6 +469,177 @@ public class HolyLandService
 		ctx.plugin().log("The holy land " + land.name() + " of " + godName + " in " + land.worldName() + " at chunk " + land.center().coordinates() + " is gone with its altar.");
 		ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.lost-altar", Messages.god(godName), Messages.text("name", land.name() != null ? land.name() : ""));
 		return true;
+	}
+
+	// ---------------------------------------------------------------------
+	// Claim lands (/g holyclaim: a priest's GriefPrevention claim is the holy land of their god)
+
+	/** The altar blocks of the god's registered praying altars */
+	private List<BlockPos> prayingAltarBlocks(String godName)
+	{
+		List<BlockPos> blocks = new ArrayList<BlockPos>();
+		for (Altar altar : ctx.altarRegistry().forGod(godName))
+		{
+			if (altar.kind() == AltarKind.PRAYING)
+			{
+				blocks.add(altar.block());
+			}
+		}
+		return blocks;
+	}
+
+	/**
+	 * /g holyclaim: {@code player}, a priest of {@code godName}, makes the GriefPrevention claim they stand in the holy
+	 * land of their god, or releases it when it already is ({@link HolyClaimRules#decide}). A new claim land counts as one
+	 * holy land whatever the claim's size, fires the cancellable {@link HolyLandClaimEvent} (at the altar block in it),
+	 * and the god tells its believers; a release tells them too.
+	 *
+	 * @return what was done or why not
+	 */
+	public HolyClaimRules.Answer holyClaim(Player player, String godName)
+	{
+		HolyClaimRules.ClaimInfo claim = ctx.griefPrevention() != null ? ctx.griefPrevention().claimInfoAt(player.getLocation(), false) : null;
+		HolyLand existing = claim != null ? this.repository.findClaim(claim.id()) : null;
+		BlockPos altar = null;
+		if (claim != null)
+		{
+			for (BlockPos block : prayingAltarBlocks(godName))
+			{
+				if (claim.contains(block))
+				{
+					altar = block;
+					break;
+				}
+			}
+		}
+		// A claim land without a god (a hand edit) is nobody's to take
+		String claimLandGod = existing == null ? null : existing.godName() != null ? existing.godName() : "";
+		HolyClaimRules.Answer answer = HolyClaimRules.decide(claim, player.getUniqueId(), godName, claimLandGod, altar != null, getHolyLandsForGod(godName), getMaximumHolyLandsForGod(godName));
+
+		if (answer == HolyClaimRules.Answer.RELEASE)
+		{
+			this.repository.remove(existing);
+			this.repository.save();
+			ctx.plugin().log(player.getName() + " released the GriefPrevention claim " + claim.id() + " in " + claim.world() + ": it is no longer the holy land " + existing.name() + " of " + godName + ".");
+			ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.claim-released", Messages.god(godName), Messages.player(player.getName()), Messages.text("name", nullToEmpty(existing.name())));
+		}
+		else if (answer == HolyClaimRules.Answer.CLAIM)
+		{
+			Location altarBlock = new Location(player.getWorld(), altar.x(), altar.y(), altar.z());
+			if (ctx.fire(new HolyLandClaimEvent(godName, player, altarBlock)).isCancelled())
+			{
+				return HolyClaimRules.Answer.CANCELLED;
+			}
+			HolyLand land = this.repository.createClaim(ChunkKey.of(altar.world(), altar.x(), altar.z()), claim.id());
+			giveLand(land, godName);
+			land.setWorldName(altar.world());
+			land.setName(generateHolyLandName(altarBlock.getBlock().getBiome()));
+			this.repository.save();
+			ctx.plugin().log(player.getName() + " made the GriefPrevention claim " + claim.id() + " in " + claim.world() + " the holy land " + land.name() + " of " + godName + ".");
+			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CLAIMED_HOLY_LAND, 1, Messages.player(player.getName()));
+		}
+		return answer;
+	}
+
+	/**
+	 * A praying altar of {@code godName} with its altar block at {@code block} is gone (the registry has forgotten it):
+	 * the claim land it stood in goes with it when it is the god's and no other registered praying altar of the god
+	 * stands in the claim ({@link HolyClaimRules#goesWithAltar}).
+	 */
+	private void claimLandAltarRemoved(String godName, BlockPos block)
+	{
+		if (!watchesClaims())
+		{
+			return;
+		}
+		World world = ctx.plugin().getServer().getWorld(block.world());
+		if (world == null)
+		{
+			return;
+		}
+		HolyLand land = claimLandAt(new Location(world, block.x(), block.y(), block.z()));
+		if (land == null)
+		{
+			return;
+		}
+		HolyClaimRules.ClaimInfo claim = ctx.griefPrevention().claim(land.claimId());
+		if (HolyClaimRules.goesWithAltar(land.godName(), godName, claim, prayingAltarBlocks(godName)))
+		{
+			removeClaimLand(land, HolyClaimRules.Loss.NO_ALTAR);
+		}
+	}
+
+	/**
+	 * Checks that the claim land of this GriefPrevention claim still is holy land ({@link HolyClaimRules#check}): the
+	 * claim exists and is a player's, and with {@code altarRule} (after a resize) a praying altar of its god still stands
+	 * in it. Nothing happens without GriefPrevention: claim lands are never removed because it is missing.
+	 */
+	public void checkClaimLand(long claimId, boolean altarRule)
+	{
+		HolyLand land = this.repository.findClaim(claimId);
+		if (land == null || ctx.griefPrevention() == null)
+		{
+			return;
+		}
+		HolyClaimRules.ClaimInfo claim = ctx.griefPrevention().claim(claimId);
+		Boolean altarInside = altarRule && claim != null ? HolyClaimRules.anyInside(claim, prayingAltarBlocks(land.godName())) : null;
+		HolyClaimRules.Loss loss = HolyClaimRules.check(claim, altarInside);
+		if (loss != null)
+		{
+			removeClaimLand(land, loss);
+		}
+	}
+
+	/** The god's turn: its claim lands whose claims are gone (also while Gods was off) are no longer holy land */
+	public void checkClaimLands(String godName)
+	{
+		if (ctx.griefPrevention() == null || !this.repository.hasClaimLands())
+		{
+			return;
+		}
+		for (HolyLand land : new ArrayList<HolyLand>(this.repository.claimLands()))
+		{
+			if (godName.equals(land.godName()))
+			{
+				checkClaimLand(land.claimId(), false);
+			}
+		}
+	}
+
+	/**
+	 * GriefPrevention gives the claim of a claim land to {@code newOwner} (null: it becomes an admin claim): the land
+	 * stays only when the new owner is a priest of its god ({@link HolyClaimRules#keptByNewOwner})
+	 */
+	public void claimTransferred(long claimId, UUID newOwner)
+	{
+		HolyLand land = this.repository.findClaim(claimId);
+		if (land == null)
+		{
+			return;
+		}
+		boolean priest = newOwner != null && land.godName() != null && ctx.priestService().isPriestForGod(newOwner, land.godName());
+		if (!HolyClaimRules.keptByNewOwner(newOwner, priest))
+		{
+			removeClaimLand(land, HolyClaimRules.Loss.NEW_OWNER);
+		}
+	}
+
+	private void removeClaimLand(HolyLand land, HolyClaimRules.Loss loss)
+	{
+		this.repository.remove(land);
+		this.repository.save();
+
+		String godName = land.godName();
+		ctx.plugin().log("The holy land " + land.name() + " of " + godName + " (the GriefPrevention claim " + land.claimId() + " in " + land.worldName() + ") is gone: " + loss + ".");
+		if (godName != null)
+		{
+			ctx.godSpeech().sendInfoToBelievers(godName, loss == HolyClaimRules.Loss.NO_ALTAR ? "holy-land.lost-altar" : "holy-land.claim-lost", Messages.god(godName), Messages.text("name", nullToEmpty(land.name())));
+		}
+	}
+
+	private static String nullToEmpty(String text)
+	{
+		return text != null ? text : "";
 	}
 
 	// ---------------------------------------------------------------------

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -186,6 +187,88 @@ class HolyLandRepositoryTest
 		assertNull(storage.holyLands().find(chunk("world", 1, 0)));
 		assertNull(storage.holyLands().find(chunk("world", 0, 0)));
 		assertSame(other, storage.holyLands().find(chunk("world", 5, 5)));
+		storage.close();
+	}
+
+	/** Claim lands (/g holyclaim): a GriefPrevention claim id instead of chunks, indexed by the claim */
+	@Test
+	void claimLandsAreReadAndWrittenBack() throws IOException
+	{
+		Fixtures.copy("legacy/holyland-1.0-claims.yml", this.dir, "holyland.yml");
+		Storage storage = Fixtures.storage(this.dir);
+		assertTrue(storage.holyLands().load());
+		assertClaimLands(storage);
+		String before = Fixtures.snapshot(storage.holyLands());
+		storage.holyLands().markDirty();
+		storage.close();
+
+		YamlConfiguration written = written();
+		assertEquals(3, written.getInt("data-version"));
+		assertEquals(42L, written.getLong("Holylands.world.claim-42.Claim"));
+		assertEquals("3,-2", written.getString("Holylands.world.claim-42.Center"));
+		assertFalse(written.contains("Holylands.world.claim-42.Chunks"), "a claim land has no chunks");
+		assertEquals("red", written.getString("Holylands.world.claim-42.Banner"));
+		assertEquals(List.of("99,99"), written.getStringList("Holylands.world.claim-43.Chunks"), "chunks on a claim land are kept as they are");
+		assertEquals("Thor", written.getString("Holylands.world.claim-43.AttackingGodName"));
+		assertEquals(43L, written.getLong("Holylands.world.claim-copy.Claim"), "a second land of the same claim is kept");
+		assertEquals("not a number", written.getString("Holylands.world.claim-bad.Claim"));
+		assertEquals(List.of("12,12", "12,13"), written.getStringList("Holylands.world.12,12.Chunks"));
+
+		Storage again = Fixtures.storage(this.dir);
+		assertTrue(again.holyLands().load());
+		assertEquals(before, Fixtures.snapshot(again.holyLands()));
+		assertClaimLands(again);
+		again.close();
+	}
+
+	private static void assertClaimLands(Storage storage)
+	{
+		assertEquals(3, storage.holyLands().size());
+		assertTrue(storage.holyLands().hasClaimLands());
+		assertEquals(2, storage.holyLands().claimLands().size());
+
+		HolyLand odin = storage.holyLands().findClaim(42);
+		assertTrue(odin.isClaim());
+		assertEquals(42L, odin.claimId());
+		assertEquals("claim-42", odin.id());
+		assertEquals("Odin", odin.godName());
+		assertEquals("Rockhill", odin.name());
+		assertEquals(chunk("world", 3, -2), odin.center());
+		assertTrue(odin.chunks().isEmpty());
+		assertEquals(LegacyDates.MINUTES.parse("21:15 14-03-2025"), odin.lastPrayerTime());
+		assertEquals("red", odin.extras().get("Banner"));
+		assertNull(storage.holyLands().find(chunk("world", 3, -2)), "a claim land holds no chunks");
+
+		HolyLand loki = storage.holyLands().findClaim(43);
+		assertEquals("claim-43", loki.id(), "the first land of a claim counts");
+		assertEquals("Thor", loki.attackingGodName());
+		assertEquals(2, loki.defenderKills());
+		assertTrue(loki.chunks().isEmpty());
+
+		HolyLand thor = storage.holyLands().find(chunk("world", 12, 13));
+		assertEquals("Thor", thor.godName());
+		assertFalse(thor.isClaim());
+		assertNull(thor.claimId());
+		assertNull(storage.holyLands().findClaim(44));
+	}
+
+	@Test
+	void claimLandsAreMadeAndRemovedByTheirClaim() throws IOException
+	{
+		Storage storage = Fixtures.storage(this.dir);
+		storage.holyLands().load();
+		assertFalse(storage.holyLands().hasClaimLands());
+		HolyLand land = storage.holyLands().createClaim(chunk("world", 2, 2), 7);
+		assertEquals("claim-7", land.id());
+		assertSame(land, storage.holyLands().findClaim(7));
+		assertTrue(storage.holyLands().hasClaimLands());
+		assertFalse(storage.holyLands().addChunk(land, chunk("world", 2, 2)), "a claim land takes no chunks");
+		assertNull(storage.holyLands().find(chunk("world", 2, 2)));
+
+		storage.holyLands().remove(land);
+		assertNull(storage.holyLands().findClaim(7));
+		assertFalse(storage.holyLands().hasClaimLands());
+		assertEquals(0, storage.holyLands().size());
 		storage.close();
 	}
 

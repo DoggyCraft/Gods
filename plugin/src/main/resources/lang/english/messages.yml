@@ -215,6 +215,11 @@ holy-land:
   cannot-claim-more: <red>Your religion cannot hold more Holy Lands
   # To the online believers of <god> when the last of its altars in its Holy Land <name> is gone, and the land with it
   lost-altar: '<red>The Holy Land <hl><name></hl> of <hl><god></hl> is lost with its last altar'
+  # To the online believers of <god> when a priest, <player>, releases the claim that was its Holy Land <name> (/g holyclaim)
+  claim-released: '<yellow><player> released the claim that was <hl><name></hl>, Holy Land of <hl><god></hl>'
+  # To the online believers of <god> when the GriefPrevention claim that was its Holy Land <name> is deleted or given to
+  # someone who is not a priest of <god>
+  claim-lost: '<red>The Holy Land <hl><name></hl> of <hl><god></hl> is lost with its claim'
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
   attacking-hint: <aqua>Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
   # <minutes> left of the battle
@@ -683,6 +688,7 @@ command:
     quests: <red>Quests are not enabled on this server
     npc: <red>God figures at altars are not enabled on this server
     devotion: <red>Devotion is not enabled on this server
+    griefprevention: <red>GriefPrevention is not installed on this server
   admin:
     parameters: \<action> ...
     description: Admin tools for gods and believers (/g admin lists them)
@@ -949,6 +955,24 @@ command:
     # needs, as the god type calls it
     devotion-locked: <red><gold><god></gold> only trusts a <hl><level></hl> or more with a Holy Artifact. Serve your God, and /g devotion shows how far you are
     done: <gold><god><aqua> gave <player> a Holy artifact!
+  holyclaim:
+    parameters: ''
+    description: Make the GriefPrevention claim you stand in the Holy Land of your God, or release it
+    not-priest: <red>Only priests can make a claim Holy Land
+    no-claim: <red>Stand in your GriefPrevention claim to make it Holy Land
+    subclaim: <red>Only a whole claim can be Holy Land. Step out of the subclaim
+    admin-claim: <red>An admin claim cannot be Holy Land
+    not-owner: <red>Only the owner of this claim can make it Holy Land
+    # <god> owning the claim's Holy Land
+    other-god: <red>This claim already is the Holy Land of <gold><god>
+    # <god> is the priest's own God
+    no-altar: <red>Build an altar to <gold><god></gold> in this claim first
+    # <max> Holy Lands the religion may hold (a claim counts as one, whatever its size)
+    at-limit: <red>Your religion already holds <hl><max></hl> Holy Lands, as many as it may
+    # <god> is the priest's own God
+    released: <aqua>This claim is no longer the Holy Land of <gold><god>
+    # <god>, the Holy Land's <name>, and the <claimed> Holy Lands of the <max> the religion may hold
+    done: <aqua>This claim is now <hl><name></hl>, Holy Land of <gold><god></gold>. Your religion holds <hl><claimed></hl>/<hl><max></hl> Holy Lands
   home:
     parameters: ''
     description: Teleport to the home of your religion, its main altar

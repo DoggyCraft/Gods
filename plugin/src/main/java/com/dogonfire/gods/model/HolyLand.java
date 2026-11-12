@@ -8,16 +8,18 @@ import java.util.Set;
 
 /**
  * The holy land of one altar: the chunks a god claimed when a believer built or prayed at the altar (its center chunk
- * is the altar block's), and the state of an attack on it by another god (a priest started it). In holyland.yml it is
- * {@code Holylands.<world key>.<id>} with the keys noted on the fields; times are {@code "HH:mm dd-MM-yyyy"}. A plain
- * data object: {@code HolyLandService} changes it; its chunks change through {@code HolyLandRepository}, which indexes
- * them.
+ * is the altar block's), and the state of an attack on it by another god (a priest started it). A claim land
+ * ({@link #isClaim()}) is a GriefPrevention claim a priest made holy land with /g holyclaim instead: it has no chunks,
+ * the claim's area is the land. In holyland.yml it is {@code Holylands.<world key>.<id>} with the keys noted on the
+ * fields; times are {@code "HH:mm dd-MM-yyyy"}. A plain data object: {@code HolyLandService} changes it; its chunks
+ * change through {@code HolyLandRepository}, which indexes them (and claim lands by their claim).
  */
 public final class HolyLand
 {
-	private final String		id;					// the key under the world: the center chunk's "x,z" when it was made
+	private final String		id;					// the key under the world: the center chunk's "x,z" when it was made; "claim-<id>" for a claim land
 	private final ChunkKey		center;				// Center: the chunk of the altar block it was claimed from
-	private final Set<ChunkKey>	chunks				= new LinkedHashSet<ChunkKey>();	// Chunks, the center among them
+	private final Set<ChunkKey>	chunks				= new LinkedHashSet<ChunkKey>();	// Chunks, the center among them; none for a claim land
+	private final Long			claimId;			// Claim: the GriefPrevention claim that is the land; null for a land of chunks
 
 	private String				godName;			// GodName
 	private String				name;				// Name, generated from the biome
@@ -35,11 +37,33 @@ public final class HolyLand
 	/** Keys of the entry this version doesn't know, written back unchanged */
 	private Map<String, Object>	extras				= new LinkedHashMap<String, Object>();
 
+	/** A land of chunks, its center among them */
 	public HolyLand(String id, ChunkKey center)
 	{
 		this.id = id;
 		this.center = center;
+		this.claimId = null;
 		this.chunks.add(center);
+	}
+
+	/** A claim land: the GriefPrevention claim {@code claimId} is the land; {@code center} is its altar block's chunk */
+	public HolyLand(String id, ChunkKey center, long claimId)
+	{
+		this.id = id;
+		this.center = center;
+		this.claimId = claimId;
+	}
+
+	/** Whether the land is a GriefPrevention claim (/g holyclaim) rather than a set of chunks */
+	public boolean isClaim()
+	{
+		return this.claimId != null;
+	}
+
+	/** The GriefPrevention claim that is the land, or null for a land of chunks */
+	public Long claimId()
+	{
+		return this.claimId;
 	}
 
 	public String id()
@@ -58,7 +82,10 @@ public final class HolyLand
 		return this.center.world();
 	}
 
-	/** Its chunks, the center among them; add and remove them through {@code HolyLandRepository}, which indexes them */
+	/**
+	 * Its chunks, the center among them; none for a claim land. Add and remove them through {@code HolyLandRepository},
+	 * which indexes them
+	 */
 	public Set<ChunkKey> chunks()
 	{
 		return this.chunks;

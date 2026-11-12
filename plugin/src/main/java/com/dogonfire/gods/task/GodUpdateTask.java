@@ -550,6 +550,12 @@ public final class GodUpdateTask implements Runnable
 
 		manageHolyLands();
 
+		// Its claim lands whose GriefPrevention claims are gone (also while Gods was off)
+		if (ctx.settings().holyLand().enabled())
+		{
+			ctx.holyLandService().checkClaimLands(godName);
+		}
+
 		ctx.devotionService().update(godName);
 		// After devotion faded: the quiet period before prayer power decays is that of the level they have now
 		if (ctx.storage().cleanupVerdict() == CleanupGuard.Verdict.ALLOWED)

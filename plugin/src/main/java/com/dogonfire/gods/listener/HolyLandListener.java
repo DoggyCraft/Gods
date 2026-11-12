@@ -477,7 +477,8 @@ public class HolyLandListener implements Listener
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerMove(PlayerMoveEvent event)
 	{
-		if (event.getTo() == null || lands().isSameChunk(event.getFrom(), event.getTo()))
+		// Land changes at chunk borders, and while there are claim lands also at the border of a claim land
+		if (event.getTo() == null || (lands().isSameChunk(event.getFrom(), event.getTo()) && !lands().crossesClaimLandBorder(event.getFrom(), event.getTo())))
 		{
 			return;
 		}

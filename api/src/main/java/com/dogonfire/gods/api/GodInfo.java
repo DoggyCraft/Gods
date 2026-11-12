@@ -26,7 +26,7 @@ import org.bukkit.Location;
  *                       facing the altar; for a god without a main altar, the home stored by Gods before main altars
  *                       (where it was founded or a priest set it with /g sethome), if it has one; null if it has none or
  *                       that world isn't loaded
- * @param holyLandClaims how many holy lands (one per altar that claimed land) the god holds (0 when holy land is switched off)
+ * @param holyLandClaims how many holy lands (one per altar that claimed land, and one per GriefPrevention claim a priest made holy land) the god holds (0 when holy land is switched off)
  * @param quest          the god's current quest, or null if it has none
  * @param created        when the god was created, or null if that isn't known
  * @param mainAltar      the altar block of the god's main altar (the altar it was founded at, else its oldest praying
@@ -66,7 +66,7 @@ public record GodInfo(String name, GodType type, GodGender gender, GodMood mood,
 	 * @param enemies        the gods this god is at war with
 	 * @param description    what its priests wrote about it, or null
 	 * @param home           where the god lives, or null
-	 * @param holyLandClaims how many holy lands (one per altar that claimed land) the god holds
+	 * @param holyLandClaims how many holy lands (one per altar that claimed land, and one per GriefPrevention claim a priest made holy land) the god holds
 	 * @param quest          the god's current quest, or null
 	 * @param created        when the god was created, or null
 	 */
@@ -92,7 +92,7 @@ public record GodInfo(String name, GodType type, GodGender gender, GodMood mood,
 	 * @param enemies        the gods this god is at war with
 	 * @param description    what its priests wrote about it, or null
 	 * @param home           where the god lives, or null
-	 * @param holyLandClaims how many holy lands (one per altar that claimed land) the god holds
+	 * @param holyLandClaims how many holy lands (one per altar that claimed land, and one per GriefPrevention claim a priest made holy land) the god holds
 	 * @param quest          the god's current quest, or null
 	 * @param created        when the god was created, or null
 	 * @param mainAltar      the altar block of the god's main altar, or null
@@ -120,7 +120,7 @@ public record GodInfo(String name, GodType type, GodGender gender, GodMood mood,
 	 * @param enemies        the gods this god is at war with
 	 * @param description    what its priests wrote about it, or null
 	 * @param home           where the god lives, or null
-	 * @param holyLandClaims how many holy lands (one per altar that claimed land) the god holds
+	 * @param holyLandClaims how many holy lands (one per altar that claimed land, and one per GriefPrevention claim a priest made holy land) the god holds
 	 * @param quest          the god's current quest, or null
 	 * @param created        when the god was created, or null
 	 * @param mainAltar      the altar block of the god's main altar, or null

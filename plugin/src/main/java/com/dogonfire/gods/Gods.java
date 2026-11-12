@@ -47,6 +47,7 @@ import com.dogonfire.gods.command.GenderCommand;
 import com.dogonfire.gods.command.GodSkinCommand;
 import com.dogonfire.gods.command.HelpCommand;
 import com.dogonfire.gods.command.HolyArtifactCommand;
+import com.dogonfire.gods.command.HolyClaimCommand;
 import com.dogonfire.gods.command.HomeCommand;
 import com.dogonfire.gods.command.HuntCommand;
 import com.dogonfire.gods.command.InfoCommand;
@@ -77,6 +78,7 @@ import com.dogonfire.gods.config.Themes;
 import com.dogonfire.gods.config.ThemesLoader;
 import com.dogonfire.gods.integration.GodsMetrics;
 import com.dogonfire.gods.integration.GodsPlaceholderExpansion;
+import com.dogonfire.gods.integration.GriefPreventionListener;
 import com.dogonfire.gods.listener.ActionCooldown;
 import com.dogonfire.gods.listener.AltarListener;
 import com.dogonfire.gods.listener.AltarWorldListener;
@@ -353,7 +355,7 @@ public class Gods extends JavaPlugin
 				new AcceptCommand(this.ctx), new AccessCommand(this.ctx), new AdminCommand(this.ctx), new AllyCommand(this.ctx), new AttackCommand(this.ctx),
 				new BibleCommand(this.ctx), new ChatCommand(this.ctx), new CheckCommand(this.ctx), new DescriptionCommand(this.ctx), new DevotionCommand(this.ctx),
 				new DivorceCommand(this.ctx), new EditBibleCommand(this.ctx), new FollowersCommand(this.ctx), new GenderCommand(this.ctx), new GodSkinCommand(this.ctx),
-				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),
+				new HelpCommand(this.ctx, router), new HolyArtifactCommand(this.ctx), new HolyClaimCommand(this.ctx), new HomeCommand(this.ctx), new HuntCommand(this.ctx),
 				new InfoCommand(this.ctx), new InviteCommand(this.ctx), new KickCommand(this.ctx), new LeaveCommand(this.ctx),
 				new ListCommand(this.ctx), new LoveCommand(this.ctx), new MarriagesCommand(this.ctx), new MarryCommand(this.ctx),
 				new PrayForCommand(this.ctx), new PvpCommand(this.ctx), new RankCommand(this.ctx), new RejectCommand(this.ctx), new ReloadCommand(this.ctx),
@@ -403,6 +405,11 @@ public class Gods extends JavaPlugin
 		if (this.settings.holyLand().enabled())
 		{
 			registerFeature(new HolyLandListener(this.ctx));
+			// Claim lands (/g holyclaim) follow their GriefPrevention claims
+			if (this.ctx.griefPrevention() != null)
+			{
+				registerFeature(new GriefPreventionListener(this.ctx));
+			}
 			if (this.settings.holyLand().protection() == Settings.HolyLandProtection.AUTO)
 			{
 				String claimPlugin = this.ctx.holyLandService().claimPlugin();

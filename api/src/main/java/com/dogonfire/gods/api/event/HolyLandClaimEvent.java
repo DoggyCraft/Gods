@@ -9,7 +9,8 @@ import org.bukkit.event.HandlerList;
  * A god is about to claim a new holy land, because a believer built an altar or prayed at one whose chunk is free.
  * Each altar claims its own holy land: the chunks of the altar block, its sign and the spot in front of the sign, and
  * the square of chunks around the altar's chunk that the god's rank gives it (it grows as the god rises, without this
- * event). Cancelling it leaves the land free.
+ * event). It is also fired when a priest makes their GriefPrevention claim the god's holy land with /g holyclaim (the
+ * player is the priest, the location the altar block in the claim). Cancelling it leaves the land free.
  */
 public class HolyLandClaimEvent extends GodEvent implements Cancellable
 {
@@ -37,7 +38,7 @@ public class HolyLandClaimEvent extends GodEvent implements Cancellable
 		return this.player;
 	}
 
-	/** The altar block, in the center chunk of the land that is claimed (a copy) */
+	/** The altar block, in the center chunk of the land that is claimed or in the claim made holy land (a copy) */
 	public Location getLocation()
 	{
 		return this.location.clone();

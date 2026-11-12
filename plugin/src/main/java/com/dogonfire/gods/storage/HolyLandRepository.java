@@ -30,11 +30,15 @@ import com.dogonfire.gods.util.LegacyDates;
  * Holylands.&lt;world key&gt;."cx,cz" (the land's id: its center chunk when it was made):
  *     GodName, Name, World, Center: "cx,cz", Chunks: ["cx,cz", ...], FirstPrayerTime, LastPrayerTime,
  *     AttackingGodName, ContestedTime, AttackerKills, DefenderKills, Desecration
+ * Holylands.&lt;world key&gt;.claim-&lt;claim id&gt; (a claim land, /g holyclaim):
+ *     GodName, Name, World, Center: "cx,cz" (its altar's chunk), Claim: &lt;GriefPrevention claim id&gt;, FirstPrayerTime,
+ *     LastPrayerTime and the attack keys; no Chunks (the claim is the land)
  * NeutralLands.&lt;world key&gt;."cx,cz": &lt;time set&gt;
  * </pre>
  * The world key is the world name with '.' replaced by '_'. The ids are {@code "cx,cz"}, not {@code cx_cz}: YAML 1.1
  * reads {@code 3_4} as the number 34. Version 1 is upgraded by {@link HolyLandsV1ToV2}, version 2 (128x128 block
- * regions) by {@link HolyLandsV2ToV3}.
+ * regions) by {@link HolyLandsV2ToV3}. {@code Claim} is a key of 1.0.0 that needed no new version. Claim lands are
+ * indexed by their claim id; a second land of the same claim (a hand edit) is kept in the file but not used.
  */
 public final class HolyLandRepository extends Repository
 {
@@ -49,6 +53,8 @@ public final class HolyLandRepository extends Repository
 	private static final String				WORLD				= "World";
 	private static final String				CENTER				= "Center";
 	private static final String				CHUNKS				= "Chunks";
+	private static final String				CLAIM				= "Claim";
+	private static final String				CLAIM_ID_PREFIX		= "claim-";
 	private static final String				FIRST_PRAYER_TIME	= "FirstPrayerTime";
 	private static final String				LAST_PRAYER_TIME	= "LastPrayerTime";
 	private static final String				ATTACKING_GOD_NAME	= "AttackingGodName";
@@ -59,6 +65,9 @@ public final class HolyLandRepository extends Repository
 
 	private static final Set<String>		KNOWN				= Set.of(GOD_NAME, NAME, WORLD, CENTER, CHUNKS, FIRST_PRAYER_TIME, LAST_PRAYER_TIME, ATTACKING_GOD_NAME,
 			CONTESTED_TIME, ATTACKER_KILLS, DEFENDER_KILLS, DESECRATION);
+	// A claim land has no chunks: Chunks on one (a hand edit) is kept as it is
+	private static final Set<String>		KNOWN_CLAIM			= Set.of(GOD_NAME, NAME, WORLD, CENTER, CLAIM, FIRST_PRAYER_TIME, LAST_PRAYER_TIME, ATTACKING_GOD_NAME,
+			CONTESTED_TIME, ATTACKER_KILLS, DEFENDER_KILLS, DESECRATION);
 
 	private static final LegacyDates		DATES				= LegacyDates.MINUTES;
 
@@ -66,6 +75,8 @@ public final class HolyLandRepository extends Repository
 	private final Map<String, HolyLand>			lands			= new LinkedHashMap<String, HolyLand>();
 	// Every claimed chunk to its land
 	private final Map<ChunkKey, HolyLand>		byChunk			= new HashMap<ChunkKey, HolyLand>();
+	// Every claim land by its GriefPrevention claim id
+	private final Map<Long, HolyLand>			byClaim			= new HashMap<Long, HolyLand>();
 	private final Map<ChunkKey, NeutralLand>	neutralLands	= new LinkedHashMap<ChunkKey, NeutralLand>();
 	// Entries under Holylands/NeutralLands that aren't a land or a chunk: "Holylands.<world>.<key>" -> value
 	private final Map<String, Object>			unknownEntries	= new LinkedHashMap<String, Object>();
@@ -112,9 +123,48 @@ public final class HolyLandRepository extends Repository
 		return land;
 	}
 
-	/** Adds a free chunk (of the land's world) to the land; false if another land holds it */
+	/** The claim land of this GriefPrevention claim, or null */
+	public HolyLand findClaim(long claimId)
+	{
+		return this.byClaim.get(claimId);
+	}
+
+	/** Whether any holy land is a claim land (lookups by location only ask GriefPrevention then) */
+	public boolean hasClaimLands()
+	{
+		return !this.byClaim.isEmpty();
+	}
+
+	/** The claim lands */
+	public Collection<HolyLand> claimLands()
+	{
+		return Collections.unmodifiableCollection(this.byClaim.values());
+	}
+
+	/**
+	 * A new claim land of the GriefPrevention claim {@code claimId}, which must not be one yet; {@code center} is the
+	 * chunk of its altar block (and gives its world). Its id is {@code "claim-<id>"}.
+	 */
+	public HolyLand createClaim(ChunkKey center, long claimId)
+	{
+		String id = CLAIM_ID_PREFIX + claimId;
+		for (int n = 2; this.lands.containsKey(center.world() + "." + id); n++)
+		{
+			id = CLAIM_ID_PREFIX + claimId + "#" + n;
+		}
+		HolyLand land = new HolyLand(id, center, claimId);
+		this.lands.put(center.world() + "." + id, land);
+		this.byClaim.put(claimId, land);
+		return land;
+	}
+
+	/** Adds a free chunk (of the land's world) to the land; false if another land holds it or the land is a claim land */
 	public boolean addChunk(HolyLand land, ChunkKey chunk)
 	{
+		if (land.isClaim())
+		{
+			return false;
+		}
 		HolyLand holder = this.byChunk.get(chunk);
 		if (holder != null)
 		{
@@ -131,6 +181,10 @@ public final class HolyLandRepository extends Repository
 		for (ChunkKey chunk : land.chunks())
 		{
 			this.byChunk.remove(chunk, land);
+		}
+		if (land.isClaim())
+		{
+			this.byClaim.remove(land.claimId(), land);
 		}
 	}
 
@@ -173,6 +227,7 @@ public final class HolyLandRepository extends Repository
 	{
 		this.lands.clear();
 		this.byChunk.clear();
+		this.byClaim.clear();
 		this.neutralLands.clear();
 		this.unknownEntries.clear();
 		this.rawNeutralTimes.clear();
@@ -217,7 +272,7 @@ public final class HolyLandRepository extends Repository
 			}
 		}
 
-		logger().info("Loaded " + this.lands.size() + " holy lands (" + this.byChunk.size() + " chunks) and " + this.neutralLands.size() + " neutral chunks.");
+		logger().info("Loaded " + this.lands.size() + " holy lands (" + this.byChunk.size() + " chunks, " + this.byClaim.size() + " claim lands) and " + this.neutralLands.size() + " neutral chunks.");
 	}
 
 	private interface EntryReader
@@ -262,9 +317,20 @@ public final class HolyLandRepository extends Repository
 		{
 			return false;
 		}
-		HolyLand land = new HolyLand(id, center);
+		Long claimId = null;
+		if (section.contains(CLAIM))
+		{
+			claimId = readClaimId(section.get(CLAIM));
+			if (claimId == null || this.byClaim.containsKey(claimId))
+			{
+				logger().warning("holyland.yml: the holy land " + HOLY_LANDS + "." + world + "." + id + " has " + (claimId == null ? "no claim id Gods can read" : "the claim " + claimId + " of another holy land")
+						+ "; it is kept in the file but not used.");
+				return false;
+			}
+		}
+		HolyLand land = claimId != null ? new HolyLand(id, center, claimId) : new HolyLand(id, center);
 		// Times that can't be parsed are kept in the extras and written back as they were
-		Map<String, Object> extras = extraKeys(section, KNOWN);
+		Map<String, Object> extras = extraKeys(section, land.isClaim() ? KNOWN_CLAIM : KNOWN);
 		land.setGodName(section.getString(GOD_NAME));
 		land.setName(section.getString(NAME));
 		land.setWorldName(section.getString(WORLD));
@@ -276,6 +342,13 @@ public final class HolyLandRepository extends Repository
 		land.setDefenderKills(section.getInt(DEFENDER_KILLS));
 		land.setDesecration(section.getInt(DESECRATION));
 		land.setExtras(extras);
+
+		if (land.isClaim())
+		{
+			this.lands.put(world + "." + id, land);
+			this.byClaim.put(land.claimId(), land);
+			return true;
+		}
 
 		List<String> unreadable = new ArrayList<String>();
 		for (String coordinates : section.getStringList(CHUNKS))
@@ -308,6 +381,27 @@ public final class HolyLandRepository extends Repository
 		return true;
 	}
 
+	/** A claim id written as a whole number (or text holding one), else null */
+	private static Long readClaimId(Object value)
+	{
+		if (value instanceof Number number && !(value instanceof Double) && !(value instanceof Float))
+		{
+			return number.longValue();
+		}
+		if (value instanceof String text)
+		{
+			try
+			{
+				return Long.parseLong(text.trim());
+			}
+			catch (NumberFormatException e)
+			{
+				return null;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	protected void write(YamlConfiguration yaml)
 	{
@@ -318,12 +412,19 @@ public final class HolyLandRepository extends Repository
 			section.set(NAME, land.name());
 			section.set(WORLD, land.worldName());
 			section.set(CENTER, land.center().coordinates());
-			List<String> chunks = new ArrayList<String>(land.chunks().size());
-			for (ChunkKey chunk : land.chunks())
+			if (land.isClaim())
 			{
-				chunks.add(chunk.coordinates());
+				section.set(CLAIM, land.claimId());
 			}
-			section.set(CHUNKS, chunks);
+			else
+			{
+				List<String> chunks = new ArrayList<String>(land.chunks().size());
+				for (ChunkKey chunk : land.chunks())
+				{
+					chunks.add(chunk.coordinates());
+				}
+				section.set(CHUNKS, chunks);
+			}
 			section.set(FIRST_PRAYER_TIME, DATES.format(land.firstPrayerTime()));
 			section.set(LAST_PRAYER_TIME, DATES.format(land.lastPrayerTime()));
 			if (land.attackingGodName() != null)

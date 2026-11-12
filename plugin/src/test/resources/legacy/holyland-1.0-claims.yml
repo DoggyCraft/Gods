@@ -1,0 +1,48 @@
+data-version: 3
+Holylands:
+  world:
+    12,12:
+      GodName: Thor
+      Name: Upper Flowerfield
+      World: world
+      Center: 12,12
+      Chunks:
+      - 12,12
+      - 12,13
+      FirstPrayerTime: 10:00 01-01-2025
+      LastPrayerTime: 21:15 14-03-2025
+    claim-42:
+      GodName: Odin
+      Name: Rockhill
+      World: world
+      Center: 3,-2
+      Claim: 42
+      FirstPrayerTime: 10:00 01-01-2025
+      LastPrayerTime: 21:15 14-03-2025
+      Banner: red
+    claim-43:
+      GodName: Loki
+      Name: Coldwood
+      World: world
+      Center: 12,13
+      Claim: 43
+      Chunks:
+      - 99,99
+      FirstPrayerTime: 10:00 01-01-2025
+      LastPrayerTime: 21:15 14-03-2025
+      AttackingGodName: Thor
+      ContestedTime: 21:00 14-03-2025
+      AttackerKills: 1
+      DefenderKills: 2
+      Desecration: 0
+    claim-copy:
+      GodName: Loki
+      Center: 1,1
+      Claim: 43
+    claim-bad:
+      GodName: Loki
+      Center: 1,1
+      Claim: not a number
+NeutralLands:
+  world:
+    16,16: 12:00 01-01-2025
