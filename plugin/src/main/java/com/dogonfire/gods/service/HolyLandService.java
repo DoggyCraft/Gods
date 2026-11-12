@@ -367,13 +367,15 @@ public class HolyLandService
 	 * altar; the altar registry has already forgotten it): the land it stands in goes with it when it is the god's and no
 	 * other registered praying altar of the god stands in it ({@link HolyLandRules#goesWithAltar}). The god's online
 	 * believers are told. Depends on the world only, like the registry.
+	 *
+	 * @return whether the land went (and the believers were told)
 	 */
-	public void altarRemoved(String godName, BlockPos block)
+	public boolean altarRemoved(String godName, BlockPos block)
 	{
 		HolyLand land = this.repository.find(ChunkKey.of(block.world(), block.x(), block.z()));
 		if (land == null || godName == null)
 		{
-			return;
+			return false;
 		}
 		List<ChunkKey> otherAltars = new ArrayList<ChunkKey>();
 		for (Altar altar : ctx.altarRegistry().forGod(godName))
@@ -385,7 +387,7 @@ public class HolyLandService
 		}
 		if (!HolyLandRules.goesWithAltar(land.godName(), godName, land.chunks(), otherAltars))
 		{
-			return;
+			return false;
 		}
 
 		this.repository.remove(land);
@@ -393,6 +395,7 @@ public class HolyLandService
 
 		ctx.plugin().log("The holy land " + land.name() + " of " + godName + " in " + land.worldName() + " at chunk " + land.center().coordinates() + " is gone with its altar.");
 		ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.lost-altar", Messages.god(godName), Messages.text("name", land.name() != null ? land.name() : ""));
+		return true;
 	}
 
 	// ---------------------------------------------------------------------

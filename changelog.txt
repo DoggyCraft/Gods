@@ -64,6 +64,8 @@ Fixed (a selection)
 * Titles, holy books, religion chat (mutes, % in god names) and many commands work again.
 * Settings that were saved but never read (bibles on join, give-items quests, item blessing power, ...) now work. A god's own PvP and mob damage settings now apply even when the defaults are on. priests.assign-command / remove-command now run.
 * Building another altar to your own god counted as a prayer, so it was refused during the prayer cooldown and handed out a prayer's rewards. Founding or joining a god by building its altar still counts as a prayer.
+* A god's new altars can only be built of its own god type's blocks (a war goddess's altars of war blocks); altars already standing keep working.
+* The god's believers online hear when one of its praying altars is gone, not only when it was the main altar or took its holy land with it.
 * "Try again in 0 minutes": the wait before praying again is rounded up, and names the god (God, Goddess or Deity) instead of the altar, since praying at the god's figure counts too.
 
 Changed

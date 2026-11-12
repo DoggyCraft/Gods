@@ -178,7 +178,7 @@ public class AltarRegistry
 				dropMainAltar(oldGod, existing, "its sign changed");
 				if (oldKind == AltarKind.PRAYING)
 				{
-					landLost(oldGod, existing);
+					prayingAltarGone(oldGod, existing);
 				}
 			}
 			ctx.altarTexts().show(existing);
@@ -210,18 +210,27 @@ public class AltarRegistry
 		dropMainAltar(altar.god(), altar, why);
 		if (altar.kind() == AltarKind.PRAYING)
 		{
-			landLost(altar.god(), altar);
+			prayingAltarGone(altar.god(), altar);
 		}
 		this.repository.markDirty();
 	}
 
-	/** A praying altar of the god is gone or no longer its praying altar: its holy land may go with it */
-	private void landLost(String godName, Altar altar)
+	/**
+	 * A praying altar of the god is gone or no longer its praying altar: its holy land may go with it, and the god's
+	 * online believers are told once (altar.destroyed, unless the land went and said so)
+	 */
+	private void prayingAltarGone(String godName, Altar altar)
 	{
-		if (godName != null && ctx.settings().holyLand().enabled())
+		if (godName == null || !ctx.godService().godExist(godName))
 		{
-			ctx.holyLandService().altarRemoved(godName, altar.block());
+			return;
 		}
+		if (ctx.settings().holyLand().enabled() && ctx.holyLandService().altarRemoved(godName, altar.block()))
+		{
+			return;
+		}
+		ctx.godSpeech().sendInfoToBelievers(godName, "altar.destroyed", Messages.god(godName), Messages.text("world", altar.world()), Messages.text("x", altar.block().x()),
+				Messages.text("y", altar.block().y()), Messages.text("z", altar.block().z()));
 	}
 
 	/**

@@ -37,6 +37,10 @@ altar:
   invalid-sign: <dark_red>Only write the name of a God on the sign
   # Clicking the sign of an altar whose light is gone
   no-light: <red>This altar has gone dark. Put a light on top of its block (a torch, lantern, candle or fire) to pray here again.
+  # A new altar to an existing god of another god type's block: <god>, <type> (its type and gender, e.g. "Goddess of War")
+  wrong-block: '<red><gold><god></gold> is the <type>: build altars to <god> of the blocks of that kind (<white>/g help blocks</white>)'
+  # To the online believers of <god> when one of its praying altars is gone: <world>, <x>, <y>, <z> of its altar block
+  destroyed: <red>An altar of <hl><god></hl> is gone (<world> <x>, <y>, <z>)
   # The words a player may write on a new altar sign, on another line than the God's name, to choose the God's gender
   # (any case); /gods gender takes them too. English "God", "Goddess" and "Deity" always work. Without one, a new God
   # chooses its gender itself.
