@@ -322,39 +322,49 @@ class ThemesLoaderTest
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
 		assertBundledSkin(themes.defaults().npcSkins().god(), false);
 		assertBundledSkin(themes.defaults().npcSkins().goddess(), true);
-		assertNull(themes.defaults().npcSkins().deity());
+		assertBundledSkin(themes.defaults().npcSkins().deity(), false);
 		assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.EVIL).npcSkins().god(), false);
 		assertEquals(themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().goddess());
 		assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().goddess(), true);
+		assertBundledSkin(themes.of(GodType.LOVE).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.LOVE).npcSkins().goddess(), false);
 		assertBundledSkin(themes.of(GodType.SEA).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.SEA).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.NATURE).npcSkins().god(), true);
 		assertBundledSkin(themes.of(GodType.NATURE).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.WAR).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.WAR).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.FROST).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.FROST).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.MOON).npcSkins().god(), false);
 		assertBundledSkin(themes.of(GodType.MOON).npcSkins().goddess(), true);
 		assertBundledSkin(themes.of(GodType.MOON).npcSkins().deity(), false);
 		assertBundledSkin(themes.of(GodType.SUN).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.SUN).npcSkins().goddess(), false);
 		assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().goddess(), true);
+		assertBundledSkin(themes.of(GodType.PARTY).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.CREATURES).npcSkins().god(), false);
+		assertBundledSkin(themes.of(GodType.CREATURES).npcSkins().goddess(), true);
 		// The werewolf alpha is the account WerewolfAlpha's texture
 		assertTrue(new String(Base64.getDecoder().decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()), StandardCharsets.UTF_8).contains("\"WerewolfAlpha\""));
 		Map<GodType, Theme.NpcSkins> expected = Map.ofEntries(
 				Map.entry(GodType.WEREWOLVES, new Theme.NpcSkins(themes.of(GodType.WEREWOLVES).npcSkins().god(), themes.of(GodType.WEREWOLVES).npcSkins().goddess(), null)),
 				Map.entry(GodType.EVIL, new Theme.NpcSkins(themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().god(), null)),
-				Map.entry(GodType.THUNDER, new Theme.NpcSkins(themes.of(GodType.THUNDER).npcSkins().god(), null, null)),
-				Map.entry(GodType.LOVE, new Theme.NpcSkins(null, themes.of(GodType.LOVE).npcSkins().goddess(), null)),
+				Map.entry(GodType.THUNDER, new Theme.NpcSkins(themes.of(GodType.THUNDER).npcSkins().god(), themes.of(GodType.THUNDER).npcSkins().goddess(), null)),
+				Map.entry(GodType.LOVE, new Theme.NpcSkins(themes.of(GodType.LOVE).npcSkins().god(), themes.of(GodType.LOVE).npcSkins().goddess(), null)),
 				Map.entry(GodType.SEA, new Theme.NpcSkins(themes.of(GodType.SEA).npcSkins().god(), themes.of(GodType.SEA).npcSkins().goddess(), null)),
 				Map.entry(GodType.NATURE, new Theme.NpcSkins(themes.of(GodType.NATURE).npcSkins().god(), themes.of(GodType.NATURE).npcSkins().goddess(), null)),
-				Map.entry(GodType.WAR, new Theme.NpcSkins(themes.of(GodType.WAR).npcSkins().god(), null, null)),
+				Map.entry(GodType.WAR, new Theme.NpcSkins(themes.of(GodType.WAR).npcSkins().god(), themes.of(GodType.WAR).npcSkins().goddess(), null)),
 				Map.entry(GodType.FROST, new Theme.NpcSkins(themes.of(GodType.FROST).npcSkins().god(), themes.of(GodType.FROST).npcSkins().goddess(), null)),
 				Map.entry(GodType.MOON, themes.of(GodType.MOON).npcSkins()),
-				Map.entry(GodType.SUN, new Theme.NpcSkins(themes.of(GodType.SUN).npcSkins().god(), null, null)),
-				Map.entry(GodType.WISDOM, new Theme.NpcSkins(themes.of(GodType.WISDOM).npcSkins().god(), null, null)));
+				Map.entry(GodType.SUN, new Theme.NpcSkins(themes.of(GodType.SUN).npcSkins().god(), themes.of(GodType.SUN).npcSkins().goddess(), null)),
+				Map.entry(GodType.WISDOM, new Theme.NpcSkins(themes.of(GodType.WISDOM).npcSkins().god(), themes.of(GodType.WISDOM).npcSkins().goddess(), null)),
+				Map.entry(GodType.PARTY, new Theme.NpcSkins(themes.of(GodType.PARTY).npcSkins().god(), null, null)),
+				Map.entry(GodType.CREATURES, new Theme.NpcSkins(themes.of(GodType.CREATURES).npcSkins().god(), themes.of(GodType.CREATURES).npcSkins().goddess(), null)));
 		for (GodType type : GodType.values())
 		{
 			assertEquals(expected.getOrDefault(type, Theme.NpcSkins.NONE), themes.of(type).npcSkins(), type.name());
@@ -369,13 +379,18 @@ class ThemesLoaderTest
 		Theme.NpcSkins defaults = themes.defaults().npcSkins();
 		Theme.NpcSkins moon = themes.of(GodType.MOON).npcSkins();
 		Theme.NpcSkins thunder = themes.of(GodType.THUNDER).npcSkins();
+		Theme.NpcSkins party = themes.of(GodType.PARTY).npcSkins();
 		// A non-binary moon god is the moon's deity, not its god
 		assertEquals(moon.deity(), GodNpcRules.skin(null, GodGender.NonBinary, moon, defaults));
 		assertEquals(moon.god(), GodNpcRules.skin(null, GodGender.Male, moon, defaults));
 		assertEquals(moon.goddess(), GodNpcRules.skin(null, GodGender.Female, moon, defaults));
-		// Thunder has no deity: its god (Zeus); and no goddess: the default goddess
+		// Thunder has no deity: its god (Zeus); party has no goddess: the default goddess
 		assertEquals(thunder.god(), GodNpcRules.skin(null, GodGender.NonBinary, thunder, defaults));
-		assertEquals(defaults.goddess(), GodNpcRules.skin(null, GodGender.Female, thunder, defaults));
+		assertEquals(thunder.goddess(), GodNpcRules.skin(null, GodGender.Female, thunder, defaults));
+		assertEquals(defaults.goddess(), GodNpcRules.skin(null, GodGender.Female, party, defaults));
+		// A deity without a type wears the default deity
+		assertEquals(defaults.deity(), GodNpcRules.skin(null, GodGender.NonBinary, defaults, defaults));
+		assertEquals(defaults.deity(), GodNpcRules.skin(null, GodGender.NonBinary, Theme.NpcSkins.NONE, defaults));
 		// Every god type has a skin for every gender
 		for (GodType type : GodType.values())
 		{
@@ -426,7 +441,9 @@ class ThemesLoaderTest
 				""".formatted(god, goddess, deity));
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
 		assertEquals(new Theme.NpcSkins(new NpcSkin(null, god, "sig0"), new NpcSkin(null, goddess, "sig1"), new NpcSkin(null, deity, "sig2")), themes.of(GodType.MOON).npcSkins());
-		assertTrue(themes.of(GodType.PARTY).npcSkins().isEmpty());
+		// Party has only a god: it doesn't take the default section's goddess and deity
+		assertNull(themes.of(GodType.PARTY).npcSkins().goddess());
+		assertNull(themes.of(GodType.PARTY).npcSkins().deity());
 	}
 
 	/** The admin's file replaces each gender entry it lists, keeps the others; '' removes one, skin: '' all */
@@ -436,6 +453,7 @@ class ThemesLoaderTest
 		Themes bundledThemes = load("");
 		NpcSkin werewolfGod = bundledThemes.of(GodType.WEREWOLVES).npcSkins().god();
 		NpcSkin defaultGoddess = bundledThemes.defaults().npcSkins().goddess();
+		NpcSkin defaultDeity = bundledThemes.defaults().npcSkins().deity();
 		NpcSkin evil = bundledThemes.of(GodType.EVIL).npcSkins().god();
 		String mine = texture("mine");
 		Themes themes = load("""
@@ -465,7 +483,7 @@ class ThemesLoaderTest
 		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
 		NpcSkin own = new NpcSkin(null, mine, "sig");
 		assertEquals(new Theme.NpcSkins(werewolfGod, own, own), themes.of(GodType.WEREWOLVES).npcSkins());
-		assertEquals(new Theme.NpcSkins(null, defaultGoddess, null), themes.defaults().npcSkins());
+		assertEquals(new Theme.NpcSkins(null, defaultGoddess, defaultDeity), themes.defaults().npcSkins());
 		assertEquals(new Theme.NpcSkins(own, evil, null), themes.of(GodType.EVIL).npcSkins());
 		assertTrue(themes.of(GodType.THUNDER).npcSkins().isEmpty());
 	}
@@ -522,8 +540,8 @@ class ThemesLoaderTest
 		assertEquals(bundledThemes.of(GodType.WEREWOLVES).npcSkins(), themes.of(GodType.WEREWOLVES).npcSkins());
 		// Gods' own love goddess stays
 		assertEquals(bundledThemes.of(GodType.LOVE).npcSkins(), themes.of(GodType.LOVE).npcSkins());
-		assertTrue(themes.of(GodType.PARTY).npcSkins().isEmpty());
-		assertTrue(themes.of(GodType.CREATURES).npcSkins().isEmpty());
+		assertEquals(bundledThemes.of(GodType.PARTY).npcSkins(), themes.of(GodType.PARTY).npcSkins());
+		assertEquals(bundledThemes.of(GodType.CREATURES).npcSkins(), themes.of(GodType.CREATURES).npcSkins());
 		// A skin without a gender is ignored, so Gods' own wisdom god stays
 		assertEquals(bundledThemes.of(GodType.WISDOM).npcSkins(), themes.of(GodType.WISDOM).npcSkins());
 		for (String expected : new String[] { "sun.npc.skin is a player name ('Notch')", "werewolves.npc.skin.god is a player name", "godess",
