@@ -82,6 +82,29 @@ public final class HolyLandRules
 		return new ArrayList<ChunkKey>(chunks);
 	}
 
+	/**
+	 * Whether a holy land goes with a praying altar of {@code altarGod} that was removed from it (its altar block was in
+	 * the land): only when it is that god's land and no other praying altar of the god has its altar block in the
+	 * land's chunks. A land belongs to its altars; one without a known altar is only removed when it is abandoned.
+	 *
+	 * @param otherAltarBlocks the chunks of the altar blocks of the god's other registered praying altars
+	 */
+	public static boolean goesWithAltar(String landGod, String altarGod, Set<ChunkKey> landChunks, Collection<ChunkKey> otherAltarBlocks)
+	{
+		if (altarGod == null || !altarGod.equals(landGod))
+		{
+			return false;
+		}
+		for (ChunkKey chunk : otherAltarBlocks)
+		{
+			if (landChunks.contains(chunk))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private static ChunkKey chunk(String world, int blockX, int blockZ)
 	{
 		return new ChunkKey(world, blockX >> ChunkKey.CHUNK_SHIFT, blockZ >> ChunkKey.CHUNK_SHIFT);

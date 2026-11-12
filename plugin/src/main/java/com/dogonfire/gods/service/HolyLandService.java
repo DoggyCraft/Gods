@@ -18,6 +18,9 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.HolyLandClaimEvent;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.model.Altar;
+import com.dogonfire.gods.model.AltarKind;
+import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.model.ChunkKey;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.model.NeutralLand;
@@ -341,6 +344,39 @@ public class HolyLandService
 		{
 			this.repository.addChunk(land, chunk);
 		}
+	}
+
+	/**
+	 * A praying altar of {@code godName} with its altar block at {@code block} is gone (or no longer the god's praying
+	 * altar; the altar registry has already forgotten it): the land it stands in goes with it when it is the god's and no
+	 * other registered praying altar of the god stands in it ({@link HolyLandRules#goesWithAltar}). The god's online
+	 * believers are told. Depends on the world only, like the registry.
+	 */
+	public void altarRemoved(String godName, BlockPos block)
+	{
+		HolyLand land = this.repository.find(ChunkKey.of(block.world(), block.x(), block.z()));
+		if (land == null || godName == null)
+		{
+			return;
+		}
+		List<ChunkKey> otherAltars = new ArrayList<ChunkKey>();
+		for (Altar altar : ctx.altarRegistry().forGod(godName))
+		{
+			if (altar.kind() == AltarKind.PRAYING)
+			{
+				otherAltars.add(ChunkKey.of(altar.block().world(), altar.block().x(), altar.block().z()));
+			}
+		}
+		if (!HolyLandRules.goesWithAltar(land.godName(), godName, land.chunks(), otherAltars))
+		{
+			return;
+		}
+
+		this.repository.remove(land);
+		this.repository.save();
+
+		ctx.plugin().log("The holy land " + land.name() + " of " + godName + " in " + land.worldName() + " at chunk " + land.center().coordinates() + " is gone with its altar.");
+		ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.lost-altar", Messages.god(godName), Messages.text("name", land.name() != null ? land.name() : ""));
 	}
 
 	// ---------------------------------------------------------------------

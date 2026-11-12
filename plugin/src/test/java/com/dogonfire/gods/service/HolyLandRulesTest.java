@@ -77,4 +77,16 @@ class HolyLandRulesTest
 		List<ChunkKey> wanted = List.of(chunk(0, 0), chunk(1, 0), chunk(0, 0), chunk(2, 0));
 		assertEquals(List.of(chunk(0, 0), chunk(2, 0)), HolyLandRules.claimable(wanted, chunk -> !taken.contains(chunk)));
 	}
+
+	/** A land belongs to its altars: it goes with the last praying altar of its god that stands in it */
+	@Test
+	void aLandGoesWithItsLastAltar()
+	{
+		Set<ChunkKey> land = Set.of(chunk(0, 0), chunk(1, 0));
+		assertTrue(HolyLandRules.goesWithAltar("Thor", "Thor", land, List.of()));
+		assertTrue(HolyLandRules.goesWithAltar("Thor", "Thor", land, List.of(chunk(5, 5))), "an altar elsewhere keeps its own land");
+		assertFalse(HolyLandRules.goesWithAltar("Thor", "Thor", land, List.of(chunk(1, 0))), "another altar of Thor stands in it");
+		assertFalse(HolyLandRules.goesWithAltar("Odin", "Thor", land, List.of()), "another god's land");
+		assertFalse(HolyLandRules.goesWithAltar("Thor", null, land, List.of()));
+	}
 }

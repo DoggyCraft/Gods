@@ -42,7 +42,8 @@ import com.dogonfire.gods.storage.AltarRepository;
  * load.</li>
  * <li>Removed when a block event (break, burn, explosion, piston, mob, place) touches an altar's sign or altar block
  * and, a tick later, the sign is gone or untagged (a cancelled or harmless event changes nothing). Breaking the altar
- * block drops the sign, so that removes the altar too.</li>
+ * block drops the sign, so that removes the altar too. A removed praying altar takes its holy land with it when no
+ * other praying altar of its god stands in that land ({@link HolyLandService#altarRemoved}).</li>
  * <li>A removed god's altars stay registered: they still stand, and praying at one founds the god anew. They show no
  * floating text while the god doesn't exist.</li>
  * </ul>
@@ -169,11 +170,16 @@ public class AltarRegistry
 		if (existing != null && existing.block().equals(found.block()))
 		{
 			String oldGod = existing.god();
+			AltarKind oldKind = existing.kind();
 			existing.setKind(found.kind());
 			existing.setGod(found.god());
 			if (!Objects.equals(oldGod, found.god()) || found.kind() != AltarKind.PRAYING)
 			{
 				dropMainAltar(oldGod, existing, "its sign changed");
+				if (oldKind == AltarKind.PRAYING)
+				{
+					landLost(oldGod, existing);
+				}
 			}
 			ctx.altarTexts().show(existing);
 			chooseMainAltar(found.god());
@@ -202,7 +208,20 @@ public class AltarRegistry
 		ctx.plugin().logDebug("Unregistered the " + altar + ": " + why);
 		ctx.altarTexts().hide(sign);
 		dropMainAltar(altar.god(), altar, why);
+		if (altar.kind() == AltarKind.PRAYING)
+		{
+			landLost(altar.god(), altar);
+		}
 		this.repository.markDirty();
+	}
+
+	/** A praying altar of the god is gone or no longer its praying altar: its holy land may go with it */
+	private void landLost(String godName, Altar altar)
+	{
+		if (godName != null && ctx.settings().holyLand().enabled())
+		{
+			ctx.holyLandService().altarRemoved(godName, altar.block());
+		}
 	}
 
 	/**

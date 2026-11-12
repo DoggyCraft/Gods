@@ -206,6 +206,8 @@ holy-land:
   # <claimed> holy lands (one per altar that claimed land) of the <max> the religion may hold
   size: <aqua>Your religion now holds <hl><claimed></hl>/<hl><max></hl> Holy Lands
   cannot-claim-more: <red>Your religion cannot hold more Holy Lands
+  # To the online believers of <god> when the last of its altars in its Holy Land <name> is gone, and the land with it
+  lost-altar: '<red>The Holy Land <hl><name></hl> of <hl><god></hl> is lost with its last altar'
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
   attacking-hint: <aqua>Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
   # <minutes> left of the battle
