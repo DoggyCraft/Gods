@@ -54,14 +54,26 @@ class LegacyLangFilesTest
 			Voice.DEFAULT_BIBLE_TEXT_1.key(), Voice.DEFAULT_BIBLE_TEXT_2.key(), Voice.DEFAULT_BIBLE_TEXT_3.key(), Voice.DEFAULT_BIBLE_TEXT_4.key(),
 			Voice.DEFAULT_BIBLE_TEXT_5.key(), Voice.DEFAULT_BIBLE_TEXT_6.key());
 
+	/** Messages whose text Gods rewrote after the old bundled files, like {@link #REWRITTEN_VOICES} */
+	private static final java.util.Set<String> REWRITTEN_MESSAGES = java.util.Set.of(
+			// Right clicking the altar block or its light prays too
+			"altar.pray-hint");
+
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test
 	void theOldBundledFilesConvertToTheNewBundledOnes() throws IOException
 	{
-		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("messages.yml"), LegacyLangFiles.convertGeneral(fixture("english_general.yml")), bundled("lang/english/messages.yml")));
+		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("messages.yml"), notRewrittenMessages(LegacyLangFiles.convertGeneral(fixture("english_general.yml"))), bundled("lang/english/messages.yml")));
 		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("sun_male.yml"), notRewritten(LegacyLangFiles.convertVoice(fixture("english_sun_male.yml"))), bundled("lang/english/voices/sun_male.yml")));
 		assertEquals(0, LegacyLangFiles.write(this.lang.resolve("creatures_female.yml"), notRewritten(LegacyLangFiles.convertVoice(fixture("english_creatures_female.yml"))),
 				bundled("lang/english/voices/creatures_female.yml")));
+	}
+
+	private static Map<String, String> notRewrittenMessages(Map<String, String> converted)
+	{
+		Map<String, String> kept = new java.util.LinkedHashMap<>(converted);
+		kept.keySet().removeAll(REWRITTEN_MESSAGES);
+		return kept;
 	}
 
 	private static Map<String, List<String>> notRewritten(Map<String, List<String>> converted)
