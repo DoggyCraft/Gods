@@ -32,6 +32,12 @@ import com.dogonfire.gods.task.InfoTask;
  */
 public class GodSpeech
 {
+	/** Whom the god speaks to: one player (god.speech) or its religion (god.speech-believers) */
+	private enum Audience
+	{
+		PLAYER, BELIEVERS
+	}
+
 	private final Random		random	= new Random();
 	private final GodsContext	ctx;
 
@@ -89,6 +95,12 @@ public class GodSpeech
 	 */
 	public boolean say(String godName, Player player, Voice situation, int delay, TagResolver... tags)
 	{
+		return say(godName, player, situation, delay, Audience.PLAYER, tags);
+	}
+
+	/** Like {@link #say}, formatted for {@code audience} */
+	private boolean say(String godName, Player player, Voice situation, int delay, Audience audience, TagResolver... tags)
+	{
 		if (!canHear(godName, player))
 		{
 			return false;
@@ -98,7 +110,7 @@ public class GodSpeech
 		{
 			return false;
 		}
-		return deliver(godName, player, situation, line, delay, tags);
+		return deliver(godName, player, situation, line, delay, audience, tags);
 	}
 
 	/**
@@ -109,7 +121,7 @@ public class GodSpeech
 	 */
 	public boolean sayText(String godName, Player player, String text, int delay, TagResolver... tags)
 	{
-		return canHear(godName, player) && deliver(godName, player, null, text, delay, tags);
+		return canHear(godName, player) && deliver(godName, player, null, text, delay, Audience.PLAYER, tags);
 	}
 
 	/**
@@ -124,7 +136,7 @@ public class GodSpeech
 		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
 		{
 			Player player = ctx.plugin().getServer().getPlayer(playerId);
-			if (player != null && sayText(godName, player, text, delay, tags))
+			if (player != null && canHear(godName, player) && deliver(godName, player, null, text, delay, Audience.BELIEVERS, tags))
 			{
 				told++;
 			}
@@ -142,7 +154,7 @@ public class GodSpeech
 		String line = voiceLine(godName, situation);
 		if (line != null)
 		{
-			deliver(godName, player, situation, line, delay, tags);
+			deliver(godName, player, situation, line, delay, Audience.PLAYER, tags);
 		}
 		sendInfo(player.getUniqueId(), "god.question-hint", delay + 80);
 	}
@@ -173,7 +185,7 @@ public class GodSpeech
 			Player player = ctx.plugin().getServer().getPlayer(playerId);
 			if (player != null)
 			{
-				say(godName, player, situation, delay, tags);
+				say(godName, player, situation, delay, Audience.BELIEVERS, tags);
 			}
 		}
 	}
@@ -186,7 +198,7 @@ public class GodSpeech
 			Player player = ctx.plugin().getServer().getPlayer(playerId);
 			if (player != null && !player.getUniqueId().equals(exceptPlayer))
 			{
-				say(godName, player, situation, 2 + this.random.nextInt(20), tags);
+				say(godName, player, situation, 2 + this.random.nextInt(20), Audience.BELIEVERS, tags);
 			}
 		}
 	}
@@ -204,7 +216,7 @@ public class GodSpeech
 			Player player = ctx.plugin().getServer().getPlayer(priest);
 			if (player != null)
 			{
-				say(godName, player, situation, 2 + this.random.nextInt(30), tags);
+				say(godName, player, situation, 2 + this.random.nextInt(30), Audience.BELIEVERS, tags);
 			}
 		}
 	}
@@ -224,13 +236,15 @@ public class GodSpeech
 	}
 
 	/**
-	 * Every god's words to a player pass here: the line (MiniMessage) is formatted with {@code god.speech} now, offered
+	 * Every god's words to a player pass here: the line (MiniMessage) is formatted with {@code god.speech} (words to one
+	 * player) or {@code god.speech-believers} (words to the religion) now, offered
 	 * to other plugins as a {@link GodSpeakEvent} (which may change or cancel it), and sent after {@code delay} ticks.
 	 *
 	 * @param situation the voice line's situation, or null for a text the god was given
+	 * @param audience  whom the god speaks to, which decides the format
 	 * @return false if a listener cancelled it
 	 */
-	private boolean deliver(String godName, Player player, Voice situation, String line, int delay, TagResolver... tags)
+	private boolean deliver(String godName, Player player, Voice situation, String line, int delay, Audience audience, TagResolver... tags)
 	{
 		TagResolver lineTags = withGod(godName, tags);
 		if (!lineTags.has("player"))
@@ -238,7 +252,7 @@ public class GodSpeech
 			lineTags = TagResolver.resolver(lineTags, Messages.player(player.getName()));
 		}
 
-		Component message = messages().component("god.speech", lineTags, Placeholder.parsed("message", line));
+		Component message = messages().component(audience == Audience.BELIEVERS ? "god.speech-believers" : "god.speech", lineTags, Placeholder.parsed("message", line));
 		String words = Messages.legacy(messages().parse(line, lineTags));
 
 		GodSpeakEvent event = ctx.fire(new GodSpeakEvent(godName, player, situation != null ? situation.key() : null, words, Messages.legacy(message), delay));

@@ -70,7 +70,10 @@ public class GodSpeakEvent extends GodEvent implements Cancellable
 		return this.words;
 	}
 
-	/** The chat line the player gets: the words in Gods' format for gods' speech, with {@code §} colors */
+	/**
+	 * The chat line the player gets: the words in Gods' format for gods' speech, with {@code §} colors. Words to one player
+	 * and words to the whole religion (its believers or priests) each have their own format in Gods' messages.
+	 */
 	public String getMessage()
 	{
 		return this.message;

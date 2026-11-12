@@ -149,6 +149,18 @@ frost:
       particles: {add: [cloud]}
 ```
 
+Messages
+---------
+Everything players see is in `plugins/Gods/lang/<language>/`, in [MiniMessage](https://docs.advntr.dev/minimessage/format.html): `messages.yml` for the messages, `voices/<type>_<gender>.yml` for what each god says. A message you remove falls back to Gods' own.
+
+A god's words have two formats in `messages.yml`: `god.speech` for words to one player (a prayer answered, a blessing, a question; like a private message) and `god.speech-believers` for words to the whole religion, its believers or priests (a new believer, a quest, a new rank; like a channel). Both start out the same; style them apart to tell them apart. Each knows `<god>`, `<message>` (the line from the voice file), `<player>` (who hears it) and `<gender>`:
+
+```yaml
+god:
+  speech: '<gold>\<<god>>: <white><bold><message>'
+  speech-believers: '<gold>[<god>] <yellow><message>'
+```
+
 Links
 ---------
 

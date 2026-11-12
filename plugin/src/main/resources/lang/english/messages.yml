@@ -8,8 +8,12 @@
 messages-version: 2
 
 god:
-  # How a god's words look. <god> is the god's name, <message> the line from its voice file.
+  # How a god's words look: speech for words to one player (a prayer answered, a blessing, a question; like a private
+  # message), speech-believers for words to the whole religion, its believers or priests (a new believer, a quest, a
+  # new rank; like a channel). Style them apart to tell them apart. <god> is the god's name, <message> the line from
+  # its voice file, <player> the player who hears it and <gender> the god's gender (God, Goddess, Deity).
   speech: '<gold>\<<god>>: <white><bold><message>'
+  speech-believers: '<gold>\<<god>>: <white><bold><message>'
   question-hint: <aqua>Use <white>/gods yes or /gods no</white> to answer the God
   # <player> in what a god says at random when it has no priest
   our-priest: our priest
