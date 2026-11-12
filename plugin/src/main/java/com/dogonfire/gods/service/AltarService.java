@@ -585,6 +585,15 @@ public class AltarService
 			return null;
 		}
 
+		// A god that exists keeps its type: its new altars are of its own type's blocks (the ones standing keep working)
+		GodType godType = ctx.godService().godExist(godName) ? ctx.godService().getDivineForceForGod(godName) : null;
+		if (godType != null && !ctx.themes().altars().godTypesFor(altarBlock.getType()).contains(godType))
+		{
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.wrong-block", 1, Messages.god(godName),
+					Messages.component("type", ctx.messages().godTypeName(godType, ctx.godService().getGenderForGod(godName))));
+			return null;
+		}
+
 		AltarSigns.AltarSign altar;
 		
 		if (ctx.prayerService().addAltar(event.getPlayer(), godName, event.getBlock().getLocation(), nameLine.gender()))
