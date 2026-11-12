@@ -9,14 +9,14 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 import com.dogonfire.gods.model.HolyLand;
-import com.dogonfire.gods.model.RegionKey;
+import com.dogonfire.gods.model.ChunkKey;
 import com.dogonfire.gods.service.HolyLandContest.Outcome;
 
 class HolyLandContestTest
 {
 	private static HolyLand contested()
 	{
-		HolyLand land = new HolyLand(new RegionKey("world", 0L));
+		HolyLand land = new HolyLand("0,0", new ChunkKey("world", 0, 0));
 		land.setGodName("Odin");
 		land.setAttackingGodName("Thor");
 		return land;

@@ -105,7 +105,7 @@ public final class InfoCommand extends SubCommand
 
 		if (this.ctx.settings().holyLand().enabled())
 		{
-			send(sender, "command.info.holy-land", Messages.text("claimed", this.ctx.holyLandService().getClaimedChunksForGod(godName)), Messages.text("max", this.ctx.holyLandService().getMaximumChunksForGod(godName)));
+			send(sender, "command.info.holy-land", Messages.text("claimed", this.ctx.holyLandService().getHolyLandsForGod(godName)), Messages.text("max", this.ctx.holyLandService().getMaximumHolyLandsForGod(godName)));
 		}
 	}
 

@@ -203,8 +203,9 @@ holy-land:
     contested: <gold>Holy Land of <god>
     # <minutes> left of the battle
     contested-subtitle: <red>Contested <minutes> min
-  size: <aqua>Your religion now has claimed <hl><claimed></hl>/<hl><max></hl> regions of Holy Land
-  cannot-claim-more: <red>Your religion cannot claim more Holy Land
+  # <claimed> holy lands (one per altar that claimed land) of the <max> the religion may hold
+  size: <aqua>Your religion now holds <hl><claimed></hl>/<hl><max></hl> Holy Lands
+  cannot-claim-more: <red>Your religion cannot hold more Holy Lands
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
   attacking-hint: <aqua>Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
   # <minutes> left of the battle
@@ -607,7 +608,7 @@ names:
     min-sacrifices: Sacrifices
     min-quests: Quests
     min-altars: Altars
-    min-holy-land-regions: Holy land
+    min-holy-land-regions: Holy lands
     min-converts: Converts
   mood:
     EXALTED: Exalted
@@ -990,7 +991,7 @@ command:
     relations: '<aqua>Religious relations: '
     alliance: <green> Alliance with <gold><god>
     war: <red> War with <gold><god>
-    holy-land: '<aqua>Holy Land claimed: <gold><claimed>/<max> regions'
+    holy-land: '<aqua>Holy Lands: <gold><claimed>/<max>'
     # Only the God's believers see where its main altar is; <world>, <x>, <y>, <z> are its altar block
     main-altar: '<aqua>Main altar: <yellow><world> <x>, <y>, <z>'
     # Shown to its priests when the God has none
@@ -1144,9 +1145,9 @@ command:
     failed: <gold><player><red> was not assigned as a priest of <gold><god>
   setsafe:
     parameters: ''
-    description: Set or clear neutral land at your location
-    cleared: <aqua>You set cleared the neutral land in this location.
-    set: <aqua>You set neutral land in this location.
+    description: Set or clear neutral land around you (3x3 chunks)
+    cleared: <aqua>You cleared the neutral land around you (3x3 chunks).
+    set: <aqua>You set neutral land around you (3x3 chunks).
   startattack:
     parameters: ''
     description: Start an attack on the enemy Holy Land you are standing in

@@ -2,16 +2,22 @@ package com.dogonfire.gods.model;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * A region claimed by a god when a believer built or prayed at an altar there, and the state of an attack on it by
- * another god (a priest started it). In holyland.yml it is {@code Holylands.<world key>.<hash>} with the keys noted on
- * the fields; times are {@code "HH:mm dd-MM-yyyy"}. A plain data object: {@code HolyLandService} changes it.
+ * The holy land of one altar: the chunks a god claimed when a believer built or prayed at the altar (its center chunk
+ * is the altar block's), and the state of an attack on it by another god (a priest started it). In holyland.yml it is
+ * {@code Holylands.<world key>.<id>} with the keys noted on the fields; times are {@code "HH:mm dd-MM-yyyy"}. A plain
+ * data object: {@code HolyLandService} changes it; its chunks change through {@code HolyLandRepository}, which indexes
+ * them.
  */
 public final class HolyLand
 {
-	private final RegionKey		region;
+	private final String		id;					// the key under the world: the center chunk's "x,z" when it was made
+	private final ChunkKey		center;				// Center: the chunk of the altar block it was claimed from
+	private final Set<ChunkKey>	chunks				= new LinkedHashSet<ChunkKey>();	// Chunks, the center among them
 
 	private String				godName;			// GodName
 	private String				name;				// Name, generated from the biome
@@ -29,14 +35,33 @@ public final class HolyLand
 	/** Keys of the entry this version doesn't know, written back unchanged */
 	private Map<String, Object>	extras				= new LinkedHashMap<String, Object>();
 
-	public HolyLand(RegionKey region)
+	public HolyLand(String id, ChunkKey center)
 	{
-		this.region = region;
+		this.id = id;
+		this.center = center;
+		this.chunks.add(center);
 	}
 
-	public RegionKey region()
+	public String id()
 	{
-		return this.region;
+		return this.id;
+	}
+
+	public ChunkKey center()
+	{
+		return this.center;
+	}
+
+	/** The world key of its chunks */
+	public String world()
+	{
+		return this.center.world();
+	}
+
+	/** Its chunks, the center among them; add and remove them through {@code HolyLandRepository}, which indexes them */
+	public Set<ChunkKey> chunks()
+	{
+		return this.chunks;
 	}
 
 	public String godName()

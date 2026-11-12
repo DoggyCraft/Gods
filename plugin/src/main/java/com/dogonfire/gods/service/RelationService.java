@@ -159,7 +159,7 @@ public class RelationService
 		if (god != null)
 		{
 			god.setContestedLand(new ContestedLand(contestedLand.getWorld().getName(), contestedLand.getBlockX(), contestedLand.getBlockY(), contestedLand.getBlockZ(),
-					ctx.holyLandService().hashLocation(contestedLand)));
+					null));
 		}
 
 		ctx.holyLandService().setContestedLand(contestedLand, godName);
@@ -193,22 +193,22 @@ public class RelationService
 	}
 
 	/**
-	 * The region hash of the holy land godName is attacking, or null. An attack whose land no longer has
-	 * godName as attacker (it was settled, abandoned or taken over, or comes from an old data file) is cleared.
+	 * Whether godName is attacking a holy land right now. An attack whose land no longer has godName as attacker (it was
+	 * settled, abandoned or taken over, or comes from an old data file) is cleared.
 	 */
-	public Long getContestedHolyLandForGod(String godName)
+	public boolean isAttackingHolyLand(String godName)
 	{
 		God god = god(godName);
 		if (god == null || god.contestedLand() == null)
 		{
-			return null;
+			return false;
 		}
 		Location location = getContestedHolyLandAttackLocationForGod(godName);
 		if (!ctx.holyLandService().isAttackingHolyLand(godName, location))
 		{
 			clearContestedHolyLandForGod(godName);
-			return null;
+			return false;
 		}
-		return ctx.holyLandService().hashLocation(location);
+		return true;
 	}
 }

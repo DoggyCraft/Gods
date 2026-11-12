@@ -31,7 +31,7 @@ public final class StartAttackCommand extends SubCommand
 		Player player = (Player) sender;
 		String godName = believersGod(player);
 		Location location = player.getLocation();
-		if (this.ctx.relationService().getContestedHolyLandForGod(godName) != null)
+		if (this.ctx.relationService().isAttackingHolyLand(godName))
 		{
 			throw new CommandException("command.startattack.already");
 		}

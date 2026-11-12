@@ -513,7 +513,7 @@ public class PrayerService
 
 			if ((ctx.settings().holyLand().enabled()) && (ctx.permissions().hasPermission(player, "gods.holyland")))
 			{
-				ctx.holyLandService().addPrayer(player, godName, altarBlock.getLocation());
+				ctx.holyLandService().addPrayer(player, godName, altarBlock.getLocation(), location);
 			}
 
 			ctx.rankService().countPrayer(godName);

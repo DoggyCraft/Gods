@@ -55,7 +55,7 @@ public interface GodsApi
 	// Holy land
 
 	/**
-	 * The god whose holy land the location is in (holy land is claimed per 128x128 block region), if any. Always empty
+	 * The god whose holy land the location is in (holy land is claimed per chunk, one land per altar), if any. Always empty
 	 * while holy land is switched off in Gods' config.
 	 */
 	Optional<String> getHolyLandGod(Location location);

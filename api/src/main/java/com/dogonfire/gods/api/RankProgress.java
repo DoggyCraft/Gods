@@ -23,7 +23,7 @@ public record RankProgress(GodRank rank, GodRank next, List<Condition> condition
 	 * @param name     its key in Gods' config: {@code min-believers}, {@code min-power}, {@code requires-priest},
 	 *                 {@code min-mood}, {@code requires-main-altar}, {@code hours-after-priest},
 	 *                 {@code hours-at-previous-rank}, {@code min-prayers}, {@code min-sacrifices}, {@code min-quests},
-	 *                 {@code min-altars}, {@code min-holy-land-regions} or {@code min-converts}
+	 *                 {@code min-altars}, {@code min-holy-land-regions} (holy lands) or {@code min-converts}
 	 * @param current  where the god is: a count, whole hours, 1 or 0 for a yes/no condition, or for the mood its level
 	 *                 from 0 ({@link GodMood#ANGRY}) to 4 ({@link GodMood#EXALTED})
 	 * @param required what the rank needs, in the same unit

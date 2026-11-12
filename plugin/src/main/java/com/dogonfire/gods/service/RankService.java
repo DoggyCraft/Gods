@@ -117,7 +117,7 @@ public class RankService
 		Altar altar = mainSign != null ? ctx.altarRegistry().atSign(mainSign) : null;
 		boolean hasMainAltar = altar != null && altar.kind() == AltarKind.PRAYING && godName.equals(altar.god());
 		int altars = (int) ctx.altarRegistry().forGod(godName).stream().filter(standing -> standing.kind() == AltarKind.PRAYING).count();
-		int holyLand = ctx.settings().holyLand().enabled() ? ctx.holyLandService().getClaimedChunksForGod(godName) : 0;
+		int holyLand = ctx.settings().holyLand().enabled() ? ctx.holyLandService().getHolyLandsForGod(godName) : 0;
 		return new RankRules.Facts(!ctx.priestService().getPriestsForGod(godName).isEmpty(), ctx.believerService().getBelieversForGod(godName).size(),
 				ctx.godService().getGodPower(godName), ctx.moodService().getMoodForGod(godName), hasMainAltar, altars, holyLand, god.stats(), LegacyDates.SECONDS.now());
 	}

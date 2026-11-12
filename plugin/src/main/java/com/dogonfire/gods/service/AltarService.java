@@ -537,7 +537,7 @@ public class AltarService
 		{
 			if ((ctx.settings().holyLand().enabled()) && (ctx.permissions().hasPermission(player, "gods.holyland")))
 			{
-				ctx.holyLandService().addAltar(player, godName, altarBlock.getLocation());
+				ctx.holyLandService().addAltar(player, godName, altarBlock.getLocation(), event.getBlock().getLocation());
 			}
 			
 			ctx.questService().handleBuiltPrayingAltar(godName);

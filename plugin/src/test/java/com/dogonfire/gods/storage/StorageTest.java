@@ -276,7 +276,7 @@ class StorageTest
 		{
 			String original = Files.readString(Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".original"));
 			assertEquals(original, Files.readString(this.dir.resolve(name + ".yml.v1.bak")), name);
-			assertEquals(2, YamlConfiguration.loadConfiguration(this.dir.resolve(name + ".yml").toFile()).getInt("data-version"), name);
+			assertEquals(name.equals("holyland") ? HolyLandRepository.DATA_VERSION : 2, YamlConfiguration.loadConfiguration(this.dir.resolve(name + ".yml").toFile()).getInt("data-version"), name);
 		}
 	}
 

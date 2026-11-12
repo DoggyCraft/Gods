@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import com.dogonfire.gods.GodsContext;
 
-/** /g setsafe: makes the region the player stands in neutral land, or wilderness again */
+/** /g setsafe: makes the 3x3 chunks around the player neutral land, or wilderness again if the player's chunk is neutral */
 public final class SetSafeCommand extends SubCommand
 {
 	public SetSafeCommand(GodsContext ctx)

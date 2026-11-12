@@ -6,8 +6,10 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
 /**
- * A god is about to claim free land as its holy land, because a believer built an altar or prayed there. Holy land is
- * claimed per 128x128 block region. Cancelling it leaves the land free.
+ * A god is about to claim a new holy land, because a believer built an altar or prayed at one whose chunk is free.
+ * Each altar claims its own holy land: the chunks of the altar block, its sign and the spot in front of the sign, and
+ * the square of chunks around the altar's chunk that the god's rank gives it (it grows as the god rises, without this
+ * event). Cancelling it leaves the land free.
  */
 public class HolyLandClaimEvent extends GodEvent implements Cancellable
 {
@@ -20,7 +22,7 @@ public class HolyLandClaimEvent extends GodEvent implements Cancellable
 	/**
 	 * @param godName  the god that claims the land
 	 * @param player   the believer whose altar or prayer claims it
-	 * @param location the altar
+	 * @param location the altar block
 	 */
 	public HolyLandClaimEvent(String godName, Player player, Location location)
 	{
@@ -35,7 +37,7 @@ public class HolyLandClaimEvent extends GodEvent implements Cancellable
 		return this.player;
 	}
 
-	/** The altar, in the region that is claimed (a copy) */
+	/** The altar block, in the center chunk of the land that is claimed (a copy) */
 	public Location getLocation()
 	{
 		return this.location.clone();

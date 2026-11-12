@@ -36,7 +36,7 @@ import com.dogonfire.gods.util.LegacyDates;
  * &lt;god name&gt;: Created, DivineForce, Gender, PrivateAccess, Description, Home.World/X/Y/Z, MainAltar.World/X/Y/Z,
  *              NpcSkin.Name/Value/Signature,
  *              Mood, Seed, Verbosity,
- *              Priests, PendingPriest, PendingPriestTime, Allies, Enemies, ContestedLand.World/X/Y/Z/Hash,
+ *              Priests, PendingPriest, PendingPriestTime, Allies, Enemies, ContestedLand.World/X/Y/Z (and Hash from before chunks),
  *              BlessedPlayer, BlessedTime, CursedPlayer, CursedTime, EatFoodType, NotEatFoodType, NotSlayMobType,
  *              SlayMobType, SacrificeValues.&lt;material&gt;, PvP, MobDamage, MobSpawning, LastQuestTime,
  *              GenderChangedTime, PriestSince, DescendedTime, AscendingSince, Rank, RankSince,
@@ -275,7 +275,7 @@ public final class GodRepository extends Repository
 		if (section.contains(CONTESTED_LAND + ".World"))
 		{
 			god.setContestedLand(new ContestedLand(section.getString(CONTESTED_LAND + ".World"), section.getInt(CONTESTED_LAND + ".X"), section.getInt(CONTESTED_LAND + ".Y"),
-					section.getInt(CONTESTED_LAND + ".Z"), section.getLong(CONTESTED_LAND + ".Hash")));
+					section.getInt(CONTESTED_LAND + ".Z"), section.contains(CONTESTED_LAND + ".Hash") ? Long.valueOf(section.getLong(CONTESTED_LAND + ".Hash")) : null));
 		}
 		else if (section.contains(CONTESTED_LAND))
 		{
@@ -475,7 +475,10 @@ public final class GodRepository extends Repository
 			ContestedLand contested = god.contestedLand();
 			if (contested != null)
 			{
-				section.set(CONTESTED_LAND + ".Hash", contested.hash());
+				if (contested.hash() != null)
+				{
+					section.set(CONTESTED_LAND + ".Hash", contested.hash());
+				}
 				section.set(CONTESTED_LAND + ".X", contested.x());
 				section.set(CONTESTED_LAND + ".Y", contested.y());
 				section.set(CONTESTED_LAND + ".Z", contested.z());

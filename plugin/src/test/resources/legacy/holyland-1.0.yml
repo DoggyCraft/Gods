@@ -1,0 +1,30 @@
+data-version: 2
+Holylands:
+  world:
+    '4294967297':
+      GodName: Thor
+      Name: Upper Flowerfield
+      FirstPrayerTime: 10:00 01-01-2025
+      LastPrayerTime: 21:15 14-03-2025
+      World: world
+    '-1':
+      GodName: Odin
+      Name: Rockhill
+      FirstPrayerTime: 10:00 01-01-2025
+      LastPrayerTime: 21:15 14-03-2025
+      World: world
+      AttackingGodName: Thor
+      ContestedTime: 21:00 14-03-2025
+      AttackerKills: 3
+      DefenderKills: 1
+      Desecration: 7
+      Banner: red
+    notes: kept as it is
+  my_world:
+    '0':
+      GodName: Loki
+      LastPrayerTime: 21:15 14-03-2025
+      World: my.world
+NeutralLands:
+  world:
+    '8589934594': 12:00 01-01-2025

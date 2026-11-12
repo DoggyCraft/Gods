@@ -18,17 +18,18 @@ import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.HolyLandClaimEvent;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
+import com.dogonfire.gods.model.ChunkKey;
 import com.dogonfire.gods.model.HolyLand;
 import com.dogonfire.gods.model.NeutralLand;
-import com.dogonfire.gods.model.RegionKey;
 import com.dogonfire.gods.storage.HolyLandRepository;
 import com.dogonfire.gods.util.LegacyDates;
 
 /**
- * Holy lands: 128x128 block regions ({@link RegionKey}) claimed by a god when a believer builds or prays at an altar
- * there, neutral lands set by admins, and attacks on holy lands (the rules are in {@link HolyLandContest}). Owns every
- * change to holyland.yml ({@link HolyLandRepository}); every change is written at once, as before. The events are
- * handled by {@code listener/HolyLandListener}. Its data is only loaded while holy land is enabled. Main thread only.
+ * Holy lands: one land per altar, a set of chunks ({@link ChunkKey}) a god claims when a believer builds or prays at
+ * the altar and that grows with the god's rank ({@link #claim}), neutral land chunks set by admins, and attacks on holy
+ * lands (the rules are in {@link HolyLandContest}). Owns every change to holyland.yml ({@link HolyLandRepository});
+ * every change is written at once, as before. The events are handled by {@code listener/HolyLandListener}. Its data is
+ * only loaded while holy land is enabled. Main thread only.
  */
 public class HolyLandService
 {
@@ -56,29 +57,29 @@ public class HolyLandService
 	}
 
 	// ---------------------------------------------------------------------
-	// Regions
+	// Chunks
 
-	/** The region of a location */
-	public static RegionKey regionOf(Location location)
+	/** The chunk of a location */
+	public static ChunkKey chunkOf(Location location)
 	{
-		return RegionKey.of(location.getWorld().getName(), location.getBlockX(), location.getBlockZ());
+		return ChunkKey.of(location.getWorld().getName(), location.getBlockX(), location.getBlockZ());
 	}
 
-	/** The region hash of a location (without its world); gods.yml keeps it for a god's attack */
-	public long hashLocation(Location location)
-	{
-		return RegionKey.hash(location.getBlockX(), location.getBlockZ());
-	}
-
-	/** Whether two locations are in the same region of the same world */
+	/** Whether two locations are in the same chunk of the same world */
 	public boolean isSameChunk(Location one, Location two)
 	{
-		return RegionKey.sameRegion(one.getBlockX(), one.getBlockZ(), two.getBlockX(), two.getBlockZ()) && one.getWorld() == two.getWorld();
+		return ChunkKey.sameChunk(one.getBlockX(), one.getBlockZ(), two.getBlockX(), two.getBlockZ()) && one.getWorld() == two.getWorld();
 	}
 
 	private HolyLand find(Location location)
 	{
-		return this.repository.find(regionOf(location));
+		return this.repository.find(chunkOf(location));
+	}
+
+	/** Whether a chunk belongs to no holy land and isn't neutral land */
+	private boolean isFree(ChunkKey chunk)
+	{
+		return this.repository.find(chunk) == null && this.repository.findNeutral(chunk) == null;
 	}
 
 	// ---------------------------------------------------------------------
@@ -121,13 +122,6 @@ public class HolyLandService
 		return land != null ? land.name() : null;
 	}
 
-	public void setHolyLandName(Location location, String name)
-	{
-		this.repository.getOrCreate(regionOf(location)).setName(name);
-
-		this.repository.save();
-	}
-
 	private String generateHolyLandName(Biome type)
 	{
 		String[] first = new String[] {"Upper ", "Lower ", "High ", ""};
@@ -167,10 +161,8 @@ public class HolyLandService
 	}
 
 	/** Gives the land to {@code godName} (keeping when it was first prayed in) and counts it as prayed in now */
-	public void setHolyLand(Location location, String godName)
+	private void giveLand(HolyLand land, String godName)
 	{
-		HolyLand land = this.repository.getOrCreate(regionOf(location));
-
 		Instant now = DATES.now();
 		if (land.firstPrayerTime() == null)
 		{
@@ -178,9 +170,6 @@ public class HolyLandService
 		}
 		land.setGodName(godName);
 		land.setLastPrayerTime(now);
-		land.setWorldName(location.getWorld().getName());
-
-		this.repository.save();
 	}
 
 	/** Removes holy lands nobody has prayed in for the configured number of days */
@@ -204,7 +193,7 @@ public class HolyLandService
 			// No prayer time at all: treated as abandoned
 			if (lastPrayer == null || (now - lastPrayer.toEpochMilli()) / 60000L > maxMinutes)
 			{
-				this.repository.remove(land.region());
+				this.repository.remove(land);
 				removed++;
 			}
 		}
@@ -227,7 +216,7 @@ public class HolyLandService
 		{
 			if (godName != null && godName.equals(land.godName()))
 			{
-				this.repository.remove(land.region());
+				this.repository.remove(land);
 				changed = true;
 			}
 		}
@@ -238,92 +227,120 @@ public class HolyLandService
 		}
 	}
 
-	public int getClaimedChunksForGod(String godName)
+	/** How many holy lands (one per altar that claimed land) the god holds */
+	public int getHolyLandsForGod(String godName)
 	{
-		int chunks = 0;
+		int lands = 0;
 
 		for (HolyLand land : this.repository.all())
 		{
 			if (godName != null && godName.equals(land.godName()))
 			{
-				chunks++;
+				lands++;
 			}
 		}
 
-		return chunks;
+		return lands;
 	}
 
-	/** The regions of holy land the god may claim: power / 10 + 3, and its rank's extra regions (ranks.unlocks.holy-land-extra-regions) */
-	public int getMaximumChunksForGod(String godName)
+	/** How many holy lands the god may hold: power / 10 + 3 */
+	public int getMaximumHolyLandsForGod(String godName)
 	{
 		return RankRules.maxHolyLandRegions(ctx.godService().getGodPower(godName), ctx.rankService().getRank(godName), ctx.settings().ranks().unlocks());
 	}
 
-	/** A believer built an altar here: claim the land for the god if it's free. */
-	public void addAltar(Player player, String godName, Location location)
+	/** How many chunks around its center an altar's land of this god takes (ranks.unlocks.holy-land-radius-chunks) */
+	private int radiusFor(String godName)
 	{
-		if (getGodAtHolyLandLocation(location) != null)
-		{
-			return;
-		}
-
-		if (getClaimedChunksForGod(godName) >= getMaximumChunksForGod(godName))
-		{
-			ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.cannot-claim-more", 1);
-			return;
-		}
-
-		if (ctx.fire(new HolyLandClaimEvent(godName, player, location)).isCancelled())
-		{
-			return;
-		}
-
-		setHolyLand(location, godName);
-		setHolyLandName(location, generateHolyLandName(location.getBlock().getBiome()));
-
-		int claimed = getClaimedChunksForGod(godName);
-		int max = getMaximumChunksForGod(godName);
-
-		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CLAIMED_HOLY_LAND, 1, Messages.player(player.getName()));
-		ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.size", 20 * 5, Messages.text("claimed", claimed), Messages.text("max", max));
+		return 0;
 	}
 
 	/**
-	 * A believer prayed at an altar here: keep the god's land from being abandoned, or claim the land for the god if
-	 * it's free.
+	 * A believer built a praying altar: the god claims its land (see {@link #claim}). Tells the believer when the god
+	 * holds as many holy lands as it may.
+	 *
+	 * @param altarBlock the altar block
+	 * @param sign       the altar's sign
 	 */
-	public void addPrayer(Player player, String godName, Location location)
+	public void addAltar(Player player, String godName, Location altarBlock, Location sign)
 	{
-		HolyLand land = find(location);
-		String landGodName = land != null ? land.godName() : null;
+		claim(player, godName, altarBlock, sign, true);
+	}
 
-		if (landGodName != null)
+	/**
+	 * A believer prayed at a praying altar: the land of the altar is kept from being abandoned and grows with the god's
+	 * rank, or the god claims it if it's free (see {@link #claim}).
+	 */
+	public void addPrayer(Player player, String godName, Location altarBlock, Location sign)
+	{
+		claim(player, godName, altarBlock, sign, false);
+	}
+
+	/**
+	 * When the altar block's chunk belongs to a land of the god, that land counts as prayed in now and takes the free
+	 * chunks of the altar ({@link HolyLandRules#footprint}) and of the square its rank gives it around its center. When
+	 * the chunk is free and the god may hold another holy land, a new land is claimed (a cancellable
+	 * {@link HolyLandClaimEvent}) with those chunks. Another god's land and neutral land are never taken.
+	 */
+	private void claim(Player player, String godName, Location altarBlock, Location sign, boolean built)
+	{
+		ChunkKey center = chunkOf(altarBlock);
+		List<ChunkKey> footprint = HolyLandRules.footprint(center.world(), altarBlock.getBlockX(), altarBlock.getBlockZ(), sign.getBlockX(), sign.getBlockZ());
+		HolyLand land = this.repository.find(center);
+
+		if (land != null)
 		{
-			if (landGodName.equals(godName))
+			if (godName.equals(land.godName()))
 			{
 				land.setLastPrayerTime(DATES.now());
+				grow(land, footprint, godName);
 				this.repository.save();
 			}
 			return;
 		}
 
-		if (getClaimedChunksForGod(godName) >= getMaximumChunksForGod(godName))
+		if (this.repository.findNeutral(center) != null)
 		{
 			return;
 		}
 
-		if (ctx.fire(new HolyLandClaimEvent(godName, player, location)).isCancelled())
+		if (getHolyLandsForGod(godName) >= getMaximumHolyLandsForGod(godName))
+		{
+			if (built)
+			{
+				ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.cannot-claim-more", 1);
+			}
+			return;
+		}
+
+		if (ctx.fire(new HolyLandClaimEvent(godName, player, altarBlock)).isCancelled())
 		{
 			return;
 		}
 
-		setHolyLand(location, godName);
+		land = this.repository.create(center);
+		giveLand(land, godName);
+		land.setWorldName(altarBlock.getWorld().getName());
+		land.setName(generateHolyLandName(altarBlock.getBlock().getBiome()));
+		grow(land, footprint, godName);
+		this.repository.save();
 
-		int claimedAfter = getClaimedChunksForGod(godName);
-		int max = getMaximumChunksForGod(godName);
+		int claimed = getHolyLandsForGod(godName);
+		int max = getMaximumHolyLandsForGod(godName);
 
 		ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_CLAIMED_HOLY_LAND, 1, Messages.player(player.getName()));
-		ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.size", 20 * 5, Messages.text("claimed", claimedAfter), Messages.text("max", max));
+		ctx.godSpeech().sendInfo(player.getUniqueId(), "holy-land.size", 20 * 5, Messages.text("claimed", claimed), Messages.text("max", max));
+	}
+
+	/** Adds the free chunks of the footprint and of the square of the god's radius around the land's center */
+	private void grow(HolyLand land, List<ChunkKey> footprint, String godName)
+	{
+		List<ChunkKey> wanted = new ArrayList<ChunkKey>(footprint);
+		wanted.addAll(HolyLandRules.square(land.center(), radiusFor(godName)));
+		for (ChunkKey chunk : HolyLandRules.claimable(wanted, this::isFree))
+		{
+			this.repository.addChunk(land, chunk);
+		}
 	}
 
 	// ---------------------------------------------------------------------
@@ -331,25 +348,34 @@ public class HolyLandService
 
 	public boolean isNeutralLandLocation(Location location)
 	{
-		return this.repository.findNeutral(regionOf(location)) != null;
+		return this.repository.findNeutral(chunkOf(location)) != null;
 	}
 
+	/** Makes the chunks around the location neutral land ({@link HolyLandRules#NEUTRAL_RADIUS_CHUNKS}) */
 	public void setNeutralLand(Location location)
 	{
-		this.repository.putNeutral(new NeutralLand(regionOf(location), DATES.now()));
+		Instant now = DATES.now();
+		for (ChunkKey chunk : HolyLandRules.square(chunkOf(location), HolyLandRules.NEUTRAL_RADIUS_CHUNKS))
+		{
+			this.repository.putNeutral(new NeutralLand(chunk, now));
+		}
 
 		this.repository.save();
 	}
 
+	/** Makes the chunks around the location ({@link HolyLandRules#NEUTRAL_RADIUS_CHUNKS}) no longer neutral land */
 	public void clearNeutralLand(Location location)
 	{
-		this.repository.removeNeutral(regionOf(location));
+		for (ChunkKey chunk : HolyLandRules.square(chunkOf(location), HolyLandRules.NEUTRAL_RADIUS_CHUNKS))
+		{
+			this.repository.removeNeutral(chunk);
+		}
 
 		this.repository.save();
 	}
 
 	// ---------------------------------------------------------------------
-	// Contested lands (a priest started an attack on another god's holy land)
+	// Contested lands (a priest started an attack on another god's holy land: the whole land of an altar)
 
 	public boolean isContestedLand(Location location)
 	{
@@ -365,7 +391,11 @@ public class HolyLandService
 
 	public void setContestedLand(Location location, String attackingGodName)
 	{
-		HolyLand land = this.repository.getOrCreate(regionOf(location));
+		HolyLand land = find(location);
+		if (land == null)
+		{
+			return;
+		}
 
 		land.setAttackingGodName(attackingGodName);
 		land.setContestedTime(DATES.now());
@@ -383,6 +413,7 @@ public class HolyLandService
 
 		this.repository.save();
 	}
+
 
 	/** Minutes left of the attack on this holy land; 0 when the defenders have held out. */
 	public long getContestedTimeAtHolyLand(Location location)
@@ -489,7 +520,7 @@ public class HolyLandService
 		}
 	}
 
-	/** Ends the attack on the land at location: the land goes to the attackers unless the defenders won */
+	/** Ends the attack on the land at location: the whole land goes to the attackers unless the defenders won */
 	public void resolveContestedLand(Location location, String defendingGodName, String attackingGodName, boolean defenderWins)
 	{
 		if (defendingGodName != null && attackingGodName != null)
@@ -501,7 +532,12 @@ public class HolyLandService
 			}
 			else
 			{
-				setHolyLand(location, attackingGodName);
+				HolyLand land = find(location);
+				if (land != null)
+				{
+					giveLand(land, attackingGodName);
+					this.repository.save();
+				}
 				ctx.godSpeech().sayToBelievers(defendingGodName, Voice.BELIEVERS_DEFEND_HOLY_LAND_FAILED, 1);
 				ctx.godSpeech().sayToBelievers(attackingGodName, Voice.BELIEVERS_ATTACK_HOLY_LAND_SUCCESS, 1);
 			}

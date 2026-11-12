@@ -29,7 +29,7 @@ public final class AttackCommand extends SubCommand
 	{
 		Player player = (Player) sender;
 		String godName = believersGod(player);
-		if (this.ctx.relationService().getContestedHolyLandForGod(godName) == null)
+		if (!this.ctx.relationService().isAttackingHolyLand(godName))
 		{
 			throw new CommandException("command.attack.no-attack");
 		}

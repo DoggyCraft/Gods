@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.dogonfire.gods.model.God;
-import com.dogonfire.gods.model.RegionKey;
+import com.dogonfire.gods.model.ChunkKey;
 import com.dogonfire.gods.util.LegacyDates;
 
 /** A time that can't be parsed reads as never, but is written back as it was instead of being lost or becoming 1970 */
@@ -82,20 +82,20 @@ class UnparseableTimesTest
 	@Test
 	void holyLandTimes() throws IOException
 	{
-		Files.writeString(this.dir.resolve("holyland.yml"), "data-version: 2\nHolylands:\n  world:\n    '5':\n      GodName: Thor\n      FirstPrayerTime: " + BAD
-				+ "\n      LastPrayerTime: " + BAD + "\n      AttackingGodName: Odin\n      ContestedTime: " + BAD + "\nNeutralLands:\n  world:\n    '7': " + BAD + "\n");
+		Files.writeString(this.dir.resolve("holyland.yml"), "data-version: 3\nHolylands:\n  world:\n    '5,0':\n      GodName: Thor\n      FirstPrayerTime: " + BAD
+				+ "\n      LastPrayerTime: " + BAD + "\n      AttackingGodName: Odin\n      ContestedTime: " + BAD + "\nNeutralLands:\n  world:\n    '7,0': " + BAD + "\n");
 		Storage storage = Fixtures.storage(this.dir);
 		storage.holyLands().load();
-		assertNull(storage.holyLands().find(new RegionKey("world", 5)).firstPrayerTime());
-		assertNull(storage.holyLands().findNeutral(new RegionKey("world", 7)).since());
+		assertNull(storage.holyLands().find(new ChunkKey("world", 5, 0)).firstPrayerTime());
+		assertNull(storage.holyLands().findNeutral(new ChunkKey("world", 7, 0)).since());
 		storage.holyLands().markDirty();
 		storage.close();
 
 		YamlConfiguration written = written("holyland.yml");
-		assertEquals(BAD, written.getString("Holylands.world.5.FirstPrayerTime"));
-		assertEquals(BAD, written.getString("Holylands.world.5.LastPrayerTime"));
-		assertEquals(BAD, written.getString("Holylands.world.5.ContestedTime"));
-		assertEquals(BAD, written.getString("NeutralLands.world.7"));
+		assertEquals(BAD, written.getString("Holylands.world.5,0.FirstPrayerTime"));
+		assertEquals(BAD, written.getString("Holylands.world.5,0.LastPrayerTime"));
+		assertEquals(BAD, written.getString("Holylands.world.5,0.ContestedTime"));
+		assertEquals(BAD, written.getString("NeutralLands.world.7,0"));
 	}
 
 	@Test
