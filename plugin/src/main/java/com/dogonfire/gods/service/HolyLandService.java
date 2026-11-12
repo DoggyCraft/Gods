@@ -441,14 +441,14 @@ public class HolyLandService
 	{
 		if (godName == null)
 		{
-			return;
+			return false;
 		}
-		claimLandAltarRemoved(godName, block);
+		boolean claimLandWent = claimLandAltarRemoved(godName, block);
 
 		HolyLand land = this.repository.find(ChunkKey.of(block.world(), block.x(), block.z()));
 		if (land == null)
 		{
-			return false;
+			return claimLandWent;
 		}
 		List<ChunkKey> otherAltars = new ArrayList<ChunkKey>();
 		for (Altar altar : ctx.altarRegistry().forGod(godName))
@@ -460,7 +460,7 @@ public class HolyLandService
 		}
 		if (!HolyLandRules.goesWithAltar(land.godName(), godName, land.chunks(), otherAltars))
 		{
-			return false;
+			return claimLandWent;
 		}
 
 		this.repository.remove(land);
@@ -545,28 +545,32 @@ public class HolyLandService
 	 * A praying altar of {@code godName} with its altar block at {@code block} is gone (the registry has forgotten it):
 	 * the claim land it stood in goes with it when it is the god's and no other registered praying altar of the god
 	 * stands in the claim ({@link HolyClaimRules#goesWithAltar}).
+	 *
+	 * @return whether the claim land went (and the believers were told)
 	 */
-	private void claimLandAltarRemoved(String godName, BlockPos block)
+	private boolean claimLandAltarRemoved(String godName, BlockPos block)
 	{
 		if (!watchesClaims())
 		{
-			return;
+			return false;
 		}
 		World world = ctx.plugin().getServer().getWorld(block.world());
 		if (world == null)
 		{
-			return;
+			return false;
 		}
 		HolyLand land = claimLandAt(new Location(world, block.x(), block.y(), block.z()));
 		if (land == null)
 		{
-			return;
+			return false;
 		}
 		HolyClaimRules.ClaimInfo claim = ctx.griefPrevention().claim(land.claimId());
 		if (HolyClaimRules.goesWithAltar(land.godName(), godName, claim, prayingAltarBlocks(godName)))
 		{
 			removeClaimLand(land, HolyClaimRules.Loss.NO_ALTAR);
+			return true;
 		}
+		return false;
 	}
 
 	/**
