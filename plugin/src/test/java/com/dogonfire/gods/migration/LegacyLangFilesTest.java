@@ -61,7 +61,9 @@ class LegacyLangFilesTest
 			// Right clicking the altar block or its light prays too
 			"altar.pray-hint",
 			// Each follower shows their devotion level
-			"command.followers.line", "command.followers.you", "command.followers.you-below");
+			"command.followers.line", "command.followers.you", "command.followers.you-below",
+			// 0.9.x named the oak log by its old material name, LOG
+			"names.item.OAK_LOG");
 
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test
