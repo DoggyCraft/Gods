@@ -187,33 +187,39 @@ public class HolyLandService
 		return land != null ? land.name() : null;
 	}
 
-	private String generateHolyLandName(Biome type)
+	/**
+	 * A name for a new holy land from the words of its biome's group in messages.yml (holy-land.names.&lt;group&gt;,
+	 * {@link HolyLandNames}); a list left empty takes the default group's. Null if every list is empty.
+	 */
+	private String generateHolyLandName(Biome biome)
 	{
-		String[] first = new String[] {"Upper ", "Lower ", "High ", ""};
-		String[] second = new String[] {"Flower", "Grass", "Cold"};
-		String[] third = new String[] {"place", "field", "shire"};
+		String group = HolyLandNames.group(biomeKey(biome));
+		List<List<String>> parts = new ArrayList<List<String>>();
+		for (String part : HolyLandNames.PARTS)
+		{
+			List<String> words = words(HolyLandNames.key(group, part));
+			parts.add(words.isEmpty() ? words(HolyLandNames.key(HolyLandNames.DEFAULT, part)) : words);
+		}
+		return HolyLandNames.pick(parts.get(0), parts.get(1), parts.get(2), this.random);
+	}
 
-		// Biome is no longer an enum, so this can't be a switch
-		if (type == Biome.SUNFLOWER_PLAINS || type == Biome.PLAINS)
-		{
-			first = new String[] {"Upper ", "Lower ", "High ", ""};
-			second = new String[] {"Flower", "Grass", "Cold"};
-			third = new String[] {"place", "field", "shire"};
-		}
-		else if (type == Biome.DARK_FOREST || type == Biome.BIRCH_FOREST)
-		{
-			first = new String[] {"Upper ", "Lower ", "High ", ""};
-			second = new String[] {"Fire", "Dank", "Cold"};
-			third = new String[] {"forest", "wood", ""};
-		}
-		else if (type == Biome.WINDSWEPT_HILLS)
-		{
-			first = new String[] {"Upper ", "Lower ", "High ", ""};
-			second = new String[] {"Rock", "High", "Sky"};
-			third = new String[] {"hill", "mountain"};
-		}
+	/** The words of a holy-land.names list as they are (no MiniMessage: plain text), empty if there is none */
+	private List<String> words(String key)
+	{
+		return ctx.messages().has(key) ? ctx.messages().raw(key) : List.of();
+	}
 
-		return first[random.nextInt(first.length)] + second[random.nextInt(second.length)] + third[random.nextInt(third.length)];
+	/** The biome's key ("plains"), or null; Biome is a registry entry, so it is matched by its key, never a constant */
+	private static String biomeKey(Biome biome)
+	{
+		try
+		{
+			return biome != null ? biome.getKey().getKey() : null;
+		}
+		catch (RuntimeException ex)
+		{
+			return null;
+		}
 	}
 
 	/**

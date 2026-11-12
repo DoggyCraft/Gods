@@ -220,6 +220,81 @@ holy-land:
   # To the online believers of <god> when the GriefPrevention claim that was its Holy Land <name> is deleted or given to
   # someone who is not a priest of <god>
   claim-lost: '<red>The Holy Land <hl><name></hl> of <hl><god></hl> is lost with its claim'
+  # The names a new Holy Land gets, from the biome its altar stands in. A name is a random prefix + a random middle +
+  # a random suffix, joined as they are: "Upper " + "Flower" + "field" is "Upper Flowerfield". So a prefix ends with
+  # its space, a middle starts with a capital letter, and a suffix is joined to the middle (start it with a space for
+  # a word of its own); '' is "nothing here" (a land without a prefix), and a word twice is picked twice as often.
+  # The words are plain text, not MiniMessage. A list left empty ([]) takes the default group's list. The groups:
+  # plains (plains, meadows), forest (forests, taigas), dark-forest (dark forests, pale gardens), snow (snowy and
+  # frozen biomes, ice spikes, groves), desert, badlands, jungle, swamp (swamps, mangroves), ocean (oceans, beaches,
+  # rivers, shores), mountains (peaks, slopes, windswept hills), cherry (cherry groves), mushroom (mushroom fields),
+  # savanna, nether (every Nether biome), end (every End biome) and default (every other biome: caves, ...).
+  # Names already given keep their name; /g landname renames one.
+  names:
+    default:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'High ']
+      middle: [Bright, Still, Fair, Elder, Silver, Hallow, Dawn]
+      suffix: [haven, stead, rest, field, hold, ford, mere]
+    plains:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'High ', 'Old ']
+      middle: [Flower, Grass, Green, Clover, Honey, Fair, Barley]
+      suffix: [place, field, shire, ford, stead, ton]
+    forest:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Deep ']
+      middle: [Oak, Fern, Moss, Birch, Elder, Pine, Green]
+      suffix: [wood, forest, holt, glade, grove]
+    dark-forest:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Deep ']
+      middle: [Dank, Cold, Gloom, Shade, Raven, Thorn, Night]
+      suffix: [wood, forest, holt, hollow, mire]
+    snow:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'High ', 'North ']
+      middle: [Frost, Rime, Winter, Snow, Ice, White, Silver]
+      suffix: [vale, hold, mere, fell, reach, haven]
+    desert:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Far ']
+      middle: [Sun, Dune, Amber, Gold, Mirage, Scorch, Sand]
+      suffix: [reach, waste, hollow, rest, well, spire]
+    badlands:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Far ']
+      middle: [Red, Rust, Ochre, Copper, Ember, Mesa, Dust]
+      suffix: [rock, canyon, gulch, ridge, bluff, spire]
+    jungle:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Deep ']
+      middle: [Vine, Emerald, Parrot, Orchid, Canopy, Jade, Bamboo]
+      suffix: [wild, grove, reach, tangle, hollow, shade]
+    swamp:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Still ']
+      middle: [Mire, Reed, Willow, Bog, Fen, Murk, Frog]
+      suffix: [marsh, mere, hollow, water, moor, pool]
+    ocean:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Far ']
+      middle: [Tide, Salt, Gull, Pearl, Wave, Coral, Storm]
+      suffix: [haven, shore, reach, port, mere, strand]
+    mountains:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Far ', 'Old ']
+      middle: [Rock, High, Sky, Stone, Eagle, Storm, Grey]
+      suffix: [hill, mountain, peak, fell, ridge, spire]
+    cherry:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Fair ']
+      middle: [Blossom, Petal, Rose, Spring, Bloom, Sakura, Pink]
+      suffix: [grove, vale, garden, glade, haven, field]
+    mushroom:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Far ']
+      middle: [Spore, Cap, Myco, Moon, Puff, Stem, Dream]
+      suffix: [isle, field, haven, hollow, shore, ring]
+    savanna:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Old ', 'Far ']
+      middle: [Acacia, Lion, Gold, Sun, Dry, Amber, Thorn]
+      suffix: [veld, plain, reach, field, stead, rest]
+    nether:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Deep ', 'Burning ']
+      middle: [Ember, Ash, Cinder, Flame, Soul, Brimstone, Blaze]
+      suffix: [hold, keep, maw, gate, forge, pit]
+    end:
+      prefix: ['', '', '', 'Upper ', 'Lower ', 'Far ', 'Outer ']
+      middle: [Void, Star, Pale, Echo, Silent, Night, Moon]
+      suffix: [reach, spire, hold, rest, gate, isle]
   attack-hint: <aqua>Stand in the Holy Land of an enemy religion and use <white>/gods startattack</white> to attack it!
   attacking-hint: <aqua>Your religion is attacking an enemy Holy Land! Use /g attack to join the battle!
   # <minutes> left of the battle
