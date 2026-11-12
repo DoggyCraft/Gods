@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -73,6 +74,16 @@ public class AltarListener implements Listener
 			if (event.getHand() == EquipmentSlot.HAND)
 			{
 				useAltarSign(player, block);
+			}
+			return;
+		}
+
+		// A finished altar whose light is gone does nothing until it is lit again: say so
+		if (AltarService.isWallSign(block) && block.getState() instanceof Sign sign && ctx.altarService().readTaggedAltar(sign) != null)
+		{
+			if (event.getHand() == EquipmentSlot.HAND)
+			{
+				ctx.godSpeech().sendInfo(player.getUniqueId(), "altar.no-light", 1);
 			}
 			return;
 		}

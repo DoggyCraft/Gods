@@ -61,7 +61,10 @@ class BelieverRulesTest
 	@Test
 	void minutesUntilTheNextPrayer()
 	{
-		assertEquals(3, BelieverRules.minutesUntilCanPray(NOW.minus(Duration.ofSeconds(90)), NOW, 5));
+		assertEquals(4, BelieverRules.minutesUntilCanPray(NOW.minus(Duration.ofSeconds(90)), NOW, 5));
+		// Seconds left are a minute, not 0
+		assertEquals(1, BelieverRules.minutesUntilCanPray(NOW.minus(Duration.ofSeconds(5 * 60 - 20)), NOW, 5));
+		assertEquals(0, BelieverRules.minutesUntilCanPray(NOW.minus(Duration.ofMinutes(5)), NOW, 5));
 		assertTrue(BelieverRules.minutesUntilCanPray(null, NOW, 5) < 0);
 	}
 

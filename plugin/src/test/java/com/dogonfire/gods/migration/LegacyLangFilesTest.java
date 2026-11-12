@@ -65,7 +65,9 @@ class LegacyLangFilesTest
 			// 0.9.x named the oak log by its old material name, LOG
 			"names.item.OAK_LOG",
 			// "Holy Land", as the other messages say, not "Holyland"
-			"holy-land.size", "holy-land.cannot-claim-more");
+			"holy-land.size", "holy-land.cannot-claim-more",
+			// Praying at the god's figure counts too, so it names the god, not the altar
+			"prayer.too-soon");
 
 	/** The bundled files were made from the old bundled ones, so converting those changes nothing */
 	@Test

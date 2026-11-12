@@ -35,6 +35,8 @@ altar:
   praying-not-allowed: <dark_red>You do not have permission to pray at altars
   invalid-god-name: <dark_red>That is not a proper name for a God!
   invalid-sign: <dark_red>Only write the name of a God on the sign
+  # Clicking the sign of an altar whose light is gone
+  no-light: <red>This altar has gone dark. Put a light on top of its block (a torch, lantern, candle or fire) to pray here again.
   # The words a player may write on a new altar sign, on another line than the God's name, to choose the God's gender
   # (any case); /gods gender takes them too. English "God", "Goddess" and "Deity" always work. Without one, a new God
   # chooses its gender itself.
@@ -165,7 +167,8 @@ prayer:
   left-religion: <red>You left the religion of <hl><god></hl>
   confirm-change: <yellow>By praying to this God you will LEAVE the religion of <hl><god></hl>! Click again to confirm this action.
   change-too-soon: <red>You cannot change god so soon! Try again later.
-  too-soon: <red>You cannot pray at an altar so soon! Gather your strength and try again in <hl><minutes></hl> minutes.
+  # <gender> of the god ("God", "Goddess", "Deity"), <minutes> until they can pray again (at least 1)
+  too-soon: <red>You cannot pray to your <gender> so soon! Gather your strength and try again in <hl><minutes> min</hl>.
   rejected-invitation: <red>You rejected the offer to join <hl><god></hl>!
   # <amount> is the prayer power missing, <god>
   not-enough-power: <aqua>You need <hl><amount></hl> more prayer power for that
@@ -601,9 +604,9 @@ names:
   rank-condition:
     min-believers: Believers
     min-power: Power
-    requires-priest: A priest
+    requires-priest: Priest
     min-mood: Mood
-    requires-main-altar: A main altar
+    requires-main-altar: Main altar
     hours-after-priest: With a priest
     hours-at-previous-rank: At its rank
     min-prayers: Prayers
@@ -915,7 +918,7 @@ command:
     - '<aqua>Build an altar to your God by following these simple steps:'
     - ''
     - <white>  1 - Place a block (the block decides the type of God)
-    - <white>  2 - Place a torch, lantern or candle on top
+    - <white>  2 - Place a torch, lantern, candle or fire on top
     - <white>  3 - Place a wall sign on the side of the block
     - <white>  4 - Write the name of your God on the sign, and <aqua>God<white>, <aqua>Goddess<white> or <aqua>Deity<white>
     - <white>      on another line to choose (or let your God choose)
@@ -1113,8 +1116,6 @@ command:
       hours: <current>/<required> hours
       # <current>: its mood now, <required>: the least it needs (names.mood)
       mood: <current> (at least <required>)
-      'yes': 'yes'
-      'no': 'no'
   reload:
     parameters: ''
     description: Reload the configuration and data files

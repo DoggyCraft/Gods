@@ -79,12 +79,14 @@ public final class BelieverRules
 		believer.setPrayers(prayers + amount);
 	}
 
-	/** Minutes until the believer can pray again (negative or 0 when they can) */
+	/**
+	 * Minutes until the believer can pray again, rounded up, so it is at least 1 while they can't (never "try again in 0
+	 * minutes"); negative or 0 when they can
+	 */
 	public static int minutesUntilCanPray(Instant lastPrayer, Instant now, int minMinutesBetweenPrayers)
 	{
-		long diff = minMinutesBetweenPrayers * 60 * 1000 + millis(lastPrayer) - now.toEpochMilli();
-		long diffSeconds = diff / 1000L;
-		return (int) (diffSeconds / 60L);
+		long diff = minMinutesBetweenPrayers * 60 * 1000L + millis(lastPrayer) - now.toEpochMilli();
+		return (int) Math.ceilDiv(diff, 60_000L);
 	}
 
 	/** Whether the believer prayed within the last {@code minMinutesBetweenPrayers} minutes (inclusive) */

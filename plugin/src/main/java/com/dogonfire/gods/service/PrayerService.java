@@ -43,12 +43,20 @@ public class PrayerService
 
 	/**
 	 * A player built a praying altar: they believe in its god from now on, and the god is created if it doesn't exist.
+	 * Founding a god or joining one this way counts as a prayer (its cooldown and rewards); a believer building another
+	 * altar to their own god doesn't pray.
 	 *
 	 * @param gender the gender written on the sign, or null for none (a new god then chooses its own and says so)
 	 */
 	public boolean addAltar(Player player, String godName, Location location, GodGender gender)
 	{
 		boolean newGod = !ctx.godService().godExist(godName);
+		// A believer building another altar to their own god isn't praying: no prayer cooldown, and no prayer's rewards
+		if (!newGod && godName.equals(ctx.believerService().getGodForBeliever(player.getUniqueId())))
+		{
+			ctx.godSpeech().say(godName, player, Voice.BELIEVER_ALTAR_BUILT, 2 + this.random.nextInt(30), Messages.player(player.getName()));
+			return true;
+		}
 		if (addBeliefByAltar(player, godName, location, true, gender))
 		{
 			int delay = 2;
@@ -105,7 +113,7 @@ public class PrayerService
 		{
 			int timeUntilCanPray = ctx.believerService().getTimeUntilCanPray(player.getUniqueId());
 
-			ctx.godSpeech().sendInfo(player.getUniqueId(), "prayer.too-soon", 1, Messages.text("minutes", timeUntilCanPray));
+			ctx.godSpeech().sendInfo(player.getUniqueId(), "prayer.too-soon", 1, Messages.text("minutes", timeUntilCanPray), ctx.godService().genderTag(godName));
 			return false;
 		}
 
