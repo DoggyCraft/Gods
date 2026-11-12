@@ -13,7 +13,10 @@ import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.model.GodGender;
 import com.dogonfire.gods.model.GodType;
 
-/** /g help [altar/blocks]: the commands the sender can use, how to build an altar, or the altar blocks of each god type */
+/**
+ * /g help [page|altar|blocks]: a page of the commands the sender can use ({@link HelpPages#PER_PAGE} a page), how to
+ * build an altar, or the altar blocks of each god type
+ */
 public final class HelpCommand extends SubCommand
 {
 	private final CommandRouter	router;
@@ -25,7 +28,7 @@ public final class HelpCommand extends SubCommand
 	}
 
 	@Override
-	public void execute(CommandSender sender, List<String> args)
+	public void execute(CommandSender sender, List<String> args) throws CommandException
 	{
 		String topic = args.isEmpty() ? "" : args.getFirst();
 		if (topic.equalsIgnoreCase("altar"))
@@ -38,10 +41,22 @@ public final class HelpCommand extends SubCommand
 		}
 		else
 		{
-			send(sender, "command.help.header", Messages.text("plugin", this.ctx.plugin().getDescription().getFullName()));
-			for (SubCommand command : this.router.commandsFor(sender))
+			// A number is a page; anything else shows the first page, as /g help always did
+			int page = Math.max(1, HelpPages.parsePage(topic));
+			List<SubCommand> commands = this.router.commandsFor(sender);
+			int pages = HelpPages.pageCount(commands.size(), HelpPages.PER_PAGE);
+			if (page > pages)
+			{
+				throw new CommandException("command.help.no-page", Messages.amount(page), Messages.text("pages", pages));
+			}
+			send(sender, "command.help.header", Messages.text("plugin", this.ctx.plugin().getDescription().getFullName()), Messages.text("page", page), Messages.text("pages", pages));
+			for (SubCommand command : HelpPages.page(commands, page, HelpPages.PER_PAGE))
 			{
 				send(sender, "command.help.line", command.usage(this.ctx.messages()), command.description(this.ctx.messages()));
+			}
+			if (page < pages)
+			{
+				send(sender, "command.help.next-page", Messages.text("next", page + 1), Messages.text("pages", pages));
 			}
 		}
 	}
@@ -64,6 +79,12 @@ public final class HelpCommand extends SubCommand
 	@Override
 	public List<String> tabComplete(CommandSender sender, List<String> args)
 	{
-		return args.size() == 1 ? List.of("altar", "blocks") : List.of();
+		if (args.size() != 1)
+		{
+			return List.of();
+		}
+		List<String> options = new java.util.ArrayList<>(List.of("altar", "blocks"));
+		options.addAll(HelpPages.pageNumbers(HelpPages.pageCount(this.router.commandsFor(sender).size(), HelpPages.PER_PAGE)));
+		return options;
 	}
 }

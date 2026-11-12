@@ -763,14 +763,18 @@ command:
     # <god>
     reset: <aqua><gold><god></gold> appears in the skin of its kind again
   help:
-    parameters: '[altar/blocks]'
+    parameters: '[page/altar/blocks]'
     description: Show the list of Gods commands
-    # <plugin> is "Gods vX.Y"
+    # <plugin> is "Gods vX.Y", <page> this page of the commands and <pages> how many there are
     header:
-    - <yellow>------------------ <plugin> ------------------
+    - <yellow>------------ <plugin> (page <page> of <pages>) ------------
     - <aqua>/gods<white> - Basic info
     # One per command: <usage> and <description>
     line: <aqua>/gods <usage><white> - <description>
+    # Below every page but the last: <next> is the next page, <pages> how many there are
+    next-page: <aqua>Use <white>/g help <next></white> for the next page (of <pages>)
+    # <amount> is the page asked for, <pages> how many there are
+    no-page: <red>There is no page <amount>, the commands fill <pages> pages
     altar:
     - <yellow>--------------- How to build an Altar ---------------
     - <aqua>Build an altar to your God by following these simple steps:
