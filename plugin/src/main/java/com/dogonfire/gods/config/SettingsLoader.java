@@ -157,10 +157,10 @@ public class SettingsLoader
 		{
 			conditions.put(rank, rank == GodRank.SPIRIT ? Settings.RankConditions.NONE : rankConditions("ranks." + rank.key()));
 		}
-		Map<GodRank, Integer> extraRegions = new EnumMap<>(GodRank.class);
+		Map<GodRank, Integer> radius = new EnumMap<>(GodRank.class);
 		for (GodRank rank : GodRank.values())
 		{
-			extraRegions.put(rank, atLeast("ranks.unlocks.holy-land-extra-regions." + rank.key(), 0));
+			radius.put(rank, between("ranks.unlocks.holy-land-radius-chunks." + rank.key(), 0, 8));
 		}
 		Settings.Unlocks unlocks = new Settings.Unlocks(
 				rank("ranks.unlocks.bibles"),
@@ -169,7 +169,7 @@ public class SettingsLoader
 				rank("ranks.unlocks.relations"),
 				rank("ranks.unlocks.extra-priest"),
 				rank("ranks.unlocks.aura"),
-				Collections.unmodifiableMap(extraRegions));
+				Collections.unmodifiableMap(radius));
 		String effect = string("ranks.aura.effect").trim().toLowerCase(Locale.ROOT);
 		if (effect.startsWith("minecraft:"))
 		{

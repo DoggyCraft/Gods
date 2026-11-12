@@ -45,9 +45,9 @@ public final class RankRules
 	 * How the god is doing now
 	 *
 	 * @param altars          its praying altars standing
-	 * @param holyLandRegions its regions of holy land
+	 * @param holyLands its holy lands
 	 */
-	public record Facts(boolean hasPriest, int believers, float power, GodMood mood, boolean hasMainAltar, int altars, int holyLandRegions, GodStats stats,
+	public record Facts(boolean hasPriest, int believers, float power, GodMood mood, boolean hasMainAltar, int altars, int holyLands, GodStats stats,
 			Instant now)
 	{
 	}
@@ -63,7 +63,7 @@ public final class RankRules
 	{
 		BELIEVERS("min-believers"), POWER("min-power"), PRIEST("requires-priest"), MOOD("min-mood"), MAIN_ALTAR("requires-main-altar"),
 		HOURS_AFTER_PRIEST("hours-after-priest"), HOURS_AT_PREVIOUS_RANK("hours-at-previous-rank"), PRAYERS("min-prayers"), SACRIFICES("min-sacrifices"),
-		QUESTS("min-quests"), ALTARS("min-altars"), HOLY_LAND_REGIONS("min-holy-land-regions"), CONVERTS("min-converts");
+		QUESTS("min-quests"), ALTARS("min-altars"), HOLY_LANDS("min-holy-land-regions"), CONVERTS("min-converts");
 
 		private final String key;
 
@@ -213,9 +213,9 @@ public final class RankRules
 		{
 			progress.add(atLeast(Condition.ALTARS, facts.altars(), conditions.minAltars()));
 		}
-		if (conditions.minHolyLandRegions() > 0 && features.holyLand())
+		if (conditions.minHolyLands() > 0 && features.holyLand())
 		{
-			progress.add(atLeast(Condition.HOLY_LAND_REGIONS, facts.holyLandRegions(), conditions.minHolyLandRegions()));
+			progress.add(atLeast(Condition.HOLY_LANDS, facts.holyLands(), conditions.minHolyLands()));
 		}
 		if (conditions.minConverts() > 0)
 		{
@@ -382,9 +382,9 @@ public final class RankRules
 		return unlocked(rank, extraPriest) ? maxPerGod + 1 : maxPerGod;
 	}
 
-	/** The regions of holy land a god may claim: power / 10 + 3, as always, and its rank's extra regions */
-	public static int maxHolyLandRegions(float power, GodRank rank, Settings.Unlocks unlocks)
+	/** How many holy lands (one per altar that claimed land) a god may hold: power / 10 + 3, as always */
+	public static int maxHolyLands(float power)
 	{
-		return (int) (power / 10 + 3) + unlocks.holyLandExtraRegions(rank != null ? rank : GodRank.SPIRIT);
+		return (int) (power / 10 + 3);
 	}
 }

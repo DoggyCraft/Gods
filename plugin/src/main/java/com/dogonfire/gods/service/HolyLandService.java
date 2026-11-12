@@ -246,13 +246,13 @@ public class HolyLandService
 	/** How many holy lands the god may hold: power / 10 + 3 */
 	public int getMaximumHolyLandsForGod(String godName)
 	{
-		return RankRules.maxHolyLandRegions(ctx.godService().getGodPower(godName), ctx.rankService().getRank(godName), ctx.settings().ranks().unlocks());
+		return RankRules.maxHolyLands(ctx.godService().getGodPower(godName));
 	}
 
 	/** How many chunks around its center an altar's land of this god takes (ranks.unlocks.holy-land-radius-chunks) */
 	private int radiusFor(String godName)
 	{
-		return 0;
+		return ctx.settings().ranks().unlocks().holyLandRadiusChunks(ctx.rankService().getRank(godName));
 	}
 
 	/**

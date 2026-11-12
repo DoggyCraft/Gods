@@ -271,7 +271,8 @@ class SettingsLoaderTest
 		assertEquals(GodRank.GREATER, unlocks.bibles());
 		assertEquals(GodRank.RECOGNIZED, unlocks.quests());
 		assertWarned("ranks.unlocks.quests");
-		assertEquals(8, unlocks.holyLandExtraRegions(GodRank.GREATER));
+		assertEquals(4, unlocks.holyLandRadiusChunks(GodRank.GREATER));
+		assertEquals(8, load("ranks:\n  unlocks:\n    holy-land-radius-chunks:\n      greater: 20\n").ranks().unlocks().holyLandRadiusChunks(GodRank.GREATER), "at most 8");
 		assertEquals("speed", load("ranks:\n  aura:\n    effect: minecraft:Speed\n").ranks().aura().effect());
 	}
 

@@ -55,14 +55,14 @@ public final class TestConfigs
 		conditions.put(GodRank.DESCENDED, new Settings.RankConditions(3, 0, true, GodMood.NEUTRAL, true, 24, 0, 0, 0, 0, 0, 0, 0));
 		conditions.put(GodRank.EXALTED, new Settings.RankConditions(10, 50, false, GodMood.PLEASED, false, 0, 72, 150, 20, 2, 2, 0, 2));
 		conditions.put(GodRank.GREATER, new Settings.RankConditions(20, 150, false, GodMood.PLEASED, false, 0, 168, 500, 75, 6, 4, 4, 5));
-		Map<GodRank, Integer> extraRegions = new EnumMap<>(GodRank.class);
-		extraRegions.put(GodRank.SPIRIT, 0);
-		extraRegions.put(GodRank.RECOGNIZED, 1);
-		extraRegions.put(GodRank.DESCENDED, 2);
-		extraRegions.put(GodRank.EXALTED, 4);
-		extraRegions.put(GodRank.GREATER, 8);
+		Map<GodRank, Integer> radius = new EnumMap<>(GodRank.class);
+		radius.put(GodRank.SPIRIT, 0);
+		radius.put(GodRank.RECOGNIZED, 1);
+		radius.put(GodRank.DESCENDED, 2);
+		radius.put(GodRank.EXALTED, 3);
+		radius.put(GodRank.GREATER, 4);
 		return new Settings.Ranks(conditions, 24,
-				new Settings.Unlocks(GodRank.RECOGNIZED, GodRank.RECOGNIZED, GodRank.EXALTED, GodRank.EXALTED, GodRank.GREATER, GodRank.GREATER, extraRegions),
+				new Settings.Unlocks(GodRank.RECOGNIZED, GodRank.RECOGNIZED, GodRank.EXALTED, GodRank.EXALTED, GodRank.GREATER, GodRank.GREATER, radius),
 				new Settings.Aura(true, "regeneration", 0, 15));
 	}
 

@@ -7,7 +7,7 @@
 # is kept as config.yml.v1.bak.
 
 # The version of this file's layout. Gods uses it to upgrade old configs; don't change it.
-config-version: 6
+config-version: 7
 
 general:
   # Log extra information to the console, for finding problems.
@@ -205,7 +205,10 @@ quests:
     sunflower: 1
 
 holy-land:
-  # Religions claim the land around their altars as holy land, protected from other players.
+  # Religions claim the land around their altars as holy land, protected from other players. Each praying altar claims
+  # its own holy land: the chunks of its altar block, its sign and the spot in front of the sign, growing with the
+  # god's rank into a square of chunks around the altar (ranks.unlocks.holy-land-radius-chunks) as believers pray there.
+  # Chunks of another religion's holy land and neutral land are never taken. A god may hold power / 10 + 3 holy lands.
   enabled: false
   # Whether players can fight each other in a new god's holy land.
   default-pvp: false
@@ -279,7 +282,7 @@ ranks:
   #   min-sacrifices          sacrifices it was pleased with (doesn't count while sacrifices are off)
   #   min-quests              completed quests (doesn't count while quests are off)
   #   min-altars              praying altars standing
-  #   min-holy-land-regions   regions of holy land (doesn't count while holy land is off)
+  #   min-holy-land-regions   holy lands, one per altar that claimed land (doesn't count while holy land is off)
   #   min-converts            players who joined through an invitation (/g invite)
   # requires-priest and min-believers carry over to the ranks above. A god never falls because of its mood or what
   # its religion has done (an angry god just stops rising). Without a priest it falls at once below every rank that
@@ -343,13 +346,15 @@ ranks:
     extra-priest: greater
     # The aura in the god's holy land (see aura).
     aura: greater
-    # Regions of holy land a god may claim on top of the ones its power gives it (power / 10 + 3), per rank.
-    holy-land-extra-regions:
+    # How far each altar's holy land reaches around the altar's chunk, in chunks, per rank: 0 is the altar's own chunks,
+    # 1 a square of 3x3 chunks, 2 of 5x5, 3 of 7x7, 4 of 9x9 (0 to 8). The land grows when a believer prays at the
+    # altar, taking only chunks no other religion holds; a god that falls in rank keeps its chunks.
+    holy-land-radius-chunks:
       spirit: 0
       recognized: 1
       descended: 2
-      exalted: 4
-      greater: 8
+      exalted: 3
+      greater: 4
   # Believers in their own god's holy land feel its aura: a gentle effect, given again on each of the god's turns
   # (every 10 seconds or more, depending on how many gods have believers online).
   aura:

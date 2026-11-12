@@ -71,7 +71,7 @@ class ConfigV3ToV4Test
 
 		VersionedYaml format = new VersionedYaml("config-version", Gods.CONFIG_VERSION, 1,
 				List.of(new ConfigV1ToV2(TestConfigs::resource, this.log.logger()), new ConfigV2ToV3(TestConfigs::resource), new ConfigV3ToV4(this.log.logger()),
-				new ConfigV4ToV5(TestConfigs::resource, this.log.logger()), new ConfigV5ToV6(TestConfigs::resource, this.log.logger())),
+				new ConfigV4ToV5(TestConfigs::resource, this.log.logger()), new ConfigV5ToV6(TestConfigs::resource, this.log.logger()), new ConfigV6ToV7(TestConfigs::resource, this.log.logger())),
 				ConfigV1ToV2::isVersion2Layout);
 		YamlConfiguration loaded = format.load(file.toFile(), this.log.logger());
 

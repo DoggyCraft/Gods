@@ -54,7 +54,7 @@ class RankRulesTest
 
 	private static Facts with(Facts facts, int believers, GodMood mood, boolean priest, GodStats stats)
 	{
-		return new Facts(priest, believers, facts.power(), mood, facts.hasMainAltar(), facts.altars(), facts.holyLandRegions(), stats, facts.now());
+		return new Facts(priest, believers, facts.power(), mood, facts.hasMainAltar(), facts.altars(), facts.holyLands(), stats, facts.now());
 	}
 
 	private static Outcome evaluate(State state, Facts facts)
@@ -263,10 +263,14 @@ class RankRulesTest
 		assertEquals(1, RankRules.maxPriests(1, GodRank.EXALTED, GodRank.GREATER));
 		assertEquals(2, RankRules.maxPriests(1, GodRank.GREATER, GodRank.GREATER));
 
-		// power / 10 + 3, and the rank's extra regions
-		assertEquals(3, RankRules.maxHolyLandRegions(5F, GodRank.SPIRIT, RANKS.unlocks()));
-		assertEquals(8 + 8, RankRules.maxHolyLandRegions(50F, GodRank.GREATER, RANKS.unlocks()));
-		assertEquals(4 + 4, RankRules.maxHolyLandRegions(10F, GodRank.EXALTED, RANKS.unlocks()));
+		// power / 10 + 3 holy lands, whatever the rank
+		assertEquals(3, RankRules.maxHolyLands(5F));
+		assertEquals(8, RankRules.maxHolyLands(50F));
+		assertEquals(4, RankRules.maxHolyLands(10F));
+		// and each land reaches further with the rank
+		assertEquals(0, RANKS.unlocks().holyLandRadiusChunks(GodRank.SPIRIT));
+		assertEquals(1, RANKS.unlocks().holyLandRadiusChunks(GodRank.RECOGNIZED));
+		assertEquals(4, RANKS.unlocks().holyLandRadiusChunks(GodRank.GREATER));
 	}
 
 	@Test

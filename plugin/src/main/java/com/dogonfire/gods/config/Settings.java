@@ -283,11 +283,11 @@ public record Settings(
 	 * @param minSacrifices       sacrifices it was pleased with (ignored while sacrifices are off)
 	 * @param minQuests           completed quests (ignored while quests are off)
 	 * @param minAltars           praying altars standing (altars.yml)
-	 * @param minHolyLandRegions  regions of holy land (ignored while holy land is off)
+	 * @param minHolyLands        holy lands, one per altar that claimed land (ignored while holy land is off; {@code min-holy-land-regions})
 	 * @param minConverts         players who joined it through an invitation
 	 */
 	public record RankConditions(int minBelievers, int minPower, boolean requiresPriest, GodMood minMood, boolean requiresMainAltar, int hoursAfterPriest,
-			int hoursAtPreviousRank, int minPrayers, int minSacrifices, int minQuests, int minAltars, int minHolyLandRegions, int minConverts)
+			int hoursAtPreviousRank, int minPrayers, int minSacrifices, int minQuests, int minAltars, int minHolyLands, int minConverts)
 	{
 		public static final RankConditions NONE = new RankConditions(0, 0, false, null, false, 0, 0, 0, 0, 0, 0, 0, 0);
 	}
@@ -301,16 +301,16 @@ public record Settings(
 	 * @param relations            alliances and wars (/g ally, /g war)
 	 * @param extraPriest          one more priest than priests.max-per-god
 	 * @param aura                 the holy land aura ({@link Aura})
-	 * @param holyLandExtraRegions regions of holy land a god may claim on top of the ones its power gives, per rank
-	 *                             (every rank has an entry)
+	 * @param holyLandRadiusChunks how many chunks around its altar's chunk each altar's holy land reaches, per rank (0: the
+	 *                             altar's own chunks, 1: 3x3 chunks, ...; every rank has an entry)
 	 */
 	public record Unlocks(GodRank bibles, GodRank quests, GodRank holyArtifacts, GodRank relations, GodRank extraPriest, GodRank aura,
-			Map<GodRank, Integer> holyLandExtraRegions)
+			Map<GodRank, Integer> holyLandRadiusChunks)
 	{
-		/** The extra regions of holy land a god of this rank may claim */
-		public int holyLandExtraRegions(GodRank rank)
+		/** How many chunks around its altar's chunk each altar's holy land reaches for a god of this rank */
+		public int holyLandRadiusChunks(GodRank rank)
 		{
-			return this.holyLandExtraRegions.getOrDefault(rank, 0);
+			return this.holyLandRadiusChunks.getOrDefault(rank, 0);
 		}
 	}
 
