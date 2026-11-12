@@ -16,11 +16,12 @@ public final class AltarLights
 {
 	/**
 	 * The lights by Material name. Candles (any color, lit or not, so a candle blown out doesn't break the altar) and
-	 * candles on cakes come from the server's tags. Copper torches and lanterns (Minecraft 1.21.9) count where the
-	 * server has them.
+	 * candles on cakes come from the server's tags. Fire and soul fire too: on netherrack or soul blocks they burn forever
+	 * (fire elsewhere goes out, and the altar with it, until it is lit again). Copper torches and lanterns (Minecraft
+	 * 1.21.9) count where the server has them.
 	 */
 	public static final List<String> NAMES = List.of(
-			"TORCH", "SOUL_TORCH", "REDSTONE_TORCH", "LANTERN", "SOUL_LANTERN",
+			"TORCH", "SOUL_TORCH", "REDSTONE_TORCH", "LANTERN", "SOUL_LANTERN", "FIRE", "SOUL_FIRE",
 			"COPPER_TORCH",
 			"COPPER_LANTERN", "EXPOSED_COPPER_LANTERN", "WEATHERED_COPPER_LANTERN", "OXIDIZED_COPPER_LANTERN",
 			"WAXED_COPPER_LANTERN", "WAXED_EXPOSED_COPPER_LANTERN", "WAXED_WEATHERED_COPPER_LANTERN", "WAXED_OXIDIZED_COPPER_LANTERN");

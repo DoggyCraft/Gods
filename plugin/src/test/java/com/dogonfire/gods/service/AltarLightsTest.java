@@ -20,7 +20,8 @@ class AltarLightsTest
 		List<String> missing = new ArrayList<>();
 		Set<Material> lights = AltarLights.resolve(Material::getMaterial, List.of(Material.CANDLE, Material.RED_CANDLE_CAKE), missing::add);
 		assertTrue(missing.isEmpty(), "" + missing);
-		assertTrue(lights.containsAll(List.of(Material.TORCH, Material.REDSTONE_TORCH, Material.SOUL_TORCH, Material.LANTERN, Material.SOUL_LANTERN, Material.CANDLE, Material.RED_CANDLE_CAKE)));
+		assertTrue(lights.containsAll(List.of(Material.TORCH, Material.REDSTONE_TORCH, Material.SOUL_TORCH, Material.LANTERN, Material.SOUL_LANTERN, Material.FIRE, Material.SOUL_FIRE, Material.CANDLE,
+				Material.RED_CANDLE_CAKE)));
 		assertFalse(lights.contains(Material.WALL_TORCH));
 	}
 
@@ -32,7 +33,7 @@ class AltarLightsTest
 		Set<Material> lights = AltarLights.resolve(name -> name.contains("COPPER") ? null : Material.getMaterial(name), List.of(), missing::add);
 		assertEquals(9, missing.size(), "" + missing);
 		assertTrue(missing.contains("COPPER_TORCH"));
-		assertEquals(Set.of(Material.TORCH, Material.SOUL_TORCH, Material.REDSTONE_TORCH, Material.LANTERN, Material.SOUL_LANTERN), lights);
+		assertEquals(Set.of(Material.TORCH, Material.SOUL_TORCH, Material.REDSTONE_TORCH, Material.LANTERN, Material.SOUL_LANTERN, Material.FIRE, Material.SOUL_FIRE), lights);
 	}
 
 	/** Every name is a real one: none is skipped as missing on the newest API */

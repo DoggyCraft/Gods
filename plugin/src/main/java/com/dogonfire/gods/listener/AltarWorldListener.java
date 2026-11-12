@@ -15,13 +15,15 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.model.BlockPos;
 import com.dogonfire.gods.service.AltarRegistry;
 
 /**
  * Keeps the altar registry ({@link AltarRegistry}) in line with the world: chunks that load are queued for a scan of
  * their tagged altar signs, chunks that unload take their floating texts with them, and block events that touch an
- * altar's sign or altar block have it checked a tick later. Every handler only looks at what happened
- * (MONITOR, ignoring cancelled events), and the lookups are hash map hits. Always registered.
+ * altar's sign or altar block have it checked a tick later. Altars don't burn ({@link #onAltarBurn}); every other
+ * handler only looks at what happened (MONITOR, ignoring cancelled events), and the lookups are hash map hits. Always
+ * registered.
  */
 public class AltarWorldListener implements Listener
 {
@@ -52,6 +54,17 @@ public class AltarWorldListener implements Listener
 	public void onBlockBreak(BlockBreakEvent event)
 	{
 		ctx.altarRegistry().blockChanging(event.getBlock());
+	}
+
+	/** Altars don't burn: a fire lighting an altar would otherwise spread to a wooden sign or altar block */
+	@EventHandler(ignoreCancelled = true)
+	public void onAltarBurn(BlockBurnEvent event)
+	{
+		BlockPos pos = AltarRegistry.pos(event.getBlock());
+		if (ctx.altarRegistry().atSign(pos) != null || !ctx.altarRegistry().onBlock(pos).isEmpty())
+		{
+			event.setCancelled(true);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
