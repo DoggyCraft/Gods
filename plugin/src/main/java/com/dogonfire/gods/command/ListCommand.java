@@ -53,7 +53,7 @@ public final class ListCommand extends SubCommand
 		int rank = 1;
 		for (Ranked god : gods.subList(0, Math.min(SHOWN, gods.size())))
 		{
-			TagResolver row = row(god, String.format("%2d", rank));
+			TagResolver row = row(god, String.valueOf(rank));
 			if (god.name().equals(playerGod))
 			{
 				playerGodShown = true;
@@ -84,11 +84,14 @@ public final class ListCommand extends SubCommand
 		}
 	}
 
-	/** <rank> (its place), <name> (the name and title, padded to line up), <power>, <believers> and <god-rank> of a line of the list */
+	/**
+	 * <rank> (its place), <god> (its name), <title>, <power>, <believers> and <god-rank> of a line of the list; <name> is
+	 * the name too, for message files from before <god> (chat fonts aren't monospaced, so nothing is padded to line up)
+	 */
 	private TagResolver row(Ranked god, String rank)
 	{
-		String fullGodName = String.format("%-16s", god.name()) + "   " + String.format("%-16s", this.ctx.godService().getTitleForGod(god.name()));
-		return TagResolver.resolver(Messages.text("rank", rank), Messages.legacyText("name", fullGodName), Messages.text("power", god.power()), Messages.text("believers", god.believers()),
+		return TagResolver.resolver(Messages.text("rank", rank), Messages.god(god.name()), Messages.text("name", god.name()),
+				Messages.legacyText("title", this.ctx.godService().getTitleForGod(god.name())), Messages.text("power", god.power()), Messages.text("believers", god.believers()),
 				Messages.text("god-rank", this.ctx.rankService().getRankName(god.name())));
 	}
 }

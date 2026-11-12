@@ -1164,13 +1164,13 @@ command:
     description: List the Gods of this server
     none: <gold>There are no Gods in <server>!
     header: <yellow>--------- The Gods of <server> ---------
-    # One per god: <rank> (its place in the list), <name> (the name and title, padded to line up), <power>, <believers>,
-    # <god-rank> (the god's rank, as its god type calls it)
-    line: <yellow><rank><aqua> - <name><gold> <god-rank> Power <power> Believers <believers>
+    # One per god: <rank> (its place in the list), <god>, <title> (e.g. "Goddess of War"), <god-rank> (the god's rank, as
+    # its god type calls it), <believers>, <power>
+    line: '<yellow><rank>.<aqua> <god> <gray><god-rank><dark_gray> · <gold>Believers <believers><gray>, power <power>'
     # The line of the player's god
-    you: <gold><rank> - <name><gold> <god-rank> Power <power> Believers <believers>
+    you: '<gold><rank>. <god> <yellow><god-rank><dark_gray> · <gold>Believers <believers><yellow>, power <power>'
     # Below the list, when the player's god isn't in it
-    you-below: <gold><rank> - <name> <god-rank> Power <power> Believers <believers>
+    you-below: '<gold><rank>. <god> <yellow><god-rank><dark_gray> · <gold>Believers <believers><yellow>, power <power>'
   love:
     parameters: ''
     description: Show your love to your partner
