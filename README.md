@@ -264,7 +264,7 @@ Other plugins can read Gods' gods and believers, make gods speak and act, and li
 <dependency>
     <groupId>com.github.DoggyCraft.Gods</groupId>
     <artifactId>gods-api</artifactId>
-    <version>v1.0.0</version> <!-- a release tag -->
+    <version>v1.0.1</version> <!-- a release tag -->
     <scope>provided</scope>
 </dependency>
 ```
@@ -277,7 +277,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.github.DoggyCraft.Gods:gods-api:v1.0.0") // a release tag
+    compileOnly("com.github.DoggyCraft.Gods:gods-api:v1.0.1") // a release tag
 }
 ```
 

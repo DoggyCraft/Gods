@@ -1,3 +1,7 @@
+1.0.1
+-------------------------------
+* The API (com.github.DoggyCraft.Gods:gods-api) is on JitPack: 1.0.0's couldn't build there. The plugin is the same as 1.0.0.
+
 1.0.0
 -------------------------------
 Requirements
