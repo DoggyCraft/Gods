@@ -30,6 +30,8 @@
         <paperAPIVersion>26.3.build.246-stable</paperAPIVersion>
         <adventureVersion>5.2.0</adventureVersion>
         <junitVersion>6.1.3</junitVersion>
+        <!-- Error Prone, run by the compiler (see maven-compiler-plugin) -->
+        <errorProneVersion>2.50.0</errorProneVersion>
         <!-- Java 21, so Gods runs on 1.21.x servers too; it is still built with JDK 25 (CI, flake, JitPack) -->
         <maven.compiler.release>21</maven.compiler.release>
         <encoding>UTF-8</encoding>
@@ -75,6 +77,29 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.15.0</version>
+                    <!-- Error Prone checks for bug patterns as javac compiles (errors fail the build, warnings are
+                         shown). It needs the JDK's compiler internals opened, in .mvn/jvm.config. -->
+                    <configuration>
+                        <compilerArgs>
+                            <arg>-XDcompilePolicy=simple</arg>
+                            <arg>--should-stop=ifError=FLOW</arg>
+                            <!-- Off: style Gods doesn't follow, and patterns it uses on purpose (rank and mood order are
+                                 enum ordinals, Bukkit worlds and entities compare by identity, the data files keep
+                                 java.util.Date formats) -->
+                            <arg>-Xplugin:ErrorProne -Xep:UnnecessaryParentheses:OFF -Xep:StatementSwitchToExpressionSwitch:OFF -Xep:MissingSummary:OFF -Xep:NotJavadoc:OFF -Xep:PatternMatchingInstanceof:OFF -Xep:JavaUtilDate:OFF -Xep:EnumOrdinal:OFF -Xep:ReferenceEquality:OFF -Xep:StringSplitter:OFF -Xep:LoopOverCharArray:OFF -Xep:OperatorPrecedence:OFF -Xep:UnnecessaryMethodReference:OFF -Xep:IdentityHashMapUsage:OFF -Xep:UnnecessaryLambda:OFF</arg>
+                            <!-- Every other warning fails the build, so a new bug pattern can't slip in -->
+                            <arg>-Werror</arg>
+                            <arg>-Xmaxwarns</arg>
+                            <arg>10000</arg>
+                        </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.errorprone</groupId>
+                                <artifactId>error_prone_core</artifactId>
+                                <version>${errorProneVersion}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

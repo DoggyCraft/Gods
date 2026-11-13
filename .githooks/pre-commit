@@ -1,0 +1,28 @@
+#!/bin/sh
+# Compiles Gods (main and test code) with Error Prone before each commit, so a commit can't break the build or bring
+# in a bug pattern Error Prone knows. It checks the working tree, not only what is staged.
+#
+# Turn it on once per clone:  git config core.hooksPath .githooks
+# Skip it for one commit:     git commit --no-verify
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+# Only when Java sources or the build changed
+if ! git diff --cached --name-only | grep -qE '\.java$|(^|/)pom\.xml$|^\.mvn/'; then
+	exit 0
+fi
+
+if command -v mvn >/dev/null 2>&1; then
+	set -- mvn
+elif command -v nix >/dev/null 2>&1; then
+	set -- nix develop -c mvn
+else
+	echo "pre-commit: neither mvn nor nix is on the PATH, so the compile check is skipped" >&2
+	exit 0
+fi
+
+echo "pre-commit: compiling with Error Prone (git commit --no-verify skips this)" >&2
+if ! "$@" -q test-compile; then
+	echo "pre-commit: the build failed; fix it or commit with --no-verify" >&2
+	exit 1
+fi

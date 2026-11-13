@@ -14,7 +14,10 @@ mvn clean package                     # default goal; tests and builds plugin/ta
 mvn test -pl plugin -am -Dtest=SettingsLoaderTest -Dsurefire.failIfNoSpecifiedTests=false  # one test class (append #method for one test)
 mvn -Pspigot -pl plugin -am clean compile  # compile against spigot-api instead: fails on any Paper-only API (CI runs this too)
 mvn -pl api dependency:build-classpath -Dmdep.outputFile=target/spigot.classpath && java ci/LinkCheck.java plugin/target/Gods-*.jar "$(cat api/target/spigot.classpath)"  # the built jar only references Bukkit API that spigot-api 1.21.3 has (CI runs this too)
+git config core.hooksPath .githooks  # once per clone: the pre-commit hook compiles (main and test code, with Error Prone) before each commit that touches Java or the build
 ```
+
+- Error Prone (`errorProneVersion` in the parent pom, run by `maven-compiler-plugin`; the JDK's compiler internals are opened in `.mvn/jvm.config`) checks every compile, `-Pspigot` and CI included, for bug patterns, and `-Werror` makes every warning fail the build, like a linter. Checks for style Gods doesn't follow or patterns it uses on purpose are switched off there (`-Xep:<Check>:OFF`: enum ordinals for rank and mood order, Bukkit worlds and entities compared by identity, `java.util.Date` for the data files' formats, ...). Fix what it finds; when code really means it, suppress that one spot with `@SuppressWarnings("<Check>")` and a comment saying why (as `SkinResolver.resolve` and `HolyLandRules.WORLD_SPAWNS`, which must name `CHUNK_GEN` for Spigot 1.21.3). The hook (`.githooks/pre-commit`, plain sh, `mvn` or `nix develop -c mvn`) runs `mvn -q test-compile` on the working tree; `git commit --no-verify` skips it.
 
 - A parent `pom.xml` (shared versions and repositories) with two modules, in the standard Maven layout:
   - `api/` (`gods-api`): the public API, `com.dogonfire.gods.api` (see "API"). It is compiled against `spigot-api` 1.21.3 only, with sources and javadoc jars (doclint on: `mvn -pl api javadoc:jar` must pass), and published through JitPack (`jitpack.yml` fetches JDK 25 itself) from release tags as `com.github.DoggyCraft.Gods:gods-api:<tag>`.
