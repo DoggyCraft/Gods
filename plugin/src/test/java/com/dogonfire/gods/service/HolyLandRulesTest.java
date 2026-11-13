@@ -21,6 +21,7 @@ class HolyLandRulesTest
 	}
 
 	@Test
+	@SuppressWarnings("removal") // CHUNK_GEN, which servers still use
 	void theWorldsOwnSpawnsAreKeptOut()
 	{
 		for (SpawnReason reason : new SpawnReason[] { SpawnReason.NATURAL, SpawnReason.CHUNK_GEN, SpawnReason.SPAWNER, SpawnReason.TRIAL_SPAWNER, SpawnReason.JOCKEY, SpawnReason.MOUNT, SpawnReason.PATROL, SpawnReason.RAID, SpawnReason.REINFORCEMENTS, SpawnReason.VILLAGE_INVASION })

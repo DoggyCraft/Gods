@@ -101,7 +101,7 @@ public class GodSpeech
 	/** Like {@link #say}, formatted for {@code audience} */
 	private boolean say(String godName, Player player, Voice situation, int delay, Audience audience, TagResolver... tags)
 	{
-		if (!canHear(godName, player))
+		if (!canHear(player))
 		{
 			return false;
 		}
@@ -121,7 +121,7 @@ public class GodSpeech
 	 */
 	public boolean sayText(String godName, Player player, String text, int delay, TagResolver... tags)
 	{
-		return canHear(godName, player) && deliver(godName, player, null, text, delay, Audience.PLAYER, tags);
+		return canHear(player) && deliver(godName, player, null, text, delay, Audience.PLAYER, tags);
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class GodSpeech
 		for (UUID playerId : ctx.believerService().getBelieversForGod(godName))
 		{
 			Player player = ctx.plugin().getServer().getPlayer(playerId);
-			if (player != null && canHear(godName, player) && deliver(godName, player, null, text, delay, Audience.BELIEVERS, tags))
+			if (player != null && canHear(player) && deliver(godName, player, null, text, delay, Audience.BELIEVERS, tags))
 			{
 				told++;
 			}
@@ -147,7 +147,7 @@ public class GodSpeech
 	/** Like {@link #say}, followed by how to answer (/gods yes or /gods no) */
 	public void sayWithQuestion(String godName, Player player, Voice situation, int delay, TagResolver... tags)
 	{
-		if (!canHear(godName, player))
+		if (!canHear(player))
 		{
 			return;
 		}
@@ -221,7 +221,7 @@ public class GodSpeech
 		}
 	}
 
-	private boolean canHear(String godName, Player player)
+	private boolean canHear(Player player)
 	{
 		if (player == null)
 		{

@@ -31,7 +31,7 @@ public final class GodNpcRules
 	}
 
 	/**
-	 * The yaw (Minecraft's: 0 is south, +z; 90 is west, -x) of someone at {@code from} looking toward {@code to}; 0 for
+	 * The yaw (Minecraft's: 0 is south, +z; 90 is west, -x) of someone at (fromX, fromZ) looking toward (toX, toZ); 0 for
 	 * the same spot
 	 */
 	public static float yawToward(double fromX, double fromZ, double toX, double toZ)

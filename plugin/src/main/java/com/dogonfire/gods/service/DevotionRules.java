@@ -101,7 +101,7 @@ public final class DevotionRules
 		{
 			return new Faded(points, fadedUntil);
 		}
-		double kept = Math.pow(1.0 - devotion.fadePercentPerDay() / 100.0, days);
+		double kept = Math.pow(1.0 - devotion.fadePercentPerDay() / 100.0, (double) days);
 		return new Faded((int) Math.floor(points * kept), start.plus(Duration.ofDays(days)));
 	}
 

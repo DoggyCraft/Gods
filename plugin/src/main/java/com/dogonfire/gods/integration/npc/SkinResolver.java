@@ -54,6 +54,8 @@ public final class SkinResolver
 	 * to {@code then} on the main thread, or null if there is none (no such player, Mojang unreachable). Main thread
 	 * only.
 	 */
+	// The lookup's outcome, errors included, is handled in whenComplete; its own future has nothing more to say
+	@SuppressWarnings("FutureReturnValueIgnored")
 	public void resolve(String name, Consumer<NpcSkin> then)
 	{
 		String key = name.toLowerCase(Locale.ROOT);

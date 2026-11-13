@@ -48,7 +48,7 @@ public final class SkyPowers
 
 		ctx.plugin().logDebug("Starting thunderstorm for " + powerValue + " minutes");
 
-		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new ThunderStormTask(ctx, player, System.currentTimeMillis() + powerValue * 60000), 60L);
+		ctx.plugin().getServer().getScheduler().scheduleSyncDelayedTask(ctx.plugin(), new ThunderStormTask(ctx, player, System.currentTimeMillis() + powerValue * 60_000L), 60L);
 	}
 
 	/** LIGHTNING: strikes up to powerStrength living things within 10 blocks */

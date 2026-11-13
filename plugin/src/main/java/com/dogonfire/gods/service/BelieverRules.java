@@ -85,7 +85,7 @@ public final class BelieverRules
 	 */
 	public static int minutesUntilCanPray(Instant lastPrayer, Instant now, int minMinutesBetweenPrayers)
 	{
-		long diff = minMinutesBetweenPrayers * 60 * 1000L + millis(lastPrayer) - now.toEpochMilli();
+		long diff = minMinutesBetweenPrayers * 60_000L + millis(lastPrayer) - now.toEpochMilli();
 		return (int) Math.ceilDiv(diff, 60_000L);
 	}
 

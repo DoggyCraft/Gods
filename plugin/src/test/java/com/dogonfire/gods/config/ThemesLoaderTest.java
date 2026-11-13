@@ -722,7 +722,7 @@ class ThemesLoaderTest
 			{
 				try
 				{
-					org.bukkit.Sound.class.getField(sound.toUpperCase(java.util.Locale.ROOT).replace('.', '_'));
+					assertNotNull(org.bukkit.Sound.class.getField(sound.toUpperCase(java.util.Locale.ROOT).replace('.', '_')));
 				}
 				catch (NoSuchFieldException ex)
 				{

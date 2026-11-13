@@ -174,7 +174,7 @@ class QuestRulesTest
 			assertTrue(name.length() >= 2, name);
 			assertTrue(Character.isUpperCase(name.charAt(0)), name);
 			assertTrue("AOIUYE".indexOf(name.charAt(0)) >= 0, name);
-			assertEquals(name.substring(1), name.substring(1).toLowerCase());
+			assertEquals(name.substring(1), name.substring(1).toLowerCase(java.util.Locale.ROOT));
 		}
 		assertTrue(QuestRules.holyMountainName(random).startsWith("Holy mountain of "));
 	}

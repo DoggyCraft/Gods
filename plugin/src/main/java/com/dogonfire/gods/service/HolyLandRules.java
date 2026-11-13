@@ -18,8 +18,10 @@ public final class HolyLandRules
 {
 	/**
 	 * The ways the world itself spawns mobs. Holy land and neutral land only stop these: a mob a player hatches, breeds,
-	 * builds, summons by command or that a plugin (Gods' own curses too) spawns is let in.
+	 * builds, summons by command or that a plugin (Gods' own curses too) spawns is let in. CHUNK_GEN is deprecated for
+	 * removal in newer APIs, but servers still use it (Spigot 1.21.3 for every mob a new chunk generates with).
 	 */
+	@SuppressWarnings("removal")
 	private static final Set<SpawnReason> WORLD_SPAWNS = EnumSet.of(SpawnReason.NATURAL, SpawnReason.CHUNK_GEN, SpawnReason.SPAWNER, SpawnReason.TRIAL_SPAWNER, SpawnReason.JOCKEY, SpawnReason.MOUNT, SpawnReason.PATROL, SpawnReason.RAID, SpawnReason.REINFORCEMENTS, SpawnReason.VILLAGE_INVASION, SpawnReason.TRAP, SpawnReason.SILVERFISH_BLOCK, SpawnReason.NETHER_PORTAL);
 
 	/** The radius of chunks /g setsafe sets or clears around the player: 1 is 3x3 chunks */

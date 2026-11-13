@@ -1,5 +1,6 @@
 package com.dogonfire.gods.api;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Constructor;
@@ -98,17 +99,17 @@ class ApiSurfaceTest
 	void snapshotsKeepTheirOldConstructors() throws ReflectiveOperationException
 	{
 		// GodInfo before mainAltar
-		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
-				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class);
+		assertNotNull(GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
+				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class));
 		// GodInfo before descended
-		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
-				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class);
+		assertNotNull(GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
+				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class));
 		// GodInfo before rank
-		GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
+		assertNotNull(GodInfo.class.getConstructor(String.class, GodType.class, GodGender.class, GodMood.class, float.class, float.class, java.util.Set.class, List.class,
 				List.class, List.class, String.class, org.bukkit.Location.class, int.class, QuestInfo.class, java.time.Instant.class, org.bukkit.Location.class,
-				java.time.Instant.class);
+				java.time.Instant.class));
 		// BelieverInfo before devotion
-		BelieverInfo.class.getConstructor(java.util.UUID.class, String.class, int.class, int.class, boolean.class, java.time.Instant.class, java.time.Instant.class);
+		assertNotNull(BelieverInfo.class.getConstructor(java.util.UUID.class, String.class, int.class, int.class, boolean.class, java.time.Instant.class, java.time.Instant.class));
 	}
 
 	/** The NPC methods came after the rest and have defaults, so other implementations (test doubles) still compile */

@@ -84,9 +84,9 @@ class GodRepositoryTest
 		assertEquals(-3.5F, thor.sacrificeValues().get("POPPY"));
 		assertEquals(4.0F, thor.sacrificeValues().get("IRON_INGOT"));
 		assertEquals("The god of thunder", thor.description());
-		assertEquals(Boolean.TRUE, thor.pvp());
+		assertEquals(true, thor.pvp());
 		assertNull(thor.mobDamage());
-		assertEquals(Boolean.FALSE, thor.mobSpawning());
+		assertEquals(false, thor.mobSpawning());
 		assertEquals(LegacyDates.SECONDS.parse("20:00:00 14-03-2019"), thor.lastQuestTime());
 		assertEquals("SLAY", thor.extras().get("QuestType"));
 		assertFalse(thor.extras().containsKey("LanguageFileName"));
@@ -134,8 +134,8 @@ class GodRepositoryTest
 		God thor = storage.gods().find("Thor");
 		assertEquals(List.of(STEVE), thor.priests());
 		assertEquals(12.25F, thor.mood());
-		assertEquals(Boolean.FALSE, thor.pvp());
-		assertEquals(Boolean.TRUE, thor.mobDamage());
+		assertEquals(false, thor.pvp());
+		assertEquals(true, thor.mobDamage());
 		assertNull(thor.mobSpawning());
 		assertEquals(new ContestedLand("world", -5, 64, -5, -1L), thor.contestedLand());
 
@@ -165,7 +165,10 @@ class GodRepositoryTest
 			assertTrue(again.gods().load());
 			assertEquals(before, Fixtures.snapshot(again.gods()), fixture);
 			// Already upgraded: no second backup
-			assertFalse(Files.list(folder).anyMatch(file -> file.getFileName().toString().matches("gods\\.yml\\.v1\\..*\\.bak")), fixture);
+			try (java.util.stream.Stream<java.nio.file.Path> files = Files.list(folder))
+			{
+				assertFalse(files.anyMatch(file -> file.getFileName().toString().matches("gods\\.yml\\.v1\\..*\\.bak")), fixture);
+			}
 			again.close();
 		}
 	}

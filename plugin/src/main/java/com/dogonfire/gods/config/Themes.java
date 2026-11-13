@@ -13,8 +13,8 @@ import com.dogonfire.gods.model.GodType;
  * The god types' themes (themes.yml), read by {@link ThemesLoader} on enable and /g reload and never changed
  * afterwards. Read them through {@code ctx.themes()} every time, like the settings.
  *
- * @param defaults the {@code default} theme: what a god without a type uses
- * @param types    the theme of each god type (every god type has one; gaps were filled from {@code default})
+ * @param defaults the theme of themes.yml's default section: what a god without a type uses
+ * @param types    the theme of each god type (every god type has one; gaps were filled from the default section)
  * @param altars   the altar blocks in use: for a god type that config.yml's {@code altars.block-types} lists, that
  *                 list as it is; for the others the theme's {@link Theme#altarBlocks()}
  */

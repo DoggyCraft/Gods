@@ -42,7 +42,7 @@ final class Fixtures
 	/** A storage whose server knows these players (by lower case name) */
 	static Storage storage(Path dir, Map<String, UUID> knownPlayers)
 	{
-		return new Storage(dir, LOG, Executors.newSingleThreadExecutor(), name -> knownPlayers.get(name.toLowerCase()));
+		return new Storage(dir, LOG, Executors.newSingleThreadExecutor(), name -> knownPlayers.get(name.toLowerCase(java.util.Locale.ROOT)));
 	}
 
 	/** What the repository would write now */
