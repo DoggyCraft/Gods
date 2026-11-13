@@ -54,7 +54,9 @@ class LegacyLangFilesTest
 			Voice.DEFAULT_BIBLE_TEXT_1.key(), Voice.DEFAULT_BIBLE_TEXT_2.key(), Voice.DEFAULT_BIBLE_TEXT_3.key(), Voice.DEFAULT_BIBLE_TEXT_4.key(),
 			Voice.DEFAULT_BIBLE_TEXT_5.key(), Voice.DEFAULT_BIBLE_TEXT_6.key(),
 			// "he will guide you", "has lost his faith": Gods never knows a player's gender, so players are "they"
-			Voice.BELIEVERS_LOST_BELIEVER.key());
+			Voice.BELIEVERS_LOST_BELIEVER.key(),
+			// "i do not require", "genorous", "requite": spelling
+			Voice.BELIEVER_GOOD_SACRIFICE.key(), Voice.BELIEVER_MEH_SACRIFICE.key(), Voice.BELIEVER_ITEM_BLESSING.key(), Voice.BELIEVERS_SACRIFICE_ITEM_TYPE.key());
 
 	/** Messages whose text Gods rewrote after the old bundled files, like {@link #REWRITTEN_VOICES} */
 	private static final java.util.Set<String> REWRITTEN_MESSAGES = java.util.Set.of(
