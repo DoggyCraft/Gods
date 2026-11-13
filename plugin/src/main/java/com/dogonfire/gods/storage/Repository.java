@@ -1,201 +1,179 @@
 package com.dogonfire.gods.storage;
 
+import com.dogonfire.gods.util.LegacyDates;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import com.dogonfire.gods.util.LegacyDates;
-
 /**
- * The models of one data file, held in memory. {@link #load()} reads the {@link DataFile} into models
- * ({@link #read}); after that the models are the truth. A change calls {@link #markDirty()} (written by the next
- * autosave) or {@link #save()} (written now); the flush asks {@link #write} for a fresh YAML snapshot on the main thread
- * and writes it on the storage thread. Main thread only.
- * <p>
- * Keys a repository doesn't know are kept and written back unchanged: top-level ones through {@link #keepUnknown},
- * those inside a record through {@link #extraKeys}/{@link #writeExtras}.
+ * The models of one data file, held in memory. {@link #load()} reads the {@link DataFile} into
+ * models ({@link #read}); after that the models are the truth. A change calls {@link #markDirty()}
+ * (written by the next autosave) or {@link #save()} (written now); the flush asks {@link #write}
+ * for a fresh YAML snapshot on the main thread and writes it on the storage thread. Main thread
+ * only.
+ *
+ * <p>Keys a repository doesn't know are kept and written back unchanged: top-level ones through
+ * {@link #keepUnknown}, those inside a record through {@link #extraKeys}/{@link #writeExtras}.
  */
-public abstract class Repository
-{
-	private final DataFile				file;
-	private final Logger				logger;
-	// Top-level keys the subclass did not understand, written back unchanged
-	private final Map<String, Object>	unknownKeys	= new LinkedHashMap<String, Object>();
-	private boolean						loaded;
+public abstract class Repository {
+  private final DataFile file;
+  private final Logger logger;
+  // Top-level keys the subclass did not understand, written back unchanged
+  private final Map<String, Object> unknownKeys = new LinkedHashMap<String, Object>();
+  private boolean loaded;
 
-	protected Repository(DataFile file, Logger logger)
-	{
-		this.file = file;
-		this.logger = logger;
-		file.bind(this::snapshot);
-	}
+  protected Repository(DataFile file, Logger logger) {
+    this.file = file;
+    this.logger = logger;
+    file.bind(this::snapshot);
+  }
 
-	/** Parses the data into models. Pass top-level keys it doesn't know to {@link #keepUnknown}. */
-	protected abstract void read(YamlConfiguration yaml);
+  /** Parses the data into models. Pass top-level keys it doesn't know to {@link #keepUnknown}. */
+  protected abstract void read(YamlConfiguration yaml);
 
-	/** Writes every model into an empty YamlConfiguration, with the keys {@link #read} understands. */
-	protected abstract void write(YamlConfiguration yaml);
+  /**
+   * Writes every model into an empty YamlConfiguration, with the keys {@link #read} understands.
+   */
+  protected abstract void write(YamlConfiguration yaml);
 
-	/** Forgets every model (before a load) */
-	protected abstract void clear();
+  /** Forgets every model (before a load) */
+  protected abstract void clear();
 
-	/** The number of records, for the log */
-	public abstract int size();
+  /** The number of records, for the log */
+  public abstract int size();
 
-	public DataFile file()
-	{
-		return this.file;
-	}
+  public DataFile file() {
+    return this.file;
+  }
 
-	protected Logger logger()
-	{
-		return this.logger;
-	}
+  protected Logger logger() {
+    return this.logger;
+  }
 
-	/**
-	 * Reads the file. If it can't be read, the first load starts empty and a reload keeps the models in memory (see
-	 * {@link DataFile#load()}); either way the file is then not saved until it loads. A file that was repaired or
-	 * upgraded is written back right away. Returns whether the file was read.
-	 */
-	public boolean load()
-	{
-		boolean firstLoad = !this.loaded;
-		this.loaded = true;
+  /**
+   * Reads the file. If it can't be read, the first load starts empty and a reload keeps the models
+   * in memory (see {@link DataFile#load()}); either way the file is then not saved until it loads.
+   * A file that was repaired or upgraded is written back right away. Returns whether the file was
+   * read.
+   */
+  public boolean load() {
+    boolean firstLoad = !this.loaded;
+    this.loaded = true;
 
-		boolean read = this.file.load();
-		if (this.file.lastLoadKept())
-		{
-			// /g reload and the file was not edited: the models in memory are still the truth
-			return true;
-		}
-		if (read || firstLoad)
-		{
-			clear();
-			this.unknownKeys.clear();
-			try
-			{
-				read(this.file.yaml());
-			}
-			catch (RuntimeException ex)
-			{
-				// Odd YAML (a list where a section belongs, ...): use what was read, but never write over the file
-				this.logger.log(Level.SEVERE, "Could not read " + this.file.name() + ": " + ex, ex);
-				this.logger.severe(this.file.name() + " is used as far as it could be read, but it will NOT be saved until it is fixed, so nothing in it is overwritten. Fix it and run /g reload.");
-				this.file.markUnreadable();
-				return false;
-			}
-		}
-		if (read && this.file.isDirty())
-		{
-			this.file.flush();
-		}
-		return read;
-	}
+    boolean read = this.file.load();
+    if (this.file.lastLoadKept()) {
+      // /g reload and the file was not edited: the models in memory are still the truth
+      return true;
+    }
+    if (read || firstLoad) {
+      clear();
+      this.unknownKeys.clear();
+      try {
+        read(this.file.yaml());
+      } catch (RuntimeException ex) {
+        // Odd YAML (a list where a section belongs, ...): use what was read, but never write over
+        // the file
+        this.logger.log(Level.SEVERE, "Could not read " + this.file.name() + ": " + ex, ex);
+        this.logger.severe(
+            this.file.name()
+                + " is used as far as it could be read, but it will NOT be saved until it is fixed, so nothing in it is overwritten. Fix it and run /g reload.");
+        this.file.markUnreadable();
+        return false;
+      }
+    }
+    if (read && this.file.isDirty()) {
+      this.file.flush();
+    }
+    return read;
+  }
 
-	public boolean isReadOnly()
-	{
-		return this.file.isReadOnly();
-	}
+  public boolean isReadOnly() {
+    return this.file.isReadOnly();
+  }
 
-	/** The data changed; the next autosave writes it */
-	public void markDirty()
-	{
-		this.file.markDirty();
-	}
+  /** The data changed; the next autosave writes it */
+  public void markDirty() {
+    this.file.markDirty();
+  }
 
-	/** The data changed and is written now (in the background) */
-	public void save()
-	{
-		this.file.save();
-	}
+  /** The data changed and is written now (in the background) */
+  public void save() {
+    this.file.save();
+  }
 
-	protected void keepUnknown(String key, Object value)
-	{
-		this.unknownKeys.put(key, toPlain(value));
-	}
+  protected void keepUnknown(String key, Object value) {
+    this.unknownKeys.put(key, toPlain(value));
+  }
 
-	/** Main thread: the YAML to write */
-	YamlConfiguration snapshot()
-	{
-		YamlConfiguration yaml = new YamlConfiguration();
-		write(yaml);
-		for (Map.Entry<String, Object> entry : this.unknownKeys.entrySet())
-		{
-			if (!yaml.contains(entry.getKey()))
-			{
-				yaml.set(entry.getKey(), entry.getValue());
-			}
-		}
-		if (this.file.format() != null && !yaml.contains(this.file.format().versionKey()))
-		{
-			yaml.set(this.file.format().versionKey(), this.file.format().currentVersion());
-		}
-		return yaml;
-	}
+  /** Main thread: the YAML to write */
+  YamlConfiguration snapshot() {
+    YamlConfiguration yaml = new YamlConfiguration();
+    write(yaml);
+    for (Map.Entry<String, Object> entry : this.unknownKeys.entrySet()) {
+      if (!yaml.contains(entry.getKey())) {
+        yaml.set(entry.getKey(), entry.getValue());
+      }
+    }
+    if (this.file.format() != null && !yaml.contains(this.file.format().versionKey())) {
+      yaml.set(this.file.format().versionKey(), this.file.format().currentVersion());
+    }
+    return yaml;
+  }
 
-	/** Turns configuration sections into plain maps, so values can be kept after the YamlConfiguration is gone */
-	protected static Object toPlain(Object value)
-	{
-		if (value instanceof ConfigurationSection section)
-		{
-			Map<String, Object> map = new LinkedHashMap<String, Object>();
-			for (String key : section.getKeys(false))
-			{
-				map.put(key, toPlain(section.get(key)));
-			}
-			return map;
-		}
-		return value;
-	}
+  /**
+   * Turns configuration sections into plain maps, so values can be kept after the YamlConfiguration
+   * is gone
+   */
+  protected static Object toPlain(Object value) {
+    if (value instanceof ConfigurationSection section) {
+      Map<String, Object> map = new LinkedHashMap<String, Object>();
+      for (String key : section.getKeys(false)) {
+        map.put(key, toPlain(section.get(key)));
+      }
+      return map;
+    }
+    return value;
+  }
 
-	/** The keys of {@code section} other than {@code known}, as plain values */
-	protected static Map<String, Object> extraKeys(ConfigurationSection section, Set<String> known)
-	{
-		Map<String, Object> extras = new LinkedHashMap<String, Object>();
-		for (String key : section.getKeys(false))
-		{
-			if (!known.contains(key))
-			{
-				extras.put(key, toPlain(section.get(key)));
-			}
-		}
-		return extras;
-	}
+  /** The keys of {@code section} other than {@code known}, as plain values */
+  protected static Map<String, Object> extraKeys(ConfigurationSection section, Set<String> known) {
+    Map<String, Object> extras = new LinkedHashMap<String, Object>();
+    for (String key : section.getKeys(false)) {
+      if (!known.contains(key)) {
+        extras.put(key, toPlain(section.get(key)));
+      }
+    }
+    return extras;
+  }
 
-	/**
-	 * The time at {@code key}, or null if it is missing or can't be parsed. One that can't be parsed reads as never but
-	 * is kept in {@code extras} as it was, so it is written back unchanged (unless a new time replaces it) instead of
-	 * being lost.
-	 */
-	protected static Instant readTime(ConfigurationSection section, String key, LegacyDates dates, Map<String, Object> extras)
-	{
-		Object raw = section.get(key);
-		if (raw == null)
-		{
-			return null;
-		}
-		Instant time = dates.parse(raw.toString());
-		if (time == null)
-		{
-			extras.put(key, toPlain(raw));
-		}
-		return time;
-	}
+  /**
+   * The time at {@code key}, or null if it is missing or can't be parsed. One that can't be parsed
+   * reads as never but is kept in {@code extras} as it was, so it is written back unchanged (unless
+   * a new time replaces it) instead of being lost.
+   */
+  protected static Instant readTime(
+      ConfigurationSection section, String key, LegacyDates dates, Map<String, Object> extras) {
+    Object raw = section.get(key);
+    if (raw == null) {
+      return null;
+    }
+    Instant time = dates.parse(raw.toString());
+    if (time == null) {
+      extras.put(key, toPlain(raw));
+    }
+    return time;
+  }
 
-	protected static void writeExtras(ConfigurationSection section, Map<String, Object> extras)
-	{
-		for (Map.Entry<String, Object> entry : extras.entrySet())
-		{
-			if (!section.contains(entry.getKey()))
-			{
-				section.set(entry.getKey(), entry.getValue());
-			}
-		}
-	}
+  protected static void writeExtras(ConfigurationSection section, Map<String, Object> extras) {
+    for (Map.Entry<String, Object> entry : extras.entrySet()) {
+      if (!section.contains(entry.getKey())) {
+        section.set(entry.getKey(), entry.getValue());
+      }
+    }
+  }
 }

@@ -1,23 +1,10 @@
 package com.dogonfire.gods.service;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-
 import com.dogonfire.gods.GodsContext;
 import com.dogonfire.gods.api.event.GodAscendEvent;
-import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.api.event.GodDescendEvent;
 import com.dogonfire.gods.api.event.GodRankChangeEvent;
+import com.dogonfire.gods.config.Settings;
 import com.dogonfire.gods.message.Messages;
 import com.dogonfire.gods.message.Voice;
 import com.dogonfire.gods.model.Altar;
@@ -30,437 +17,480 @@ import com.dogonfire.gods.model.GodType;
 import com.dogonfire.gods.storage.CleanupGuard;
 import com.dogonfire.gods.storage.GodRepository;
 import com.dogonfire.gods.util.LegacyDates;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 /**
- * Gods' ranks (config.yml's {@code ranks}): what rank a god has, its religion's lifetime stats, and the check on its
- * turn ({@link #evaluate}) that makes it rise or fall ({@link RankRules}). Crossing into {@link GodRank#DESCENDED} is
- * its descent: it appears at its main altar ({@link GodNpcService}), fires {@link GodDescendEvent} and keeps
- * {@code DescendedTime}; falling below it is its ascent ({@link GodAscendEvent}). A god from before ranks is placed
- * once ({@link RankRules#seed}). Ranks and stats live in gods.yml ({@link GodRepository}). Main thread only.
+ * Gods' ranks (config.yml's {@code ranks}): what rank a god has, its religion's lifetime stats, and
+ * the check on its turn ({@link #evaluate}) that makes it rise or fall ({@link RankRules}).
+ * Crossing into {@link GodRank#DESCENDED} is its descent: it appears at its main altar ({@link
+ * GodNpcService}), fires {@link GodDescendEvent} and keeps {@code DescendedTime}; falling below it
+ * is its ascent ({@link GodAscendEvent}). A god from before ranks is placed once ({@link
+ * RankRules#seed}). Ranks and stats live in gods.yml ({@link GodRepository}). Main thread only.
  */
-public class RankService
-{
-	private final GodsContext		ctx;
-	private final GodRepository		repository;
-	// The aura's effect that was warned about as unknown
-	private String					unknownEffect;
+public class RankService {
+  private final GodsContext ctx;
+  private final GodRepository repository;
+  // The aura's effect that was warned about as unknown
+  private String unknownEffect;
 
-	public RankService(GodsContext ctx, GodRepository repository)
-	{
-		this.ctx = ctx;
-		this.repository = repository;
-	}
+  public RankService(GodsContext ctx, GodRepository repository) {
+    this.ctx = ctx;
+    this.repository = repository;
+  }
 
-	private God god(String godName)
-	{
-		return godName != null ? this.repository.find(godName) : null;
-	}
+  private God god(String godName) {
+    return godName != null ? this.repository.find(godName) : null;
+  }
 
-	// ---------------------------------------------------------------------
-	// Reading
+  // ---------------------------------------------------------------------
+  // Reading
 
-	/** The god's rank; {@link GodRank#SPIRIT} for one that was never ranked or doesn't exist */
-	public GodRank getRank(String godName)
-	{
-		God god = god(godName);
-		return god != null && god.rank() != null ? god.rank() : GodRank.SPIRIT;
-	}
+  /** The god's rank; {@link GodRank#SPIRIT} for one that was never ranked or doesn't exist */
+  public GodRank getRank(String godName) {
+    God god = god(godName);
+    return god != null && god.rank() != null ? god.rank() : GodRank.SPIRIT;
+  }
 
-	/** What the god's rank is called (its god type's name for it, themes.yml's {@code ranks}) */
-	public String getRankName(String godName)
-	{
-		return rankName(godName, getRank(godName));
-	}
+  /** What the god's rank is called (its god type's name for it, themes.yml's {@code ranks}) */
+  public String getRankName(String godName) {
+    return rankName(godName, getRank(godName));
+  }
 
-	/** What a rank is called for this god (its god type's name for it; the default theme's for a god without one) */
-	public String rankName(String godName, GodRank rank)
-	{
-		GodType type = godName != null && ctx.godService().godExist(godName) ? ctx.godService().getDivineForceForGod(godName) : null;
-		return ctx.themes().of(type).rankNames().of(rank);
-	}
+  /**
+   * What a rank is called for this god (its god type's name for it; the default theme's for a god
+   * without one)
+   */
+  public String rankName(String godName, GodRank rank) {
+    GodType type =
+        godName != null && ctx.godService().godExist(godName)
+            ? ctx.godService().getDivineForceForGod(godName)
+            : null;
+    return ctx.themes().of(type).rankNames().of(rank);
+  }
 
-	/** When the god reached its rank, or null */
-	public Instant getRankSince(String godName)
-	{
-		God god = god(godName);
-		return god != null ? god.rankSince() : null;
-	}
+  /** When the god reached its rank, or null */
+  public Instant getRankSince(String godName) {
+    God god = god(godName);
+    return god != null ? god.rankSince() : null;
+  }
 
-	/** What the god's religion has done in its whole life */
-	public GodStats getStats(String godName)
-	{
-		God god = god(godName);
-		return god != null ? god.stats() : GodStats.ZERO;
-	}
+  /** What the god's religion has done in its whole life */
+  public GodStats getStats(String godName) {
+    God god = god(godName);
+    return god != null ? god.stats() : GodStats.ZERO;
+  }
 
-	/** Whether the god's rank is {@code needed} or higher (see config.yml's {@code ranks.unlocks}) */
-	public boolean hasUnlocked(String godName, GodRank needed)
-	{
-		return RankRules.unlocked(getRank(godName), needed);
-	}
+  /** Whether the god's rank is {@code needed} or higher (see config.yml's {@code ranks.unlocks}) */
+  public boolean hasUnlocked(String godName, GodRank needed) {
+    return RankRules.unlocked(getRank(godName), needed);
+  }
 
-	/** Which features are on, for the conditions that depend on them */
-	private RankRules.Features features()
-	{
-		return new RankRules.Features(ctx.settings().sacrifices().enabled(), ctx.settings().quests().enabled(), ctx.settings().holyLand().enabled());
-	}
+  /** Which features are on, for the conditions that depend on them */
+  private RankRules.Features features() {
+    return new RankRules.Features(
+        ctx.settings().sacrifices().enabled(),
+        ctx.settings().quests().enabled(),
+        ctx.settings().holyLand().enabled());
+  }
 
-	private RankRules.State state(God god)
-	{
-		return new RankRules.State(god.rank() != null ? god.rank() : GodRank.SPIRIT, god.rankSince(), god.priestSince(), god.ascendingSince());
-	}
+  private RankRules.State state(God god) {
+    return new RankRules.State(
+        god.rank() != null ? god.rank() : GodRank.SPIRIT,
+        god.rankSince(),
+        god.priestSince(),
+        god.ascendingSince());
+  }
 
-	/** How the god is doing now, for its conditions */
-	private RankRules.Facts facts(String godName, God god)
-	{
-		BlockPos mainSign = god.mainAltar();
-		Altar altar = mainSign != null ? ctx.altarRegistry().atSign(mainSign) : null;
-		boolean hasMainAltar = altar != null && altar.kind() == AltarKind.PRAYING && godName.equals(altar.god());
-		int altars = (int) ctx.altarRegistry().forGod(godName).stream().filter(standing -> standing.kind() == AltarKind.PRAYING).count();
-		int holyLand = ctx.settings().holyLand().enabled() ? ctx.holyLandService().getHolyLandsForGod(godName) : 0;
-		return new RankRules.Facts(!ctx.priestService().getPriestsForGod(godName).isEmpty(), ctx.believerService().getBelieversForGod(godName).size(),
-				ctx.godService().getGodPower(godName), ctx.moodService().getMoodForGod(godName), hasMainAltar, altars, holyLand, god.stats(), LegacyDates.SECONDS.now());
-	}
+  /** How the god is doing now, for its conditions */
+  private RankRules.Facts facts(String godName, God god) {
+    BlockPos mainSign = god.mainAltar();
+    Altar altar = mainSign != null ? ctx.altarRegistry().atSign(mainSign) : null;
+    boolean hasMainAltar =
+        altar != null && altar.kind() == AltarKind.PRAYING && godName.equals(altar.god());
+    int altars =
+        (int)
+            ctx.altarRegistry().forGod(godName).stream()
+                .filter(standing -> standing.kind() == AltarKind.PRAYING)
+                .count();
+    int holyLand =
+        ctx.settings().holyLand().enabled() ? ctx.holyLandService().getHolyLandsForGod(godName) : 0;
+    return new RankRules.Facts(
+        !ctx.priestService().getPriestsForGod(godName).isEmpty(),
+        ctx.believerService().getBelieversForGod(godName).size(),
+        ctx.godService().getGodPower(godName),
+        ctx.moodService().getMoodForGod(godName),
+        hasMainAltar,
+        altars,
+        holyLand,
+        god.stats(),
+        LegacyDates.SECONDS.now());
+  }
 
-	/**
-	 * How far the god is with each condition of its next rank, or of its own rank when it has the highest; empty for a
-	 * god that doesn't exist
-	 */
-	public List<RankRules.Progress> progress(String godName, GodRank rank)
-	{
-		God god = god(godName);
-		if (god == null || !ctx.godService().godExist(godName))
-		{
-			return List.of();
-		}
-		return RankRules.progress(ctx.settings().ranks(), rank, state(god), facts(godName, god), features());
-	}
+  /**
+   * How far the god is with each condition of its next rank, or of its own rank when it has the
+   * highest; empty for a god that doesn't exist
+   */
+  public List<RankRules.Progress> progress(String godName, GodRank rank) {
+    God god = god(godName);
+    if (god == null || !ctx.godService().godExist(godName)) {
+      return List.of();
+    }
+    return RankRules.progress(
+        ctx.settings().ranks(), rank, state(god), facts(godName, god), features());
+  }
 
-	// ---------------------------------------------------------------------
-	// Counting what the religion does
+  // ---------------------------------------------------------------------
+  // Counting what the religion does
 
-	/** A new god starts as a spirit, with its stats counted from now (it is never seeded) */
-	public void newGod(String godName)
-	{
-		God god = god(godName);
-		if (god == null)
-		{
-			return;
-		}
-		god.setRank(GodRank.SPIRIT);
-		god.setRankSince(LegacyDates.SECONDS.now());
-		god.setStats(GodStats.ZERO);
-		god.setStatsSeeded(true);
-		this.repository.markDirty();
-	}
+  /** A new god starts as a spirit, with its stats counted from now (it is never seeded) */
+  public void newGod(String godName) {
+    God god = god(godName);
+    if (god == null) {
+      return;
+    }
+    god.setRank(GodRank.SPIRIT);
+    god.setRankSince(LegacyDates.SECONDS.now());
+    god.setStats(GodStats.ZERO);
+    god.setStatsSeeded(true);
+    this.repository.markDirty();
+  }
 
-	/** A believer prayed at one of the god's altars */
-	public void countPrayer(String godName)
-	{
-		count(godName, stats -> stats.withPrayers(stats.prayers() + 1));
-	}
+  /** A believer prayed at one of the god's altars */
+  public void countPrayer(String godName) {
+    count(godName, stats -> stats.withPrayers(stats.prayers() + 1));
+  }
 
-	/** The god was pleased with a sacrifice */
-	public void countSacrifice(String godName)
-	{
-		count(godName, stats -> stats.withSacrifices(stats.sacrifices() + 1));
-	}
+  /** The god was pleased with a sacrifice */
+  public void countSacrifice(String godName) {
+    count(godName, stats -> stats.withSacrifices(stats.sacrifices() + 1));
+  }
 
-	/** The god's believers completed a quest */
-	public void countQuest(String godName)
-	{
-		count(godName, stats -> stats.withQuests(stats.quests() + 1));
-	}
+  /** The god's believers completed a quest */
+  public void countQuest(String godName) {
+    count(godName, stats -> stats.withQuests(stats.quests() + 1));
+  }
 
-	/** A player joined the god by accepting an invitation */
-	public void countConvert(String godName)
-	{
-		count(godName, stats -> stats.withConverts(stats.converts() + 1));
-	}
+  /** A player joined the god by accepting an invitation */
+  public void countConvert(String godName) {
+    count(godName, stats -> stats.withConverts(stats.converts() + 1));
+  }
 
-	private void count(String godName, java.util.function.UnaryOperator<GodStats> change)
-	{
-		God god = god(godName);
-		if (god == null || god.created() == null)
-		{
-			return;
-		}
-		god.setStats(change.apply(god.stats()));
-		this.repository.markDirty();
-	}
+  private void count(String godName, java.util.function.UnaryOperator<GodStats> change) {
+    God god = god(godName);
+    if (god == null || god.created() == null) {
+      return;
+    }
+    god.setStats(change.apply(god.stats()));
+    this.repository.markDirty();
+  }
 
-	// ---------------------------------------------------------------------
-	// The aura
+  // ---------------------------------------------------------------------
+  // The aura
 
-	/**
-	 * On the god's turn: its believers in its own holy land feel its aura (config.yml's {@code ranks.aura}), a gentle
-	 * effect that lasts until about its next turn, from the rank {@code ranks.unlocks.aura} names. Only while holy land
-	 * is on.
-	 */
-	public void aura(String godName)
-	{
-		Settings.Aura aura = ctx.settings().ranks().aura();
-		if (!aura.enabled() || !ctx.settings().holyLand().enabled() || !hasUnlocked(godName, ctx.settings().ranks().unlocks().aura()))
-		{
-			return;
-		}
-		PotionEffectType type = effectType(aura.effect());
-		if (type == null)
-		{
-			return;
-		}
-		for (UUID believerId : ctx.believerService().getOnlineBelieversForGod(godName))
-		{
-			Player believer = ctx.plugin().getServer().getPlayer(believerId);
-			if (believer == null || believer.isDead() || !ctx.plugin().isEnabledInWorld(believer.getWorld()))
-			{
-				continue;
-			}
-			if (godName.equals(ctx.holyLandService().getGodAtHolyLandLocation(believer.getLocation())))
-			{
-				// Ambient, without particles: a gentle effect, not a potion
-				believer.addPotionEffect(new PotionEffect(type, aura.seconds() * 20, aura.amplifier(), true, false, true));
-			}
-		}
-	}
+  /**
+   * On the god's turn: its believers in its own holy land feel its aura (config.yml's {@code
+   * ranks.aura}), a gentle effect that lasts until about its next turn, from the rank {@code
+   * ranks.unlocks.aura} names. Only while holy land is on.
+   */
+  public void aura(String godName) {
+    Settings.Aura aura = ctx.settings().ranks().aura();
+    if (!aura.enabled()
+        || !ctx.settings().holyLand().enabled()
+        || !hasUnlocked(godName, ctx.settings().ranks().unlocks().aura())) {
+      return;
+    }
+    PotionEffectType type = effectType(aura.effect());
+    if (type == null) {
+      return;
+    }
+    for (UUID believerId : ctx.believerService().getOnlineBelieversForGod(godName)) {
+      Player believer = ctx.plugin().getServer().getPlayer(believerId);
+      if (believer == null
+          || believer.isDead()
+          || !ctx.plugin().isEnabledInWorld(believer.getWorld())) {
+        continue;
+      }
+      if (godName.equals(ctx.holyLandService().getGodAtHolyLandLocation(believer.getLocation()))) {
+        // Ambient, without particles: a gentle effect, not a potion
+        believer.addPotionEffect(
+            new PotionEffect(type, aura.seconds() * 20, aura.amplifier(), true, false, true));
+      }
+    }
+  }
 
-	/** The effect with this id, or null (warned about once) */
-	private PotionEffectType effectType(String id)
-	{
-		NamespacedKey key = NamespacedKey.fromString(id);
-		PotionEffectType type = key != null ? Registry.EFFECT.get(key) : null;
-		if (type == null && !id.equals(this.unknownEffect))
-		{
-			this.unknownEffect = id;
-			ctx.plugin().getLogger().warning("Unknown effect '" + id + "' for ranks.aura.effect in config.yml; gods have no aura.");
-		}
-		return type;
-	}
+  /** The effect with this id, or null (warned about once) */
+  private PotionEffectType effectType(String id) {
+    NamespacedKey key = NamespacedKey.fromString(id);
+    PotionEffectType type = key != null ? Registry.EFFECT.get(key) : null;
+    if (type == null && !id.equals(this.unknownEffect)) {
+      this.unknownEffect = id;
+      ctx.plugin()
+          .getLogger()
+          .warning(
+              "Unknown effect '"
+                  + id
+                  + "' for ranks.aura.effect in config.yml; gods have no aura.");
+    }
+    return type;
+  }
 
-	// ---------------------------------------------------------------------
-	// The god's turn
+  // ---------------------------------------------------------------------
+  // The god's turn
 
-	/**
-	 * On the god's turn: places a god from before ranks ({@link RankRules#seed}), else lets it rise or fall
-	 * ({@link RankRules#evaluate}). Never while {@link com.dogonfire.gods.storage.Storage#cleanupVerdict()} says the
-	 * believers can't be trusted: every god would look abandoned then.
-	 */
-	public void evaluate(String godName)
-	{
-		God god = god(godName);
-		if (god == null || !ctx.godService().godExist(godName))
-		{
-			return;
-		}
-		if (ctx.storage().cleanupVerdict() != CleanupGuard.Verdict.ALLOWED)
-		{
-			return;
-		}
-		if (!god.statsSeeded())
-		{
-			seed(godName, god);
-			return;
-		}
-		RankRules.State before = state(god);
-		RankRules.Outcome outcome = RankRules.evaluate(ctx.settings().ranks(), before, facts(godName, god), features());
-		switch (outcome.change())
-		{
-			case NONE -> store(god, outcome.state());
-			case UP -> change(godName, god, before.rank(), outcome.state(), GodRankChangeEvent.Cause.RANK_UP);
-			case DOWN -> change(godName, god, before.rank(), outcome.state(),
-					outcome.reason() == RankRules.Reason.NO_PRIEST ? GodRankChangeEvent.Cause.NO_PRIEST : GodRankChangeEvent.Cause.TOO_FEW_BELIEVERS);
-		}
-	}
+  /**
+   * On the god's turn: places a god from before ranks ({@link RankRules#seed}), else lets it rise
+   * or fall ({@link RankRules#evaluate}). Never while {@link
+   * com.dogonfire.gods.storage.Storage#cleanupVerdict()} says the believers can't be trusted: every
+   * god would look abandoned then.
+   */
+  public void evaluate(String godName) {
+    God god = god(godName);
+    if (god == null || !ctx.godService().godExist(godName)) {
+      return;
+    }
+    if (ctx.storage().cleanupVerdict() != CleanupGuard.Verdict.ALLOWED) {
+      return;
+    }
+    if (!god.statsSeeded()) {
+      seed(godName, god);
+      return;
+    }
+    RankRules.State before = state(god);
+    RankRules.Outcome outcome =
+        RankRules.evaluate(ctx.settings().ranks(), before, facts(godName, god), features());
+    switch (outcome.change()) {
+      case NONE -> store(god, outcome.state());
+      case UP ->
+          change(godName, god, before.rank(), outcome.state(), GodRankChangeEvent.Cause.RANK_UP);
+      case DOWN ->
+          change(
+              godName,
+              god,
+              before.rank(),
+              outcome.state(),
+              outcome.reason() == RankRules.Reason.NO_PRIEST
+                  ? GodRankChangeEvent.Cause.NO_PRIEST
+                  : GodRankChangeEvent.Cause.TOO_FEW_BELIEVERS);
+    }
+  }
 
-	/** A god from before ranks gets the rank it qualifies for and the stats that rank asks for (quietly, once) */
-	private void seed(String godName, God god)
-	{
-		GodRank from = god.rank() != null ? god.rank() : GodRank.SPIRIT;
-		GodRank floor = from;
-		if (god.descended() != null && floor.compareTo(GodRank.DESCENDED) < 0)
-		{
-			floor = GodRank.DESCENDED;
-		}
-		RankRules.Facts facts = facts(godName, god);
-		RankRules.Seed seed = RankRules.seed(ctx.settings().ranks(), facts, features(), god.created(), floor);
-		god.setStats(seed.stats());
-		god.setStatsSeeded(true);
-		Instant now = facts.now();
-		RankRules.State placed = new RankRules.State(seed.rank(), now, facts.hasPriest() ? (god.priestSince() != null ? god.priestSince() : now) : null, null);
-		ctx.plugin().log(godName + " is a god from before ranks: it starts at rank " + seed.rank().key() + " with " + seed.stats() + ".");
-		if (seed.rank() == from || !change(godName, god, from, placed, GodRankChangeEvent.Cause.SEEDED))
-		{
-			store(god, new RankRules.State(from, god.rankSince() != null ? god.rankSince() : now, placed.priestSince(), null));
-			if (god.rank() == null)
-			{
-				setRank(god, from, now);
-			}
-			this.repository.save();
-		}
-	}
+  /**
+   * A god from before ranks gets the rank it qualifies for and the stats that rank asks for
+   * (quietly, once)
+   */
+  private void seed(String godName, God god) {
+    GodRank from = god.rank() != null ? god.rank() : GodRank.SPIRIT;
+    GodRank floor = from;
+    if (god.descended() != null && floor.compareTo(GodRank.DESCENDED) < 0) {
+      floor = GodRank.DESCENDED;
+    }
+    RankRules.Facts facts = facts(godName, god);
+    RankRules.Seed seed =
+        RankRules.seed(ctx.settings().ranks(), facts, features(), god.created(), floor);
+    god.setStats(seed.stats());
+    god.setStatsSeeded(true);
+    Instant now = facts.now();
+    RankRules.State placed =
+        new RankRules.State(
+            seed.rank(),
+            now,
+            facts.hasPriest() ? (god.priestSince() != null ? god.priestSince() : now) : null,
+            null);
+    ctx.plugin()
+        .log(
+            godName
+                + " is a god from before ranks: it starts at rank "
+                + seed.rank().key()
+                + " with "
+                + seed.stats()
+                + ".");
+    if (seed.rank() == from
+        || !change(godName, god, from, placed, GodRankChangeEvent.Cause.SEEDED)) {
+      store(
+          god,
+          new RankRules.State(
+              from, god.rankSince() != null ? god.rankSince() : now, placed.priestSince(), null));
+      if (god.rank() == null) {
+        setRank(god, from, now);
+      }
+      this.repository.save();
+    }
+  }
 
-	/**
-	 * Gives the god a rank, bypassing its conditions (for the API): with the same events, effects and words as a rank
-	 * change on its turn. Returns false if a plugin cancelled it.
-	 */
-	public boolean setRank(String godName, GodRank rank)
-	{
-		God god = god(godName);
-		if (god == null || !ctx.godService().godExist(godName))
-		{
-			return false;
-		}
-		GodRank from = getRank(godName);
-		if (from == rank)
-		{
-			return true;
-		}
-		return change(godName, god, from, new RankRules.State(rank, LegacyDates.SECONDS.now(), god.priestSince(), null), GodRankChangeEvent.Cause.API);
-	}
+  /**
+   * Gives the god a rank, bypassing its conditions (for the API): with the same events, effects and
+   * words as a rank change on its turn. Returns false if a plugin cancelled it.
+   */
+  public boolean setRank(String godName, GodRank rank) {
+    God god = god(godName);
+    if (god == null || !ctx.godService().godExist(godName)) {
+      return false;
+    }
+    GodRank from = getRank(godName);
+    if (from == rank) {
+      return true;
+    }
+    return change(
+        godName,
+        god,
+        from,
+        new RankRules.State(rank, LegacyDates.SECONDS.now(), god.priestSince(), null),
+        GodRankChangeEvent.Cause.API);
+  }
 
-	/**
-	 * Changes the god's rank: fires {@link GodRankChangeEvent} (a rise may be cancelled) and, crossing the descended
-	 * rank, {@link GodDescendEvent} (cancellable) or {@link GodAscendEvent}; saves it at once; and then the moment
-	 * itself: the descent (NPC, lightning, the god's words), a rank up's effect at its main altar and the god telling its
-	 * believers, a greater god announced to the whole server, the god telling its believers it fell. A god from before
-	 * ranks is placed quietly ({@link GodRankChangeEvent.Cause#SEEDED}: only its NPC appears). Returns false if a plugin
-	 * stopped it.
-	 */
-	private boolean change(String godName, God god, GodRank from, RankRules.State next, GodRankChangeEvent.Cause cause)
-	{
-		GodRank to = next.rank();
-		if (ctx.fire(new GodRankChangeEvent(godName, ApiSnapshots.rank(from), ApiSnapshots.rank(to), cause)).isCancelled())
-		{
-			if (cause == GodRankChangeEvent.Cause.RANK_UP)
-			{
-				// It tries again on a later turn; the rest of its state (its priest's time) is kept
-				store(god, new RankRules.State(from, god.rankSince(), next.priestSince(), null));
-			}
-			return false;
-		}
-		boolean descends = !from.atLeast(GodRank.DESCENDED) && to.atLeast(GodRank.DESCENDED);
-		boolean ascends = from.atLeast(GodRank.DESCENDED) && !to.atLeast(GodRank.DESCENDED);
-		if (descends && ctx.fire(new GodDescendEvent(godName, ctx.altarRegistry().mainAltarLocation(godName))).isCancelled())
-		{
-			if (cause != GodRankChangeEvent.Cause.SEEDED || from.atLeast(GodRank.RECOGNIZED))
-			{
-				if (cause == GodRankChangeEvent.Cause.RANK_UP)
-				{
-					store(god, new RankRules.State(from, god.rankSince(), next.priestSince(), null));
-				}
-				return false;
-			}
-			// A god from before ranks that may not descend yet is recognized for now
-			to = GodRank.RECOGNIZED;
-			next = new RankRules.State(to, next.rankSince(), next.priestSince(), next.fallingSince());
-			descends = false;
-		}
+  /**
+   * Changes the god's rank: fires {@link GodRankChangeEvent} (a rise may be cancelled) and,
+   * crossing the descended rank, {@link GodDescendEvent} (cancellable) or {@link GodAscendEvent};
+   * saves it at once; and then the moment itself: the descent (NPC, lightning, the god's words), a
+   * rank up's effect at its main altar and the god telling its believers, a greater god announced
+   * to the whole server, the god telling its believers it fell. A god from before ranks is placed
+   * quietly ({@link GodRankChangeEvent.Cause#SEEDED}: only its NPC appears). Returns false if a
+   * plugin stopped it.
+   */
+  private boolean change(
+      String godName, God god, GodRank from, RankRules.State next, GodRankChangeEvent.Cause cause) {
+    GodRank to = next.rank();
+    if (ctx.fire(
+            new GodRankChangeEvent(godName, ApiSnapshots.rank(from), ApiSnapshots.rank(to), cause))
+        .isCancelled()) {
+      if (cause == GodRankChangeEvent.Cause.RANK_UP) {
+        // It tries again on a later turn; the rest of its state (its priest's time) is kept
+        store(god, new RankRules.State(from, god.rankSince(), next.priestSince(), null));
+      }
+      return false;
+    }
+    boolean descends = !from.atLeast(GodRank.DESCENDED) && to.atLeast(GodRank.DESCENDED);
+    boolean ascends = from.atLeast(GodRank.DESCENDED) && !to.atLeast(GodRank.DESCENDED);
+    if (descends
+        && ctx.fire(new GodDescendEvent(godName, ctx.altarRegistry().mainAltarLocation(godName)))
+            .isCancelled()) {
+      if (cause != GodRankChangeEvent.Cause.SEEDED || from.atLeast(GodRank.RECOGNIZED)) {
+        if (cause == GodRankChangeEvent.Cause.RANK_UP) {
+          store(god, new RankRules.State(from, god.rankSince(), next.priestSince(), null));
+        }
+        return false;
+      }
+      // A god from before ranks that may not descend yet is recognized for now
+      to = GodRank.RECOGNIZED;
+      next = new RankRules.State(to, next.rankSince(), next.priestSince(), next.fallingSince());
+      descends = false;
+    }
 
-		store(god, next);
-		this.repository.save();
-		ctx.plugin().log(godName + (to.compareTo(from) > 0 ? " rose" : " fell") + " from rank " + from.key() + " to " + to.key() + " (" + cause.name().toLowerCase(java.util.Locale.ROOT)
-				+ ").");
-		ctx.altarTexts().refreshGod(godName);
-		ctx.chatService().refreshAll();
-		boolean quiet = cause == GodRankChangeEvent.Cause.SEEDED;
+    store(god, next);
+    this.repository.save();
+    ctx.plugin()
+        .log(
+            godName
+                + (to.compareTo(from) > 0 ? " rose" : " fell")
+                + " from rank "
+                + from.key()
+                + " to "
+                + to.key()
+                + " ("
+                + cause.name().toLowerCase(java.util.Locale.ROOT)
+                + ").");
+    ctx.altarTexts().refreshGod(godName);
+    ctx.chatService().refreshAll();
+    boolean quiet = cause == GodRankChangeEvent.Cause.SEEDED;
 
-		if (descends)
-		{
-			if (quiet)
-			{
-				ctx.godNpcs().refreshGod(godName);
-			}
-			else
-			{
-				ctx.plugin().log(godName + " descended to its main altar.");
-				ctx.godNpcs().descended(godName);
-				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_DESCENDED, 2);
-			}
-		}
-		if (ascends)
-		{
-			ctx.godNpcs().refreshGod(godName);
-			ctx.fire(new GodAscendEvent(godName));
-			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_ASCENDED, 2);
-		}
-		if (quiet)
-		{
-			return true;
-		}
-		TagResolver rankTag = Messages.text("rank", rankName(godName, to));
-		if (to.compareTo(from) > 0)
-		{
-			if (to != GodRank.DESCENDED)
-			{
-				// The descent has its own lightning and words
-				ctx.effectService().rankUp(godName, effectSpot(godName), to);
-				ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_RANK_UP, 4, rankTag);
-			}
-			if (to == GodRank.GREATER)
-			{
-				ctx.messages().broadcast(ctx.plugin().getServer(), "broadcast.greater-god", Messages.god(godName), rankTag,
-						Messages.component("gender", ctx.messages().genderName(ctx.godService().getGenderForGod(godName))));
-			}
-		}
-		else if (!ascends)
-		{
-			ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_RANK_DOWN, 2, rankTag);
-		}
-		return true;
-	}
+    if (descends) {
+      if (quiet) {
+        ctx.godNpcs().refreshGod(godName);
+      } else {
+        ctx.plugin().log(godName + " descended to its main altar.");
+        ctx.godNpcs().descended(godName);
+        ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_DESCENDED, 2);
+      }
+    }
+    if (ascends) {
+      ctx.godNpcs().refreshGod(godName);
+      ctx.fire(new GodAscendEvent(godName));
+      ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_ASCENDED, 2);
+    }
+    if (quiet) {
+      return true;
+    }
+    TagResolver rankTag = Messages.text("rank", rankName(godName, to));
+    if (to.compareTo(from) > 0) {
+      if (to != GodRank.DESCENDED) {
+        // The descent has its own lightning and words
+        ctx.effectService().rankUp(godName, effectSpot(godName), to);
+        ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_RANK_UP, 4, rankTag);
+      }
+      if (to == GodRank.GREATER) {
+        ctx.messages()
+            .broadcast(
+                ctx.plugin().getServer(),
+                "broadcast.greater-god",
+                Messages.god(godName),
+                rankTag,
+                Messages.component(
+                    "gender",
+                    ctx.messages().genderName(ctx.godService().getGenderForGod(godName))));
+      }
+    } else if (!ascends) {
+      ctx.godSpeech().sayToBelievers(godName, Voice.BELIEVERS_GOD_RANK_DOWN, 2, rankTag);
+    }
+    return true;
+  }
 
-	/** Where a rank up shows: above the main altar's block, if its chunk is loaded; null for nowhere */
-	private Location effectSpot(String godName)
-	{
-		Altar altar = ctx.altarRegistry().mainAltar(godName);
-		Location block = ctx.altarRegistry().mainAltarLocation(godName);
-		if (altar == null || block == null || !ctx.altarRegistry().isLoaded(altar.block().chunk()))
-		{
-			return null;
-		}
-		return block.add(0.5, 1.2, 0.5);
-	}
+  /**
+   * Where a rank up shows: above the main altar's block, if its chunk is loaded; null for nowhere
+   */
+  private Location effectSpot(String godName) {
+    Altar altar = ctx.altarRegistry().mainAltar(godName);
+    Location block = ctx.altarRegistry().mainAltarLocation(godName);
+    if (altar == null || block == null || !ctx.altarRegistry().isLoaded(altar.block().chunk())) {
+      return null;
+    }
+    return block.add(0.5, 1.2, 0.5);
+  }
 
-	/**
-	 * Stores the state (with the next autosave; a new rank is saved by the caller), only when it changed. The god's
-	 * {@code DescendedTime} follows its rank.
-	 */
-	private void store(God god, RankRules.State state)
-	{
-		boolean same = state.rank() == god.rank() && java.util.Objects.equals(state.rankSince(), god.rankSince())
-				&& java.util.Objects.equals(state.priestSince(), god.priestSince()) && java.util.Objects.equals(state.fallingSince(), god.ascendingSince());
-		if (same)
-		{
-			return;
-		}
-		god.setPriestSince(state.priestSince());
-		god.setAscendingSince(state.fallingSince());
-		if (state.rank() != god.rank())
-		{
-			setRank(god, state.rank(), state.rankSince() != null ? state.rankSince() : LegacyDates.SECONDS.now());
-		}
-		else
-		{
-			god.setRankSince(state.rankSince());
-		}
-		this.repository.markDirty();
-	}
+  /**
+   * Stores the state (with the next autosave; a new rank is saved by the caller), only when it
+   * changed. The god's {@code DescendedTime} follows its rank.
+   */
+  private void store(God god, RankRules.State state) {
+    boolean same =
+        state.rank() == god.rank()
+            && java.util.Objects.equals(state.rankSince(), god.rankSince())
+            && java.util.Objects.equals(state.priestSince(), god.priestSince())
+            && java.util.Objects.equals(state.fallingSince(), god.ascendingSince());
+    if (same) {
+      return;
+    }
+    god.setPriestSince(state.priestSince());
+    god.setAscendingSince(state.fallingSince());
+    if (state.rank() != god.rank()) {
+      setRank(
+          god,
+          state.rank(),
+          state.rankSince() != null ? state.rankSince() : LegacyDates.SECONDS.now());
+    } else {
+      god.setRankSince(state.rankSince());
+    }
+    this.repository.markDirty();
+  }
 
-	/** Sets the rank and keeps DescendedTime in line with it */
-	private static void setRank(God god, GodRank rank, Instant since)
-	{
-		god.setRank(rank);
-		god.setRankSince(since);
-		if (rank.atLeast(GodRank.DESCENDED))
-		{
-			if (god.descended() == null)
-			{
-				god.setDescended(since);
-			}
-		}
-		else
-		{
-			god.setDescended(null);
-		}
-	}
+  /** Sets the rank and keeps DescendedTime in line with it */
+  private static void setRank(God god, GodRank rank, Instant since) {
+    god.setRank(rank);
+    god.setRankSince(since);
+    if (rank.atLeast(GodRank.DESCENDED)) {
+      if (god.descended() == null) {
+        god.setDescended(since);
+      }
+    } else {
+      god.setDescended(null);
+    }
+  }
 }

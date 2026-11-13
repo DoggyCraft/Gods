@@ -10,175 +10,172 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 /**
- * The numbers behind quests, without Bukkit so they can be tested: how big and long a new quest is, what it asks for,
- * when it has expired, which rewards it gives and where a pilgrimage chest may go. Kept exactly as they were, including
- * the order the random numbers are drawn in.
+ * The numbers behind quests, without Bukkit so they can be tested: how big and long a new quest is,
+ * what it asks for, when it has expired, which rewards it gives and where a pilgrimage chest may
+ * go. Kept exactly as they were, including the order the random numbers are drawn in.
  */
-public final class QuestRules
-{
-	/** Reward items are drawn at most this often, so values that don't fit can't loop forever */
-	public static final int				MAX_REWARD_ROLLS	= 100;
+public final class QuestRules {
+  /** Reward items are drawn at most this often, so values that don't fit can't loop forever */
+  public static final int MAX_REWARD_ROLLS = 100;
 
-	/** What a sacrifice quest asks for (by Material name) */
-	public static final List<String>	SACRIFICE_TARGETS	= List.of("GOLDEN_SWORD", "GOLDEN_PICKAXE", "GOLDEN_SHOVEL", "GOLDEN_AXE", "FISHING_ROD", "ANVIL", "OAK_BOAT", "BOOK", "BOW", "APPLE");
+  /** What a sacrifice quest asks for (by Material name) */
+  public static final List<String> SACRIFICE_TARGETS =
+      List.of(
+          "GOLDEN_SWORD",
+          "GOLDEN_PICKAXE",
+          "GOLDEN_SHOVEL",
+          "GOLDEN_AXE",
+          "FISHING_ROD",
+          "ANVIL",
+          "OAK_BOAT",
+          "BOOK",
+          "BOW",
+          "APPLE");
 
-	/** A slay target is drawn at most this often, so lists that don't fit can't loop forever */
-	public static final int				MAX_SLAY_TARGET_DRAWS	= 100;
+  /** A slay target is drawn at most this often, so lists that don't fit can't loop forever */
+  public static final int MAX_SLAY_TARGET_DRAWS = 100;
 
-	/** A pilgrimage chest is this many blocks from the believer, at least and at most */
-	public static final int				PILGRIMAGE_MIN_DISTANCE	= 500;
-	public static final int				PILGRIMAGE_MAX_DISTANCE	= 2000;
+  /** A pilgrimage chest is this many blocks from the believer, at least and at most */
+  public static final int PILGRIMAGE_MIN_DISTANCE = 500;
 
-	private static final String[]		CONSONANTS			= { "b", "f", "g", "h", "j", "k", "l", "ll", "v", "r", "rr", "kk", "p", "t", "s", "x", "d", "n", "m", "nn" };
-	private static final String[]		VOWELS				= { "a", "o", "i", "u", "y", "e" };
+  public static final int PILGRIMAGE_MAX_DISTANCE = 2000;
 
-	private QuestRules()
-	{
-	}
+  private static final String[] CONSONANTS = {
+    "b", "f", "g", "h", "j", "k", "l", "ll", "v", "r", "rr", "kk", "p", "t", "s", "x", "d", "n",
+    "m", "nn"
+  };
+  private static final String[] VOWELS = {"a", "o", "i", "u", "y", "e"};
 
-	/** Size and length (in minutes) of a new quest */
-	public record Size(int amount, int maxDurationMinutes)
-	{
-	}
+  private QuestRules() {}
 
-	/** Make non-believers read the holy book: about a third of the non-believers online */
-	public static Size giveItems(Random random, int nonBelieversOnline)
-	{
-		int amount = 1 + nonBelieversOnline / (2 + random.nextInt(3));
-		return new Size(amount, (1 + random.nextInt(5)) * amount);
-	}
+  /** Size and length (in minutes) of a new quest */
+  public record Size(int amount, int maxDurationMinutes) {}
 
-	/** Sacrifice items: up to one more than the god's believers online */
-	public static Size sacrifice(Random random, int believersOnline)
-	{
-		int amount = 1 + random.nextInt(1 + believersOnline);
-		return new Size(amount, (1 + random.nextInt(5)) * amount);
-	}
+  /** Make non-believers read the holy book: about a third of the non-believers online */
+  public static Size giveItems(Random random, int nonBelieversOnline) {
+    int amount = 1 + nonBelieversOnline / (2 + random.nextInt(3));
+    return new Size(amount, (1 + random.nextInt(5)) * amount);
+  }
 
-	/** Slay mobs: one to three more than the god's believers online */
-	public static Size slay(Random random, int believersOnline)
-	{
-		int amount = 1 + random.nextInt(3) + believersOnline;
-		return new Size(amount, (5 + random.nextInt(5)) * amount);
-	}
+  /** Sacrifice items: up to one more than the god's believers online */
+  public static Size sacrifice(Random random, int believersOnline) {
+    int amount = 1 + random.nextInt(1 + believersOnline);
+    return new Size(amount, (1 + random.nextInt(5)) * amount);
+  }
 
-	/** How long a pilgrimage lasts, in minutes */
-	public static int pilgrimageMinutes(Random random)
-	{
-		return 15 + random.nextInt(10);
-	}
+  /** Slay mobs: one to three more than the god's believers online */
+  public static Size slay(Random random, int believersOnline) {
+    int amount = 1 + random.nextInt(3) + believersOnline;
+    return new Size(amount, (5 + random.nextInt(5)) * amount);
+  }
 
-	/** How much the rewards in a pilgrimage chest are worth */
-	public static int pilgrimageRewardPower(Random random)
-	{
-		return 200 + random.nextInt(150);
-	}
+  /** How long a pilgrimage lasts, in minutes */
+  public static int pilgrimageMinutes(Random random) {
+    return 15 + random.nextInt(10);
+  }
 
-	/** The Material name a sacrifice quest asks for */
-	public static String sacrificeTarget(Random random)
-	{
-		return SACRIFICE_TARGETS.get(random.nextInt(SACRIFICE_TARGETS.size()));
-	}
+  /** How much the rewards in a pilgrimage chest are worth */
+  public static int pilgrimageRewardPower(Random random) {
+    return 200 + random.nextInt(150);
+  }
 
-	/**
-	 * The mob a slay quest asks for: one of {@code common} (the god type's slay targets, half of the draws), or else the
-	 * god's unholy mob (asked for each time, it may be null). Never the god's holy mob; drawn again until it fits, at
-	 * most {@link #MAX_SLAY_TARGET_DRAWS} times. With five targets, as Gods always had, the draws are the ones it always
-	 * made. Null if nothing fits.
-	 */
-	public static <T> T slayTarget(Random random, List<T> common, Supplier<T> unholyMob, T holyMob)
-	{
-		for (int draw = 0; draw < MAX_SLAY_TARGET_DRAWS; draw++)
-		{
-			int roll = common.isEmpty() ? 0 : random.nextInt(2 * common.size());
-			T target = (roll < common.size()) ? common.get(roll) : unholyMob.get();
-			if (target != null && !target.equals(holyMob))
-			{
-				return target;
-			}
-		}
-		return null;
-	}
+  /** The Material name a sacrifice quest asks for */
+  public static String sacrificeTarget(Random random) {
+    return SACRIFICE_TARGETS.get(random.nextInt(SACRIFICE_TARGETS.size()));
+  }
 
-	/** A made-up holy name, like "Ollukka" */
-	public static String holyName(Random random)
-	{
-		int length = 2 + random.nextInt(6);
-		StringBuilder name = new StringBuilder();
+  /**
+   * The mob a slay quest asks for: one of {@code common} (the god type's slay targets, half of the
+   * draws), or else the god's unholy mob (asked for each time, it may be null). Never the god's
+   * holy mob; drawn again until it fits, at most {@link #MAX_SLAY_TARGET_DRAWS} times. With five
+   * targets, as Gods always had, the draws are the ones it always made. Null if nothing fits.
+   */
+  public static <T> T slayTarget(Random random, List<T> common, Supplier<T> unholyMob, T holyMob) {
+    for (int draw = 0; draw < MAX_SLAY_TARGET_DRAWS; draw++) {
+      int roll = common.isEmpty() ? 0 : random.nextInt(2 * common.size());
+      T target = (roll < common.size()) ? common.get(roll) : unholyMob.get();
+      if (target != null && !target.equals(holyMob)) {
+        return target;
+      }
+    }
+    return null;
+  }
 
-		boolean wasVowel = false;
-		for (int l = 0; l < length; l++)
-		{
-			String[] letters = wasVowel ? CONSONANTS : VOWELS;
-			name.append(letters[random.nextInt(letters.length)]);
-			wasVowel = !wasVowel;
-		}
-		return name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1).toLowerCase(Locale.ROOT);
-	}
+  /** A made-up holy name, like "Ollukka" */
+  public static String holyName(Random random) {
+    int length = 2 + random.nextInt(6);
+    StringBuilder name = new StringBuilder();
 
-	/** The pilgrimage target's name */
-	public static String holyMountainName(Random random)
-	{
-		return "Holy mountain of " + holyName(random);
-	}
+    boolean wasVowel = false;
+    for (int l = 0; l < length; l++) {
+      String[] letters = wasVowel ? CONSONANTS : VOWELS;
+      name.append(letters[random.nextInt(letters.length)]);
+      wasVowel = !wasVowel;
+    }
+    return name.substring(0, 1).toUpperCase(Locale.ROOT)
+        + name.substring(1).toLowerCase(Locale.ROOT);
+  }
 
-	/**
-	 * A quest has expired when more whole minutes than its duration passed since it was created. A quest without a
-	 * (readable) creation time counts as created long ago.
-	 */
-	public static boolean isExpired(Instant created, int maxDurationMinutes, Instant now)
-	{
-		Instant start = (created != null) ? created : Instant.EPOCH;
-		return Duration.between(start, now).toMillis() / 60000L > maxDurationMinutes;
-	}
+  /** The pilgrimage target's name */
+  public static String holyMountainName(Random random) {
+    return "Holy mountain of " + holyName(random);
+  }
 
-	/**
-	 * Random reward items worth about {@code power} in total: draws an item at most {@link #MAX_REWARD_ROLLS} times and
-	 * keeps it if its value still fits. {@code values} are the items with a positive value.
-	 */
-	public static <T> List<T> rollRewards(Random random, List<Map.Entry<T, Integer>> values, int power)
-	{
-		List<T> rewards = new ArrayList<T>();
-		if (values.isEmpty())
-		{
-			return rewards;
-		}
+  /**
+   * A quest has expired when more whole minutes than its duration passed since it was created. A
+   * quest without a (readable) creation time counts as created long ago.
+   */
+  public static boolean isExpired(Instant created, int maxDurationMinutes, Instant now) {
+    Instant start = (created != null) ? created : Instant.EPOCH;
+    return Duration.between(start, now).toMillis() / 60000L > maxDurationMinutes;
+  }
 
-		for (int t = 0; power > 0 && t < MAX_REWARD_ROLLS; t++)
-		{
-			Map.Entry<T, Integer> item = values.get(random.nextInt(values.size()));
-			if (item.getValue() <= power)
-			{
-				rewards.add(item.getKey());
-				power -= item.getValue();
-			}
-		}
-		return rewards;
-	}
+  /**
+   * Random reward items worth about {@code power} in total: draws an item at most {@link
+   * #MAX_REWARD_ROLLS} times and keeps it if its value still fits. {@code values} are the items
+   * with a positive value.
+   */
+  public static <T> List<T> rollRewards(
+      Random random, List<Map.Entry<T, Integer>> values, int power) {
+    List<T> rewards = new ArrayList<T>();
+    if (values.isEmpty()) {
+      return rewards;
+    }
 
-	// Pilgrimage spots
+    for (int t = 0; power > 0 && t < MAX_REWARD_ROLLS; t++) {
+      Map.Entry<T, Integer> item = values.get(random.nextInt(values.size()));
+      if (item.getValue() <= power) {
+        rewards.add(item.getKey());
+        power -= item.getValue();
+      }
+    }
+    return rewards;
+  }
 
-	/** A spot at a random angle and distance from the center: {x, z} */
-	public static int[] pilgrimageSpot(Random random, int centerX, int centerZ, int minDistance, int maxDistance)
-	{
-		double angle = random.nextDouble() * 2.0D * Math.PI;
-		double distance = minDistance + random.nextDouble() * (maxDistance - minDistance);
+  // Pilgrimage spots
 
-		int x = centerX + (int) (Math.cos(angle) * distance);
-		int z = centerZ + (int) (Math.sin(angle) * distance);
+  /** A spot at a random angle and distance from the center: {x, z} */
+  public static int[] pilgrimageSpot(
+      Random random, int centerX, int centerZ, int minDistance, int maxDistance) {
+    double angle = random.nextDouble() * 2.0D * Math.PI;
+    double distance = minDistance + random.nextDouble() * (maxDistance - minDistance);
 
-		return new int[] { inChunk(random, x), inChunk(random, z) };
-	}
+    int x = centerX + (int) (Math.cos(angle) * distance);
+    int z = centerZ + (int) (Math.sin(angle) * distance);
 
-	/** Moves a coordinate to 1..14 inside its chunk, so the spot and its four neighbours are in one chunk */
-	public static int inChunk(Random random, int coordinate)
-	{
-		return (coordinate & ~15) | (1 + random.nextInt(14));
-	}
+    return new int[] {inChunk(random, x), inChunk(random, z)};
+  }
 
-	/** The ground of a pilgrimage chest is above the sea and leaves room for the chest */
-	public static boolean isFittingHeight(int groundY, int seaLevel, int maxHeight)
-	{
-		return groundY > seaLevel && groundY < maxHeight - 2;
-	}
+  /**
+   * Moves a coordinate to 1..14 inside its chunk, so the spot and its four neighbours are in one
+   * chunk
+   */
+  public static int inChunk(Random random, int coordinate) {
+    return (coordinate & ~15) | (1 + random.nextInt(14));
+  }
+
+  /** The ground of a pilgrimage chest is above the sea and leaves room for the chest */
+  public static boolean isFittingHeight(int groundY, int seaLevel, int maxHeight) {
+    return groundY > seaLevel && groundY < maxHeight - 2;
+  }
 }

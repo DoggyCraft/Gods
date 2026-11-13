@@ -1,149 +1,166 @@
 package com.dogonfire.gods.config;
 
+import com.dogonfire.gods.model.DevotionLevel;
+import com.dogonfire.gods.model.GodMood;
+import com.dogonfire.gods.model.GodRank;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import com.dogonfire.gods.model.DevotionLevel;
-import com.dogonfire.gods.model.GodMood;
-import com.dogonfire.gods.model.GodRank;
-
 /** Config files and a logger that remembers its warnings, for the config and migration tests. */
-public final class TestConfigs
-{
-	private TestConfigs()
-	{
-	}
+public final class TestConfigs {
+  private TestConfigs() {}
 
-	/** Opens a file from the test or main resources, like {@code Plugin#getResource}. */
-	public static InputStream resource(String name)
-	{
-		return TestConfigs.class.getClassLoader().getResourceAsStream(name);
-	}
+  /** Opens a file from the test or main resources, like {@code Plugin#getResource}. */
+  public static InputStream resource(String name) {
+    return TestConfigs.class.getClassLoader().getResourceAsStream(name);
+  }
 
-	/** The config.yml bundled in the plugin jar. */
-	public static YamlConfiguration bundled()
-	{
-		return YamlConfiguration.loadConfiguration(new InputStreamReader(Objects.requireNonNull(resource("config.yml")), StandardCharsets.UTF_8));
-	}
+  /** The config.yml bundled in the plugin jar. */
+  public static YamlConfiguration bundled() {
+    return YamlConfiguration.loadConfiguration(
+        new InputStreamReader(
+            Objects.requireNonNull(resource("config.yml")), StandardCharsets.UTF_8));
+  }
 
-	public static YamlConfiguration yaml(String content) throws InvalidConfigurationException
-	{
-		YamlConfiguration yaml = new YamlConfiguration();
-		yaml.loadFromString(content);
-		return yaml;
-	}
+  public static YamlConfiguration yaml(String content) throws InvalidConfigurationException {
+    YamlConfiguration yaml = new YamlConfiguration();
+    yaml.loadFromString(content);
+    return yaml;
+  }
 
-	/** The ranks of the bundled config.yml (ranks section) */
-	public static Settings.Ranks defaultRanks()
-	{
-		Map<GodRank, Settings.RankConditions> conditions = new EnumMap<>(GodRank.class);
-		conditions.put(GodRank.SPIRIT, Settings.RankConditions.NONE);
-		conditions.put(GodRank.RECOGNIZED, new Settings.RankConditions(3, 0, true, null, false, 0, 0, 0, 0, 0, 0, 0, 0));
-		conditions.put(GodRank.DESCENDED, new Settings.RankConditions(3, 0, true, GodMood.NEUTRAL, true, 24, 0, 0, 0, 0, 0, 0, 0));
-		conditions.put(GodRank.EXALTED, new Settings.RankConditions(10, 50, false, GodMood.PLEASED, false, 0, 72, 150, 20, 2, 2, 0, 2));
-		conditions.put(GodRank.GREATER, new Settings.RankConditions(20, 150, false, GodMood.PLEASED, false, 0, 168, 500, 75, 6, 4, 4, 5));
-		Map<GodRank, Integer> radius = new EnumMap<>(GodRank.class);
-		radius.put(GodRank.SPIRIT, 0);
-		radius.put(GodRank.RECOGNIZED, 1);
-		radius.put(GodRank.DESCENDED, 2);
-		radius.put(GodRank.EXALTED, 3);
-		radius.put(GodRank.GREATER, 4);
-		return new Settings.Ranks(conditions, 24,
-				new Settings.Unlocks(GodRank.RECOGNIZED, GodRank.RECOGNIZED, GodRank.EXALTED, GodRank.EXALTED, GodRank.GREATER, GodRank.GREATER, radius),
-				new Settings.Aura(true, "regeneration", 0, 15));
-	}
+  /** The ranks of the bundled config.yml (ranks section) */
+  public static Settings.Ranks defaultRanks() {
+    Map<GodRank, Settings.RankConditions> conditions = new EnumMap<>(GodRank.class);
+    conditions.put(GodRank.SPIRIT, Settings.RankConditions.NONE);
+    conditions.put(
+        GodRank.RECOGNIZED,
+        new Settings.RankConditions(3, 0, true, null, false, 0, 0, 0, 0, 0, 0, 0, 0));
+    conditions.put(
+        GodRank.DESCENDED,
+        new Settings.RankConditions(3, 0, true, GodMood.NEUTRAL, true, 24, 0, 0, 0, 0, 0, 0, 0));
+    conditions.put(
+        GodRank.EXALTED,
+        new Settings.RankConditions(
+            10, 50, false, GodMood.PLEASED, false, 0, 72, 150, 20, 2, 2, 0, 2));
+    conditions.put(
+        GodRank.GREATER,
+        new Settings.RankConditions(
+            20, 150, false, GodMood.PLEASED, false, 0, 168, 500, 75, 6, 4, 4, 5));
+    Map<GodRank, Integer> radius = new EnumMap<>(GodRank.class);
+    radius.put(GodRank.SPIRIT, 0);
+    radius.put(GodRank.RECOGNIZED, 1);
+    radius.put(GodRank.DESCENDED, 2);
+    radius.put(GodRank.EXALTED, 3);
+    radius.put(GodRank.GREATER, 4);
+    return new Settings.Ranks(
+        conditions,
+        24,
+        new Settings.Unlocks(
+            GodRank.RECOGNIZED,
+            GodRank.RECOGNIZED,
+            GodRank.EXALTED,
+            GodRank.EXALTED,
+            GodRank.GREATER,
+            GodRank.GREATER,
+            radius),
+        new Settings.Aura(true, "regeneration", 0, 15));
+  }
 
-	/** The devotion of the bundled config.yml (devotion section) */
-	/** The bundled config's believers section, with these first settings */
-	public static Settings.Believers believers(boolean leaveReligionOnDeath, int minSecondsBetweenChangingGod, int decayAfterDays)
-	{
-		Map<DevotionLevel, Double> multipliers = new EnumMap<>(DevotionLevel.class);
-		multipliers.put(DevotionLevel.FOLLOWER, 1.0D);
-		multipliers.put(DevotionLevel.DEVOTEE, 1.5D);
-		multipliers.put(DevotionLevel.ZEALOT, 2.0D);
-		multipliers.put(DevotionLevel.SAINT, 3.0D);
-		return new Settings.Believers(leaveReligionOnDeath, minSecondsBetweenChangingGod, decayAfterDays, multipliers, 2, 10);
-	}
+  /** The devotion of the bundled config.yml (devotion section) */
+  /** The bundled config's believers section, with these first settings */
+  public static Settings.Believers believers(
+      boolean leaveReligionOnDeath, int minSecondsBetweenChangingGod, int decayAfterDays) {
+    Map<DevotionLevel, Double> multipliers = new EnumMap<>(DevotionLevel.class);
+    multipliers.put(DevotionLevel.FOLLOWER, 1.0D);
+    multipliers.put(DevotionLevel.DEVOTEE, 1.5D);
+    multipliers.put(DevotionLevel.ZEALOT, 2.0D);
+    multipliers.put(DevotionLevel.SAINT, 3.0D);
+    return new Settings.Believers(
+        leaveReligionOnDeath, minSecondsBetweenChangingGod, decayAfterDays, multipliers, 2, 10);
+  }
 
-	/** The bundled config's believers section */
-	public static Settings.Believers defaultBelievers()
-	{
-		return believers(false, 5 * 60, 3);
-	}
+  /** The bundled config's believers section */
+  public static Settings.Believers defaultBelievers() {
+    return believers(false, 5 * 60, 3);
+  }
 
-	public static Settings.Devotion defaultDevotion()
-	{
-		Map<DevotionLevel, Integer> levels = new EnumMap<>(DevotionLevel.class);
-		levels.put(DevotionLevel.FOLLOWER, 0);
-		levels.put(DevotionLevel.DEVOTEE, 150);
-		levels.put(DevotionLevel.ZEALOT, 600);
-		levels.put(DevotionLevel.SAINT, 2000);
-		return new Settings.Devotion(true, new Settings.DevotionPoints(10, 15, 40, 30, 5, 5), levels, 10, 3, 5, 75, 0,
-				new Settings.DevotionUnlocks(DevotionLevel.DEVOTEE, DevotionLevel.ZEALOT, DevotionLevel.ZEALOT, DevotionLevel.SAINT, DevotionLevel.SAINT,
-						DevotionLevel.SAINT),
-				25, 2, true);
-	}
+  public static Settings.Devotion defaultDevotion() {
+    Map<DevotionLevel, Integer> levels = new EnumMap<>(DevotionLevel.class);
+    levels.put(DevotionLevel.FOLLOWER, 0);
+    levels.put(DevotionLevel.DEVOTEE, 150);
+    levels.put(DevotionLevel.ZEALOT, 600);
+    levels.put(DevotionLevel.SAINT, 2000);
+    return new Settings.Devotion(
+        true,
+        new Settings.DevotionPoints(10, 15, 40, 30, 5, 5),
+        levels,
+        10,
+        3,
+        5,
+        75,
+        0,
+        new Settings.DevotionUnlocks(
+            DevotionLevel.DEVOTEE,
+            DevotionLevel.ZEALOT,
+            DevotionLevel.ZEALOT,
+            DevotionLevel.SAINT,
+            DevotionLevel.SAINT,
+            DevotionLevel.SAINT),
+        25,
+        2,
+        true);
+  }
 
-	/** Settings from {@code config}, with the bundled config as its defaults, the way Gods loads them. */
-	public static Settings load(YamlConfiguration config, CapturingLogger log)
-	{
-		config.setDefaults(bundled());
-		return new SettingsLoader(config, log.logger()).load();
-	}
+  /**
+   * Settings from {@code config}, with the bundled config as its defaults, the way Gods loads them.
+   */
+  public static Settings load(YamlConfiguration config, CapturingLogger log) {
+    config.setDefaults(bundled());
+    return new SettingsLoader(config, log.logger()).load();
+  }
 
-	/** A logger that keeps the warnings it is given instead of printing them. */
-	public static final class CapturingLogger
-	{
-		private final Logger		logger		= Logger.getAnonymousLogger();
-		private final List<String>	warnings	= new ArrayList<>();
+  /** A logger that keeps the warnings it is given instead of printing them. */
+  public static final class CapturingLogger {
+    private final Logger logger = Logger.getAnonymousLogger();
+    private final List<String> warnings = new ArrayList<>();
 
-		public CapturingLogger()
-		{
-			this.logger.setUseParentHandlers(false);
-			this.logger.addHandler(new Handler()
-			{
-				@Override
-				public void publish(LogRecord record)
-				{
-					if (record.getLevel().intValue() >= Level.WARNING.intValue())
-					{
-						warnings.add(record.getMessage());
-					}
-				}
+    public CapturingLogger() {
+      this.logger.setUseParentHandlers(false);
+      this.logger.addHandler(
+          new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+              if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                warnings.add(record.getMessage());
+              }
+            }
 
-				@Override
-				public void flush()
-				{
-				}
+            @Override
+            public void flush() {}
 
-				@Override
-				public void close()
-				{
-				}
-			});
-		}
+            @Override
+            public void close() {}
+          });
+    }
 
-		public Logger logger()
-		{
-			return this.logger;
-		}
+    public Logger logger() {
+      return this.logger;
+    }
 
-		public List<String> warnings()
-		{
-			return this.warnings;
-		}
-	}
+    public List<String> warnings() {
+      return this.warnings;
+    }
+  }
 }

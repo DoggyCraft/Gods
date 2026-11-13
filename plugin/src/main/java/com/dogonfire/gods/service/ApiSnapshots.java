@@ -1,15 +1,5 @@
 package com.dogonfire.gods.service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-
-import org.bukkit.Location;
-import org.bukkit.World;
-
 import com.dogonfire.gods.api.BelieverInfo;
 import com.dogonfire.gods.api.GodInfo;
 import com.dogonfire.gods.api.QuestInfo;
@@ -17,157 +7,208 @@ import com.dogonfire.gods.api.RankProgress;
 import com.dogonfire.gods.model.Believer;
 import com.dogonfire.gods.model.God;
 import com.dogonfire.gods.model.Quest;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import org.bukkit.Location;
+import org.bukkit.World;
 
 /**
- * Turns Gods' models into the API's snapshots, and its enums into the API's. Pure (no server), so the tests cover it;
- * {@link GodsApiService} gathers what needs the server (power, believers, worlds) and passes it in.
+ * Turns Gods' models into the API's snapshots, and its enums into the API's. Pure (no server), so
+ * the tests cover it; {@link GodsApiService} gathers what needs the server (power, believers,
+ * worlds) and passes it in.
  */
-public final class ApiSnapshots
-{
-	private ApiSnapshots()
-	{
-	}
+public final class ApiSnapshots {
+  private ApiSnapshots() {}
 
-	public static com.dogonfire.gods.api.GodType godType(com.dogonfire.gods.model.GodType type)
-	{
-		return type != null ? com.dogonfire.gods.api.GodType.valueOf(type.name()) : null;
-	}
+  public static com.dogonfire.gods.api.GodType godType(com.dogonfire.gods.model.GodType type) {
+    return type != null ? com.dogonfire.gods.api.GodType.valueOf(type.name()) : null;
+  }
 
-	public static com.dogonfire.gods.api.GodGender gender(com.dogonfire.gods.model.GodGender gender)
-	{
-		if (gender == null)
-		{
-			return com.dogonfire.gods.api.GodGender.NONE;
-		}
-		return switch (gender)
-		{
-			case Male -> com.dogonfire.gods.api.GodGender.MALE;
-			case Female -> com.dogonfire.gods.api.GodGender.FEMALE;
-			case NonBinary -> com.dogonfire.gods.api.GodGender.NON_BINARY;
-			case None -> com.dogonfire.gods.api.GodGender.NONE;
-		};
-	}
+  public static com.dogonfire.gods.api.GodGender gender(com.dogonfire.gods.model.GodGender gender) {
+    if (gender == null) {
+      return com.dogonfire.gods.api.GodGender.NONE;
+    }
+    return switch (gender) {
+      case Male -> com.dogonfire.gods.api.GodGender.MALE;
+      case Female -> com.dogonfire.gods.api.GodGender.FEMALE;
+      case NonBinary -> com.dogonfire.gods.api.GodGender.NON_BINARY;
+      case None -> com.dogonfire.gods.api.GodGender.NONE;
+    };
+  }
 
-	/** The model's gender for the API's */
-	public static com.dogonfire.gods.model.GodGender modelGender(com.dogonfire.gods.api.GodGender gender)
-	{
-		return switch (gender)
-		{
-			case MALE -> com.dogonfire.gods.model.GodGender.Male;
-			case FEMALE -> com.dogonfire.gods.model.GodGender.Female;
-			case NON_BINARY -> com.dogonfire.gods.model.GodGender.NonBinary;
-			case NONE -> com.dogonfire.gods.model.GodGender.None;
-		};
-	}
+  /** The model's gender for the API's */
+  public static com.dogonfire.gods.model.GodGender modelGender(
+      com.dogonfire.gods.api.GodGender gender) {
+    return switch (gender) {
+      case MALE -> com.dogonfire.gods.model.GodGender.Male;
+      case FEMALE -> com.dogonfire.gods.model.GodGender.Female;
+      case NON_BINARY -> com.dogonfire.gods.model.GodGender.NonBinary;
+      case NONE -> com.dogonfire.gods.model.GodGender.None;
+    };
+  }
 
-	public static com.dogonfire.gods.api.GodMood mood(float moodValue)
-	{
-		return com.dogonfire.gods.api.GodMood.valueOf(MoodRules.moodFor(moodValue).name());
-	}
+  public static com.dogonfire.gods.api.GodMood mood(float moodValue) {
+    return com.dogonfire.gods.api.GodMood.valueOf(MoodRules.moodFor(moodValue).name());
+  }
 
-	/** The API's rank for the model's (an unranked god is a spirit) */
-	public static com.dogonfire.gods.api.GodRank rank(com.dogonfire.gods.model.GodRank rank)
-	{
-		return rank != null ? com.dogonfire.gods.api.GodRank.valueOf(rank.name()) : com.dogonfire.gods.api.GodRank.SPIRIT;
-	}
+  /** The API's rank for the model's (an unranked god is a spirit) */
+  public static com.dogonfire.gods.api.GodRank rank(com.dogonfire.gods.model.GodRank rank) {
+    return rank != null
+        ? com.dogonfire.gods.api.GodRank.valueOf(rank.name())
+        : com.dogonfire.gods.api.GodRank.SPIRIT;
+  }
 
-	/** A devotion level as the API shows it */
-	public static com.dogonfire.gods.api.DevotionLevel devotion(com.dogonfire.gods.model.DevotionLevel level)
-	{
-		return level != null ? com.dogonfire.gods.api.DevotionLevel.valueOf(level.name()) : com.dogonfire.gods.api.DevotionLevel.FOLLOWER;
-	}
+  /** A devotion level as the API shows it */
+  public static com.dogonfire.gods.api.DevotionLevel devotion(
+      com.dogonfire.gods.model.DevotionLevel level) {
+    return level != null
+        ? com.dogonfire.gods.api.DevotionLevel.valueOf(level.name())
+        : com.dogonfire.gods.api.DevotionLevel.FOLLOWER;
+  }
 
-	/** The model's devotion level for the API's */
-	public static com.dogonfire.gods.model.DevotionLevel modelDevotion(com.dogonfire.gods.api.DevotionLevel level)
-	{
-		return com.dogonfire.gods.model.DevotionLevel.valueOf(level.name());
-	}
+  /** The model's devotion level for the API's */
+  public static com.dogonfire.gods.model.DevotionLevel modelDevotion(
+      com.dogonfire.gods.api.DevotionLevel level) {
+    return com.dogonfire.gods.model.DevotionLevel.valueOf(level.name());
+  }
 
-	/** The model's rank for the API's */
-	public static com.dogonfire.gods.model.GodRank modelRank(com.dogonfire.gods.api.GodRank rank)
-	{
-		return com.dogonfire.gods.model.GodRank.valueOf(rank.name());
-	}
+  /** The model's rank for the API's */
+  public static com.dogonfire.gods.model.GodRank modelRank(com.dogonfire.gods.api.GodRank rank) {
+    return com.dogonfire.gods.model.GodRank.valueOf(rank.name());
+  }
 
-	/**
-	 * A god's progress towards its next rank as the API shows it
-	 *
-	 * @param rank     its rank now
-	 * @param next     the rank it can rise to, or null at the top
-	 * @param progress the conditions of {@code next} (or its own rank's at the top), from {@link RankRules#progress}
-	 */
-	public static RankProgress rankProgress(com.dogonfire.gods.model.GodRank rank, com.dogonfire.gods.model.GodRank next, List<RankRules.Progress> progress)
-	{
-		return new RankProgress(rank(rank), next != null ? rank(next) : null, progress.stream()
-				.map(condition -> new RankProgress.Condition(condition.condition().key(), condition.current(), condition.required(), condition.met())).toList());
-	}
+  /**
+   * A god's progress towards its next rank as the API shows it
+   *
+   * @param rank its rank now
+   * @param next the rank it can rise to, or null at the top
+   * @param progress the conditions of {@code next} (or its own rank's at the top), from {@link
+   *     RankRules#progress}
+   */
+  public static RankProgress rankProgress(
+      com.dogonfire.gods.model.GodRank rank,
+      com.dogonfire.gods.model.GodRank next,
+      List<RankRules.Progress> progress) {
+    return new RankProgress(
+        rank(rank),
+        next != null ? rank(next) : null,
+        progress.stream()
+            .map(condition ->
+                new RankProgress.Condition(
+                    condition.condition().key(),
+                    condition.current(),
+                    condition.required(),
+                    condition.met()))
+            .toList());
+  }
 
-	public static com.dogonfire.gods.api.QuestType questType(com.dogonfire.gods.model.QuestType type)
-	{
-		return switch (type)
-		{
-			case PILGRIMAGE -> com.dogonfire.gods.api.QuestType.PILGRIMAGE;
-			case SLAY -> com.dogonfire.gods.api.QuestType.SLAY;
-			case ITEMSACRIFICE -> com.dogonfire.gods.api.QuestType.ITEM_SACRIFICE;
-			case GIVEITEMS -> com.dogonfire.gods.api.QuestType.GIVE_ITEMS;
-			default -> com.dogonfire.gods.api.QuestType.OTHER;
-		};
-	}
+  public static com.dogonfire.gods.api.QuestType questType(
+      com.dogonfire.gods.model.QuestType type) {
+    return switch (type) {
+      case PILGRIMAGE -> com.dogonfire.gods.api.QuestType.PILGRIMAGE;
+      case SLAY -> com.dogonfire.gods.api.QuestType.SLAY;
+      case ITEMSACRIFICE -> com.dogonfire.gods.api.QuestType.ITEM_SACRIFICE;
+      case GIVEITEMS -> com.dogonfire.gods.api.QuestType.GIVE_ITEMS;
+      default -> com.dogonfire.gods.api.QuestType.OTHER;
+    };
+  }
 
-	/**
-	 * The quest as the API shows it, or null if the god has none
-	 *
-	 * @param location where its pilgrimage leads, or null
-	 */
-	public static QuestInfo quest(Quest quest, Location location)
-	{
-		if (quest == null || quest.typeName() == null)
-		{
-			return null;
-		}
-		Instant started = quest.createdTime();
-		Instant expires = (started != null && quest.maxDuration() != null) ? started.plus(Duration.ofMinutes(quest.maxDuration())) : null;
-		return new QuestInfo(quest.godName(), questType(quest.type()), quest.targetType(), quest.amountOrZero(), quest.progressOrZero(), started, expires,
-				location != null && location.getWorld() != null ? location : null);
-	}
+  /**
+   * The quest as the API shows it, or null if the god has none
+   *
+   * @param location where its pilgrimage leads, or null
+   */
+  public static QuestInfo quest(Quest quest, Location location) {
+    if (quest == null || quest.typeName() == null) {
+      return null;
+    }
+    Instant started = quest.createdTime();
+    Instant expires =
+        (started != null && quest.maxDuration() != null)
+            ? started.plus(Duration.ofMinutes(quest.maxDuration()))
+            : null;
+    return new QuestInfo(
+        quest.godName(),
+        questType(quest.type()),
+        quest.targetType(),
+        quest.amountOrZero(),
+        quest.progressOrZero(),
+        started,
+        expires,
+        location != null && location.getWorld() != null ? location : null);
+  }
 
-	/**
-	 * {@link GodInfo#home()}: the religion's home ({@link HomeRules#home}: in front of its main altar, facing it; else the
-	 * home stored before main altars) as a location, or null if it has none or its world isn't loaded
-	 *
-	 * @param worlds the loaded world of this name, or null
-	 */
-	public static Location home(HomeRules.Home home, Function<String, World> worlds)
-	{
-		World world = home != null ? worlds.apply(home.world()) : null;
-		return world != null ? new Location(world, home.x(), home.y(), home.z(), home.yaw(), 0.0F) : null;
-	}
+  /**
+   * {@link GodInfo#home()}: the religion's home ({@link HomeRules#home}: in front of its main
+   * altar, facing it; else the home stored before main altars) as a location, or null if it has
+   * none or its world isn't loaded
+   *
+   * @param worlds the loaded world of this name, or null
+   */
+  public static Location home(HomeRules.Home home, Function<String, World> worlds) {
+    World world = home != null ? worlds.apply(home.world()) : null;
+    return world != null
+        ? new Location(world, home.x(), home.y(), home.z(), home.yaw(), 0.0F)
+        : null;
+  }
 
-	/**
-	 * The god as the API shows it
-	 *
-	 * @param power          its power now (from its believers)
-	 * @param believers      everyone who believes in it
-	 * @param home           its home, or null (also when its world isn't loaded)
-	 * @param holyLandClaims how many regions it claimed
-	 * @param quest          its quest, or null
-	 * @param mainAltar      the altar block of its main altar, or null (also when its world isn't loaded)
-	 */
-	public static GodInfo god(God god, float power, Set<UUID> believers, Location home, int holyLandClaims, QuestInfo quest, Location mainAltar)
-	{
-		return new GodInfo(god.name(), godType(god.type()), gender(god.gender()), mood(god.mood()), god.mood(), power, believers, god.priests(), god.allies(),
-				god.enemies(), god.description(), home != null && home.getWorld() != null ? home : null, holyLandClaims, quest, god.created(),
-				mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null, god.descended(), rank(god.rank()));
-	}
+  /**
+   * The god as the API shows it
+   *
+   * @param power its power now (from its believers)
+   * @param believers everyone who believes in it
+   * @param home its home, or null (also when its world isn't loaded)
+   * @param holyLandClaims how many regions it claimed
+   * @param quest its quest, or null
+   * @param mainAltar the altar block of its main altar, or null (also when its world isn't loaded)
+   */
+  public static GodInfo god(
+      God god,
+      float power,
+      Set<UUID> believers,
+      Location home,
+      int holyLandClaims,
+      QuestInfo quest,
+      Location mainAltar) {
+    return new GodInfo(
+        god.name(),
+        godType(god.type()),
+        gender(god.gender()),
+        mood(god.mood()),
+        god.mood(),
+        power,
+        believers,
+        god.priests(),
+        god.allies(),
+        god.enemies(),
+        god.description(),
+        home != null && home.getWorld() != null ? home : null,
+        holyLandClaims,
+        quest,
+        god.created(),
+        mainAltar != null && mainAltar.getWorld() != null ? mainAltar : null,
+        god.descended(),
+        rank(god.rank()));
+  }
 
-	/** The believer as the API shows them, or null if they believe in no god */
-	public static BelieverInfo believer(Believer believer, boolean priest)
-	{
-		if (believer == null || believer.godName() == null)
-		{
-			return null;
-		}
-		return new BelieverInfo(believer.id(), believer.godName(), believer.prayers(), believer.prayerPower(), priest, believer.joined(), believer.lastPrayer(),
-				devotion(believer.devotionLevel()), believer.devotion() != null ? believer.devotion() : 0);
-	}
+  /** The believer as the API shows them, or null if they believe in no god */
+  public static BelieverInfo believer(Believer believer, boolean priest) {
+    if (believer == null || believer.godName() == null) {
+      return null;
+    }
+    return new BelieverInfo(
+        believer.id(),
+        believer.godName(),
+        believer.prayers(),
+        believer.prayerPower(),
+        priest,
+        believer.joined(),
+        believer.lastPrayer(),
+        devotion(believer.devotionLevel()),
+        believer.devotion() != null ? believer.devotion() : 0);
+  }
 }

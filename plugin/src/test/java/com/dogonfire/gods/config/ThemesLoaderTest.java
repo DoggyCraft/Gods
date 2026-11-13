@@ -6,6 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.dogonfire.gods.integration.npc.SkinTextures;
+import com.dogonfire.gods.model.DevotionLevel;
+import com.dogonfire.gods.model.GodGender;
+import com.dogonfire.gods.model.GodRank;
+import com.dogonfire.gods.model.GodType;
+import com.dogonfire.gods.model.NpcSkin;
+import com.dogonfire.gods.service.GodNpcRules;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -18,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -27,809 +33,996 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.junit.jupiter.api.Test;
 
-import com.dogonfire.gods.integration.npc.SkinTextures;
-import com.dogonfire.gods.model.GodGender;
-import com.dogonfire.gods.model.DevotionLevel;
-import com.dogonfire.gods.model.GodRank;
-import com.dogonfire.gods.model.GodType;
-import com.dogonfire.gods.model.NpcSkin;
-import com.dogonfire.gods.service.GodNpcRules;
+class ThemesLoaderTest {
+  private final TestConfigs.CapturingLogger log = new TestConfigs.CapturingLogger();
+  private final List<String> debug = new ArrayList<>();
 
-class ThemesLoaderTest
-{
-	private final TestConfigs.CapturingLogger	log		= new TestConfigs.CapturingLogger();
-	private final List<String>					debug	= new ArrayList<>();
+  private static YamlConfiguration bundled() {
+    return YamlConfiguration.loadConfiguration(
+        new InputStreamReader(
+            Objects.requireNonNull(TestConfigs.resource("themes.yml")), StandardCharsets.UTF_8));
+  }
 
-	private static YamlConfiguration bundled()
-	{
-		return YamlConfiguration.loadConfiguration(new InputStreamReader(Objects.requireNonNull(TestConfigs.resource("themes.yml")), StandardCharsets.UTF_8));
-	}
+  /** The names of the newest API (the one Gods compiles against), but without {@code missing} */
+  private static ThemesLoader.Names namesWithout(Set<String> missing, Set<String> otherVersions) {
+    ThemesLoader.Names all = ThemesLoader.serverNames(otherVersions);
+    return new ThemesLoader.Names() {
+      @Override
+      public Material material(String name) {
+        return missing.contains(name) ? null : all.material(name);
+      }
 
-	/** The names of the newest API (the one Gods compiles against), but without {@code missing} */
-	private static ThemesLoader.Names namesWithout(Set<String> missing, Set<String> otherVersions)
-	{
-		ThemesLoader.Names all = ThemesLoader.serverNames(otherVersions);
-		return new ThemesLoader.Names()
-		{
-			@Override
-			public Material material(String name)
-			{
-				return missing.contains(name) ? null : all.material(name);
-			}
+      @Override
+      public EntityType entityType(String name) {
+        return missing.contains(name) ? null : all.entityType(name);
+      }
 
-			@Override
-			public EntityType entityType(String name)
-			{
-				return missing.contains(name) ? null : all.entityType(name);
-			}
+      @Override
+      public boolean existsInOtherVersions(String name) {
+        return all.existsInOtherVersions(name);
+      }
 
-			@Override
-			public boolean existsInOtherVersions(String name)
-			{
-				return all.existsInOtherVersions(name);
-			}
+      // Material.isBlock() needs a server; good enough for the names in these tests
+      @Override
+      public boolean isBlock(Material material) {
+        return !material.name().endsWith("_SWORD");
+      }
 
-			// Material.isBlock() needs a server; good enough for the names in these tests
-			@Override
-			public boolean isBlock(Material material)
-			{
-				return !material.name().endsWith("_SWORD");
-			}
+      @Override
+      public boolean isItem(Material material) {
+        return true;
+      }
+    };
+  }
 
-			@Override
-			public boolean isItem(Material material)
-			{
-				return true;
-			}
-		};
-	}
+  private Themes load(String overrides) throws Exception {
+    return load(overrides, namesWithout(Set.of(), Set.of()));
+  }
 
-	private Themes load(String overrides) throws Exception
-	{
-		return load(overrides, namesWithout(Set.of(), Set.of()));
-	}
+  private Themes load(String overrides, ThemesLoader.Names names) throws Exception {
+    return new ThemesLoader(names, this.log.logger(), this.debug::add)
+        .load(bundled(), TestConfigs.yaml(overrides), Settings.Altars.of(Map.of()));
+  }
 
-	private Themes load(String overrides, ThemesLoader.Names names) throws Exception
-	{
-		return new ThemesLoader(names, this.log.logger(), this.debug::add).load(bundled(), TestConfigs.yaml(overrides), Settings.Altars.of(Map.of()));
-	}
+  @Test
+  void everyNameInTheBundledThemesExists() throws Exception {
+    load("");
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+    assertTrue(this.debug.isEmpty(), "Skipped: " + this.debug);
+  }
 
-	@Test
-	void everyNameInTheBundledThemesExists() throws Exception
-	{
-		load("");
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-		assertTrue(this.debug.isEmpty(), "Skipped: " + this.debug);
-	}
+  @Test
+  void everyGodTypeHasEveryList() throws Exception {
+    Themes themes = load("");
+    for (GodType type : GodType.values()) {
+      Theme theme = themes.of(type);
+      assertFalse(theme.holyMobs().isEmpty(), type + " holy mobs");
+      assertFalse(theme.unholyMobs().isEmpty(), type + " unholy mobs");
+      assertFalse(theme.holyFoods().isEmpty(), type + " holy foods");
+      assertFalse(theme.unholyFoods().isEmpty(), type + " unholy foods");
+      assertFalse(theme.sacrificeNeeds().isEmpty(), type + " sacrifice needs");
+      assertFalse(theme.slayTargets().isEmpty(), type + " slay targets");
+      assertFalse(theme.curseMobs().isEmpty(), type + " curse mobs");
+      assertFalse(theme.peacefulMobs().isEmpty(), type + " peaceful mobs");
+      // A god must be able to pick a holy and a different unholy mob and food
+      Set<EntityType> mobs = new HashSet<>(theme.holyMobs());
+      mobs.addAll(theme.unholyMobs());
+      assertTrue(mobs.size() > 1, type + " mobs");
+      Set<Material> foods = new HashSet<>(theme.holyFoods());
+      foods.addAll(theme.unholyFoods());
+      assertTrue(foods.size() > 1, type + " foods");
+      assertEquals(ThemesLoader.sectionName(type), theme.sign().messages());
+      // As before, no altar makes a werewolf god
+      assertFalse(theme.altarBlocks().isEmpty(), type + " altar blocks");
+    }
+    assertFalse(themes.of(null).holyMobs().isEmpty());
+    assertEquals(Theme.SignStyle.PLAIN, themes.of(null).sign());
+  }
 
-	@Test
-	void everyGodTypeHasEveryList() throws Exception
-	{
-		Themes themes = load("");
-		for (GodType type : GodType.values())
-		{
-			Theme theme = themes.of(type);
-			assertFalse(theme.holyMobs().isEmpty(), type + " holy mobs");
-			assertFalse(theme.unholyMobs().isEmpty(), type + " unholy mobs");
-			assertFalse(theme.holyFoods().isEmpty(), type + " holy foods");
-			assertFalse(theme.unholyFoods().isEmpty(), type + " unholy foods");
-			assertFalse(theme.sacrificeNeeds().isEmpty(), type + " sacrifice needs");
-			assertFalse(theme.slayTargets().isEmpty(), type + " slay targets");
-			assertFalse(theme.curseMobs().isEmpty(), type + " curse mobs");
-			assertFalse(theme.peacefulMobs().isEmpty(), type + " peaceful mobs");
-			// A god must be able to pick a holy and a different unholy mob and food
-			Set<EntityType> mobs = new HashSet<>(theme.holyMobs());
-			mobs.addAll(theme.unholyMobs());
-			assertTrue(mobs.size() > 1, type + " mobs");
-			Set<Material> foods = new HashSet<>(theme.holyFoods());
-			foods.addAll(theme.unholyFoods());
-			assertTrue(foods.size() > 1, type + " foods");
-			assertEquals(ThemesLoader.sectionName(type), theme.sign().messages());
-			// As before, no altar makes a werewolf god
-			assertFalse(theme.altarBlocks().isEmpty(), type + " altar blocks");
-		}
-		assertFalse(themes.of(null).holyMobs().isEmpty());
-		assertEquals(Theme.SignStyle.PLAIN, themes.of(null).sign());
-	}
+  /**
+   * The default theme keeps the curse mobs and peaceful mobs Gods had built in; every theme's curse
+   * mobs can be spawned and attack, and its peaceful mobs are no monsters and keep the old ones
+   */
+  @Test
+  void curseMobsAttackAndPeacefulMobsArePeaceful() throws Exception {
+    Themes themes = load("");
+    assertEquals(
+        List.of(
+            EntityType.SKELETON,
+            EntityType.ZOMBIE,
+            EntityType.ZOMBIFIED_PIGLIN,
+            EntityType.SPIDER,
+            EntityType.WOLF),
+        themes.defaults().curseMobs());
+    List<EntityType> oldPeaceful =
+        List.of(
+            EntityType.BAT,
+            EntityType.SQUID,
+            EntityType.CHICKEN,
+            EntityType.PIG,
+            EntityType.COW,
+            EntityType.OCELOT,
+            EntityType.SHEEP,
+            EntityType.VILLAGER,
+            EntityType.MOOSHROOM,
+            EntityType.IRON_GOLEM);
+    assertEquals(oldPeaceful, themes.defaults().peacefulMobs());
+    List<Theme> all = new ArrayList<>(themes.types().values());
+    all.add(themes.defaults());
+    for (Theme theme : all) {
+      for (EntityType mob : theme.curseMobs()) {
+        assertTrue(
+            mob.isSpawnable() && org.bukkit.entity.Mob.class.isAssignableFrom(mob.getEntityClass()),
+            mob.name());
+      }
+      for (EntityType mob : theme.peacefulMobs()) {
+        assertFalse(
+            org.bukkit.entity.Enemy.class.isAssignableFrom(mob.getEntityClass()), mob.name());
+      }
+      assertTrue(theme.peacefulMobs().containsAll(oldPeaceful), theme.peacefulMobs().toString());
+    }
+    // Themed: evil curses with wither skeletons, frost with strays, the sea with drowned
+    assertTrue(themes.of(GodType.EVIL).curseMobs().contains(EntityType.WITHER_SKELETON));
+    assertTrue(themes.of(GodType.FROST).curseMobs().contains(EntityType.STRAY));
+    assertTrue(themes.of(GodType.SEA).curseMobs().contains(EntityType.DROWNED));
+    assertTrue(themes.of(GodType.SEA).peacefulMobs().contains(EntityType.DOLPHIN));
+  }
 
-	/**
-	 * The default theme keeps the curse mobs and peaceful mobs Gods had built in; every theme's curse mobs can be
-	 * spawned and attack, and its peaceful mobs are no monsters and keep the old ones
-	 */
-	@Test
-	void curseMobsAttackAndPeacefulMobsArePeaceful() throws Exception
-	{
-		Themes themes = load("");
-		assertEquals(List.of(EntityType.SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIFIED_PIGLIN, EntityType.SPIDER, EntityType.WOLF), themes.defaults().curseMobs());
-		List<EntityType> oldPeaceful = List.of(EntityType.BAT, EntityType.SQUID, EntityType.CHICKEN, EntityType.PIG, EntityType.COW, EntityType.OCELOT,
-				EntityType.SHEEP, EntityType.VILLAGER, EntityType.MOOSHROOM, EntityType.IRON_GOLEM);
-		assertEquals(oldPeaceful, themes.defaults().peacefulMobs());
-		List<Theme> all = new ArrayList<>(themes.types().values());
-		all.add(themes.defaults());
-		for (Theme theme : all)
-		{
-			for (EntityType mob : theme.curseMobs())
-			{
-				assertTrue(mob.isSpawnable() && org.bukkit.entity.Mob.class.isAssignableFrom(mob.getEntityClass()), mob.name());
-			}
-			for (EntityType mob : theme.peacefulMobs())
-			{
-				assertFalse(org.bukkit.entity.Enemy.class.isAssignableFrom(mob.getEntityClass()), mob.name());
-			}
-			assertTrue(theme.peacefulMobs().containsAll(oldPeaceful), theme.peacefulMobs().toString());
-		}
-		// Themed: evil curses with wither skeletons, frost with strays, the sea with drowned
-		assertTrue(themes.of(GodType.EVIL).curseMobs().contains(EntityType.WITHER_SKELETON));
-		assertTrue(themes.of(GodType.FROST).curseMobs().contains(EntityType.STRAY));
-		assertTrue(themes.of(GodType.SEA).curseMobs().contains(EntityType.DROWNED));
-		assertTrue(themes.of(GodType.SEA).peacefulMobs().contains(EntityType.DOLPHIN));
-	}
+  /**
+   * An admin's peaceful-mobs: [] lets nothing but the holy mob spawn; a type without the key takes
+   * the default's
+   */
+  @Test
+  void curseAndPeacefulMobsCanBeChanged() throws Exception {
+    Themes themes =
+        load(
+            """
+            evil:
+              peaceful-mobs: []
+              curse-mobs:
+                add: [warden]
+                remove: [vex]
+            default:
+              curse-mobs: [zombie]
+            """);
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+    assertTrue(themes.of(GodType.EVIL).peacefulMobs().isEmpty());
+    assertEquals(
+        List.of(
+            EntityType.WITHER_SKELETON,
+            EntityType.CAVE_SPIDER,
+            EntityType.WITCH,
+            EntityType.WARDEN),
+        themes.of(GodType.EVIL).curseMobs());
+    assertEquals(List.of(EntityType.ZOMBIE), themes.defaults().curseMobs());
+    assertEquals(
+        List.of(EntityType.STRAY, EntityType.SKELETON, EntityType.WOLF),
+        themes.of(GodType.FROST).curseMobs());
+  }
 
-	/** An admin's peaceful-mobs: [] lets nothing but the holy mob spawn; a type without the key takes the default's */
-	@Test
-	void curseAndPeacefulMobsCanBeChanged() throws Exception
-	{
-		Themes themes = load("""
-				evil:
-				  peaceful-mobs: []
-				  curse-mobs:
-				    add: [warden]
-				    remove: [vex]
-				default:
-				  curse-mobs: [zombie]
-				""");
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-		assertTrue(themes.of(GodType.EVIL).peacefulMobs().isEmpty());
-		assertEquals(List.of(EntityType.WITHER_SKELETON, EntityType.CAVE_SPIDER, EntityType.WITCH, EntityType.WARDEN), themes.of(GodType.EVIL).curseMobs());
-		assertEquals(List.of(EntityType.ZOMBIE), themes.defaults().curseMobs());
-		assertEquals(List.of(EntityType.STRAY, EntityType.SKELETON, EntityType.WOLF), themes.of(GodType.FROST).curseMobs());
-	}
+  /** The altar blocks of 0.9.x still make the same god types, and no block makes two god types */
+  @Test
+  void altarBlocksKeepTheOldOnesAndDontOverlap() throws Exception {
+    Themes themes = load("");
+    Map<GodType, Material> old = new EnumMap<>(GodType.class);
+    old.put(GodType.FROST, Material.SNOW_BLOCK);
+    old.put(GodType.LOVE, Material.DIAMOND_BLOCK);
+    old.put(GodType.EVIL, Material.OBSIDIAN);
+    old.put(GodType.SEA, Material.LAPIS_BLOCK);
+    old.put(GodType.MOON, Material.END_STONE);
+    old.put(GodType.SUN, Material.SANDSTONE);
+    old.put(GodType.THUNDER, Material.QUARTZ_BLOCK);
+    old.put(GodType.PARTY, Material.EMERALD_BLOCK);
+    old.put(GodType.WAR, Material.NETHERRACK);
+    old.put(GodType.CREATURES, Material.OAK_LOG);
+    old.put(GodType.WISDOM, Material.BOOKSHELF);
+    old.put(GodType.NATURE, Material.MELON);
+    old.forEach((type, block) ->
+        assertEquals(List.of(type), themes.altars().godTypesFor(block), block.name()));
 
-	/** The altar blocks of 0.9.x still make the same god types, and no block makes two god types */
-	@Test
-	void altarBlocksKeepTheOldOnesAndDontOverlap() throws Exception
-	{
-		Themes themes = load("");
-		Map<GodType, Material> old = new EnumMap<>(GodType.class);
-		old.put(GodType.FROST, Material.SNOW_BLOCK);
-		old.put(GodType.LOVE, Material.DIAMOND_BLOCK);
-		old.put(GodType.EVIL, Material.OBSIDIAN);
-		old.put(GodType.SEA, Material.LAPIS_BLOCK);
-		old.put(GodType.MOON, Material.END_STONE);
-		old.put(GodType.SUN, Material.SANDSTONE);
-		old.put(GodType.THUNDER, Material.QUARTZ_BLOCK);
-		old.put(GodType.PARTY, Material.EMERALD_BLOCK);
-		old.put(GodType.WAR, Material.NETHERRACK);
-		old.put(GodType.CREATURES, Material.OAK_LOG);
-		old.put(GodType.WISDOM, Material.BOOKSHELF);
-		old.put(GodType.NATURE, Material.MELON);
-		old.forEach((type, block) -> assertEquals(List.of(type), themes.altars().godTypesFor(block), block.name()));
+    Map<Material, GodType> seen = new HashMap<>();
+    for (GodType type : GodType.values()) {
+      for (Material block : themes.of(type).altarBlocks()) {
+        GodType other = seen.put(block, type);
+        assertNull(other, block + " is an altar block of " + other + " and " + type);
+      }
+    }
+    // Every copper block, however oxidized or waxed, so a thunder altar keeps working as it ages
+    assertTrue(
+        themes
+            .of(GodType.THUNDER)
+            .altarBlocks()
+            .containsAll(
+                List.of(
+                    Material.COPPER_BLOCK,
+                    Material.OXIDIZED_COPPER,
+                    Material.WAXED_WEATHERED_CUT_COPPER,
+                    Material.WAXED_OXIDIZED_CHISELED_COPPER)));
+  }
 
-		Map<Material, GodType> seen = new HashMap<>();
-		for (GodType type : GodType.values())
-		{
-			for (Material block : themes.of(type).altarBlocks())
-			{
-				GodType other = seen.put(block, type);
-				assertNull(other, block + " is an altar block of " + other + " and " + type);
-			}
-		}
-		// Every copper block, however oxidized or waxed, so a thunder altar keeps working as it ages
-		assertTrue(themes.of(GodType.THUNDER).altarBlocks().containsAll(List.of(Material.COPPER_BLOCK, Material.OXIDIZED_COPPER, Material.WAXED_WEATHERED_CUT_COPPER, Material.WAXED_OXIDIZED_CHISELED_COPPER)));
-	}
+  @Test
+  void aListReplacesAndAddRemoveChanges() throws Exception {
+    Themes themes =
+        load(
+            """
+            frost:
+              holy-mobs: [polar_bear, minecraft:fox]
+              holy-foods:
+                add: [pumpkin_pie, cooked_cod]
+                remove: [COOKED_COD, sweet_berries]
+              sign:
+                dye: blue
+                glowing: false
+            """);
+    Theme frost = themes.of(GodType.FROST);
+    assertEquals(List.of(EntityType.POLAR_BEAR, EntityType.FOX), frost.holyMobs());
+    assertEquals(
+        List.of(
+            Material.COOKED_SALMON,
+            Material.RABBIT_STEW,
+            Material.COOKED_RABBIT,
+            Material.BEETROOT_SOUP,
+            Material.APPLE,
+            Material.PUMPKIN_PIE,
+            Material.COOKED_COD),
+        frost.holyFoods());
+    assertEquals(new Theme.SignStyle("frost", DyeColor.BLUE, false), frost.sign());
+    // The rest stays Gods' own
+    assertEquals(load("").of(GodType.FROST).unholyMobs(), frost.unholyMobs());
+    assertEquals(load("").of(GodType.SEA), themes.of(GodType.SEA));
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+  }
 
-	@Test
-	void aListReplacesAndAddRemoveChanges() throws Exception
-	{
-		Themes themes = load("""
-				frost:
-				  holy-mobs: [polar_bear, minecraft:fox]
-				  holy-foods:
-				    add: [pumpkin_pie, cooked_cod]
-				    remove: [COOKED_COD, sweet_berries]
-				  sign:
-				    dye: blue
-				    glowing: false
-				""");
-		Theme frost = themes.of(GodType.FROST);
-		assertEquals(List.of(EntityType.POLAR_BEAR, EntityType.FOX), frost.holyMobs());
-		assertEquals(List.of(Material.COOKED_SALMON, Material.RABBIT_STEW, Material.COOKED_RABBIT, Material.BEETROOT_SOUP, Material.APPLE, Material.PUMPKIN_PIE, Material.COOKED_COD), frost.holyFoods());
-		assertEquals(new Theme.SignStyle("frost", DyeColor.BLUE, false), frost.sign());
-		// The rest stays Gods' own
-		assertEquals(load("").of(GodType.FROST).unholyMobs(), frost.unholyMobs());
-		assertEquals(load("").of(GodType.SEA), themes.of(GodType.SEA));
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-	}
+  /** A key a god type leaves out comes from default, with the admin's changes to default */
+  @Test
+  void theDefaultFillsTheGaps() throws Exception {
+    YamlConfiguration bundled =
+        TestConfigs.yaml(
+            """
+            default:
+              holy-mobs: [cow]
+              unholy-mobs: [zombie]
+              sign:
+                dye: white
+            sea:
+              holy-mobs: [dolphin]
+              sign:
+                messages: sea
+            """);
+    Themes themes =
+        new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add)
+            .load(
+                bundled,
+                TestConfigs.yaml(
+                    """
+                    default:
+                      unholy-mobs:
+                        add: [drowned]
+                    sea:
+                      holy-mobs:
+                        add: [turtle]
+                    frost:
+                      holy-mobs:
+                        add: [fox]
+                    """),
+                Settings.Altars.of(Map.of()));
 
-	/** A key a god type leaves out comes from default, with the admin's changes to default */
-	@Test
-	void theDefaultFillsTheGaps() throws Exception
-	{
-		YamlConfiguration bundled = TestConfigs.yaml("""
-				default:
-				  holy-mobs: [cow]
-				  unholy-mobs: [zombie]
-				  sign:
-				    dye: white
-				sea:
-				  holy-mobs: [dolphin]
-				  sign:
-				    messages: sea
-				""");
-		Themes themes = new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add).load(bundled, TestConfigs.yaml("""
-				default:
-				  unholy-mobs:
-				    add: [drowned]
-				sea:
-				  holy-mobs:
-				    add: [turtle]
-				frost:
-				  holy-mobs:
-				    add: [fox]
-				"""), Settings.Altars.of(Map.of()));
+    assertEquals(List.of(EntityType.DOLPHIN, EntityType.TURTLE), themes.of(GodType.SEA).holyMobs());
+    assertEquals(
+        List.of(EntityType.ZOMBIE, EntityType.DROWNED), themes.of(GodType.SEA).unholyMobs());
+    assertEquals(new Theme.SignStyle("sea", DyeColor.WHITE, false), themes.of(GodType.SEA).sign());
+    // Adding to a list frost doesn't have adds to the default's
+    assertEquals(List.of(EntityType.COW, EntityType.FOX), themes.of(GodType.FROST).holyMobs());
+    assertEquals(List.of(EntityType.COW), themes.of(null).holyMobs());
+    assertEquals(List.of(EntityType.ZOMBIE, EntityType.DROWNED), themes.of(null).unholyMobs());
+  }
 
-		assertEquals(List.of(EntityType.DOLPHIN, EntityType.TURTLE), themes.of(GodType.SEA).holyMobs());
-		assertEquals(List.of(EntityType.ZOMBIE, EntityType.DROWNED), themes.of(GodType.SEA).unholyMobs());
-		assertEquals(new Theme.SignStyle("sea", DyeColor.WHITE, false), themes.of(GodType.SEA).sign());
-		// Adding to a list frost doesn't have adds to the default's
-		assertEquals(List.of(EntityType.COW, EntityType.FOX), themes.of(GodType.FROST).holyMobs());
-		assertEquals(List.of(EntityType.COW), themes.of(null).holyMobs());
-		assertEquals(List.of(EntityType.ZOMBIE, EntityType.DROWNED), themes.of(null).unholyMobs());
-	}
+  /**
+   * Names the server doesn't have are skipped: quietly if Gods' own file or another Minecraft
+   * version has them, with a warning if they are typos.
+   */
+  @Test
+  void namesTheServerLacksAreSkipped() throws Exception {
+    ThemesLoader.Names oldServer =
+        namesWithout(Set.of("HAPPY_GHAST", "COPPER_GOLEM", "CREAKING"), Set.of("CREAKING"));
+    Themes themes =
+        load(
+            """
+            nature:
+              holy-mobs:
+                add: [creaking, polar_bare]
+              altar-blocks:
+                add: [diamond_sword, end_stone_brick]
+            """,
+            oldServer);
 
-	/**
-	 * Names the server doesn't have are skipped: quietly if Gods' own file or another Minecraft version has them,
-	 * with a warning if they are typos.
-	 */
-	@Test
-	void namesTheServerLacksAreSkipped() throws Exception
-	{
-		ThemesLoader.Names oldServer = namesWithout(Set.of("HAPPY_GHAST", "COPPER_GOLEM", "CREAKING"), Set.of("CREAKING"));
-		Themes themes = load("""
-				nature:
-				  holy-mobs:
-				    add: [creaking, polar_bare]
-				  altar-blocks:
-				    add: [diamond_sword, end_stone_brick]
-				""", oldServer);
+    assertFalse(themes.of(GodType.PARTY).holyMobs().contains(EntityType.HAPPY_GHAST));
+    assertTrue(themes.of(GodType.PARTY).holyMobs().contains(EntityType.PARROT));
+    assertFalse(themes.of(GodType.NATURE).holyMobs().contains(EntityType.CREAKING));
+    assertTrue(
+        this.debug.stream().anyMatch(message -> message.contains("happy_ghast")),
+        "Debug: " + this.debug);
+    assertTrue(
+        this.debug.stream().anyMatch(message -> message.contains("creaking")),
+        "Debug: " + this.debug);
+    assertEquals(3, this.log.warnings().size(), "Warnings: " + this.log.warnings());
+    assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("polar_bare")));
+    assertTrue(
+        this.log.warnings().stream()
+            .anyMatch(
+                warning -> warning.contains("diamond_sword") && warning.contains("not a block")));
+    assertTrue(
+        this.log.warnings().stream().anyMatch(warning -> warning.contains("end_stone_brick")));
+  }
 
-		assertFalse(themes.of(GodType.PARTY).holyMobs().contains(EntityType.HAPPY_GHAST));
-		assertTrue(themes.of(GodType.PARTY).holyMobs().contains(EntityType.PARROT));
-		assertFalse(themes.of(GodType.NATURE).holyMobs().contains(EntityType.CREAKING));
-		assertTrue(this.debug.stream().anyMatch(message -> message.contains("happy_ghast")), "Debug: " + this.debug);
-		assertTrue(this.debug.stream().anyMatch(message -> message.contains("creaking")), "Debug: " + this.debug);
-		assertEquals(3, this.log.warnings().size(), "Warnings: " + this.log.warnings());
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("polar_bare")));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("diamond_sword") && warning.contains("not a block")));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("end_stone_brick")));
-	}
+  @Test
+  void unknownSectionsAndKeysAreMentioned() throws Exception {
+    load(
+        """
+        frots:
+          holy-mobs: [fox]
+        sea:
+          holy-mob: [fox]
+          sign:
+            dye: sky
+            colour: blue
+        """);
+    assertTrue(
+        this.log.warnings().stream().anyMatch(warning -> warning.contains("frots")),
+        "Warnings: " + this.log.warnings());
+    assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("holy-mob")));
+    assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sky")));
+    assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("colour")));
+  }
 
-	@Test
-	void unknownSectionsAndKeysAreMentioned() throws Exception
-	{
-		load("""
-				frots:
-				  holy-mobs: [fox]
-				sea:
-				  holy-mob: [fox]
-				  sign:
-				    dye: sky
-				    colour: blue
-				""");
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("frots")), "Warnings: " + this.log.warnings());
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("holy-mob")));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sky")));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("colour")));
-	}
+  /** Every god type names every rank its own way; gods without a type have the generic names */
+  @Test
+  void everyGodTypeNamesItsRanks() throws Exception {
+    Themes themes = load("");
+    Theme.RankNames generic = themes.of(null).rankNames();
+    assertEquals(
+        List.of("Spirit", "Recognized", "Descended", "Exalted", "Greater God"),
+        Arrays.stream(GodRank.values()).map(generic::of).toList());
+    for (GodType type : GodType.values()) {
+      Theme.RankNames names = themes.of(type).rankNames();
+      Set<String> distinct = new HashSet<>();
+      for (GodRank rank : GodRank.values()) {
+        String name = names.of(rank);
+        assertFalse(name.isBlank(), type + " " + rank);
+        assertTrue(distinct.add(name), type + " names two ranks " + name);
+        assertFalse(name.equals(generic.of(rank)), type + " has the generic name for " + rank);
+      }
+    }
+    assertEquals("Leviathan", themes.of(GodType.SEA).rankNames().of(GodRank.GREATER));
+    assertEquals("Tide", themes.of(GodType.SEA).rankNames().of(GodRank.SPIRIT));
+  }
 
-	/** Every god type names every rank its own way; gods without a type have the generic names */
-	@Test
-	void everyGodTypeNamesItsRanks() throws Exception
-	{
-		Themes themes = load("");
-		Theme.RankNames generic = themes.of(null).rankNames();
-		assertEquals(List.of("Spirit", "Recognized", "Descended", "Exalted", "Greater God"), Arrays.stream(GodRank.values()).map(generic::of).toList());
-		for (GodType type : GodType.values())
-		{
-			Theme.RankNames names = themes.of(type).rankNames();
-			Set<String> distinct = new HashSet<>();
-			for (GodRank rank : GodRank.values())
-			{
-				String name = names.of(rank);
-				assertFalse(name.isBlank(), type + " " + rank);
-				assertTrue(distinct.add(name), type + " names two ranks " + name);
-				assertFalse(name.equals(generic.of(rank)), type + " has the generic name for " + rank);
-			}
-		}
-		assertEquals("Leviathan", themes.of(GodType.SEA).rankNames().of(GodRank.GREATER));
-		assertEquals("Tide", themes.of(GodType.SEA).rankNames().of(GodRank.SPIRIT));
-	}
+  /**
+   * Every god type names every devotion level its own way; gods without a type have the generic
+   * names
+   */
+  @Test
+  void everyGodTypeNamesItsDevotionLevels() throws Exception {
+    Themes themes = load("");
+    Theme.DevotionNames generic = themes.of(null).devotionNames();
+    assertEquals(
+        List.of("Follower", "Devotee", "Zealot", "Saint"),
+        Arrays.stream(DevotionLevel.values()).map(generic::of).toList());
+    for (GodType type : GodType.values()) {
+      Theme.DevotionNames names = themes.of(type).devotionNames();
+      Set<String> distinct = new HashSet<>();
+      for (DevotionLevel level : DevotionLevel.values()) {
+        String name = names.of(level);
+        assertFalse(name.isBlank(), type + " " + level);
+        assertTrue(distinct.add(name), type + " names two levels " + name);
+        assertFalse(name.equals(generic.of(level)), type + " has the generic name for " + level);
+      }
+    }
+    assertEquals(
+        "Saint of the Deep", themes.of(GodType.SEA).devotionNames().of(DevotionLevel.SAINT));
+  }
 
+  /** An admin's devotion names replace Gods' one by one; odd ones are mentioned */
+  @Test
+  void devotionLevelsAreRenamedOneByOne() throws Exception {
+    Themes themes =
+        load(
+            """
+            default:
+              devotion:
+                saint: Blessed One
+            frost:
+              devotion:
+                saint: Keeper of the Long Night
+                pope: Too much
+                zealot: ''
+            sun: { devotion: bright }
+            """);
+    assertEquals(
+        "Keeper of the Long Night",
+        themes.of(GodType.FROST).devotionNames().of(DevotionLevel.SAINT));
+    assertEquals("Icebearer", themes.of(GodType.FROST).devotionNames().of(DevotionLevel.ZEALOT));
+    assertEquals("Blessed One", themes.of(null).devotionNames().of(DevotionLevel.SAINT));
+    assertEquals("Radiant Saint", themes.of(GodType.SUN).devotionNames().of(DevotionLevel.SAINT));
+    assertTrue(
+        this.log.warnings().stream().anyMatch(warning -> warning.contains("pope")),
+        "Warnings: " + this.log.warnings());
+    assertTrue(
+        this.log.warnings().stream()
+            .anyMatch(warning -> warning.contains("frost.devotion.zealot")));
+    assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sun.devotion")));
+  }
 
-	/** Every god type names every devotion level its own way; gods without a type have the generic names */
-	@Test
-	void everyGodTypeNamesItsDevotionLevels() throws Exception
-	{
-		Themes themes = load("");
-		Theme.DevotionNames generic = themes.of(null).devotionNames();
-		assertEquals(List.of("Follower", "Devotee", "Zealot", "Saint"), Arrays.stream(DevotionLevel.values()).map(generic::of).toList());
-		for (GodType type : GodType.values())
-		{
-			Theme.DevotionNames names = themes.of(type).devotionNames();
-			Set<String> distinct = new HashSet<>();
-			for (DevotionLevel level : DevotionLevel.values())
-			{
-				String name = names.of(level);
-				assertFalse(name.isBlank(), type + " " + level);
-				assertTrue(distinct.add(name), type + " names two levels " + name);
-				assertFalse(name.equals(generic.of(level)), type + " has the generic name for " + level);
-			}
-		}
-		assertEquals("Saint of the Deep", themes.of(GodType.SEA).devotionNames().of(DevotionLevel.SAINT));
-	}
+  /** An admin's names replace Gods' one by one; odd ones are mentioned */
+  @Test
+  void ranksAreRenamedOneByOne() throws Exception {
+    Themes themes =
+        load(
+            """
+            default:
+              ranks:
+                greater: Mighty One
+            frost:
+              ranks:
+                greater: Ice Queen
+                godlike: Too much
+                exalted: ''
+            sun: { ranks: bright }
+            """);
+    assertEquals("Ice Queen", themes.of(GodType.FROST).rankNames().of(GodRank.GREATER));
+    assertEquals("Snowflake", themes.of(GodType.FROST).rankNames().of(GodRank.SPIRIT));
+    assertEquals("Avalanche", themes.of(GodType.FROST).rankNames().of(GodRank.EXALTED));
+    assertEquals("Mighty One", themes.of(null).rankNames().of(GodRank.GREATER));
+    assertEquals("Eternal Sun", themes.of(GodType.SUN).rankNames().of(GodRank.GREATER));
+    assertTrue(
+        this.log.warnings().stream().anyMatch(warning -> warning.contains("godlike")),
+        "Warnings: " + this.log.warnings());
+    assertTrue(
+        this.log.warnings().stream().anyMatch(warning -> warning.contains("frost.ranks.exalted")));
+    assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sun.ranks")));
+  }
 
-	/** An admin's devotion names replace Gods' one by one; odd ones are mentioned */
-	@Test
-	void devotionLevelsAreRenamedOneByOne() throws Exception
-	{
-		Themes themes = load("""
-				default:
-				  devotion:
-				    saint: Blessed One
-				frost:
-				  devotion:
-				    saint: Keeper of the Long Night
-				    pope: Too much
-				    zealot: ''
-				sun: { devotion: bright }
-				""");
-		assertEquals("Keeper of the Long Night", themes.of(GodType.FROST).devotionNames().of(DevotionLevel.SAINT));
-		assertEquals("Icebearer", themes.of(GodType.FROST).devotionNames().of(DevotionLevel.ZEALOT));
-		assertEquals("Blessed One", themes.of(null).devotionNames().of(DevotionLevel.SAINT));
-		assertEquals("Radiant Saint", themes.of(GodType.SUN).devotionNames().of(DevotionLevel.SAINT));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("pope")), "Warnings: " + this.log.warnings());
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("frost.devotion.zealot")));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sun.devotion")));
-	}
+  /**
+   * The bundled skins: signed textures that decode to a skin URL, where Gods' themes have them, and
+   * only there
+   */
+  @Test
+  void theBundledSkinsAreSignedTextures() throws Exception {
+    Themes themes = load("");
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+    assertBundledSkin(themes.defaults().npcSkins().god(), false);
+    assertBundledSkin(themes.defaults().npcSkins().goddess(), true);
+    assertBundledSkin(themes.defaults().npcSkins().deity(), false);
+    assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.EVIL).npcSkins().god(), false);
+    assertEquals(
+        themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().goddess());
+    assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.LOVE).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.LOVE).npcSkins().goddess(), false);
+    assertBundledSkin(themes.of(GodType.SEA).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.SEA).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.NATURE).npcSkins().god(), true);
+    assertBundledSkin(themes.of(GodType.NATURE).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.WAR).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.WAR).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.FROST).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.FROST).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.MOON).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.MOON).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.MOON).npcSkins().deity(), false);
+    assertBundledSkin(themes.of(GodType.SUN).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.SUN).npcSkins().goddess(), false);
+    assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().goddess(), true);
+    assertBundledSkin(themes.of(GodType.PARTY).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.CREATURES).npcSkins().god(), false);
+    assertBundledSkin(themes.of(GodType.CREATURES).npcSkins().goddess(), true);
+    // The werewolf alpha is the account WerewolfAlpha's texture
+    assertTrue(
+        new String(
+                Base64.getDecoder()
+                    .decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()),
+                StandardCharsets.UTF_8)
+            .contains("\"WerewolfAlpha\""));
+    Map<GodType, Theme.NpcSkins> expected =
+        Map.ofEntries(
+            Map.entry(
+                GodType.WEREWOLVES,
+                new Theme.NpcSkins(
+                    themes.of(GodType.WEREWOLVES).npcSkins().god(),
+                    themes.of(GodType.WEREWOLVES).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.EVIL,
+                new Theme.NpcSkins(
+                    themes.of(GodType.EVIL).npcSkins().god(),
+                    themes.of(GodType.EVIL).npcSkins().god(),
+                    null)),
+            Map.entry(
+                GodType.THUNDER,
+                new Theme.NpcSkins(
+                    themes.of(GodType.THUNDER).npcSkins().god(),
+                    themes.of(GodType.THUNDER).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.LOVE,
+                new Theme.NpcSkins(
+                    themes.of(GodType.LOVE).npcSkins().god(),
+                    themes.of(GodType.LOVE).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.SEA,
+                new Theme.NpcSkins(
+                    themes.of(GodType.SEA).npcSkins().god(),
+                    themes.of(GodType.SEA).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.NATURE,
+                new Theme.NpcSkins(
+                    themes.of(GodType.NATURE).npcSkins().god(),
+                    themes.of(GodType.NATURE).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.WAR,
+                new Theme.NpcSkins(
+                    themes.of(GodType.WAR).npcSkins().god(),
+                    themes.of(GodType.WAR).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.FROST,
+                new Theme.NpcSkins(
+                    themes.of(GodType.FROST).npcSkins().god(),
+                    themes.of(GodType.FROST).npcSkins().goddess(),
+                    null)),
+            Map.entry(GodType.MOON, themes.of(GodType.MOON).npcSkins()),
+            Map.entry(
+                GodType.SUN,
+                new Theme.NpcSkins(
+                    themes.of(GodType.SUN).npcSkins().god(),
+                    themes.of(GodType.SUN).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.WISDOM,
+                new Theme.NpcSkins(
+                    themes.of(GodType.WISDOM).npcSkins().god(),
+                    themes.of(GodType.WISDOM).npcSkins().goddess(),
+                    null)),
+            Map.entry(
+                GodType.PARTY,
+                new Theme.NpcSkins(themes.of(GodType.PARTY).npcSkins().god(), null, null)),
+            Map.entry(
+                GodType.CREATURES,
+                new Theme.NpcSkins(
+                    themes.of(GodType.CREATURES).npcSkins().god(),
+                    themes.of(GodType.CREATURES).npcSkins().goddess(),
+                    null)));
+    for (GodType type : GodType.values()) {
+      assertEquals(
+          expected.getOrDefault(type, Theme.NpcSkins.NONE),
+          themes.of(type).npcSkins(),
+          type.name());
+    }
+  }
 
-	/** An admin's names replace Gods' one by one; odd ones are mentioned */
-	@Test
-	void ranksAreRenamedOneByOne() throws Exception
-	{
-		Themes themes = load("""
-				default:
-				  ranks:
-				    greater: Mighty One
-				frost:
-				  ranks:
-				    greater: Ice Queen
-				    godlike: Too much
-				    exalted: ''
-				sun: { ranks: bright }
-				""");
-		assertEquals("Ice Queen", themes.of(GodType.FROST).rankNames().of(GodRank.GREATER));
-		assertEquals("Snowflake", themes.of(GodType.FROST).rankNames().of(GodRank.SPIRIT));
-		assertEquals("Avalanche", themes.of(GodType.FROST).rankNames().of(GodRank.EXALTED));
-		assertEquals("Mighty One", themes.of(null).rankNames().of(GodRank.GREATER));
-		assertEquals("Eternal Sun", themes.of(GodType.SUN).rankNames().of(GodRank.GREATER));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("godlike")), "Warnings: " + this.log.warnings());
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("frost.ranks.exalted")));
-		assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains("sun.ranks")));
-	}
+  /** Which bundled skin gods of each gender wear (GodNpcRules.skin over Gods' own themes) */
+  @Test
+  void eachGenderWearsTheBundledSkins() throws Exception {
+    Themes themes = load("");
+    Theme.NpcSkins defaults = themes.defaults().npcSkins();
+    Theme.NpcSkins moon = themes.of(GodType.MOON).npcSkins();
+    Theme.NpcSkins thunder = themes.of(GodType.THUNDER).npcSkins();
+    Theme.NpcSkins party = themes.of(GodType.PARTY).npcSkins();
+    // A non-binary moon god is the moon's deity, not its god
+    assertEquals(moon.deity(), GodNpcRules.skin(null, GodGender.NonBinary, moon, defaults));
+    assertEquals(moon.god(), GodNpcRules.skin(null, GodGender.Male, moon, defaults));
+    assertEquals(moon.goddess(), GodNpcRules.skin(null, GodGender.Female, moon, defaults));
+    // Thunder has no deity: its god (Zeus); party has no goddess: the default goddess
+    assertEquals(thunder.god(), GodNpcRules.skin(null, GodGender.NonBinary, thunder, defaults));
+    assertEquals(thunder.goddess(), GodNpcRules.skin(null, GodGender.Female, thunder, defaults));
+    assertEquals(defaults.goddess(), GodNpcRules.skin(null, GodGender.Female, party, defaults));
+    // A deity without a type wears the default deity
+    assertEquals(defaults.deity(), GodNpcRules.skin(null, GodGender.NonBinary, defaults, defaults));
+    assertEquals(
+        defaults.deity(),
+        GodNpcRules.skin(null, GodGender.NonBinary, Theme.NpcSkins.NONE, defaults));
+    // Every god type has a skin for every gender
+    for (GodType type : GodType.values()) {
+      for (GodGender gender : GodGender.values()) {
+        assertNotNull(
+            GodNpcRules.skin(null, gender, themes.of(type).npcSkins(), defaults),
+            type + " " + gender);
+      }
+    }
+  }
 
-	/** The bundled skins: signed textures that decode to a skin URL, where Gods' themes have them, and only there */
-	@Test
-	void theBundledSkinsAreSignedTextures() throws Exception
-	{
-		Themes themes = load("");
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-		assertBundledSkin(themes.defaults().npcSkins().god(), false);
-		assertBundledSkin(themes.defaults().npcSkins().goddess(), true);
-		assertBundledSkin(themes.defaults().npcSkins().deity(), false);
-		assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.WEREWOLVES).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.EVIL).npcSkins().god(), false);
-		assertEquals(themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().goddess());
-		assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.THUNDER).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.LOVE).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.LOVE).npcSkins().goddess(), false);
-		assertBundledSkin(themes.of(GodType.SEA).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.SEA).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.NATURE).npcSkins().god(), true);
-		assertBundledSkin(themes.of(GodType.NATURE).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.WAR).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.WAR).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.FROST).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.FROST).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.MOON).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.MOON).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.MOON).npcSkins().deity(), false);
-		assertBundledSkin(themes.of(GodType.SUN).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.SUN).npcSkins().goddess(), false);
-		assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.WISDOM).npcSkins().goddess(), true);
-		assertBundledSkin(themes.of(GodType.PARTY).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.CREATURES).npcSkins().god(), false);
-		assertBundledSkin(themes.of(GodType.CREATURES).npcSkins().goddess(), true);
-		// The werewolf alpha is the account WerewolfAlpha's texture
-		assertTrue(new String(Base64.getDecoder().decode(themes.of(GodType.WEREWOLVES).npcSkins().goddess().value()), StandardCharsets.UTF_8).contains("\"WerewolfAlpha\""));
-		Map<GodType, Theme.NpcSkins> expected = Map.ofEntries(
-				Map.entry(GodType.WEREWOLVES, new Theme.NpcSkins(themes.of(GodType.WEREWOLVES).npcSkins().god(), themes.of(GodType.WEREWOLVES).npcSkins().goddess(), null)),
-				Map.entry(GodType.EVIL, new Theme.NpcSkins(themes.of(GodType.EVIL).npcSkins().god(), themes.of(GodType.EVIL).npcSkins().god(), null)),
-				Map.entry(GodType.THUNDER, new Theme.NpcSkins(themes.of(GodType.THUNDER).npcSkins().god(), themes.of(GodType.THUNDER).npcSkins().goddess(), null)),
-				Map.entry(GodType.LOVE, new Theme.NpcSkins(themes.of(GodType.LOVE).npcSkins().god(), themes.of(GodType.LOVE).npcSkins().goddess(), null)),
-				Map.entry(GodType.SEA, new Theme.NpcSkins(themes.of(GodType.SEA).npcSkins().god(), themes.of(GodType.SEA).npcSkins().goddess(), null)),
-				Map.entry(GodType.NATURE, new Theme.NpcSkins(themes.of(GodType.NATURE).npcSkins().god(), themes.of(GodType.NATURE).npcSkins().goddess(), null)),
-				Map.entry(GodType.WAR, new Theme.NpcSkins(themes.of(GodType.WAR).npcSkins().god(), themes.of(GodType.WAR).npcSkins().goddess(), null)),
-				Map.entry(GodType.FROST, new Theme.NpcSkins(themes.of(GodType.FROST).npcSkins().god(), themes.of(GodType.FROST).npcSkins().goddess(), null)),
-				Map.entry(GodType.MOON, themes.of(GodType.MOON).npcSkins()),
-				Map.entry(GodType.SUN, new Theme.NpcSkins(themes.of(GodType.SUN).npcSkins().god(), themes.of(GodType.SUN).npcSkins().goddess(), null)),
-				Map.entry(GodType.WISDOM, new Theme.NpcSkins(themes.of(GodType.WISDOM).npcSkins().god(), themes.of(GodType.WISDOM).npcSkins().goddess(), null)),
-				Map.entry(GodType.PARTY, new Theme.NpcSkins(themes.of(GodType.PARTY).npcSkins().god(), null, null)),
-				Map.entry(GodType.CREATURES, new Theme.NpcSkins(themes.of(GodType.CREATURES).npcSkins().god(), themes.of(GodType.CREATURES).npcSkins().goddess(), null)));
-		for (GodType type : GodType.values())
-		{
-			assertEquals(expected.getOrDefault(type, Theme.NpcSkins.NONE), themes.of(type).npcSkins(), type.name());
-		}
-	}
+  private static void assertBundledSkin(NpcSkin skin, boolean slim) {
+    assertNotNull(skin);
+    assertTrue(skin.isSigned() && skin.name() == null, skin.toString());
+    String json = new String(Base64.getDecoder().decode(skin.value()), StandardCharsets.UTF_8);
+    com.google.gson.JsonObject textures =
+        com.google.gson.JsonParser.parseString(json).getAsJsonObject().getAsJsonObject("textures");
+    assertTrue(
+        textures
+            .getAsJsonObject("SKIN")
+            .get("url")
+            .getAsString()
+            .startsWith("http://textures.minecraft.net/texture/"),
+        json);
+    SkinTextures.Texture texture = SkinTextures.decode(skin.value());
+    assertNotNull(texture);
+    assertEquals(slim, texture.slim(), json);
+  }
 
-	/** Which bundled skin gods of each gender wear (GodNpcRules.skin over Gods' own themes) */
-	@Test
-	void eachGenderWearsTheBundledSkins() throws Exception
-	{
-		Themes themes = load("");
-		Theme.NpcSkins defaults = themes.defaults().npcSkins();
-		Theme.NpcSkins moon = themes.of(GodType.MOON).npcSkins();
-		Theme.NpcSkins thunder = themes.of(GodType.THUNDER).npcSkins();
-		Theme.NpcSkins party = themes.of(GodType.PARTY).npcSkins();
-		// A non-binary moon god is the moon's deity, not its god
-		assertEquals(moon.deity(), GodNpcRules.skin(null, GodGender.NonBinary, moon, defaults));
-		assertEquals(moon.god(), GodNpcRules.skin(null, GodGender.Male, moon, defaults));
-		assertEquals(moon.goddess(), GodNpcRules.skin(null, GodGender.Female, moon, defaults));
-		// Thunder has no deity: its god (Zeus); party has no goddess: the default goddess
-		assertEquals(thunder.god(), GodNpcRules.skin(null, GodGender.NonBinary, thunder, defaults));
-		assertEquals(thunder.goddess(), GodNpcRules.skin(null, GodGender.Female, thunder, defaults));
-		assertEquals(defaults.goddess(), GodNpcRules.skin(null, GodGender.Female, party, defaults));
-		// A deity without a type wears the default deity
-		assertEquals(defaults.deity(), GodNpcRules.skin(null, GodGender.NonBinary, defaults, defaults));
-		assertEquals(defaults.deity(), GodNpcRules.skin(null, GodGender.NonBinary, Theme.NpcSkins.NONE, defaults));
-		// Every god type has a skin for every gender
-		for (GodType type : GodType.values())
-		{
-			for (GodGender gender : GodGender.values())
-			{
-				assertNotNull(GodNpcRules.skin(null, gender, themes.of(type).npcSkins(), defaults), type + " " + gender);
-			}
-		}
-	}
+  private static String texture(String id) {
+    return SkinTextures.encode(
+        new SkinTextures.Texture("http://textures.minecraft.net/texture/" + id, false));
+  }
 
-	private static void assertBundledSkin(NpcSkin skin, boolean slim)
-	{
-		assertNotNull(skin);
-		assertTrue(skin.isSigned() && skin.name() == null, skin.toString());
-		String json = new String(Base64.getDecoder().decode(skin.value()), StandardCharsets.UTF_8);
-		com.google.gson.JsonObject textures = com.google.gson.JsonParser.parseString(json).getAsJsonObject().getAsJsonObject("textures");
-		assertTrue(textures.getAsJsonObject("SKIN").get("url").getAsString().startsWith("http://textures.minecraft.net/texture/"), json);
-		SkinTextures.Texture texture = SkinTextures.decode(skin.value());
-		assertNotNull(texture);
-		assertEquals(slim, texture.slim(), json);
-	}
+  /**
+   * A signed texture per gender; a section doesn't take the default section's (that is
+   * GodNpcRules.skin's)
+   */
+  @Test
+  void npcSkinsArePerGender() throws Exception {
+    String god = texture("god");
+    String goddess = texture("goddess");
+    String deity = texture("deity");
+    Themes themes =
+        load(
+            """
+            moon:
+              npc:
+                skin:
+                  god:
+                    value: %s
+                    signature: sig0
+                  goddess:
+                    value: %s
+                    signature: sig1
+                  deity:
+                    value: %s
+                    signature: sig2
+            """
+                .formatted(god, goddess, deity));
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+    assertEquals(
+        new Theme.NpcSkins(
+            new NpcSkin(null, god, "sig0"),
+            new NpcSkin(null, goddess, "sig1"),
+            new NpcSkin(null, deity, "sig2")),
+        themes.of(GodType.MOON).npcSkins());
+    // Party has only a god: it doesn't take the default section's goddess and deity
+    assertNull(themes.of(GodType.PARTY).npcSkins().goddess());
+    assertNull(themes.of(GodType.PARTY).npcSkins().deity());
+  }
 
-	private static String texture(String id)
-	{
-		return SkinTextures.encode(new SkinTextures.Texture("http://textures.minecraft.net/texture/" + id, false));
-	}
+  /**
+   * The admin's file replaces each gender entry it lists, keeps the others; '' removes one, skin:
+   * '' all
+   */
+  @Test
+  void overridesReplaceSkinsPerGender() throws Exception {
+    Themes bundledThemes = load("");
+    NpcSkin werewolfGod = bundledThemes.of(GodType.WEREWOLVES).npcSkins().god();
+    NpcSkin defaultGoddess = bundledThemes.defaults().npcSkins().goddess();
+    NpcSkin defaultDeity = bundledThemes.defaults().npcSkins().deity();
+    NpcSkin evil = bundledThemes.of(GodType.EVIL).npcSkins().god();
+    String mine = texture("mine");
+    Themes themes =
+        load(
+            """
+            werewolves:
+              npc:
+                skin:
+                  goddess:
+                    value: %1$s
+                    signature: sig
+                  deity:
+                    value: %1$s
+                    signature: sig
+            default:
+              npc:
+                skin:
+                  god: ''
+            evil:
+              npc:
+                skin:
+                  god:
+                    value: %1$s
+                    signature: sig
+            thunder:
+              npc:
+                skin: ''
+            """
+                .formatted(mine));
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+    NpcSkin own = new NpcSkin(null, mine, "sig");
+    assertEquals(
+        new Theme.NpcSkins(werewolfGod, own, own), themes.of(GodType.WEREWOLVES).npcSkins());
+    assertEquals(
+        new Theme.NpcSkins(null, defaultGoddess, defaultDeity), themes.defaults().npcSkins());
+    assertEquals(new Theme.NpcSkins(own, evil, null), themes.of(GodType.EVIL).npcSkins());
+    assertTrue(themes.of(GodType.THUNDER).npcSkins().isEmpty());
+  }
 
-	/** A signed texture per gender; a section doesn't take the default section's (that is GodNpcRules.skin's) */
-	@Test
-	void npcSkinsArePerGender() throws Exception
-	{
-		String god = texture("god");
-		String goddess = texture("goddess");
-		String deity = texture("deity");
-		Themes themes = load("""
-				moon:
-				  npc:
-				    skin:
-				      god:
-				        value: %s
-				        signature: sig0
-				      goddess:
-				        value: %s
-				        signature: sig1
-				      deity:
-				        value: %s
-				        signature: sig2
-				""".formatted(god, goddess, deity));
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-		assertEquals(new Theme.NpcSkins(new NpcSkin(null, god, "sig0"), new NpcSkin(null, goddess, "sig1"), new NpcSkin(null, deity, "sig2")), themes.of(GodType.MOON).npcSkins());
-		// Party has only a god: it doesn't take the default section's goddess and deity
-		assertNull(themes.of(GodType.PARTY).npcSkins().goddess());
-		assertNull(themes.of(GodType.PARTY).npcSkins().deity());
-	}
+  /**
+   * Player names, textures without a signature, values that aren't textures and a texture without a
+   * gender are warned about (once, with a hint) and ignored
+   */
+  @Test
+  void badNpcSkinsAreMentionedAndIgnored() throws Exception {
+    Themes bundledThemes = load("");
+    this.log.warnings().clear();
+    Themes themes =
+        load(
+            """
+            sun:
+              npc:
+                skin: Notch
+            werewolves:
+              npc:
+                skin:
+                  god: Notch
+                  godess:
+                    value: %s
+                    signature: sig
+            love:
+              npc:
+                skin:
+                  goddess:
+                    value: %s
+            party:
+              npc:
+                skin:
+                  deity:
+                    name: Notch
+            creatures:
+              npc:
+                skin:
+                  deity:
+                    value: not-a-texture
+                    signature: sig
+                  add: [Notch]
+            wisdom:
+              npc:
+                skin:
+                  value: %s
+                  signature: sig
+            moon:
+              npc: Notch
+            sea:
+              npc:
+                skn: Notch
+            """
+                .formatted(texture("a"), texture("b"), texture("c")));
+    assertEquals(bundledThemes.of(GodType.SUN).npcSkins(), themes.of(GodType.SUN).npcSkins());
+    assertEquals(
+        bundledThemes.of(GodType.WEREWOLVES).npcSkins(), themes.of(GodType.WEREWOLVES).npcSkins());
+    // Gods' own love goddess stays
+    assertEquals(bundledThemes.of(GodType.LOVE).npcSkins(), themes.of(GodType.LOVE).npcSkins());
+    assertEquals(bundledThemes.of(GodType.PARTY).npcSkins(), themes.of(GodType.PARTY).npcSkins());
+    assertEquals(
+        bundledThemes.of(GodType.CREATURES).npcSkins(), themes.of(GodType.CREATURES).npcSkins());
+    // A skin without a gender is ignored, so Gods' own wisdom god stays
+    assertEquals(bundledThemes.of(GodType.WISDOM).npcSkins(), themes.of(GodType.WISDOM).npcSkins());
+    for (String expected :
+        new String[] {
+          "sun.npc.skin is a player name ('Notch')",
+          "werewolves.npc.skin.god is a player name",
+          "godess",
+          "love.npc.skin.goddess has no signature",
+          "party.npc.skin.deity is a player name",
+          "creatures.npc.skin.deity.value is not a skin texture",
+          "'add'",
+          "wisdom.npc.skin needs a skin per gender",
+          "moon.npc",
+          "skn"
+        }) {
+      assertTrue(
+          this.log.warnings().stream().anyMatch(warning -> warning.contains(expected)),
+          expected + " in " + this.log.warnings());
+    }
+    assertTrue(
+        this.log.warnings().stream()
+            .filter(warning -> warning.contains("player name") || warning.contains("no signature"))
+            .allMatch(
+                warning -> warning.contains("mineskin.org") && warning.contains("/g godskin")),
+        "" + this.log.warnings());
+    // Once each
+    assertEquals(
+        1,
+        this.log.warnings().stream().filter(warning -> warning.contains("sun.npc.skin")).count());
+  }
 
-	/** The admin's file replaces each gender entry it lists, keeps the others; '' removes one, skin: '' all */
-	@Test
-	void overridesReplaceSkinsPerGender() throws Exception
-	{
-		Themes bundledThemes = load("");
-		NpcSkin werewolfGod = bundledThemes.of(GodType.WEREWOLVES).npcSkins().god();
-		NpcSkin defaultGoddess = bundledThemes.defaults().npcSkins().goddess();
-		NpcSkin defaultDeity = bundledThemes.defaults().npcSkins().deity();
-		NpcSkin evil = bundledThemes.of(GodType.EVIL).npcSkins().god();
-		String mine = texture("mine");
-		Themes themes = load("""
-				werewolves:
-				  npc:
-				    skin:
-				      goddess:
-				        value: %1$s
-				        signature: sig
-				      deity:
-				        value: %1$s
-				        signature: sig
-				default:
-				  npc:
-				    skin:
-				      god: ''
-				evil:
-				  npc:
-				    skin:
-				      god:
-				        value: %1$s
-				        signature: sig
-				thunder:
-				  npc:
-				    skin: ''
-				""".formatted(mine));
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-		NpcSkin own = new NpcSkin(null, mine, "sig");
-		assertEquals(new Theme.NpcSkins(werewolfGod, own, own), themes.of(GodType.WEREWOLVES).npcSkins());
-		assertEquals(new Theme.NpcSkins(null, defaultGoddess, defaultDeity), themes.defaults().npcSkins());
-		assertEquals(new Theme.NpcSkins(own, evil, null), themes.of(GodType.EVIL).npcSkins());
-		assertTrue(themes.of(GodType.THUNDER).npcSkins().isEmpty());
-	}
+  /** config.yml's altars.block-types wins for the god types it lists, even with an empty list */
+  @Test
+  void configuredAltarBlocksReplaceTheThemes() throws Exception {
+    Map<GodType, List<Material>> configured = new EnumMap<>(GodType.class);
+    configured.put(GodType.FROST, List.of(Material.ICE));
+    configured.put(GodType.SEA, List.of());
+    Themes themes =
+        new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add)
+            .load(bundled(), new YamlConfiguration(), Settings.Altars.of(configured));
 
-	/**
-	 * Player names, textures without a signature, values that aren't textures and a texture without a gender are
-	 * warned about (once, with a hint) and ignored
-	 */
-	@Test
-	void badNpcSkinsAreMentionedAndIgnored() throws Exception
-	{
-		Themes bundledThemes = load("");
-		this.log.warnings().clear();
-		Themes themes = load("""
-				sun:
-				  npc:
-				    skin: Notch
-				werewolves:
-				  npc:
-				    skin:
-				      god: Notch
-				      godess:
-				        value: %s
-				        signature: sig
-				love:
-				  npc:
-				    skin:
-				      goddess:
-				        value: %s
-				party:
-				  npc:
-				    skin:
-				      deity:
-				        name: Notch
-				creatures:
-				  npc:
-				    skin:
-				      deity:
-				        value: not-a-texture
-				        signature: sig
-				      add: [Notch]
-				wisdom:
-				  npc:
-				    skin:
-				      value: %s
-				      signature: sig
-				moon:
-				  npc: Notch
-				sea:
-				  npc:
-				    skn: Notch
-				""".formatted(texture("a"), texture("b"), texture("c")));
-		assertEquals(bundledThemes.of(GodType.SUN).npcSkins(), themes.of(GodType.SUN).npcSkins());
-		assertEquals(bundledThemes.of(GodType.WEREWOLVES).npcSkins(), themes.of(GodType.WEREWOLVES).npcSkins());
-		// Gods' own love goddess stays
-		assertEquals(bundledThemes.of(GodType.LOVE).npcSkins(), themes.of(GodType.LOVE).npcSkins());
-		assertEquals(bundledThemes.of(GodType.PARTY).npcSkins(), themes.of(GodType.PARTY).npcSkins());
-		assertEquals(bundledThemes.of(GodType.CREATURES).npcSkins(), themes.of(GodType.CREATURES).npcSkins());
-		// A skin without a gender is ignored, so Gods' own wisdom god stays
-		assertEquals(bundledThemes.of(GodType.WISDOM).npcSkins(), themes.of(GodType.WISDOM).npcSkins());
-		for (String expected : new String[] { "sun.npc.skin is a player name ('Notch')", "werewolves.npc.skin.god is a player name", "godess",
-				"love.npc.skin.goddess has no signature", "party.npc.skin.deity is a player name", "creatures.npc.skin.deity.value is not a skin texture", "'add'",
-				"wisdom.npc.skin needs a skin per gender", "moon.npc", "skn" })
-		{
-			assertTrue(this.log.warnings().stream().anyMatch(warning -> warning.contains(expected)), expected + " in " + this.log.warnings());
-		}
-		assertTrue(this.log.warnings().stream().filter(warning -> warning.contains("player name") || warning.contains("no signature"))
-				.allMatch(warning -> warning.contains("mineskin.org") && warning.contains("/g godskin")), "" + this.log.warnings());
-		// Once each
-		assertEquals(1, this.log.warnings().stream().filter(warning -> warning.contains("sun.npc.skin")).count());
-	}
+    assertEquals(List.of(Material.ICE), themes.altars().blocksFor(GodType.FROST));
+    assertEquals(List.of(), themes.altars().blocksFor(GodType.SEA));
+    assertEquals(List.of(), themes.altars().godTypesFor(Material.SNOW_BLOCK));
+    assertEquals(List.of(), themes.altars().godTypesFor(Material.LAPIS_BLOCK));
+    assertEquals(List.of(GodType.MOON), themes.altars().godTypesFor(Material.PURPUR_BLOCK));
+  }
 
-	/** config.yml's altars.block-types wins for the god types it lists, even with an empty list */
-	@Test
-	void configuredAltarBlocksReplaceTheThemes() throws Exception
-	{
-		Map<GodType, List<Material>> configured = new EnumMap<>(GodType.class);
-		configured.put(GodType.FROST, List.of(Material.ICE));
-		configured.put(GodType.SEA, List.of());
-		Themes themes = new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add).load(bundled(), new YamlConfiguration(), Settings.Altars.of(configured));
+  /**
+   * Every god type has its own effects: a symbol and, for each mood, particles, sounds and colors
+   */
+  @Test
+  void everyGodTypeHasEffects() throws Exception {
+    Themes themes = load("");
+    for (GodType type : GodType.values()) {
+      Theme.Effects effects = themes.of(type).effects();
+      assertFalse(effects.symbol().isBlank(), type + " symbol");
+      for (Theme.EffectMood mood : Theme.EffectMood.values()) {
+        Theme.EffectStyle style = effects.of(mood);
+        assertFalse(style.particles().isEmpty(), type + " " + mood + " particles");
+        assertFalse(style.sounds().isEmpty(), type + " " + mood + " sounds");
+        assertFalse(style.colors().isEmpty(), type + " " + mood + " colors");
+        style
+            .particles()
+            .forEach(
+                particle -> assertTrue(ThemesLoader.isShowable(particle), type + " " + particle));
+      }
+      assertFalse(effects.equals(themes.of(null).effects()), type + " has the default effects");
+    }
+    Theme.Effects frost = themes.of(GodType.FROST).effects();
+    assertEquals("❄", frost.symbol());
+    assertTrue(frost.of(Theme.EffectMood.PLEASED).particles().contains(Particle.SNOWFLAKE));
+    assertTrue(
+        frost
+            .of(Theme.EffectMood.PLEASED)
+            .sounds()
+            .contains("minecraft:block.amethyst_block.chime"));
+    assertEquals(Color.fromRGB(0xAEE8FF), frost.of(Theme.EffectMood.PLEASED).colors().get(0));
+  }
 
-		assertEquals(List.of(Material.ICE), themes.altars().blocksFor(GodType.FROST));
-		assertEquals(List.of(), themes.altars().blocksFor(GodType.SEA));
-		assertEquals(List.of(), themes.altars().godTypesFor(Material.SNOW_BLOCK));
-		assertEquals(List.of(), themes.altars().godTypesFor(Material.LAPIS_BLOCK));
-		assertEquals(List.of(GodType.MOON), themes.altars().godTypesFor(Material.PURPUR_BLOCK));
-	}
+  /**
+   * Every sound the bundled themes name exists in the newest API (a sound's constant is its id in
+   * upper case with _ for .), except the ones named for older servers next to a newer one
+   */
+  @Test
+  void everyBundledSoundExists() throws Exception {
+    Set<String> olderOnly = Set.of("entity.wolf.howl");
+    YamlConfiguration bundled = bundled();
+    List<String> missing = new ArrayList<>();
+    for (String key : bundled.getKeys(true)) {
+      if (!key.endsWith(".sounds")) {
+        continue;
+      }
+      for (String sound : bundled.getStringList(key)) {
+        try {
+          assertNotNull(
+              org.bukkit.Sound.class.getField(
+                  sound.toUpperCase(java.util.Locale.ROOT).replace('.', '_')));
+        } catch (NoSuchFieldException ex) {
+          if (!olderOnly.contains(sound)) {
+            missing.add(key + ": " + sound);
+          }
+        }
+      }
+    }
+    assertTrue(missing.isEmpty(), "" + missing);
+  }
 
+  @Test
+  void effectsAreChangedLikeTheOtherLists() throws Exception {
+    Themes themes =
+        load(
+            """
+            frost:
+              effects:
+                symbol: "*"
+                pleased:
+                  particles: [cloud, minecraft:end_rod]
+                  sounds:
+                    add: [block.bell.use]
+                  colors: ["#FF0000", red]
+            """);
+    Theme.Effects frost = themes.of(GodType.FROST).effects();
+    Theme.Effects bundled = load("").of(GodType.FROST).effects();
+    assertEquals("*", frost.symbol());
+    assertEquals(
+        List.of(Particle.CLOUD, Particle.END_ROD), frost.of(Theme.EffectMood.PLEASED).particles());
+    assertTrue(
+        frost
+            .of(Theme.EffectMood.PLEASED)
+            .sounds()
+            .containsAll(bundled.of(Theme.EffectMood.PLEASED).sounds()));
+    assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().contains("minecraft:block.bell.use"));
+    assertEquals(
+        List.of(Color.fromRGB(0xFF0000), DyeColor.RED.getColor()),
+        frost.of(Theme.EffectMood.PLEASED).colors());
+    // The rest stays Gods' own
+    assertEquals(bundled.of(Theme.EffectMood.ANGRY), frost.of(Theme.EffectMood.ANGRY));
+    assertEquals(load("").of(GodType.SEA), themes.of(GodType.SEA));
+    assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
+  }
 
-	/** Every god type has its own effects: a symbol and, for each mood, particles, sounds and colors */
-	@Test
-	void everyGodTypeHasEffects() throws Exception
-	{
-		Themes themes = load("");
-		for (GodType type : GodType.values())
-		{
-			Theme.Effects effects = themes.of(type).effects();
-			assertFalse(effects.symbol().isBlank(), type + " symbol");
-			for (Theme.EffectMood mood : Theme.EffectMood.values())
-			{
-				Theme.EffectStyle style = effects.of(mood);
-				assertFalse(style.particles().isEmpty(), type + " " + mood + " particles");
-				assertFalse(style.sounds().isEmpty(), type + " " + mood + " sounds");
-				assertFalse(style.colors().isEmpty(), type + " " + mood + " colors");
-				style.particles().forEach(particle -> assertTrue(ThemesLoader.isShowable(particle), type + " " + particle));
-			}
-			assertFalse(effects.equals(themes.of(null).effects()), type + " has the default effects");
-		}
-		Theme.Effects frost = themes.of(GodType.FROST).effects();
-		assertEquals("❄", frost.symbol());
-		assertTrue(frost.of(Theme.EffectMood.PLEASED).particles().contains(Particle.SNOWFLAKE));
-		assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().contains("minecraft:block.amethyst_block.chime"));
-		assertEquals(Color.fromRGB(0xAEE8FF), frost.of(Theme.EffectMood.PLEASED).colors().get(0));
-	}
+  /** A god type that leaves out effects gets the default's */
+  @Test
+  void theDefaultFillsTheEffects() throws Exception {
+    YamlConfiguration bundled =
+        TestConfigs.yaml(
+            """
+            default:
+              effects:
+                symbol: "+"
+                angry:
+                  particles: [smoke]
+            sea:
+              effects:
+                angry:
+                  sounds: [entity.guardian.ambient]
+            """);
+    Themes themes =
+        new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add)
+            .load(bundled, new YamlConfiguration(), Settings.Altars.of(Map.of()));
+    Theme.Effects sea = themes.of(GodType.SEA).effects();
+    assertEquals("+", sea.symbol());
+    assertEquals(List.of(Particle.SMOKE), sea.of(Theme.EffectMood.ANGRY).particles());
+    assertEquals(
+        List.of("minecraft:entity.guardian.ambient"), sea.of(Theme.EffectMood.ANGRY).sounds());
+    assertEquals(Theme.EffectStyle.NONE, sea.of(Theme.EffectMood.PLEASED));
+  }
 
-	/**
-	 * Every sound the bundled themes name exists in the newest API (a sound's constant is its id in upper case with _
-	 * for .), except the ones named for older servers next to a newer one
-	 */
-	@Test
-	void everyBundledSoundExists() throws Exception
-	{
-		Set<String> olderOnly = Set.of("entity.wolf.howl");
-		YamlConfiguration bundled = bundled();
-		List<String> missing = new ArrayList<>();
-		for (String key : bundled.getKeys(true))
-		{
-			if (!key.endsWith(".sounds"))
-			{
-				continue;
-			}
-			for (String sound : bundled.getStringList(key))
-			{
-				try
-				{
-					assertNotNull(org.bukkit.Sound.class.getField(sound.toUpperCase(java.util.Locale.ROOT).replace('.', '_')));
-				}
-				catch (NoSuchFieldException ex)
-				{
-					if (!olderOnly.contains(sound))
-					{
-						missing.add(key + ": " + sound);
-					}
-				}
-			}
-		}
-		assertTrue(missing.isEmpty(), "" + missing);
-	}
+  @Test
+  void unknownEffectsAreMentioned() throws Exception {
+    load(
+        """
+        sea:
+          effects:
+            happy:
+              particles: [end_rod]
+            pleased:
+              particle: [end_rod]
+              particles: [not_a_particle, block, end_rod]
+              colors: [sky, "#12345"]
+        """);
+    List<String> warnings = this.log.warnings();
+    assertTrue(
+        warnings.stream().anyMatch(warning -> warning.contains("'happy'")),
+        "Warnings: " + warnings);
+    assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'particle'")));
+    assertTrue(warnings.stream().anyMatch(warning -> warning.contains("not_a_particle")));
+    assertTrue(
+        warnings.stream()
+            .anyMatch(warning -> warning.contains("'block'") && warning.contains("needs a block")));
+    assertTrue(warnings.stream().anyMatch(warning -> warning.contains("sky")));
+    assertTrue(warnings.stream().anyMatch(warning -> warning.contains("#12345")));
+  }
 
-	@Test
-	void effectsAreChangedLikeTheOtherLists() throws Exception
-	{
-		Themes themes = load("""
-				frost:
-				  effects:
-				    symbol: "*"
-				    pleased:
-				      particles: [cloud, minecraft:end_rod]
-				      sounds:
-				        add: [block.bell.use]
-				      colors: ["#FF0000", red]
-				""");
-		Theme.Effects frost = themes.of(GodType.FROST).effects();
-		Theme.Effects bundled = load("").of(GodType.FROST).effects();
-		assertEquals("*", frost.symbol());
-		assertEquals(List.of(Particle.CLOUD, Particle.END_ROD), frost.of(Theme.EffectMood.PLEASED).particles());
-		assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().containsAll(bundled.of(Theme.EffectMood.PLEASED).sounds()));
-		assertTrue(frost.of(Theme.EffectMood.PLEASED).sounds().contains("minecraft:block.bell.use"));
-		assertEquals(List.of(Color.fromRGB(0xFF0000), DyeColor.RED.getColor()), frost.of(Theme.EffectMood.PLEASED).colors());
-		// The rest stays Gods' own
-		assertEquals(bundled.of(Theme.EffectMood.ANGRY), frost.of(Theme.EffectMood.ANGRY));
-		assertEquals(load("").of(GodType.SEA), themes.of(GodType.SEA));
-		assertTrue(this.log.warnings().isEmpty(), "Warnings: " + this.log.warnings());
-	}
+  /** Colors are dye colors or #RRGGBB */
+  @Test
+  void colorsAreParsed() {
+    assertEquals(DyeColor.LIGHT_BLUE.getColor(), ThemesLoader.color("light_blue"));
+    assertEquals(Color.fromRGB(0xAEE8FF), ThemesLoader.color("#aee8ff"));
+    assertNull(ThemesLoader.color("#xyz123"));
+    assertNull(ThemesLoader.color("sky"));
+  }
 
-	/** A god type that leaves out effects gets the default's */
-	@Test
-	void theDefaultFillsTheEffects() throws Exception
-	{
-		YamlConfiguration bundled = TestConfigs.yaml("""
-				default:
-				  effects:
-				    symbol: "+"
-				    angry:
-				      particles: [smoke]
-				sea:
-				  effects:
-				    angry:
-				      sounds: [entity.guardian.ambient]
-				""");
-		Themes themes = new ThemesLoader(namesWithout(Set.of(), Set.of()), this.log.logger(), this.debug::add).load(bundled, new YamlConfiguration(), Settings.Altars.of(Map.of()));
-		Theme.Effects sea = themes.of(GodType.SEA).effects();
-		assertEquals("+", sea.symbol());
-		assertEquals(List.of(Particle.SMOKE), sea.of(Theme.EffectMood.ANGRY).particles());
-		assertEquals(List.of("minecraft:entity.guardian.ambient"), sea.of(Theme.EffectMood.ANGRY).sounds());
-		assertEquals(Theme.EffectStyle.NONE, sea.of(Theme.EffectMood.PLEASED));
-	}
+  @Test
+  void theVersionNamesAreBundled() throws Exception {
+    Set<String> names = ThemesLoader.readVersionNames(TestConfigs::resource);
+    assertTrue(
+        names.containsAll(Set.of("HAPPY_GHAST", "COPPER_GOLEM", "COPPER_TORCH", "COPPER_LANTERN")),
+        "" + names.size());
+    assertFalse(names.contains("POLAR_BEAR"));
+  }
 
-	@Test
-	void unknownEffectsAreMentioned() throws Exception
-	{
-		load("""
-				sea:
-				  effects:
-				    happy:
-				      particles: [end_rod]
-				    pleased:
-				      particle: [end_rod]
-				      particles: [not_a_particle, block, end_rod]
-				      colors: [sky, "#12345"]
-				""");
-		List<String> warnings = this.log.warnings();
-		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'happy'")), "Warnings: " + warnings);
-		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'particle'")));
-		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("not_a_particle")));
-		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("'block'") && warning.contains("needs a block")));
-		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("sky")));
-		assertTrue(warnings.stream().anyMatch(warning -> warning.contains("#12345")));
-	}
-
-	/** Colors are dye colors or #RRGGBB */
-	@Test
-	void colorsAreParsed()
-	{
-		assertEquals(DyeColor.LIGHT_BLUE.getColor(), ThemesLoader.color("light_blue"));
-		assertEquals(Color.fromRGB(0xAEE8FF), ThemesLoader.color("#aee8ff"));
-		assertNull(ThemesLoader.color("#xyz123"));
-		assertNull(ThemesLoader.color("sky"));
-	}
-
-	@Test
-	void theVersionNamesAreBundled() throws Exception
-	{
-		Set<String> names = ThemesLoader.readVersionNames(TestConfigs::resource);
-		assertTrue(names.containsAll(Set.of("HAPPY_GHAST", "COPPER_GOLEM", "COPPER_TORCH", "COPPER_LANTERN")), "" + names.size());
-		assertFalse(names.contains("POLAR_BEAR"));
-	}
-
-	@Test
-	void namesAreNormalized()
-	{
-		assertEquals("COOKED_COD", ThemesLoader.normalize(" minecraft:cooked_cod "));
-		assertEquals("COOKED_COD", ThemesLoader.normalize("Cooked-Cod"));
-		assertEquals("COOKED_COD", ThemesLoader.normalize("cooked cod"));
-	}
+  @Test
+  void namesAreNormalized() {
+    assertEquals("COOKED_COD", ThemesLoader.normalize(" minecraft:cooked_cod "));
+    assertEquals("COOKED_COD", ThemesLoader.normalize("Cooked-Cod"));
+    assertEquals("COOKED_COD", ThemesLoader.normalize("cooked cod"));
+  }
 }

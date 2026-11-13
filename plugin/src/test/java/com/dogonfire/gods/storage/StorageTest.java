@@ -15,352 +15,351 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class StorageTest
-{
-	private static final Logger	LOG		= Logger.getAnonymousLogger();
-	private static final String	BROKEN	= "Thor:\n  Priests: [unclosed\n";
+class StorageTest {
+  private static final Logger LOG = Logger.getAnonymousLogger();
+  private static final String BROKEN = "Thor:\n  Priests: [unclosed\n";
 
-	@TempDir
-	Path						dir;
+  @TempDir Path dir;
 
-	/** Writes queued here run only when the test says so */
-	private final List<Runnable>	queued	= new ArrayList<>();
+  /** Writes queued here run only when the test says so */
+  private final List<Runnable> queued = new ArrayList<>();
 
-	private DataFile queuedFile(String name)
-	{
-		return new DataFile(this.dir.resolve(name), LOG, this.queued::add, null);
-	}
+  private DataFile queuedFile(String name) {
+    return new DataFile(this.dir.resolve(name), LOG, this.queued::add, null);
+  }
 
-	private void runQueued()
-	{
-		List<Runnable> writes = new ArrayList<>(this.queued);
-		this.queued.clear();
-		writes.forEach(Runnable::run);
-	}
+  private void runQueued() {
+    List<Runnable> writes = new ArrayList<>(this.queued);
+    this.queued.clear();
+    writes.forEach(Runnable::run);
+  }
 
-	private Storage storage()
-	{
-		return new Storage(this.dir, LOG, Executors.newSingleThreadExecutor());
-	}
+  private Storage storage() {
+    return new Storage(this.dir, LOG, Executors.newSingleThreadExecutor());
+  }
 
-	private List<String> filesInDir() throws IOException
-	{
-		try (Stream<Path> files = Files.list(this.dir))
-		{
-			return files.map(path -> path.getFileName().toString()).sorted().toList();
-		}
-	}
+  private List<String> filesInDir() throws IOException {
+    try (Stream<Path> files = Files.list(this.dir)) {
+      return files.map(path -> path.getFileName().toString()).sorted().toList();
+    }
+  }
 
-	@Test
-	void savedDataLoadsBack()
-	{
-		Storage storage = storage();
-		storage.quests().load();
-		storage.quests().getOrCreate("Thor").setAmount(42);
-		storage.quests().getOrCreate("Thor").setPlayers(List.of("8667ba71-b85a-4004-af54-457a9734eed7"));
-		storage.quests().markDirty();
-		storage.close();
+  @Test
+  void savedDataLoadsBack() {
+    Storage storage = storage();
+    storage.quests().load();
+    storage.quests().getOrCreate("Thor").setAmount(42);
+    storage
+        .quests()
+        .getOrCreate("Thor")
+        .setPlayers(List.of("8667ba71-b85a-4004-af54-457a9734eed7"));
+    storage.quests().markDirty();
+    storage.close();
 
-		Storage again = storage();
-		assertTrue(again.quests().load());
-		assertEquals(42, again.quests().find("Thor").amount());
-		assertEquals(List.of("8667ba71-b85a-4004-af54-457a9734eed7"), again.quests().find("Thor").players());
-		again.close();
-	}
+    Storage again = storage();
+    assertTrue(again.quests().load());
+    assertEquals(42, again.quests().find("Thor").amount());
+    assertEquals(
+        List.of("8667ba71-b85a-4004-af54-457a9734eed7"), again.quests().find("Thor").players());
+    again.close();
+  }
 
-	@Test
-	void missingFileIsEmptyAndNotWrittenUntilChanged() throws IOException
-	{
-		Storage storage = storage();
-		assertTrue(storage.bibles().load());
-		assertEquals(0, storage.bibles().size());
-		storage.flush();
-		storage.close();
+  @Test
+  void missingFileIsEmptyAndNotWrittenUntilChanged() throws IOException {
+    Storage storage = storage();
+    assertTrue(storage.bibles().load());
+    assertEquals(0, storage.bibles().size());
+    storage.flush();
+    storage.close();
 
-		assertEquals(List.of(), filesInDir());
-	}
+    assertEquals(List.of(), filesInDir());
+  }
 
-	@Test
-	void flushWritesWhatTheDataWasAtTheTimeThroughATempFile() throws IOException
-	{
-		DataFile file = queuedFile("quests.yml");
-		file.load();
-		file.yaml().set("Thor.Amount", 1);
-		file.save();
+  @Test
+  void flushWritesWhatTheDataWasAtTheTimeThroughATempFile() throws IOException {
+    DataFile file = queuedFile("quests.yml");
+    file.load();
+    file.yaml().set("Thor.Amount", 1);
+    file.save();
 
-		// Changed after the snapshot was taken: belongs to the next write
-		file.yaml().set("Thor.Amount", 2);
-		assertFalse(file.isDirty());
-		assertEquals(1, this.queued.size());
-		runQueued();
+    // Changed after the snapshot was taken: belongs to the next write
+    file.yaml().set("Thor.Amount", 2);
+    assertFalse(file.isDirty());
+    assertEquals(1, this.queued.size());
+    runQueued();
 
-		assertEquals(1, YamlConfiguration.loadConfiguration(this.dir.resolve("quests.yml").toFile()).getInt("Thor.Amount"));
-		assertEquals(List.of("quests.yml"), filesInDir());
-	}
+    assertEquals(
+        1,
+        YamlConfiguration.loadConfiguration(this.dir.resolve("quests.yml").toFile())
+            .getInt("Thor.Amount"));
+    assertEquals(List.of("quests.yml"), filesInDir());
+  }
 
-	@Test
-	void unchangedFileIsNotWritten()
-	{
-		DataFile file = queuedFile("bibles.yml");
-		file.load();
-		file.flush();
-		assertTrue(this.queued.isEmpty());
-	}
+  @Test
+  void unchangedFileIsNotWritten() {
+    DataFile file = queuedFile("bibles.yml");
+    file.load();
+    file.flush();
+    assertTrue(this.queued.isEmpty());
+  }
 
-	@Test
-	void brokenFileIsKeptAndNeverOverwritten() throws IOException
-	{
-		Path file = this.dir.resolve("quests.yml");
-		Files.writeString(file, BROKEN);
+  @Test
+  void brokenFileIsKeptAndNeverOverwritten() throws IOException {
+    Path file = this.dir.resolve("quests.yml");
+    Files.writeString(file, BROKEN);
 
-		Storage storage = storage();
-		assertFalse(storage.quests().load());
-		assertTrue(storage.quests().isReadOnly());
-		assertEquals(0, storage.quests().size());
+    Storage storage = storage();
+    assertFalse(storage.quests().load());
+    assertTrue(storage.quests().isReadOnly());
+    assertEquals(0, storage.quests().size());
 
-		storage.quests().getOrCreate("Odin").setAmount(1);
-		storage.quests().save();
-		storage.close();
+    storage.quests().getOrCreate("Odin").setAmount(1);
+    storage.quests().save();
+    storage.close();
 
-		assertEquals(BROKEN, Files.readString(file));
-		List<String> files = filesInDir();
-		assertEquals(2, files.size());
-		assertEquals("quests.yml", files.get(0));
-		assertTrue(files.get(1).startsWith("quests.yml.broken-"), files.get(1));
-		assertEquals(BROKEN, Files.readString(this.dir.resolve(files.get(1))));
-	}
+    assertEquals(BROKEN, Files.readString(file));
+    List<String> files = filesInDir();
+    assertEquals(2, files.size());
+    assertEquals("quests.yml", files.get(0));
+    assertTrue(files.get(1).startsWith("quests.yml.broken-"), files.get(1));
+    assertEquals(BROKEN, Files.readString(this.dir.resolve(files.get(1))));
+  }
 
-	@Test
-	void brokenOnReloadKeepsTheDataInMemoryUntilFixed() throws IOException
-	{
-		Path believers = this.dir.resolve("believers.yml");
-		Files.writeString(believers, "abc:\n  God: Thor\n");
-		DataFile file = queuedFile("believers.yml");
-		assertTrue(file.load());
+  @Test
+  void brokenOnReloadKeepsTheDataInMemoryUntilFixed() throws IOException {
+    Path believers = this.dir.resolve("believers.yml");
+    Files.writeString(believers, "abc:\n  God: Thor\n");
+    DataFile file = queuedFile("believers.yml");
+    assertTrue(file.load());
 
-		Files.writeString(believers, BROKEN);
-		assertFalse(file.load());
-		assertTrue(file.isReadOnly());
-		assertEquals("Thor", file.yaml().getString("abc.God"));
-		file.save();
-		assertTrue(this.queued.isEmpty());
+    Files.writeString(believers, BROKEN);
+    assertFalse(file.load());
+    assertTrue(file.isReadOnly());
+    assertEquals("Thor", file.yaml().getString("abc.God"));
+    file.save();
+    assertTrue(this.queued.isEmpty());
 
-		Files.writeString(believers, "abc:\n  God: Odin\n");
-		assertTrue(file.load());
-		assertFalse(file.isReadOnly());
-		assertEquals("Odin", file.yaml().getString("abc.God"));
-		file.save();
-		assertEquals(1, this.queued.size());
-	}
+    Files.writeString(believers, "abc:\n  God: Odin\n");
+    assertTrue(file.load());
+    assertFalse(file.isReadOnly());
+    assertEquals("Odin", file.yaml().getString("abc.God"));
+    file.save();
+    assertEquals(1, this.queued.size());
+  }
 
-	@Test
-	void uuidTagsInGodsYmlAreRepaired() throws IOException
-	{
-		Files.writeString(this.dir.resolve("gods.yml"), "data-version: 2\nThor:\n  BlessedPlayer: !!java.util.UUID '8667ba71-b85a-4004-af54-457a9734eed7'\n");
+  @Test
+  void uuidTagsInGodsYmlAreRepaired() throws IOException {
+    Files.writeString(
+        this.dir.resolve("gods.yml"),
+        "data-version: 2\nThor:\n  BlessedPlayer: !!java.util.UUID '8667ba71-b85a-4004-af54-457a9734eed7'\n");
 
-		Storage storage = storage();
-		assertTrue(storage.gods().load());
-		assertEquals(UUID.fromString("8667ba71-b85a-4004-af54-457a9734eed7"), storage.gods().find("Thor").blessedPlayer());
-		storage.close();
+    Storage storage = storage();
+    assertTrue(storage.gods().load());
+    assertEquals(
+        UUID.fromString("8667ba71-b85a-4004-af54-457a9734eed7"),
+        storage.gods().find("Thor").blessedPlayer());
+    storage.close();
 
-		// Written back without the tags
-		String written = Files.readString(this.dir.resolve("gods.yml"));
-		assertFalse(written.contains("!!"), written);
-		assertTrue(written.contains("8667ba71-b85a-4004-af54-457a9734eed7"), written);
-	}
+    // Written back without the tags
+    String written = Files.readString(this.dir.resolve("gods.yml"));
+    assertFalse(written.contains("!!"), written);
+    assertTrue(written.contains("8667ba71-b85a-4004-af54-457a9734eed7"), written);
+  }
 
-	@Test
-	void awaitWritesWaitsForQueuedWrites()
-	{
-		Storage storage = storage();
-		storage.bibles().load();
-		for (int i = 0; i < 50; i++)
-		{
-			storage.bibles().getOrCreate("book" + i).setTitle("p" + i);
-			storage.bibles().save();
-		}
-		assertTrue(storage.awaitWrites(10, TimeUnit.SECONDS));
+  @Test
+  void awaitWritesWaitsForQueuedWrites() {
+    Storage storage = storage();
+    storage.bibles().load();
+    for (int i = 0; i < 50; i++) {
+      storage.bibles().getOrCreate("book" + i).setTitle("p" + i);
+      storage.bibles().save();
+    }
+    assertTrue(storage.awaitWrites(10, TimeUnit.SECONDS));
 
-		YamlConfiguration written = YamlConfiguration.loadConfiguration(this.dir.resolve("bibles.yml").toFile());
-		assertEquals("p49", written.getString("book49.Title"));
-		storage.close();
-	}
+    YamlConfiguration written =
+        YamlConfiguration.loadConfiguration(this.dir.resolve("bibles.yml").toFile());
+    assertEquals("p49", written.getString("book49.Title"));
+    storage.close();
+  }
 
-	@Test
-	void nothingIsWrittenAfterClose() throws IOException
-	{
-		Storage storage = storage();
-		storage.bibles().load();
-		storage.close();
+  @Test
+  void nothingIsWrittenAfterClose() throws IOException {
+    Storage storage = storage();
+    storage.bibles().load();
+    storage.close();
 
-		storage.bibles().getOrCreate("Thor").setTitle("Book");
-		storage.bibles().save();
-		assertTrue(storage.bibles().file().isDirty());
-		assertEquals(List.of(), filesInDir());
-	}
-	@Test
-	void reloadKeepsUnsavedChangesOfFilesNobodyEdited()
-	{
-		Storage storage = storage();
-		storage.quests().load();
-		storage.quests().getOrCreate("Thor").setAmount(1);
-		storage.quests().markDirty();
+    storage.bibles().getOrCreate("Thor").setTitle("Book");
+    storage.bibles().save();
+    assertTrue(storage.bibles().file().isDirty());
+    assertEquals(List.of(), filesInDir());
+  }
 
-		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
-		assertTrue(storage.quests().load());
-		storage.finishReload();
+  @Test
+  void reloadKeepsUnsavedChangesOfFilesNobodyEdited() {
+    Storage storage = storage();
+    storage.quests().load();
+    storage.quests().getOrCreate("Thor").setAmount(1);
+    storage.quests().markDirty();
 
-		assertTrue(storage.quests().file().lastLoadKept());
-		assertEquals(1, storage.quests().find("Thor").amount());
-		storage.close();
+    assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
+    assertTrue(storage.quests().load());
+    storage.finishReload();
 
-		Storage again = storage();
-		again.quests().load();
-		assertEquals(1, again.quests().find("Thor").amount());
-		again.close();
-	}
+    assertTrue(storage.quests().file().lastLoadKept());
+    assertEquals(1, storage.quests().find("Thor").amount());
+    storage.close();
 
-	@Test
-	void reloadReadsFilesEditedOnDiskAndDropsUnsavedChanges() throws IOException
-	{
-		Storage storage = storage();
-		storage.quests().load();
-		storage.quests().getOrCreate("Thor").setAmount(1);
-		storage.quests().save();
-		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+    Storage again = storage();
+    again.quests().load();
+    assertEquals(1, again.quests().find("Thor").amount());
+    again.close();
+  }
 
-		// A change that isn't saved yet, then an admin edits the file
-		storage.quests().getOrCreate("Thor").setAmount(2);
-		storage.quests().markDirty();
-		Path file = this.dir.resolve("quests.yml");
-		Files.writeString(file, "Thor:\n  Amount: 5\n");
-		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+  @Test
+  void reloadReadsFilesEditedOnDiskAndDropsUnsavedChanges() throws IOException {
+    Storage storage = storage();
+    storage.quests().load();
+    storage.quests().getOrCreate("Thor").setAmount(1);
+    storage.quests().save();
+    assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
 
-		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
-		assertTrue(storage.quests().load());
-		storage.finishReload();
+    // A change that isn't saved yet, then an admin edits the file
+    storage.quests().getOrCreate("Thor").setAmount(2);
+    storage.quests().markDirty();
+    Path file = this.dir.resolve("quests.yml");
+    Files.writeString(file, "Thor:\n  Amount: 5\n");
+    Files.setLastModifiedTime(
+        file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
 
-		assertFalse(storage.quests().file().lastLoadKept());
-		assertEquals(5, storage.quests().find("Thor").amount());
-		storage.close();
+    assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
+    assertTrue(storage.quests().load());
+    storage.finishReload();
 
-		Storage again = storage();
-		again.quests().load();
-		assertEquals(5, again.quests().find("Thor").amount());
-		again.close();
-	}
+    assertFalse(storage.quests().file().lastLoadKept());
+    assertEquals(5, storage.quests().find("Thor").amount());
+    storage.close();
 
-	@Test
-	void everyOldDataFileIsBackedUpBeforeItsFirstRewrite() throws IOException
-	{
-		List<String> names = List.of("gods", "believers", "quests", "holyland", "marriages", "bibles");
-		for (String name : names)
-		{
-			Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".yml");
-		}
-		Storage storage = storage();
-		storage.gods().load();
-		storage.believers().load();
-		storage.quests().load();
-		storage.holyLands().load();
-		storage.marriages().load();
-		storage.bibles().load();
-		storage.close();
+    Storage again = storage();
+    again.quests().load();
+    assertEquals(5, again.quests().find("Thor").amount());
+    again.close();
+  }
 
-		for (String name : names)
-		{
-			String original = Files.readString(Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".original"));
-			assertEquals(original, Files.readString(this.dir.resolve(name + ".yml.v1.bak")), name);
-			assertEquals(name.equals("holyland") ? HolyLandRepository.DATA_VERSION : 2, YamlConfiguration.loadConfiguration(this.dir.resolve(name + ".yml").toFile()).getInt("data-version"), name);
-		}
-	}
+  @Test
+  void everyOldDataFileIsBackedUpBeforeItsFirstRewrite() throws IOException {
+    List<String> names = List.of("gods", "believers", "quests", "holyland", "marriages", "bibles");
+    for (String name : names) {
+      Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".yml");
+    }
+    Storage storage = storage();
+    storage.gods().load();
+    storage.believers().load();
+    storage.quests().load();
+    storage.holyLands().load();
+    storage.marriages().load();
+    storage.bibles().load();
+    storage.close();
 
-	@Test
-	void aNewDataFileGetsTheCurrentVersion()
-	{
-		Storage storage = storage();
-		storage.marriages().load();
-		storage.marriages().getOrCreate(UUID.randomUUID());
-		storage.marriages().save();
-		storage.close();
+    for (String name : names) {
+      String original =
+          Files.readString(
+              Fixtures.copy("legacy/" + name + "-0.9.yml", this.dir, name + ".original"));
+      assertEquals(original, Files.readString(this.dir.resolve(name + ".yml.v1.bak")), name);
+      assertEquals(
+          name.equals("holyland") ? HolyLandRepository.DATA_VERSION : 2,
+          YamlConfiguration.loadConfiguration(this.dir.resolve(name + ".yml").toFile())
+              .getInt("data-version"),
+          name);
+    }
+  }
 
-		assertEquals(2, YamlConfiguration.loadConfiguration(this.dir.resolve("marriages.yml").toFile()).getInt("data-version"));
-	}
+  @Test
+  void aNewDataFileGetsTheCurrentVersion() {
+    Storage storage = storage();
+    storage.marriages().load();
+    storage.marriages().getOrCreate(UUID.randomUUID());
+    storage.marriages().save();
+    storage.close();
 
-	@Test
-	void aHandEditIsNeverOverwrittenBeforeReload() throws IOException
-	{
-		Storage storage = storage();
-		storage.quests().load();
-		storage.quests().getOrCreate("Thor").setAmount(1);
-		storage.quests().save();
-		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+    assertEquals(
+        2,
+        YamlConfiguration.loadConfiguration(this.dir.resolve("marriages.yml").toFile())
+            .getInt("data-version"));
+  }
 
-		Path file = this.dir.resolve("quests.yml");
-		String edit = "Thor:\n  Amount: 5\n";
-		Files.writeString(file, edit);
-		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+  @Test
+  void aHandEditIsNeverOverwrittenBeforeReload() throws IOException {
+    Storage storage = storage();
+    storage.quests().load();
+    storage.quests().getOrCreate("Thor").setAmount(1);
+    storage.quests().save();
+    assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
 
-		// Saved (and autosaved) in the game after the edit
-		storage.quests().getOrCreate("Thor").setAmount(2);
-		storage.quests().save();
-		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
-		storage.flush();
-		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+    Path file = this.dir.resolve("quests.yml");
+    String edit = "Thor:\n  Amount: 5\n";
+    Files.writeString(file, edit);
+    Files.setLastModifiedTime(
+        file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
 
-		assertEquals(edit, Files.readString(file));
-		assertTrue(storage.quests().file().isEditedOnDisk());
-		assertTrue(storage.quests().file().isDirty(), "the changes stay marked until the reload decides");
+    // Saved (and autosaved) in the game after the edit
+    storage.quests().getOrCreate("Thor").setAmount(2);
+    storage.quests().save();
+    assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+    storage.flush();
+    assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
 
-		// /g reload reads the edit
-		assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
-		assertTrue(storage.quests().load());
-		storage.finishReload();
-		assertFalse(storage.quests().file().isEditedOnDisk());
-		assertEquals(5, storage.quests().find("Thor").amount());
+    assertEquals(edit, Files.readString(file));
+    assertTrue(storage.quests().file().isEditedOnDisk());
+    assertTrue(
+        storage.quests().file().isDirty(), "the changes stay marked until the reload decides");
 
-		// And saving works again after it
-		storage.quests().getOrCreate("Thor").setAmount(7);
-		storage.quests().save();
-		storage.close();
-		assertEquals(7, YamlConfiguration.loadConfiguration(file.toFile()).getInt("Thor.Amount"));
-	}
+    // /g reload reads the edit
+    assertTrue(storage.prepareReload(5, TimeUnit.SECONDS));
+    assertTrue(storage.quests().load());
+    storage.finishReload();
+    assertFalse(storage.quests().file().isEditedOnDisk());
+    assertEquals(5, storage.quests().find("Thor").amount());
 
-	@Test
-	void closeNeverOverwritesAHandEdit() throws IOException
-	{
-		Storage storage = storage();
-		storage.quests().load();
-		storage.quests().getOrCreate("Thor").setAmount(1);
-		storage.quests().save();
-		assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
+    // And saving works again after it
+    storage.quests().getOrCreate("Thor").setAmount(7);
+    storage.quests().save();
+    storage.close();
+    assertEquals(7, YamlConfiguration.loadConfiguration(file.toFile()).getInt("Thor.Amount"));
+  }
 
-		Path file = this.dir.resolve("quests.yml");
-		String edit = "Thor:\n  Amount: 5\n";
-		Files.writeString(file, edit);
-		Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+  @Test
+  void closeNeverOverwritesAHandEdit() throws IOException {
+    Storage storage = storage();
+    storage.quests().load();
+    storage.quests().getOrCreate("Thor").setAmount(1);
+    storage.quests().save();
+    assertTrue(storage.awaitWrites(5, TimeUnit.SECONDS));
 
-		storage.quests().getOrCreate("Thor").setAmount(2);
-		storage.quests().markDirty();
-		storage.close();
+    Path file = this.dir.resolve("quests.yml");
+    String edit = "Thor:\n  Amount: 5\n";
+    Files.writeString(file, edit);
+    Files.setLastModifiedTime(
+        file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
 
-		assertEquals(edit, Files.readString(file));
-	}
+    storage.quests().getOrCreate("Thor").setAmount(2);
+    storage.quests().markDirty();
+    storage.close();
 
-	@Test
-	void aFileThatWasNeverLoadedIsNeverWritten() throws IOException
-	{
-		Files.writeString(this.dir.resolve("bibles.yml"), "Thor:\n  Title: Old\n");
-		Storage storage = storage();
-		storage.bibles().getOrCreate("Thor").setTitle("New");
-		storage.bibles().save();
-		storage.close();
+    assertEquals(edit, Files.readString(file));
+  }
 
-		assertEquals("Thor:\n  Title: Old\n", Files.readString(this.dir.resolve("bibles.yml")));
-	}
+  @Test
+  void aFileThatWasNeverLoadedIsNeverWritten() throws IOException {
+    Files.writeString(this.dir.resolve("bibles.yml"), "Thor:\n  Title: Old\n");
+    Storage storage = storage();
+    storage.bibles().getOrCreate("Thor").setTitle("New");
+    storage.bibles().save();
+    storage.close();
+
+    assertEquals("Thor:\n  Title: Old\n", Files.readString(this.dir.resolve("bibles.yml")));
+  }
 }

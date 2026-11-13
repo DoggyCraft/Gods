@@ -1,86 +1,78 @@
 package com.dogonfire.gods.listener;
 
+import com.dogonfire.gods.GodsContext;
+import com.dogonfire.gods.message.Messages;
+import com.dogonfire.gods.model.GodType;
 import java.util.List;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
-import com.dogonfire.gods.GodsContext;
-import com.dogonfire.gods.message.Messages;
-import com.dogonfire.gods.model.GodType;
-
 /**
- * Believers dying: the dead believer may leave their religion (believers.leave-religion-on-death), and a believer who
- * killed a heathen (for a war god) or a believer of an enemy god earns prayers and prayer power. Always registered;
- * the logic is in {@code BelieverService} and {@code PrayerService}.
+ * Believers dying: the dead believer may leave their religion (believers.leave-religion-on-death),
+ * and a believer who killed a heathen (for a war god) or a believer of an enemy god earns prayers
+ * and prayer power. Always registered; the logic is in {@code BelieverService} and {@code
+ * PrayerService}.
  */
-public class BelieverListener implements Listener
-{
-	private final GodsContext ctx;
+public class BelieverListener implements Listener {
+  private final GodsContext ctx;
 
-	public BelieverListener(GodsContext ctx)
-	{
-		this.ctx = ctx;
-	}
+  public BelieverListener(GodsContext ctx) {
+    this.ctx = ctx;
+  }
 
-	@EventHandler
-	public void onPlayerDeath(PlayerDeathEvent event)
-	{
-		Player player = event.getEntity();
-		if (!ctx.plugin().isEnabledInWorld(player.getWorld()))
-		{
-			return;
-		}
-		String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
+  @EventHandler
+  public void onPlayerDeath(PlayerDeathEvent event) {
+    Player player = event.getEntity();
+    if (!ctx.plugin().isEnabledInWorld(player.getWorld())) {
+      return;
+    }
+    String godName = ctx.believerService().getGodForBeliever(player.getUniqueId());
 
-		if (godName != null)
-		{
-			GodType godType = ctx.godService().getDivineForceForGod(godName);
+    if (godName != null) {
+      GodType godType = ctx.godService().getDivineForceForGod(godName);
 
-			ctx.prayerService().handleKilledPlayer(player.getUniqueId(), godName, godType);
-		}
+      ctx.prayerService().handleKilledPlayer(player.getUniqueId(), godName, godType);
+    }
 
-		Player killer = player.getKiller();
-		if (killer == null)
-		{
-			return;
-		}
+    Player killer = player.getKiller();
+    if (killer == null) {
+      return;
+    }
 
-		String killerGodName = ctx.believerService().getGodForBeliever(killer.getUniqueId());
-		if (killerGodName == null)
-		{
-			return;
-		}
+    String killerGodName = ctx.believerService().getGodForBeliever(killer.getUniqueId());
+    if (killerGodName == null) {
+      return;
+    }
 
-		String message = null;
+    String message = null;
 
-		if (godName == null)
-		{
-			// War gods reward slaying heathens
-			if (ctx.godService().getDivineForceForGod(killerGodName) == GodType.WAR)
-			{
-				message = "believer.power-for-heathen-kill";
-			}
-		}
-		else
-		{
-			List<String> warRelations = ctx.relationService().getWarRelations(killerGodName);
-			if ((warRelations != null) && (warRelations.contains(godName)))
-			{
-				message = "believer.power-for-enemy-kill";
-			}
-		}
+    if (godName == null) {
+      // War gods reward slaying heathens
+      if (ctx.godService().getDivineForceForGod(killerGodName) == GodType.WAR) {
+        message = "believer.power-for-heathen-kill";
+      }
+    } else {
+      List<String> warRelations = ctx.relationService().getWarRelations(killerGodName);
+      if ((warRelations != null) && (warRelations.contains(godName))) {
+        message = "believer.power-for-enemy-kill";
+      }
+    }
 
-		if (message != null)
-		{
-			double powerBefore = ctx.believerService().getBelieverPower(killer.getUniqueId());
-			ctx.believerService().increasePrayer(killer.getUniqueId(), killerGodName, 2);
-			ctx.believerService().increasePrayerPower(killer.getUniqueId(), 2);
-			double powerAfter = ctx.believerService().getBelieverPower(killer.getUniqueId());
+    if (message != null) {
+      double powerBefore = ctx.believerService().getBelieverPower(killer.getUniqueId());
+      ctx.believerService().increasePrayer(killer.getUniqueId(), killerGodName, 2);
+      ctx.believerService().increasePrayerPower(killer.getUniqueId(), 2);
+      double powerAfter = ctx.believerService().getBelieverPower(killer.getUniqueId());
 
-			ctx.godSpeech().sendInfo(killer.getUniqueId(), message, 20, Messages.amount((int) (powerAfter - powerBefore)), Messages.god(killerGodName));
-		}
-	}
+      ctx.godSpeech()
+          .sendInfo(
+              killer.getUniqueId(),
+              message,
+              20,
+              Messages.amount((int) (powerAfter - powerBefore)),
+              Messages.god(killerGodName));
+    }
+  }
 }
