@@ -1,6 +1,7 @@
 #!/bin/sh
-# Compiles Gods (main and test code) with Error Prone before each commit, so a commit can't break the build or bring
-# in a bug pattern Error Prone knows. It checks the working tree, not only what is staged.
+# Before each commit: checks the Java code is formatted (Google Java Style, mvn spotless:apply fixes it) and compiles
+# it (main and test code) with Error Prone, so a commit can't break the build or bring in a bug pattern Error Prone
+# knows. It checks the working tree, not only what is staged.
 #
 # Turn it on once per clone:  git config core.hooksPath .githooks
 # Skip it for one commit:     git commit --no-verify
@@ -21,7 +22,11 @@ else
 	exit 0
 fi
 
-echo "pre-commit: compiling with Error Prone (git commit --no-verify skips this)" >&2
+echo "pre-commit: checking the format and compiling with Error Prone (git commit --no-verify skips this)" >&2
+if ! "$@" -q spotless:check; then
+	echo "pre-commit: the code isn't formatted; run mvn spotless:apply and add the changes" >&2
+	exit 1
+fi
 if ! "$@" -q test-compile; then
 	echo "pre-commit: the build failed; fix it or commit with --no-verify" >&2
 	exit 1

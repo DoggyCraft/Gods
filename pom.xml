@@ -32,6 +32,9 @@
         <junitVersion>6.1.3</junitVersion>
         <!-- Error Prone, run by the compiler (see maven-compiler-plugin) -->
         <errorProneVersion>2.50.0</errorProneVersion>
+        <!-- The formatter: Spotless runs google-java-format (Google Java Style) -->
+        <spotlessVersion>3.11.0</spotlessVersion>
+        <googleJavaFormatVersion>2.0.0</googleJavaFormatVersion>
         <!-- Java 21, so Gods runs on 1.21.x servers too; it is still built with JDK 25 (CI, flake, JitPack) -->
         <maven.compiler.release>21</maven.compiler.release>
         <encoding>UTF-8</encoding>
@@ -140,6 +143,21 @@
                 <version>3.0.0-M5</version>
                 <configuration>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <!-- Google Java Style through google-java-format: mvn spotless:apply formats, spotless:check (the
+                 pre-commit hook and CI) fails when something isn't formatted -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotlessVersion}</version>
+                <configuration>
+                    <java>
+                        <googleJavaFormat>
+                            <version>${googleJavaFormatVersion}</version>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
+                    </java>
                 </configuration>
             </plugin>
         </plugins>

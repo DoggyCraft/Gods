@@ -21,6 +21,10 @@ jobs:
           java-version: '25'
           cache: maven
 
+      # Google Java Style (google-java-format); mvn spotless:apply fixes it
+      - name: Check formatting
+        run: mvn -B spotless:check
+
       - name: Build and test
         run: mvn -B clean package
 
