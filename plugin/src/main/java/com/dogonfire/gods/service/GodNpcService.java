@@ -87,7 +87,15 @@ public class GodNpcService
 		this.provider = create(choice.provider());
 		if (this.provider == null)
 		{
-			ctx.plugin().logDebug("Gods have no NPCs at their main altars.");
+			if (settings.enabled() && choice.warning() == null)
+			{
+				// npc.enabled, but nothing here can make one: say why, so admins don't wait for a figure
+				ctx.plugin().log("Gods have no NPCs at their main altars: this server has no mannequin (Minecraft 1.21.9 or newer), and neither Citizens nor FancyNpcs is installed.");
+			}
+			else
+			{
+				ctx.plugin().logDebug("Gods have no NPCs at their main altars.");
+			}
 			return;
 		}
 		ctx.plugin().log("Gods appear at their main altars through " + this.provider.name() + ".");
