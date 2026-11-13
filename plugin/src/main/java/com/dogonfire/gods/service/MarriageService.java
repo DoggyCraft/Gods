@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,7 +39,6 @@ public class MarriageService
 
 	private final GodsContext			ctx;
 	private final MarriageRepository	repository;
-	private final Random				random				= new Random();
 	private final Material				marriageTokenType	= Material.GOLD_NUGGET;
 
 	public MarriageService(GodsContext ctx, MarriageRepository repository)
@@ -245,8 +244,8 @@ public class MarriageService
 		}
 
 		TagResolver token = Messages.type(ctx.messages().itemName(this.marriageTokenType));
-		ctx.godSpeech().say(godName, player1, Voice.BELIEVER_ACCEPTED_MARRIAGE_PROPOSAL, 2 + this.random.nextInt(40), token, Messages.displayName(player2.getDisplayName()));
-		ctx.godSpeech().say(godName, player2, Voice.BELIEVER_ACCEPTED_YOUR_MARRIAGE_PROPOSAL, 2 + this.random.nextInt(40), token, Messages.displayName(player1.getDisplayName()));
+		ctx.godSpeech().say(godName, player1, Voice.BELIEVER_ACCEPTED_MARRIAGE_PROPOSAL, 2 + ThreadLocalRandom.current().nextInt(40), token, Messages.displayName(player2.getDisplayName()));
+		ctx.godSpeech().say(godName, player2, Voice.BELIEVER_ACCEPTED_YOUR_MARRIAGE_PROPOSAL, 2 + ThreadLocalRandom.current().nextInt(40), token, Messages.displayName(player1.getDisplayName()));
 
 		setGettingMarried(playerId1, playerId2);
 	}

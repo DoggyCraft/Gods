@@ -62,19 +62,19 @@ public final class PrayForCommand extends SubCommand
 		{
 			throw new CommandException(disabled);
 		}
-		if (what.equalsIgnoreCase("health"))
+		if ("health".equalsIgnoreCase(what))
 		{
 			prayForHealth(player, godName);
 		}
-		else if (what.equalsIgnoreCase("item"))
+		else if ("item".equalsIgnoreCase(what))
 		{
 			prayForItem(player, godName);
 		}
-		else if (what.equalsIgnoreCase("blessing"))
+		else if ("blessing".equalsIgnoreCase(what))
 		{
 			prayForBlessing(player, godName);
 		}
-		else if (what.equalsIgnoreCase("quest"))
+		else if ("quest".equalsIgnoreCase(what))
 		{
 			prayForQuest(player, godName);
 		}
@@ -115,7 +115,7 @@ public final class PrayForCommand extends SubCommand
 		int prayerPower = this.ctx.believerService().getPrayerPower(playerId);
 		if (prayerPower < cost)
 		{
-			this.ctx.godSpeech().sendInfo(playerId, "prayer.not-enough-power", 1, Messages.amount(cost - prayerPower), Messages.god(godName));
+			this.ctx.godSpeech().sendInfo(playerId, "prayer.not-enough-power", 1, Messages.amount((long) cost - prayerPower), Messages.god(godName));
 			return false;
 		}
 		return true;

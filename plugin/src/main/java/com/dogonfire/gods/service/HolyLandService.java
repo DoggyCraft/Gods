@@ -558,14 +558,14 @@ public class HolyLandService
 		String claimLandGod = existing == null ? null : existing.godName() != null ? existing.godName() : "";
 		HolyClaimRules.Answer answer = HolyClaimRules.decide(claim, player.getUniqueId(), godName, claimLandGod, altar != null, getHolyLandsForGod(godName) - replaced.size(), getMaximumHolyLandsForGod(godName));
 
-		if (answer == HolyClaimRules.Answer.RELEASE)
+		if (answer == HolyClaimRules.Answer.RELEASE && existing != null && claim != null)
 		{
 			this.repository.remove(existing);
 			this.repository.save();
 			ctx.plugin().log(player.getName() + " released the GriefPrevention claim " + claim.id() + " in " + claim.world() + ": it is no longer the holy land " + existing.name() + " of " + godName + ".");
 			ctx.godSpeech().sendInfoToBelievers(godName, "holy-land.claim-released", Messages.god(godName), Messages.player(player.getName()), Messages.text("name", nullToEmpty(existing.name())));
 		}
-		else if (answer == HolyClaimRules.Answer.CLAIM)
+		else if (answer == HolyClaimRules.Answer.CLAIM && altar != null && claim != null)
 		{
 			Location altarBlock = new Location(player.getWorld(), altar.x(), altar.y(), altar.z());
 			if (ctx.fire(new HolyLandClaimEvent(godName, player, altarBlock)).isCancelled())

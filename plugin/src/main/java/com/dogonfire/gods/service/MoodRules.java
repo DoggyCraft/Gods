@@ -63,7 +63,7 @@ public final class MoodRules
 	{
 		Random moodRandom = new Random(seed);
 
-		return 5 + moodRandom.nextInt(10);
+		return 5.0F + moodRandom.nextInt(10);
 	}
 
 	/**

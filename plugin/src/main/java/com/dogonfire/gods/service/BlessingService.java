@@ -440,7 +440,7 @@ public class BlessingService
 		{
 			return false;
 		}
-		if (!cursePlayer(godName, cursedPlayer.getUniqueId(), 1 + (int) ctx.godService().getGodPower(godName)))
+		if (!cursePlayer(godName, cursedPlayer.getUniqueId(), 1.0F + (int) ctx.godService().getGodPower(godName)))
 		{
 			return false;
 		}

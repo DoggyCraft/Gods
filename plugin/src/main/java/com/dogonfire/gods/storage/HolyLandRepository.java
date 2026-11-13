@@ -177,6 +177,10 @@ public final class HolyLandRepository extends Repository
 
 	public void remove(HolyLand land)
 	{
+		if (land == null)
+		{
+			return;
+		}
 		this.lands.remove(land.world() + "." + land.id());
 		for (ChunkKey chunk : land.chunks())
 		{

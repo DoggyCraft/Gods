@@ -149,7 +149,7 @@ public final class NaturePowers
 	/** TAME: every untamed tameable creature within 2 blocks per power point becomes the player's (never someone's pet) */
 	public void tame(Player player, int powerStrength)
 	{
-		for (Entity entity : NearbyEntities.all(player.getLocation(), powerStrength * 2))
+		for (Entity entity : NearbyEntities.all(player.getLocation(), powerStrength * 2.0D))
 		{
 			if (entity instanceof Tameable creature && !creature.isTamed() && creature.getOwner() == null)
 			{

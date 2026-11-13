@@ -1,6 +1,6 @@
 package com.dogonfire.gods.task;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
@@ -37,7 +37,7 @@ public class LoveTask extends Task
 			return;
 		}
 
-		Random random = new Random();
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		boolean firework = (random.nextInt(100) == 0);
 
 		{

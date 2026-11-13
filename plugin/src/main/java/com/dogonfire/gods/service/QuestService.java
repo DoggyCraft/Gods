@@ -506,7 +506,11 @@ public class QuestService
 	private Component targetDisplayName(String godName, QuestType questType)
 	{
 		String targetType = targetType(godName);
-		Component plain = Component.text(targetType == null ? "" : targetType);
+		if (targetType == null)
+		{
+			return Component.empty();
+		}
+		Component plain = Component.text(targetType);
 
 		try
 		{

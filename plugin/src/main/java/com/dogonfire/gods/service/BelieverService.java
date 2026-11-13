@@ -450,7 +450,11 @@ public class BelieverService
 	public String getInvitation(UUID believerId)
 	{
 		Believer believer = find(believerId);
-		if (BelieverRules.invitationExpired(believer != null ? believer.invitationTime() : null, Instant.now()))
+		if (believer == null)
+		{
+			return null;
+		}
+		if (BelieverRules.invitationExpired(believer.invitationTime(), Instant.now()))
 		{
 			clearInvitation(believerId);
 			return null;

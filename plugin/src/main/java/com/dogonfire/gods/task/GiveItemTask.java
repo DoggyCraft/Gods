@@ -1,6 +1,6 @@
 package com.dogonfire.gods.task;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -42,7 +42,7 @@ public class GiveItemTask extends Task
 
 		if (this.speak)
 		{
-			ctx.godSpeech().say(this.godName, this.player, Voice.BELIEVER_ITEM_BLESSING, 2 + new Random().nextInt(10), Messages.player(this.player.getName()), Messages.type(this.itemType.name()));
+			ctx.godSpeech().say(this.godName, this.player, Voice.BELIEVER_ITEM_BLESSING, 2 + ThreadLocalRandom.current().nextInt(10), Messages.player(this.player.getName()), Messages.type(this.itemType.name()));
 		}
 	}
 }

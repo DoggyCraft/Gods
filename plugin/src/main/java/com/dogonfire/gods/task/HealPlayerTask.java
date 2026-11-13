@@ -1,6 +1,6 @@
 package com.dogonfire.gods.task;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Effect;
 import org.bukkit.entity.Player;
@@ -36,7 +36,7 @@ public class HealPlayerTask extends Task
 	@Override
 	public void run()
 	{
-		Random random = new Random();
+		ThreadLocalRandom random = ThreadLocalRandom.current();
 		if (healPlayer())
 		{
 			ctx.godSpeech().say(this.godName, this.player, this.languageString, 2 + random.nextInt(10), Messages.player(this.player.getName()));

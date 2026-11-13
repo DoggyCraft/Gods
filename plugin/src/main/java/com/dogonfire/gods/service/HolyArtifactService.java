@@ -34,8 +34,12 @@ import com.dogonfire.gods.model.HolyPower;
 public class HolyArtifactService
 {
 	/** The power of a god type's artifacts and the items they can be; their names and lore are artifact.kind.<TYPE> in messages.yml */
-	private record ArtifactKind(HolyPower power, Material... items)
+	private record ArtifactKind(HolyPower power, List<Material> items)
 	{
+		ArtifactKind(HolyPower power, Material... items)
+		{
+			this(power, List.of(items));
+		}
 	}
 
 	private final Random		random	= new Random();
@@ -91,8 +95,8 @@ public class HolyArtifactService
 		}
 
 		ArtifactKind kind = getArtifactKind(godType);
-		int index = this.random.nextInt(kind.items().length);
-		Material material = kind.items()[index];
+		int index = this.random.nextInt(kind.items().size());
+		Material material = kind.items().get(index);
 		HolyPower holyPower = kind.power();
 		// As strong as the giving god's rank is now; the item keeps it
 		int powerValue = HolyPowerRules.strength(holyPower, ctx.rankService().getRank(godName));
