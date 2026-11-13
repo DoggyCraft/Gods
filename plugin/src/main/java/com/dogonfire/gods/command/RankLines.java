@@ -50,8 +50,8 @@ final class RankLines
 	/** The mood of a level of {@link RankRules#moodLevel} */
 	private static GodMood mood(long level)
 	{
-		int last = GodMood.values().length - 1;
-		int index = last - (int) Math.max(0L, Math.min((long) last, level));
-		return GodMood.values()[index];
+		GodMood[] moods = GodMood.values();
+		// Level 0 is angry, the last mood; out of range is the nearest end
+		return moods[moods.length - 1 - Math.clamp(level, 0, moods.length - 1)];
 	}
 }

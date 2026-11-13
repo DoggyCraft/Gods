@@ -682,6 +682,10 @@ public class HolyLandService
 
 	private void removeClaimLand(HolyLand land, HolyClaimRules.Loss loss)
 	{
+		if (land == null)
+		{
+			return;
+		}
 		this.repository.remove(land);
 		this.repository.save();
 
